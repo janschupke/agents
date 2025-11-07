@@ -4,6 +4,7 @@ import { SessionRepository } from '../../session/repository/session.repository.j
 import { MessageRepository } from '../../message/repository/message.repository.js';
 import { MemoryRepository } from '../../memory/repository/memory.repository.js';
 import { OpenAIService } from '../../openai/openai.service.js';
+import { MEMORY_CONFIG } from '../../common/constants/api.constants.js';
 import OpenAI from 'openai';
 
 @Injectable()
@@ -74,8 +75,8 @@ export class ChatService {
       const similar = await this.memoryRepository.findSimilarForBot(
         queryVector,
         botId,
-        3,
-        0.7
+        MEMORY_CONFIG.MAX_SIMILAR_MEMORIES,
+        MEMORY_CONFIG.SIMILARITY_THRESHOLD
       );
       if (similar.length > 0) {
         relevantMemories = similar.map((m) => m.chunk);
@@ -156,10 +157,10 @@ export class ChatService {
       temperature: botConfig.temperature,
     });
 
-    // Save memory chunk periodically (every 10 messages)
+    // Save memory chunk periodically
     const allMessages =
       await this.messageRepository.findAllBySessionIdForOpenAI(session.id);
-    if (allMessages.length > 0 && allMessages.length % 10 === 0) {
+    if (allMessages.length > 0 && allMessages.length % MEMORY_CONFIG.MEMORY_SAVE_INTERVAL === 0) {
       try {
         const chunk = this.openaiService.createMemoryChunkFromMessages(
           allMessages

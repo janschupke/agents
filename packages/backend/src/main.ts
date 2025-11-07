@@ -1,20 +1,22 @@
 import 'reflect-metadata';
-import { config } from 'dotenv';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
-
-// Load environment variables
-config();
+import { appConfig } from './config/app.config.js';
+import { AllExceptionsFilter } from './common/filters/http-exception.filter.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
   // Enable CORS
-  app.enableCors();
+  app.enableCors({
+    origin: appConfig.cors.origin,
+  });
   
-  const port = process.env.PORT || 3001;
-  await app.listen(port);
-  console.log(`Server running on http://localhost:${port}`);
+  // Global exception filter
+  app.useGlobalFilters(new AllExceptionsFilter());
+  
+  await app.listen(appConfig.port);
+  console.log(`Server running on http://localhost:${appConfig.port}`);
 }
 
 bootstrap();

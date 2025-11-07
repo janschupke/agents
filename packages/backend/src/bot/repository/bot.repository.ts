@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { Bot, BotConfig, Prisma } from '@prisma/client';
-
-export interface BotWithConfig extends Bot {
-  config: Record<string, unknown>;
-}
+import type { Bot } from '@prisma/client';
+import { BotWithConfig } from '../../common/interfaces/bot.interface.js';
+import { DEFAULT_BOT_CONFIG } from '../../common/constants/api.constants.js';
 
 @Injectable()
 export class BotRepository {
@@ -64,12 +62,7 @@ export class BotRepository {
   }
 
   getDefaultBotConfig(): Record<string, unknown> {
-    return {
-      model: 'gpt-4o-mini',
-      temperature: 0.7,
-      max_tokens: 1000,
-      system_prompt: 'You are a helpful assistant.',
-    };
+    return { ...DEFAULT_BOT_CONFIG };
   }
 
   mergeBotConfig(botConfig: Record<string, unknown>): Record<string, unknown> {

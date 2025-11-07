@@ -8,7 +8,8 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { ChatService } from '../service/service.js';
+import { ChatService } from './chat.service.js';
+import { SendMessageDto } from '../common/dto/send-message.dto.js';
 
 @Controller('api/chat')
 export class ChatController {
@@ -33,7 +34,7 @@ export class ChatController {
   @Post(':botId')
   async sendMessage(
     @Param('botId', ParseIntPipe) botId: number,
-    @Body() body: { message: string },
+    @Body() body: SendMessageDto,
   ) {
     if (!body.message || typeof body.message !== 'string') {
       throw new HttpException(
