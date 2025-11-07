@@ -15,10 +15,7 @@ async function healthcheck(): Promise<void> {
   // Test 1: Connection verification
   console.log('1. Testing database connection...');
   try {
-    const { error } = await supabase
-      .from('bots')
-      .select('*')
-      .limit(0);
+    const { error } = await supabase.from('bots').select('*').limit(0);
 
     if (error) {
       if (error.code === 'PGRST116' || error.code === '42P01') {

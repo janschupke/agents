@@ -11,6 +11,7 @@
     "healthcheck": "tsc && node dist/src/healthcheck.js",
     "openai": "tsc && node dist/src/openai.js",
     "chat": "tsc && node dist/src/chat.js",
+    "chat:help": "echo 'Usage: npm run chat [bot-id-or-name]' && echo 'Example: npm run chat 1' && echo 'Example: npm run chat TestBot'",
     "migrate": "tsc && node dist/migrate.js",
     "migrate:dev": "tsc && node dist/migrate.js",
     "setup:exec-sql": "echo 'To create exec_sql function, run the SQL in setup-exec-sql.sql in Supabase SQL Editor' && cat setup-exec-sql.sql",

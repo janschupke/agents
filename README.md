@@ -66,20 +66,40 @@ openai/
 
 ### Interactive Chat
 
-Run the interactive chat interface:
+Run the interactive chat interface with a bot:
 
 ```bash
-npm run chat
+npm run chat [bot-id-or-name]
 ```
 
-This will start an interactive session where you can:
+Examples:
+
+```bash
+npm run chat 1              # Use bot with ID 1
+npm run chat TestBot        # Use bot named "TestBot"
+```
+
+**Features:**
+
+- **Bot Configuration**: Loads bot and its configuration from Supabase (model, temperature, max_tokens, system prompts)
+- **Session Management**: Creates or resumes chat sessions, automatically resumes the latest session
+- **Message Persistence**: All messages saved to database, conversation history loaded when resuming
+- **Memory Chunks**: Automatically saves memory chunks every 10 messages and on exit
+
+**Commands:**
 
 - Type messages and get AI responses
 - Type `exit` or `quit` to end the conversation
-- Type `clear` to clear chat history
+- Type `clear` to clear in-memory history (reloads from database)
 - Type `help` for more commands
 
-The chat maintains conversation history for context-aware responses.
+**Database Tables Used:**
+
+- `bots` - Bot definitions
+- `bot_configs` - Bot configuration (model, temperature, etc.)
+- `chat_sessions` - Chat session records
+- `messages` - Individual messages in conversations
+- `memory_chunks` - Summarized conversation chunks for memory
 
 ## Examples Included
 
