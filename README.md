@@ -28,31 +28,58 @@ Note: `SUPABASE_URL` and `SUPABASE_KEY` are optional. The project will work with
 
 ## Usage
 
-Build and run the examples:
+### Available Commands
 
-```bash
-npm run build
-npm start
-```
+**Main Commands:**
 
-Or use the dev script to build and run in one command:
+- `npm run healthcheck` - Check database connection and query bots table
+- `npm run openai` - Run OpenAI example prompts
+- `npm run chat` - Interactive chat with OpenAI (reads from command line)
+- `npm run migrate` - Run database migration (wipes and recreates tables)
 
-```bash
-npm run dev
-```
-
-## Development Scripts
+**Development Scripts:**
 
 - `npm run build` - Compile TypeScript to JavaScript
-- `npm run start` - Run the compiled JavaScript
+- `npm run start` - Run the main entry point
 - `npm run dev` - Build and run in one command
-- `npm run migrate` - Run database migration (wipes and recreates tables)
 - `npm run tsc` - Type check without emitting files
 - `npm run lint` - Run ESLint
 - `npm run lint:fix` - Run ESLint and fix issues
 - `npm run format` - Format code with Prettier
 - `npm run format:check` - Check code formatting
 - `npm run type-check` - Type check (alias for tsc)
+
+### Project Structure
+
+```
+openai/
+├── src/
+│   ├── clients.ts      # Shared OpenAI and Supabase client initialization
+│   ├── healthcheck.ts   # Database connection and bots table query
+│   ├── openai.ts        # OpenAI example prompts
+│   └── chat.ts          # Interactive CLI chat interface
+├── sql/                 # SQL migration files
+├── index.ts             # Main entry point
+├── migrate.ts           # Database migration script
+└── package.json
+```
+
+### Interactive Chat
+
+Run the interactive chat interface:
+
+```bash
+npm run chat
+```
+
+This will start an interactive session where you can:
+
+- Type messages and get AI responses
+- Type `exit` or `quit` to end the conversation
+- Type `clear` to clear chat history
+- Type `help` for more commands
+
+The chat maintains conversation history for context-aware responses.
 
 ## Examples Included
 

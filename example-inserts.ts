@@ -21,6 +21,7 @@ const supabase = createSupabaseClient();
 
 // Example: Insert a bot (DML - Data Manipulation Language)
 // NO exec_sql needed! Use the Supabase client directly
+// @ts-expect-error - Example file, functions are for demonstration
 async function insertBot() {
   if (!supabase) {
     console.error('Supabase not initialized');
@@ -43,6 +44,7 @@ async function insertBot() {
 }
 
 // Example: Update a bot (DML)
+// @ts-expect-error - Example file, functions are for demonstration
 async function updateBot(botId: number) {
   if (!supabase) return;
 
@@ -60,6 +62,7 @@ async function updateBot(botId: number) {
 }
 
 // Example: Delete a bot (DML)
+// @ts-expect-error - Example file, functions are for demonstration
 async function deleteBot(botId: number) {
   if (!supabase) return;
 
@@ -77,6 +80,7 @@ async function deleteBot(botId: number) {
 }
 
 // Example: Query bots (DML)
+// @ts-expect-error - Example file, functions are for demonstration
 async function getBots() {
   if (!supabase) return;
 
