@@ -8,7 +8,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { ChatService } from './chat.service.js';
+import { ChatService } from '../service/service.js';
 
 @Controller('api/chat')
 export class ChatController {
@@ -19,6 +19,9 @@ export class ChatController {
     try {
       return await this.chatService.getChatHistory(botId);
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       const err = error as { message?: string };
       throw new HttpException(
         err.message || 'Unknown error',
@@ -42,6 +45,9 @@ export class ChatController {
     try {
       return await this.chatService.sendMessage(botId, body.message);
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       const err = error as { message?: string; status?: number };
       if (err.status === 401) {
         throw new HttpException(

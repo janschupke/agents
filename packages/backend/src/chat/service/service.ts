@@ -1,38 +1,38 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import {
-  loadBotWithConfig,
-  mergeBotConfig,
-} from '../bot.js';
-import {
-  createSession,
-  loadLatestSession,
-} from '../session.js';
-import { saveMessage, loadMessagesForOpenAI } from '../message.js';
-import {
-  saveMemoryChunk,
-  createMemoryChunkFromMessages,
-  generateEmbedding,
-  findSimilarMemoriesForBot,
-} from '../memory.js';
-import { createOpenAIClient } from '../clients.js';
+import { BotRepository } from '../../bot/repository/bot.repository.js';
+import { SessionRepository } from '../../session/repository/session.repository.js';
+import { MessageRepository } from '../../message/repository/message.repository.js';
+import { MemoryRepository } from '../../memory/repository/memory.repository.js';
+import { OpenAIService } from '../../openai/openai.service.js';
+import OpenAI from 'openai';
 
 @Injectable()
 export class ChatService {
+  constructor(
+    private readonly botRepository: BotRepository,
+    private readonly sessionRepository: SessionRepository,
+    private readonly messageRepository: MessageRepository,
+    private readonly memoryRepository: MemoryRepository,
+    private readonly openaiService: OpenAIService
+  ) {}
+
   async getChatHistory(botId: number) {
     // Load bot with config
-    const bot = await loadBotWithConfig(botId);
+    const bot = await this.botRepository.findByIdWithConfig(botId);
     if (!bot) {
       throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
     }
 
     // Get or create session
-    let session = await loadLatestSession(botId);
+    let session = await this.sessionRepository.findLatestByBotId(botId);
     if (!session) {
-      session = await createSession(botId);
+      session = await this.sessionRepository.create(botId);
     }
 
     // Load messages
-    const messages = await loadMessagesForOpenAI(session.id);
+    const messages = await this.messageRepository.findAllBySessionIdForOpenAI(
+      session.id
+    );
 
     return {
       bot: {
@@ -42,7 +42,7 @@ export class ChatService {
       },
       session: {
         id: session.id,
-        session_name: session.session_name,
+        session_name: session.sessionName,
       },
       messages,
     };
@@ -50,27 +50,28 @@ export class ChatService {
 
   async sendMessage(botId: number, message: string) {
     // Load bot with config
-    const bot = await loadBotWithConfig(botId);
+    const bot = await this.botRepository.findByIdWithConfig(botId);
     if (!bot) {
       throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
     }
 
-    const botConfig = mergeBotConfig(bot.config);
+    const botConfig = this.botRepository.mergeBotConfig(bot.config);
 
     // Get or create session
-    let session = await loadLatestSession(botId);
+    let session = await this.sessionRepository.findLatestByBotId(botId);
     if (!session) {
-      session = await createSession(botId);
+      session = await this.sessionRepository.create(botId);
     }
 
     // Load existing messages
-    const existingMessages = await loadMessagesForOpenAI(session.id);
+    const existingMessages =
+      await this.messageRepository.findAllBySessionIdForOpenAI(session.id);
 
     // Retrieve relevant memories using vector similarity
     let relevantMemories: string[] = [];
     try {
-      const queryVector = await generateEmbedding(message);
-      const similar = await findSimilarMemoriesForBot(
+      const queryVector = await this.openaiService.generateEmbedding(message);
+      const similar = await this.memoryRepository.findSimilarForBot(
         queryVector,
         botId,
         3,
@@ -128,10 +129,10 @@ export class ChatService {
     });
 
     // Save user message to database
-    await saveMessage(session.id, 'user', message);
+    await this.messageRepository.create(session.id, 'user', message);
 
     // Call OpenAI API
-    const openai = createOpenAIClient();
+    const openai = this.openaiService.getClient();
     const completion = await openai.chat.completions.create({
       model: String(botConfig.model || 'gpt-4o-mini'),
       messages: messagesForAPI,
@@ -150,17 +151,21 @@ export class ChatService {
     }
 
     // Save assistant message to database
-    await saveMessage(session.id, 'assistant', response, {
+    await this.messageRepository.create(session.id, 'assistant', response, {
       model: botConfig.model,
       temperature: botConfig.temperature,
     });
 
     // Save memory chunk periodically (every 10 messages)
-    const allMessages = await loadMessagesForOpenAI(session.id);
+    const allMessages =
+      await this.messageRepository.findAllBySessionIdForOpenAI(session.id);
     if (allMessages.length > 0 && allMessages.length % 10 === 0) {
       try {
-        const chunk = createMemoryChunkFromMessages(allMessages);
-        await saveMemoryChunk(session.id, chunk);
+        const chunk = this.openaiService.createMemoryChunkFromMessages(
+          allMessages
+        );
+        const embedding = await this.openaiService.generateEmbedding(chunk);
+        await this.memoryRepository.create(session.id, chunk, embedding);
       } catch (error) {
         // Ignore memory save errors
       }
@@ -170,7 +175,7 @@ export class ChatService {
       response,
       session: {
         id: session.id,
-        session_name: session.session_name,
+        session_name: session.sessionName,
       },
     };
   }
