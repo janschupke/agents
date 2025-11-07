@@ -1,9 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ChatService } from './chat.service';
-import { ChatHistoryResponse, SendMessageResponse } from '../types/chat.types';
+import { ChatService } from './chat.service.js';
+import { ChatHistoryResponse, SendMessageResponse } from '../types/chat.types.js';
+import { apiManager } from './api-manager.js';
 
-// Mock fetch globally
-global.fetch = vi.fn();
+// Mock ApiManager
+vi.mock('./api-manager.js', () => ({
+  apiManager: {
+    get: vi.fn(),
+    post: vi.fn(),
+  },
+}));
 
 describe('ChatService', () => {
   beforeEach(() => {
@@ -28,30 +34,19 @@ describe('ChatService', () => {
         ],
       };
 
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      vi.mocked(apiManager.get).mockResolvedValueOnce(mockResponse);
 
       const result = await ChatService.getChatHistory(1);
 
       expect(result).toEqual(mockResponse);
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/chat/1'),
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            'Content-Type': 'application/json',
-          }),
-        }),
-      );
+      expect(apiManager.get).toHaveBeenCalledWith('/api/chat/1');
     });
 
     it('should throw error when fetch fails', async () => {
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: false,
+      vi.mocked(apiManager.get).mockRejectedValueOnce({
+        message: 'Not found',
         status: 404,
-        json: async () => ({ message: 'Not found' }),
-      } as Response);
+      });
 
       await expect(ChatService.getChatHistory(1)).rejects.toThrow();
     });
@@ -67,32 +62,21 @@ describe('ChatService', () => {
         },
       };
 
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      vi.mocked(apiManager.post).mockResolvedValueOnce(mockResponse);
 
       const result = await ChatService.sendMessage(1, 'Test message');
 
       expect(result).toEqual(mockResponse);
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/chat/1'),
-        expect.objectContaining({
-          method: 'POST',
-          body: JSON.stringify({ message: 'Test message' }),
-          headers: expect.objectContaining({
-            'Content-Type': 'application/json',
-          }),
-        }),
-      );
+      expect(apiManager.post).toHaveBeenCalledWith('/api/chat/1', {
+        message: 'Test message',
+      });
     });
 
     it('should throw error when send fails', async () => {
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: false,
+      vi.mocked(apiManager.post).mockRejectedValueOnce({
+        message: 'Internal server error',
         status: 500,
-        json: async () => ({ message: 'Internal server error' }),
-      } as Response);
+      });
 
       await expect(ChatService.sendMessage(1, 'Test message')).rejects.toThrow();
     });
