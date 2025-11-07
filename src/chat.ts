@@ -11,7 +11,14 @@ import {
   type ChatSession,
 } from './session.js';
 import { saveMessage, loadMessagesForOpenAI } from './message.js';
-import { saveMemoryChunk, createMemoryChunkFromMessages } from './memory.js';
+import {
+  saveMemoryChunk,
+  createMemoryChunkFromMessages,
+  loadMemoryChunks,
+  loadMemoryChunksForBot,
+  generateEmbedding,
+  findSimilarMemoriesForBot,
+} from './memory.js';
 
 // Get bot ID or name from command line arguments
 const botIdentifier = process.argv[2];
@@ -26,11 +33,21 @@ const openai = createOpenAIClient();
 let botConfig: Record<string, unknown> = {};
 let currentSession: ChatSession | null = null;
 let sessionId: number | null = null;
+let currentBotId: number | null = null;
 
 // In-memory chat history (also persisted to DB)
 const messages: Array<{
   role: 'user' | 'assistant' | 'system';
   content: string;
+}> = [];
+
+// Store loaded memory chunks for semantic search
+let allMemoryChunks: Array<{
+  id: number;
+  session_id: number;
+  chunk: string;
+  vector: number[] | null;
+  created_at: string;
 }> = [];
 
 /**
@@ -61,6 +78,8 @@ async function initialize(): Promise<void> {
       process.exit(1);
     }
 
+    currentBotId = bot.id;
+
     console.log(`\nLoaded bot: ${bot.name}`);
     if (bot.description) {
       console.log(`Description: ${bot.description}`);
@@ -90,6 +109,49 @@ async function initialize(): Promise<void> {
     if (previousMessages.length > 0) {
       messages.push(...previousMessages);
       console.log(`Loaded ${previousMessages.length} previous message(s)\n`);
+    }
+
+    // Load memory chunks with vectors for this session
+    try {
+      const sessionMemories = await loadMemoryChunks(sessionId);
+      allMemoryChunks = sessionMemories;
+      if (sessionMemories.length > 0) {
+        const withVectors = sessionMemories.filter(
+          (m) => m.vector && m.vector.length > 0
+        );
+        console.log(
+          `Loaded ${sessionMemories.length} memory chunk(s) (${withVectors.length} with vectors)\n`
+        );
+      }
+
+      // Also load memory chunks from all previous sessions for cross-session memory
+      if (currentBotId) {
+        try {
+          const allBotMemories = await loadMemoryChunksForBot(currentBotId, 50); // Load up to 50 most recent
+          // Merge with session memories (avoid duplicates)
+          const existingIds = new Set(sessionMemories.map((m) => m.id));
+          const additionalMemories = allBotMemories.filter(
+            (m) => !existingIds.has(m.id)
+          );
+          allMemoryChunks.push(...additionalMemories);
+          if (additionalMemories.length > 0) {
+            const withVectors = additionalMemories.filter(
+              (m) => m.vector && m.vector.length > 0
+            );
+            console.log(
+              `Loaded ${additionalMemories.length} additional memory chunk(s) from previous sessions (${withVectors.length} with vectors)\n`
+            );
+          }
+        } catch (error) {
+          // Don't fail if cross-session memory loading fails
+          console.warn(
+            'Warning: Failed to load cross-session memories:',
+            error
+          );
+        }
+      }
+    } catch (error) {
+      console.warn('Warning: Failed to load memory chunks:', error);
     }
 
     // Add system prompt if configured
@@ -140,6 +202,34 @@ async function chat(prompt: string): Promise<void> {
     return;
   }
 
+  // Retrieve relevant memories using vector similarity (pgvector or in-memory)
+  let relevantMemories: string[] = [];
+  if (currentBotId) {
+    try {
+      // Generate embedding for the user's prompt
+      const queryVector = await generateEmbedding(prompt);
+
+      // Use pgvector search if available (searches across all bot sessions)
+      // Falls back to in-memory search if pgvector is not enabled
+      const similar = await findSimilarMemoriesForBot(
+        queryVector,
+        currentBotId,
+        3, // Top 3 most similar
+        0.7 // Similarity threshold
+      );
+
+      if (similar.length > 0) {
+        relevantMemories = similar.map((m) => m.chunk);
+      }
+    } catch (error) {
+      // Don't fail if memory retrieval fails
+      const err = error as { message?: string };
+      console.warn(
+        `Warning: Failed to retrieve relevant memories: ${err.message || 'Unknown error'}`
+      );
+    }
+  }
+
   // Add user message to history
   const userMessage = { role: 'user' as const, content: prompt };
   messages.push(userMessage);
@@ -152,10 +242,35 @@ async function chat(prompt: string): Promise<void> {
   }
 
   try {
+    // Prepare messages for OpenAI (include relevant memories as context)
+    const messagesForAPI = [...messages];
+
+    // Prepend relevant memories as context if found
+    if (relevantMemories.length > 0) {
+      const memoryContext = `Relevant context from previous conversations:\n${relevantMemories
+        .map((m, i) => `${i + 1}. ${m}`)
+        .join('\n\n')}`;
+
+      // Add as a system message with memory context
+      // Insert after the main system prompt but before user messages
+      const systemMessages = messagesForAPI.filter((m) => m.role === 'system');
+      const nonSystemMessages = messagesForAPI.filter(
+        (m) => m.role !== 'system'
+      );
+
+      messagesForAPI.length = 0;
+      messagesForAPI.push(...systemMessages);
+      messagesForAPI.push({
+        role: 'system',
+        content: memoryContext,
+      });
+      messagesForAPI.push(...nonSystemMessages);
+    }
+
     // Call OpenAI API with bot config
     const completion = await openai.chat.completions.create({
       model: String(botConfig.model || 'gpt-4o-mini'),
-      messages: messages,
+      messages: messagesForAPI,
       temperature: Number(botConfig.temperature || 0.7),
       max_tokens: botConfig.max_tokens
         ? Number(botConfig.max_tokens)
