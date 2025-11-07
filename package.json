@@ -1,45 +1,24 @@
 {
-  "name": "openai-examples",
+  "name": "openai-monorepo",
   "version": "1.0.0",
-  "description": "Simple Node.js project with OpenAI API examples",
-  "main": "dist/index.js",
+  "description": "Fullstack monorepo with OpenAI chat backend and React frontend",
+  "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "tsc && node dist/index.js",
-    "healthcheck": "tsc && node dist/src/healthcheck.js",
-    "openai": "tsc && node dist/src/openai.js",
-    "chat": "tsc && node dist/src/chat.js",
-    "chat:help": "echo 'Usage: npm run chat [bot-id-or-name]' && echo 'Example: npm run chat 1' && echo 'Example: npm run chat TestBot'",
-    "migrate": "tsc && node dist/migrate.js",
-    "migrate:dev": "tsc && node dist/migrate.js",
-    "setup:exec-sql": "echo 'To create exec_sql function, run the SQL in setup-exec-sql.sql in Supabase SQL Editor' && cat setup-exec-sql.sql",
-    "tsc": "tsc --noEmit",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
-    "format": "prettier --write \"**/*.{ts,json,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,json,md}\"",
-    "type-check": "tsc --noEmit",
-    "check": "npm run build && npm run lint && npm run format:check && npm run type-check"
+    "dev": "pnpm --filter backend dev & pnpm --filter frontend dev",
+    "build": "pnpm --filter backend build && pnpm --filter frontend build",
+    "lint": "pnpm --filter backend lint && pnpm --filter frontend lint",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,json,md}\""
   },
   "keywords": [
     "openai",
     "ai",
-    "examples"
+    "monorepo"
   ],
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "openai": "^4.20.0",
-    "dotenv": "^16.3.1",
-    "@supabase/supabase-js": "^2.39.0"
-  },
   "devDependencies": {
-    "@types/node": "^20.10.0",
-    "@typescript-eslint/eslint-plugin": "^6.13.0",
-    "@typescript-eslint/parser": "^6.13.0",
-    "eslint": "^8.54.0",
     "prettier": "^3.1.0",
     "typescript": "^5.3.2"
   }
