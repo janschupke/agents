@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Bot, Embedding } from '../types/chat.types.js';
 import { BotService } from '../services/bot.service.js';
 import { IconClose } from './Icons';
-import { Skeleton, SkeletonList } from './Skeleton';
+import { SkeletonList } from './Skeleton';
 
 interface BotConfigFormProps {
   bot: Bot | null;
@@ -13,41 +13,68 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [embeddings, setEmbeddings] = useState<Embedding[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loadingEmbeddings, setLoadingEmbeddings] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // Cache embeddings per bot ID
+  const embeddingsCache = useRef<Map<number, Embedding[]>>(new Map());
+  // Track which bots are currently loading embeddings
+  const loadingBots = useRef<Set<number>>(new Set());
 
-  useEffect(() => {
-    if (bot) {
-      setName(bot.name);
-      setDescription(bot.description || '');
-      // Only load embeddings for saved bots (positive IDs)
-      if (bot.id > 0) {
-        loadEmbeddings();
-      } else {
-        // New bot, no embeddings yet
-        setEmbeddings([]);
-      }
+  const loadEmbeddingsLazy = useCallback(async (botId: number) => {
+    // Check cache first - if we have cached data, use it instantly
+    if (embeddingsCache.current.has(botId)) {
+      setEmbeddings(embeddingsCache.current.get(botId)!);
+      return;
     }
-  }, [bot]);
 
-  const loadEmbeddings = async () => {
-    if (!bot || bot.id < 0) return; // Can't load embeddings for unsaved bots
+    // Check if already loading for this bot
+    if (loadingBots.current.has(botId)) {
+      return;
+    }
 
-    setLoading(true);
+    // Load embeddings
+    loadingBots.current.add(botId);
+    setLoadingEmbeddings(true);
     setError(null);
     try {
-      const data = await BotService.getEmbeddings(bot.id);
+      const data = await BotService.getEmbeddings(botId);
+      // Cache the embeddings
+      embeddingsCache.current.set(botId, data);
       setEmbeddings(data);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to load embeddings';
       setError(errorMessage);
+      setEmbeddings([]);
     } finally {
-      setLoading(false);
+      loadingBots.current.delete(botId);
+      setLoadingEmbeddings(false);
     }
-  };
+  }, []);
+
+  // Update form fields when bot changes (instant, no API call)
+  useEffect(() => {
+    if (bot) {
+      setName(bot.name);
+      setDescription(bot.description || '');
+      
+      // Load embeddings lazily when bot is selected
+      if (bot.id > 0) {
+        loadEmbeddingsLazy(bot.id);
+      } else {
+        // New bot, no embeddings yet
+        setEmbeddings([]);
+      }
+    } else {
+      // No bot selected, clear form
+      setName('');
+      setDescription('');
+      setEmbeddings([]);
+    }
+  }, [bot, loadEmbeddingsLazy]);
 
   const handleSave = async () => {
     if (!bot) return;
@@ -68,6 +95,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
           name: name.trim(),
           description: description.trim() || undefined,
         });
+        // Clear cache for this new bot (it will be reloaded)
       } else {
         // Updating an existing bot
         await BotService.updateBot(bot.id, {
@@ -102,7 +130,11 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
     setError(null);
     try {
       await BotService.deleteEmbedding(bot.id, embeddingId);
-      setEmbeddings((prev) => prev.filter((e) => e.id !== embeddingId));
+      // Update cached embeddings
+      const cached = embeddingsCache.current.get(bot.id) || [];
+      const updated = cached.filter((e) => e.id !== embeddingId);
+      embeddingsCache.current.set(bot.id, updated);
+      setEmbeddings(updated);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to delete embedding';
@@ -110,6 +142,15 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const handleRefreshEmbeddings = async () => {
+    if (!bot || bot.id < 0) return;
+    
+    // Clear cache for this bot and reload
+    embeddingsCache.current.delete(bot.id);
+    loadingBots.current.delete(bot.id);
+    await loadEmbeddingsLazy(bot.id);
   };
 
   if (!bot) {
@@ -178,11 +219,11 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
               </h3>
               {bot.id > 0 && (
                 <button
-                  onClick={loadEmbeddings}
-                  disabled={loading}
+                  onClick={handleRefreshEmbeddings}
+                  disabled={loadingEmbeddings}
                   className="h-7 px-3 text-xs bg-background-secondary border border-border rounded-md text-text-primary hover:bg-background disabled:opacity-50 transition-colors"
                 >
-                  {loading ? 'Loading...' : 'Refresh'}
+                  {loadingEmbeddings ? 'Loading...' : 'Refresh'}
                 </button>
               )}
             </div>
@@ -191,7 +232,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
               <div className="text-text-tertiary text-center py-6 text-sm">
                 Save the bot to see embeddings
               </div>
-            ) : loading ? (
+            ) : loadingEmbeddings ? (
               <div className="space-y-2">
                 <SkeletonList count={3} />
               </div>

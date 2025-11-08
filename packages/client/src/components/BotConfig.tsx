@@ -10,32 +10,15 @@ let tempBotIdCounter = -1;
 export default function BotConfig() {
   const [bots, setBots] = useState<Bot[]>([]);
   const [currentBotId, setCurrentBotId] = useState<number | null>(null);
-  const [currentBot, setCurrentBot] = useState<Bot | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Load all bots with their details on mount
   useEffect(() => {
-    loadBots();
+    loadAllBots();
   }, []);
 
-  useEffect(() => {
-    if (currentBotId) {
-      // Check if it's a temporary bot (negative ID)
-      if (currentBotId < 0) {
-        // Find the temporary bot in the list
-        const tempBot = bots.find((b) => b.id === currentBotId);
-        if (tempBot) {
-          setCurrentBot(tempBot);
-        }
-      } else {
-        loadBot(currentBotId);
-      }
-    } else {
-      setCurrentBot(null);
-    }
-  }, [currentBotId, bots]);
-
-  const loadBots = async () => {
+  const loadAllBots = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -45,26 +28,13 @@ export default function BotConfig() {
         const tempBots = prev.filter((b) => b.id < 0);
         return [...data, ...tempBots];
       });
-      if (data.length > 0 && !currentBotId) {
-        setCurrentBotId(data[0].id);
-      }
+      // Don't preselect any bot - let user select
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to load bots';
       setError(errorMessage);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadBot = async (botId: number) => {
-    try {
-      const bot = await BotService.getBot(botId);
-      setCurrentBot(bot);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to load bot';
-      setError(errorMessage);
     }
   };
 
@@ -94,14 +64,14 @@ export default function BotConfig() {
       return;
     }
     
-    // Update the bot in the list
+    // Update the bot in the list with the saved data
     setBots((prev) => {
       const filtered = prev.filter((b) => b.id !== savedBot.id || b.id >= 0);
       return [savedBot, ...filtered.filter((b) => b.id !== savedBot.id)];
     });
     
     // Reload bots to ensure we have the latest data
-    await loadBots();
+    await loadAllBots();
     
     // Select the saved bot
     setCurrentBotId(savedBot.id);
@@ -112,17 +82,19 @@ export default function BotConfig() {
     if (botId < 0) {
       setBots((prev) => {
         const filtered = prev.filter((b) => b.id !== botId);
-        // Select first real bot or null
-        const realBots = filtered.filter((b) => b.id >= 0);
-        if (realBots.length > 0 && currentBotId === botId) {
-          setCurrentBotId(realBots[0].id);
-        } else if (currentBotId === botId) {
+        // Don't auto-select another bot
+        if (currentBotId === botId) {
           setCurrentBotId(null);
         }
         return filtered;
       });
     }
   };
+
+  // Get current bot from the bots list (instant, no API call)
+  const currentBot = currentBotId
+    ? bots.find((b) => b.id === currentBotId) || null
+    : null;
 
   return (
     <div className="flex flex-col h-full bg-background-secondary rounded-lg shadow-lg overflow-hidden">
