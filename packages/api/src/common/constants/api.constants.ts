@@ -8,7 +8,7 @@ export const DEFAULT_BOT_CONFIG = {
 } as const;
 
 export const MEMORY_CONFIG = {
-  SIMILARITY_THRESHOLD: 0.7,
-  MAX_SIMILAR_MEMORIES: 3,
-  MEMORY_SAVE_INTERVAL: 10,
+  SIMILARITY_THRESHOLD: 0.5, // Lower threshold to find more relevant memories
+  MAX_SIMILAR_MEMORIES: 5, // Increased to get more context
+  MEMORY_SAVE_INTERVAL: 5, // Save more frequently for better memory persistence
 } as const;

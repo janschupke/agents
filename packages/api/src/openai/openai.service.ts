@@ -33,15 +33,21 @@ export class OpenAIService {
       const response = await openai.embeddings.create({
         model: 'text-embedding-3-small',
         input: text,
+        dimensions: 1536, // Explicitly set dimensions to ensure consistency
       });
 
       if (response.data && response.data.length > 0) {
-        return response.data[0].embedding;
+        const embedding = response.data[0].embedding;
+        if (embedding.length !== 1536) {
+          console.warn(`Warning: Expected embedding dimension 1536, got ${embedding.length}`);
+        }
+        return embedding;
       }
 
       throw new Error('No embedding returned from OpenAI');
     } catch (error) {
       const err = error as { message?: string };
+      console.error('Error generating embedding:', err.message || 'Unknown error');
       throw new Error(
         `Failed to generate embedding: ${err.message || 'Unknown error'}`
       );

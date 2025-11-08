@@ -19,22 +19,65 @@ export class MemoryRepository {
     chunk: string,
     vector?: number[]
   ): Promise<MemoryChunk> {
-    // For vector operations, we need to use raw SQL since Prisma doesn't fully support pgvector
-    const vectorJson = vector ? JSON.stringify(vector) : null;
-    const vectorEmbedding = vector ? `[${vector.join(',')}]` : null;
+    if (!vector || vector.length === 0) {
+      throw new Error('Vector is required for memory chunk creation');
+    }
 
-    // Use raw SQL for pgvector support
-    const result = await this.prisma.$queryRawUnsafe<MemoryChunk[]>(
-      `INSERT INTO memory_chunks (session_id, chunk, vector, vector_embedding)
-       VALUES ($1, $2, $3::real[], $4::vector(1536))
-       RETURNING *`,
-      sessionId,
-      chunk,
-      vectorJson,
-      vectorEmbedding
-    );
+    if (vector.length !== 1536) {
+      console.warn(`Warning: Vector length is ${vector.length}, expected 1536. Attempting to proceed...`);
+      // Don't throw, but log a warning - some embedding models might return different dimensions
+    }
 
-    return result[0];
+    // Format vector for PostgreSQL vector type: '[0.1,0.2,0.3]'
+    const vectorString = `[${vector.join(',')}]`;
+    // Format vector for REAL[] type (backup) - PostgreSQL expects array format
+    const vectorArray = vector;
+
+    try {
+      // Use raw SQL for pgvector support
+      // Note: We need to properly escape and format the vector string
+      const result = await this.prisma.$queryRawUnsafe<Array<{
+        id: number;
+        session_id: number;
+        chunk: string;
+        vector: any;
+        vector_embedding: any;
+        created_at: Date;
+      }>>(
+        `INSERT INTO memory_chunks (session_id, chunk, vector, vector_embedding)
+         VALUES ($1, $2, $3::real[], $4::vector(1536))
+         RETURNING id, session_id, chunk, vector, vector_embedding, created_at`,
+        sessionId,
+        chunk,
+        vectorArray,
+        vectorString
+      );
+
+      if (!result || result.length === 0) {
+        throw new Error('Failed to create memory chunk: no result returned');
+      }
+
+      const created = result[0];
+      console.log(`Successfully created memory chunk ${created.id} for session ${sessionId}`);
+
+      // Return in Prisma MemoryChunk format
+      return {
+        id: created.id,
+        sessionId: created.session_id,
+        chunk: created.chunk,
+        vector: vectorArray as any, // Prisma Unsupported type
+        vectorEmbedding: null as any, // Prisma Unsupported type - will be stored in DB
+        createdAt: created.created_at,
+      } as MemoryChunk;
+    } catch (error) {
+      console.error('Error creating memory chunk:', error);
+      console.error('Session ID:', sessionId);
+      console.error('Chunk length:', chunk.length);
+      console.error('Chunk preview:', chunk.substring(0, 100));
+      console.error('Vector length:', vector.length);
+      console.error('Vector preview:', vector.slice(0, 5));
+      throw error;
+    }
   }
 
   async findAllBySessionId(
@@ -142,10 +185,12 @@ export class MemoryRepository {
     topK: number = 5,
     threshold: number = 0.7
   ): Promise<MemoryChunkWithVector[]> {
+    // Format vector for PostgreSQL vector type: '[0.1,0.2,0.3]'
     const vectorString = `[${queryVector.join(',')}]`;
 
     try {
       // Try using the pgvector function via raw SQL
+      // Note: PostgreSQL vector type requires the format '[0.1,0.2,0.3]' as a string
       const results = await this.prisma.$queryRawUnsafe<
         Array<{
           id: number;
@@ -171,18 +216,28 @@ export class MemoryRepository {
         topK
       );
 
-      return results.map((r) => ({
-        id: r.id,
-        sessionId: r.session_id,
-        chunk: r.chunk,
-        vector: queryVector,
-        createdAt: new Date(),
-      }));
+      if (results && results.length > 0) {
+        console.log(`Found ${results.length} similar memories for bot ${botId}, user ${userId}`);
+        return results.map((r) => ({
+          id: r.id,
+          sessionId: r.session_id,
+          chunk: r.chunk,
+          vector: queryVector, // Use query vector as reference
+          createdAt: new Date(),
+        }));
+      }
+      
+      return [];
     } catch (error) {
       // Fallback to in-memory search if pgvector is not available
-      console.warn('pgvector search not available, using in-memory search');
-      const allMemories = await this.findAllByBotIdAndUserId(botId, userId, 100);
-      return this.findSimilarInMemory(queryVector, allMemories, topK, threshold);
+      console.warn('pgvector search failed, using in-memory search:', error);
+      try {
+        const allMemories = await this.findAllByBotIdAndUserId(botId, userId, 100);
+        return this.findSimilarInMemory(queryVector, allMemories, topK, threshold);
+      } catch (fallbackError) {
+        console.error('In-memory search also failed:', fallbackError);
+        return [];
+      }
     }
   }
 

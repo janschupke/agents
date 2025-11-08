@@ -160,9 +160,11 @@ export class ChatService {
       );
       if (similar.length > 0) {
         relevantMemories = similar.map((m: { chunk: string }) => m.chunk);
+        console.log(`Found ${relevantMemories.length} relevant memories for bot ${botId}`);
       }
     } catch (error) {
-      // Ignore memory errors
+      console.error('Error retrieving memories:', error);
+      // Continue without memories if retrieval fails
     }
 
     // Prepare messages for OpenAI
@@ -254,18 +256,32 @@ export class ChatService {
       completion
     );
 
-    // Save memory chunk periodically
+    // Save memory chunk periodically (every N messages, or on first message)
     const allMessages =
       await this.messageRepository.findAllBySessionIdForOpenAI(session.id);
-    if (allMessages.length > 0 && allMessages.length % MEMORY_CONFIG.MEMORY_SAVE_INTERVAL === 0) {
+    const shouldSaveMemory = 
+      allMessages.length === 1 || // Save on first message
+      (allMessages.length > 0 && allMessages.length % MEMORY_CONFIG.MEMORY_SAVE_INTERVAL === 0);
+    
+    if (shouldSaveMemory) {
       try {
         const chunk = this.openaiService.createMemoryChunkFromMessages(
           allMessages
         );
-        const embedding = await this.openaiService.generateEmbedding(chunk, apiKey);
-        await this.memoryRepository.create(session.id, chunk, embedding);
+        if (chunk && chunk.trim().length > 0) {
+          const embedding = await this.openaiService.generateEmbedding(chunk, apiKey);
+          if (embedding && embedding.length > 0) {
+            await this.memoryRepository.create(session.id, chunk, embedding);
+            console.log(`Saved memory chunk for session ${session.id} (${allMessages.length} messages)`);
+          } else {
+            console.warn('Empty embedding generated, skipping memory save');
+          }
+        } else {
+          console.warn('Empty chunk generated, skipping memory save');
+        }
       } catch (error) {
-        // Ignore memory save errors
+        console.error('Error saving memory chunk:', error);
+        // Continue even if memory save fails
       }
     }
 
