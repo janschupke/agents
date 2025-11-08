@@ -3,10 +3,12 @@ import { useUser } from '@clerk/clerk-react';
 import ChatBot from './components/ChatBot';
 import BotConfig from './components/BotConfig';
 import AuthButtons from './components/AuthButtons';
+import UserDropdown from './components/UserDropdown';
+import UserProfile from './components/UserProfile';
 import { UserService } from './services/user.service';
 import { User } from './types/chat.types';
 
-type View = 'chat' | 'config';
+type View = 'chat' | 'config' | 'profile';
 
 function App() {
   const [view, setView] = useState<View>('chat');
@@ -50,20 +52,6 @@ function App() {
         <div className="flex items-center gap-4">
           {isLoaded && isSignedIn && (
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                {(userInfo?.imageUrl || clerkUser?.imageUrl) && (
-                  <img
-                    src={userInfo?.imageUrl || clerkUser?.imageUrl || ''}
-                    alt="User"
-                    className="w-8 h-8 rounded-full"
-                  />
-                )}
-                <div className="text-sm text-text-secondary">
-                  {userInfo?.firstName || userInfo?.lastName
-                    ? `${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim()
-                    : userInfo?.email || clerkUser?.primaryEmailAddress?.emailAddress || 'User'}
-                </div>
-              </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => setView('chat')}
@@ -86,9 +74,13 @@ function App() {
                   Bot Configuration
                 </button>
               </div>
+              <UserDropdown
+                userInfo={userInfo}
+                onProfileClick={() => setView('profile')}
+              />
             </div>
           )}
-          <AuthButtons />
+          {!isSignedIn && <AuthButtons />}
         </div>
       </header>
       <main className="flex-1 flex justify-center items-start p-8 overflow-hidden">
@@ -110,11 +102,15 @@ function App() {
           </div>
         ) : view === 'chat' ? (
           <ChatBot />
-        ) : (
+        ) : view === 'config' ? (
           <div className="w-full max-w-7xl h-full">
             <BotConfig />
           </div>
-        )}
+        ) : view === 'profile' ? (
+          <div className="w-full flex justify-center items-start p-8 overflow-y-auto">
+            <UserProfile onClose={() => setView('chat')} />
+          </div>
+        ) : null}
       </main>
     </div>
   );
