@@ -8,8 +8,8 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { ChatService } from './chat.service.js';
-import { SendMessageDto } from '../common/dto/send-message.dto.js';
+import { ChatService } from './chat.service';
+import { SendMessageDto } from '../common/dto/send-message.dto';
 
 @Controller('api/chat')
 export class ChatController {

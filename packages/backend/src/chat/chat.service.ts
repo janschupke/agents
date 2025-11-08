@@ -1,10 +1,10 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { BotRepository } from '../../bot/repository/bot.repository.js';
-import { SessionRepository } from '../../session/repository/session.repository.js';
-import { MessageRepository } from '../../message/repository/message.repository.js';
-import { MemoryRepository } from '../../memory/repository/memory.repository.js';
-import { OpenAIService } from '../../openai/openai.service.js';
-import { MEMORY_CONFIG } from '../../common/constants/api.constants.js';
+import { BotRepository } from '../bot/repository/bot.repository';
+import { SessionRepository } from '../session/repository/session.repository';
+import { MessageRepository } from '../message/repository/message.repository';
+import { MemoryRepository } from '../memory/repository/memory.repository';
+import { OpenAIService } from '../openai/openai.service';
+import { MEMORY_CONFIG } from '../common/constants/api.constants';
 import OpenAI from 'openai';
 
 @Injectable()
@@ -79,7 +79,7 @@ export class ChatService {
         MEMORY_CONFIG.SIMILARITY_THRESHOLD
       );
       if (similar.length > 0) {
-        relevantMemories = similar.map((m) => m.chunk);
+        relevantMemories = similar.map((m: { chunk: string }) => m.chunk);
       }
     } catch (error) {
       // Ignore memory errors

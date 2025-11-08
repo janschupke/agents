@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { ChatService } from './chat.service.js';
-import { BotRepository } from '../bot/repository/bot.repository.js';
-import { SessionRepository } from '../session/repository/session.repository.js';
-import { MessageRepository } from '../message/repository/message.repository.js';
-import { MemoryRepository } from '../memory/repository/memory.repository.js';
-import { OpenAIService } from '../openai/openai.service.js';
+import { ChatService } from './chat.service';
+import { BotRepository } from '../bot/repository/bot.repository';
+import { SessionRepository } from '../session/repository/session.repository';
+import { MessageRepository } from '../message/repository/message.repository';
+import { MemoryRepository } from '../memory/repository/memory.repository';
+import { OpenAIService } from '../openai/openai.service';
 
 describe('ChatService', () => {
   let service: ChatService;

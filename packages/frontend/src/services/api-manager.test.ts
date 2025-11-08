@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ApiManager, ApiError } from './api-manager.js';
+import { ApiManager } from './api-manager.js';
 
 // Mock fetch globally
 global.fetch = vi.fn();
