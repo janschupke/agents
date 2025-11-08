@@ -26,6 +26,42 @@ export class UserController {
     private readonly clerkService: ClerkService,
   ) {}
 
+  @Get('all')
+  async getAllUsers(@Request() req: AuthenticatedRequest) {
+    if (!req.user?.id) {
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    }
+
+    // Check if user has admin role
+    const roles = req.user.roles || [];
+    if (!roles.includes('admin')) {
+      throw new HttpException('Forbidden: Admin access required', HttpStatus.FORBIDDEN);
+    }
+
+    try {
+      const users = await this.userService.findAll();
+      return users.map((user) => ({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        imageUrl: user.imageUrl,
+        roles: (user.roles as any) || [],
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      }));
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      const err = error as { message?: string };
+      throw new HttpException(
+        err.message || 'Unknown error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   @Get('me')
   async getCurrentUser(@Request() req: AuthenticatedRequest) {
     if (!req.user?.id) {

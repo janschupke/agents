@@ -43,4 +43,8 @@ export class UserService {
     const roles = clerkRoles && clerkRoles.length > 0 ? clerkRoles : ['user'];
     return this.userRepository.updateRoles(id, roles);
   }
+
+  async findAll(): Promise<User[]> {
+    return this.userRepository.findAll();
+  }
 }
