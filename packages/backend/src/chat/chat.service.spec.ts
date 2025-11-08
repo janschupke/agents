@@ -6,6 +6,7 @@ import { SessionRepository } from '../session/repository/session.repository';
 import { MessageRepository } from '../message/repository/message.repository';
 import { MemoryRepository } from '../memory/repository/memory.repository';
 import { OpenAIService } from '../openai/openai.service';
+import { UserService } from '../user/user.service';
 
 describe('ChatService', () => {
   let service: ChatService;
@@ -41,6 +42,10 @@ describe('ChatService', () => {
     createMemoryChunkFromMessages: jest.fn(),
   };
 
+  const mockUserService = {
+    findById: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -65,6 +70,10 @@ describe('ChatService', () => {
           provide: OpenAIService,
           useValue: mockOpenAIService,
         },
+        {
+          provide: UserService,
+          useValue: mockUserService,
+        },
       ],
     }).compile();
 
@@ -87,6 +96,7 @@ describe('ChatService', () => {
   describe('getChatHistory', () => {
     it('should return chat history for existing bot', async () => {
       const botId = 1;
+      const userId = 'user-123';
       const mockBot = {
         id: botId,
         name: 'Test Bot',
@@ -109,7 +119,7 @@ describe('ChatService', () => {
         mockMessages,
       );
 
-      const result = await service.getChatHistory(botId);
+      const result = await service.getChatHistory(botId, userId);
 
       expect(result).toEqual({
         bot: {
@@ -127,6 +137,7 @@ describe('ChatService', () => {
 
     it('should create session if not exists', async () => {
       const botId = 1;
+      const userId = 'user-123';
       const mockBot = {
         id: botId,
         name: 'Test Bot',
@@ -144,19 +155,20 @@ describe('ChatService', () => {
       mockSessionRepository.create.mockResolvedValue(mockSession);
       mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue([]);
 
-      await service.getChatHistory(botId);
+      await service.getChatHistory(botId, userId);
 
-      expect(mockSessionRepository.create).toHaveBeenCalledWith(botId);
+      expect(mockSessionRepository.create).toHaveBeenCalledWith(userId, botId);
     });
 
     it('should throw HttpException if bot not found', async () => {
       const botId = 1;
+      const userId = 'user-123';
       mockBotRepository.findByIdWithConfig.mockResolvedValue(null);
 
-      await expect(service.getChatHistory(botId)).rejects.toThrow(
+      await expect(service.getChatHistory(botId, userId)).rejects.toThrow(
         HttpException,
       );
-      await expect(service.getChatHistory(botId)).rejects.toThrow(
+      await expect(service.getChatHistory(botId, userId)).rejects.toThrow(
         'Bot not found',
       );
     });
@@ -165,10 +177,11 @@ describe('ChatService', () => {
   describe('sendMessage', () => {
     it('should throw HttpException if bot not found', async () => {
       const botId = 1;
+      const userId = 'user-123';
       const message = 'Hello';
       mockBotRepository.findByIdWithConfig.mockResolvedValue(null);
 
-      await expect(service.sendMessage(botId, message)).rejects.toThrow(
+      await expect(service.sendMessage(botId, userId, message)).rejects.toThrow(
         HttpException,
       );
     });

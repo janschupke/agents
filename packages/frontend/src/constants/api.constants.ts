@@ -12,5 +12,6 @@ export const API_ENDPOINTS = {
   BOT_EMBEDDINGS: (botId: number) => `/api/bots/${botId}/embeddings`,
   BOT_EMBEDDING: (botId: number, embeddingId: number) =>
     `/api/bots/${botId}/embeddings/${embeddingId}`,
+  USER_ME: '/api/user/me',
   HEALTHCHECK: '/api/healthcheck',
 } as const;

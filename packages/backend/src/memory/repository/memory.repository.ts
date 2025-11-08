@@ -101,9 +101,44 @@ export class MemoryRepository {
     }));
   }
 
+  async findAllByBotIdAndUserId(
+    botId: number,
+    userId: string,
+    limit?: number
+  ): Promise<MemoryChunkWithVector[]> {
+    // Use raw query to get vector data since it's Unsupported type in Prisma
+    const chunks = await this.prisma.$queryRawUnsafe<
+      Array<{
+        id: number;
+        session_id: number;
+        chunk: string;
+        vector: any;
+        created_at: Date;
+      }>
+    >(
+      `SELECT mc.id, mc.session_id, mc.chunk, mc.vector, mc.created_at
+       FROM memory_chunks mc
+       INNER JOIN chat_sessions cs ON mc.session_id = cs.id
+       WHERE cs.bot_id = $1 AND cs.user_id = $2
+       ORDER BY mc.created_at DESC
+       ${limit ? `LIMIT ${limit}` : ''}`,
+      botId,
+      userId
+    );
+
+    return chunks.map((chunk) => ({
+      id: chunk.id,
+      sessionId: chunk.session_id,
+      chunk: chunk.chunk,
+      vector: this.parseVector(chunk.vector),
+      createdAt: chunk.created_at,
+    }));
+  }
+
   async findSimilarForBot(
     queryVector: number[],
     botId: number,
+    userId: string,
     topK: number = 5,
     threshold: number = 0.7
   ): Promise<MemoryChunkWithVector[]> {
@@ -123,14 +158,15 @@ export class MemoryRepository {
          1 - (vector_embedding <=> $1::vector(1536)) as similarity
          FROM memory_chunks
          WHERE session_id IN (
-           SELECT id FROM chat_sessions WHERE bot_id = $2
+           SELECT id FROM chat_sessions WHERE bot_id = $2 AND user_id = $3
          )
          AND vector_embedding IS NOT NULL
-         AND 1 - (vector_embedding <=> $1::vector(1536)) >= $3
+         AND 1 - (vector_embedding <=> $1::vector(1536)) >= $4
          ORDER BY vector_embedding <=> $1::vector(1536)
-         LIMIT $4`,
+         LIMIT $5`,
         vectorString,
         botId,
+        userId,
         threshold,
         topK
       );
@@ -145,7 +181,7 @@ export class MemoryRepository {
     } catch (error) {
       // Fallback to in-memory search if pgvector is not available
       console.warn('pgvector search not available, using in-memory search');
-      const allMemories = await this.findAllByBotId(botId, 100);
+      const allMemories = await this.findAllByBotIdAndUserId(botId, userId, 100);
       return this.findSimilarInMemory(queryVector, allMemories, topK, threshold);
     }
   }

@@ -4,9 +4,10 @@ import { BotService } from './bot.service';
 import { BotRepository } from './repository/bot.repository';
 import { MemoryRepository } from '../memory/repository/memory.repository';
 import { PrismaModule } from '../prisma/prisma.module';
+import { UserModule } from '../user/user.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, UserModule],
   controllers: [BotController],
   providers: [BotService, BotRepository, MemoryRepository],
   exports: [BotRepository],

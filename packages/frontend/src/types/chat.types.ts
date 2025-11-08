@@ -4,7 +4,7 @@ export interface Message {
 }
 
 export interface ChatBotProps {
-  botId: number;
+  botId?: number;
 }
 
 export interface Session {
@@ -60,4 +60,12 @@ export interface CreateBotRequest {
 export interface UpdateBotRequest {
   name: string;
   description?: string;
+}
+
+export interface User {
+  id: string;
+  email: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  imageUrl: string | null;
 }

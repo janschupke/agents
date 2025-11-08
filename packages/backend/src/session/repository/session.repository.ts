@@ -6,9 +6,14 @@ import { ChatSession } from '@prisma/client';
 export class SessionRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(botId: number, sessionName?: string): Promise<ChatSession> {
+  async create(
+    userId: string,
+    botId: number,
+    sessionName?: string,
+  ): Promise<ChatSession> {
     return this.prisma.chatSession.create({
       data: {
+        userId,
         botId,
         sessionName: sessionName || null,
       },
@@ -21,16 +26,31 @@ export class SessionRepository {
     });
   }
 
-  async findLatestByBotId(botId: number): Promise<ChatSession | null> {
+  async findByIdAndUserId(
+    id: number,
+    userId: string,
+  ): Promise<ChatSession | null> {
     return this.prisma.chatSession.findFirst({
-      where: { botId },
+      where: { id, userId },
+    });
+  }
+
+  async findLatestByBotId(
+    botId: number,
+    userId: string,
+  ): Promise<ChatSession | null> {
+    return this.prisma.chatSession.findFirst({
+      where: { botId, userId },
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  async findAllByBotId(botId: number): Promise<ChatSession[]> {
+  async findAllByBotId(
+    botId: number,
+    userId: string,
+  ): Promise<ChatSession[]> {
     return this.prisma.chatSession.findMany({
-      where: { botId },
+      where: { botId, userId },
       orderBy: { createdAt: 'desc' },
     });
   }

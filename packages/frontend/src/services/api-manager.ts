@@ -83,6 +83,9 @@ export class ApiManager {
     
     // Get Clerk token if available
     const token = await getClerkToken();
+    if (!token) {
+      console.warn('No Clerk token available for request to:', endpoint);
+    }
     const headers = {
       ...this.defaultHeaders,
       ...(token && { Authorization: `Bearer ${token}` }),

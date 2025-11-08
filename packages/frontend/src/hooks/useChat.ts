@@ -3,7 +3,7 @@ import { ChatService } from '../services/chat.service.js';
 import { Message, Session } from '../types/chat.types.js';
 
 interface UseChatOptions {
-  botId: number;
+  botId?: number;
   onError?: (error: Error) => void;
 }
 
@@ -19,6 +19,7 @@ export function useChat({ botId, onError }: UseChatOptions) {
 
   const loadChatHistory = useCallback(
     async (sessionId?: number) => {
+      if (!botId) return;
       try {
         const data = await ChatService.getChatHistory(botId, sessionId);
         setMessages(data.messages || []);
@@ -41,6 +42,7 @@ export function useChat({ botId, onError }: UseChatOptions) {
   );
 
   const loadSessions = useCallback(async () => {
+    if (!botId) return;
     setSessionsLoading(true);
     try {
       const sessionsData = await ChatService.getSessions(botId);
@@ -94,6 +96,7 @@ export function useChat({ botId, onError }: UseChatOptions) {
   };
 
   const handleNewSession = async () => {
+    if (!botId) return;
     setSessionsLoading(true);
     try {
       const newSession = await ChatService.createSession(botId);
@@ -110,7 +113,7 @@ export function useChat({ botId, onError }: UseChatOptions) {
   };
 
   const sendMessage = async (message: string) => {
-    if (!message.trim() || loading) return;
+    if (!message.trim() || loading || !botId) return;
 
     const userMessage: Message = { role: 'user', content: message };
     setMessages((prev) => [...prev, userMessage]);

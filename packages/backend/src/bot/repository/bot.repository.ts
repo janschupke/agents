@@ -14,9 +14,15 @@ export class BotRepository {
     });
   }
 
-  async findByName(name: string): Promise<Bot | null> {
+  async findByIdAndUserId(id: number, userId: string): Promise<Bot | null> {
     return this.prisma.bot.findFirst({
-      where: { name },
+      where: { id, userId },
+    });
+  }
+
+  async findByName(name: string, userId: string): Promise<Bot | null> {
+    return this.prisma.bot.findFirst({
+      where: { name, userId },
     });
   }
 
@@ -33,27 +39,16 @@ export class BotRepository {
     return config;
   }
 
-  async findByIdWithConfig(id: number): Promise<BotWithConfig | null> {
-    const bot = await this.findById(id);
+  async findByIdWithConfig(
+    id: number,
+    userId: string,
+  ): Promise<BotWithConfig | null> {
+    const bot = await this.findByIdAndUserId(id, userId);
     if (!bot) {
       return null;
     }
 
     const config = await this.findConfigsByBotId(id);
-
-    return {
-      ...bot,
-      config,
-    };
-  }
-
-  async findByNameWithConfig(name: string): Promise<BotWithConfig | null> {
-    const bot = await this.findByName(name);
-    if (!bot) {
-      return null;
-    }
-
-    const config = await this.findConfigsByBotId(bot.id);
 
     return {
       ...bot,
@@ -70,22 +65,39 @@ export class BotRepository {
     return { ...defaults, ...botConfig };
   }
 
-  async findAll(): Promise<Bot[]> {
+  async findAll(userId: string): Promise<Bot[]> {
     return this.prisma.bot.findMany({
+      where: { userId },
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  async create(name: string, description?: string): Promise<Bot> {
+  async create(
+    userId: string,
+    name: string,
+    description?: string,
+  ): Promise<Bot> {
     return this.prisma.bot.create({
       data: {
+        userId,
         name,
         description: description || null,
       },
     });
   }
 
-  async update(id: number, name: string, description?: string): Promise<Bot> {
+  async update(
+    id: number,
+    userId: string,
+    name: string,
+    description?: string,
+  ): Promise<Bot> {
+    // First verify the bot belongs to the user
+    const bot = await this.findByIdAndUserId(id, userId);
+    if (!bot) {
+      return null as any; // Will be handled by service
+    }
+
     return this.prisma.bot.update({
       where: { id },
       data: {

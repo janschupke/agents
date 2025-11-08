@@ -4,6 +4,7 @@ import { SessionRepository } from '../session/repository/session.repository';
 import { MessageRepository } from '../message/repository/message.repository';
 import { MemoryRepository } from '../memory/repository/memory.repository';
 import { OpenAIService } from '../openai/openai.service';
+import { UserService } from '../user/user.service';
 import { MEMORY_CONFIG } from '../common/constants/api.constants';
 import OpenAI from 'openai';
 
@@ -14,18 +15,19 @@ export class ChatService {
     private readonly sessionRepository: SessionRepository,
     private readonly messageRepository: MessageRepository,
     private readonly memoryRepository: MemoryRepository,
-    private readonly openaiService: OpenAIService
+    private readonly openaiService: OpenAIService,
+    private readonly userService: UserService,
   ) {}
 
-  async getSessions(botId: number) {
+  async getSessions(botId: number, userId: string) {
     // Load bot with config
-    const bot = await this.botRepository.findByIdWithConfig(botId);
+    const bot = await this.botRepository.findByIdWithConfig(botId, userId);
     if (!bot) {
       throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
     }
 
-    // Get all sessions for this bot
-    const sessions = await this.sessionRepository.findAllByBotId(botId);
+    // Get all sessions for this bot and user
+    const sessions = await this.sessionRepository.findAllByBotId(botId, userId);
 
     return sessions.map((session) => ({
       id: session.id,
@@ -34,15 +36,17 @@ export class ChatService {
     }));
   }
 
-  async createSession(botId: number) {
+  async createSession(botId: number, userId: string) {
+    // User will be created automatically by controller's ensureUser method
+
     // Load bot with config
-    const bot = await this.botRepository.findByIdWithConfig(botId);
+    const bot = await this.botRepository.findByIdWithConfig(botId, userId);
     if (!bot) {
       throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
     }
 
     // Create new session
-    const session = await this.sessionRepository.create(botId);
+    const session = await this.sessionRepository.create(userId, botId);
 
     return {
       id: session.id,
@@ -51,9 +55,9 @@ export class ChatService {
     };
   }
 
-  async getChatHistory(botId: number, sessionId?: number) {
+  async getChatHistory(botId: number, userId: string, sessionId?: number) {
     // Load bot with config
-    const bot = await this.botRepository.findByIdWithConfig(botId);
+    const bot = await this.botRepository.findByIdWithConfig(botId, userId);
     if (!bot) {
       throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
     }
@@ -61,14 +65,14 @@ export class ChatService {
     // Get or create session
     let session;
     if (sessionId) {
-      session = await this.sessionRepository.findById(sessionId);
+      session = await this.sessionRepository.findByIdAndUserId(sessionId, userId);
       if (!session || session.botId !== botId) {
         throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
       }
     } else {
-      session = await this.sessionRepository.findLatestByBotId(botId);
+      session = await this.sessionRepository.findLatestByBotId(botId, userId);
       if (!session) {
-        session = await this.sessionRepository.create(botId);
+        session = await this.sessionRepository.create(userId, botId);
       }
     }
 
@@ -91,9 +95,16 @@ export class ChatService {
     };
   }
 
-  async sendMessage(botId: number, message: string, sessionId?: number) {
+  async sendMessage(
+    botId: number,
+    userId: string,
+    message: string,
+    sessionId?: number,
+  ) {
+    // User will be created automatically by controller's ensureUser method
+
     // Load bot with config
-    const bot = await this.botRepository.findByIdWithConfig(botId);
+    const bot = await this.botRepository.findByIdWithConfig(botId, userId);
     if (!bot) {
       throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
     }
@@ -103,14 +114,14 @@ export class ChatService {
     // Get or create session
     let session;
     if (sessionId) {
-      session = await this.sessionRepository.findById(sessionId);
+      session = await this.sessionRepository.findByIdAndUserId(sessionId, userId);
       if (!session || session.botId !== botId) {
         throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
       }
     } else {
-      session = await this.sessionRepository.findLatestByBotId(botId);
+      session = await this.sessionRepository.findLatestByBotId(botId, userId);
       if (!session) {
-        session = await this.sessionRepository.create(botId);
+        session = await this.sessionRepository.create(userId, botId);
       }
     }
 
@@ -125,6 +136,7 @@ export class ChatService {
       const similar = await this.memoryRepository.findSimilarForBot(
         queryVector,
         botId,
+        userId,
         MEMORY_CONFIG.MAX_SIMILAR_MEMORIES,
         MEMORY_CONFIG.SIMILARITY_THRESHOLD
       );

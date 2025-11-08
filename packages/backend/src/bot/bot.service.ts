@@ -1,27 +1,31 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { BotRepository } from './repository/bot.repository';
 import { MemoryRepository } from '../memory/repository/memory.repository';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class BotService {
   constructor(
     private readonly botRepository: BotRepository,
     private readonly memoryRepository: MemoryRepository,
+    private readonly userService: UserService,
   ) {}
 
-  async findAll() {
-    return this.botRepository.findAll();
+  async findAll(userId: string) {
+    return this.botRepository.findAll(userId);
   }
 
-  async findById(id: number) {
-    const bot = await this.botRepository.findByIdWithConfig(id);
+  async findById(id: number, userId: string) {
+    const bot = await this.botRepository.findByIdWithConfig(id, userId);
     if (!bot) {
       throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
     }
     return bot;
   }
 
-  async create(name: string, description?: string) {
+  async create(userId: string, name: string, description?: string) {
+    // User will be created automatically by controller's ensureUser method
+
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       throw new HttpException(
         'Bot name is required',
@@ -29,7 +33,7 @@ export class BotService {
       );
     }
 
-    const existingBot = await this.botRepository.findByName(name);
+    const existingBot = await this.botRepository.findByName(name, userId);
     if (existingBot) {
       throw new HttpException(
         'Bot with this name already exists',
@@ -37,11 +41,11 @@ export class BotService {
       );
     }
 
-    return this.botRepository.create(name, description);
+    return this.botRepository.create(userId, name, description);
   }
 
-  async update(id: number, name: string, description?: string) {
-    const bot = await this.botRepository.findById(id);
+  async update(id: number, userId: string, name: string, description?: string) {
+    const bot = await this.botRepository.findByIdAndUserId(id, userId);
     if (!bot) {
       throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
     }
@@ -55,7 +59,7 @@ export class BotService {
 
     // Check if name is being changed and if it conflicts with another bot
     if (name !== bot.name) {
-      const existingBot = await this.botRepository.findByName(name);
+      const existingBot = await this.botRepository.findByName(name, userId);
       if (existingBot && existingBot.id !== id) {
         throw new HttpException(
           'Bot with this name already exists',
@@ -64,16 +68,20 @@ export class BotService {
       }
     }
 
-    return this.botRepository.update(id, name, description);
+    const updated = await this.botRepository.update(id, userId, name, description);
+    if (!updated) {
+      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+    }
+    return updated;
   }
 
-  async getEmbeddings(botId: number) {
-    const bot = await this.botRepository.findById(botId);
+  async getEmbeddings(botId: number, userId: string) {
+    const bot = await this.botRepository.findByIdAndUserId(botId, userId);
     if (!bot) {
       throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
     }
 
-    const embeddings = await this.memoryRepository.findAllByBotId(botId);
+    const embeddings = await this.memoryRepository.findAllByBotIdAndUserId(botId, userId);
     return embeddings.map((embedding) => ({
       id: embedding.id,
       sessionId: embedding.sessionId,
@@ -82,14 +90,14 @@ export class BotService {
     }));
   }
 
-  async deleteEmbedding(botId: number, embeddingId: number) {
-    const bot = await this.botRepository.findById(botId);
+  async deleteEmbedding(botId: number, embeddingId: number, userId: string) {
+    const bot = await this.botRepository.findByIdAndUserId(botId, userId);
     if (!bot) {
       throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
     }
 
-    // Verify the embedding belongs to a session of this bot
-    const embeddings = await this.memoryRepository.findAllByBotId(botId);
+    // Verify the embedding belongs to a session of this bot and user
+    const embeddings = await this.memoryRepository.findAllByBotIdAndUserId(botId, userId);
     const embedding = embeddings.find((e) => e.id === embeddingId);
 
     if (!embedding) {

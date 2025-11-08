@@ -6,18 +6,36 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")      // Pooler connection for regular queries
+  directUrl = env("DIRECT_URL")        // Direct connection for migrations
+}
+
+model User {
+  id            String   @id // Clerk user ID
+  email         String?
+  firstName     String?  @map("first_name")
+  lastName      String?  @map("last_name")
+  imageUrl      String?  @map("image_url")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  bots          Bot[]
+  chatSessions  ChatSession[]
+
+  @@map("users")
 }
 
 model Bot {
   id          Int      @id @default(autoincrement())
+  userId      String   @map("user_id")
   name        String
   description String?
   createdAt   DateTime @default(now()) @map("created_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   configs     BotConfig[]
   sessions    ChatSession[]
 
+  @@index([userId])
   @@map("bots")
 }
 
@@ -35,13 +53,17 @@ model BotConfig {
 
 model ChatSession {
   id          Int      @id @default(autoincrement())
+  userId      String   @map("user_id")
   botId       Int      @map("bot_id")
   sessionName String?  @map("session_name")
   createdAt   DateTime @default(now()) @map("created_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   bot         Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
   messages    Message[]
   memoryChunks MemoryChunk[]
 
+  @@index([userId])
+  @@index([botId])
   @@map("chat_sessions")
 }
 

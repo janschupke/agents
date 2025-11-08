@@ -32,21 +32,32 @@ pnpm install
 Create `.env` file in `packages/backend/`:
 
 ```
-DATABASE_URL=postgresql://postgres:[password]@db.[project-ref].supabase.co:5432/postgres
+# Pooler connection for regular queries (better for connection pooling)
+DATABASE_URL=postgresql://postgres:[password]@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?pgbouncer=true
+
+# Direct connection for migrations (required for Prisma migrations)
+DIRECT_URL=postgresql://postgres:[password]@aws-1-ap-southeast-1.compute.amazonaws.com:5432/postgres
+
 OPENAI_API_KEY=your-openai-api-key
+CLERK_SECRET_KEY=your-clerk-secret-key
 PORT=3001
 ```
 
-**Finding DATABASE_URL in Supabase:**
+**Finding Connection Strings in Supabase:**
 
 1. Go to your Supabase project dashboard
 2. Navigate to **Settings** → **Database**
-3. Under **Connection string**, select **Transaction** mode (for Prisma migrations) or **Session** mode (for connection pooling)
-4. Copy the connection string and replace `[YOUR-PASSWORD]` with your database password
-5. For Prisma migrations, use the **Transaction** mode connection string
-6. For production/connection pooling, use the **Session** mode connection string with `?pgbouncer=true`
+3. Under **Connection string**, you'll find two connection modes:
+   - **Session mode** (with `.pooler.` in the URL) → Use for `DATABASE_URL` (regular queries)
+   - **Transaction mode** (direct connection, usually `.compute.amazonaws.com`) → Use for `DIRECT_URL` (migrations)
+4. Copy both connection strings and replace `[YOUR-PASSWORD]` with your database password
+5. Add `?pgbouncer=true` to the pooler connection string (`DATABASE_URL`)
 
-7. Generate Prisma client:
+**Why two connections?**
+- **Pooler connection** (`DATABASE_URL`): Better for regular queries, handles connection pooling efficiently
+- **Direct connection** (`DIRECT_URL`): Required for Prisma migrations, which need a direct database connection without pooling
+
+6. Generate Prisma client:
 
 ```bash
 cd packages/backend

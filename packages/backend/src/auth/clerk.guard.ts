@@ -34,33 +34,65 @@ export class ClerkGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers.authorization;
 
-    // If no auth header, allow request (optional auth for now)
-    // In production, you might want to require auth for protected routes
+    // If no auth header, don't set user (controllers will handle 401)
     if (!authHeader) {
       return true;
     }
 
     try {
       // Extract token from "Bearer <token>" format
-      const token = authHeader.replace('Bearer ', '');
+      const token = authHeader.replace('Bearer ', '').trim();
+      
+      if (!token) {
+        return true;
+      }
       
       // Verify the session token with Clerk
+      // Clerk's getToken() returns a JWT that can be verified with verifyToken
       const session = await verifyToken(token, {
         secretKey: appConfig.clerk.secretKey,
       });
       
-      // Attach user info to request for use in controllers
-      // verifyToken returns a JWT payload with standard claims
-      request.user = {
-        id: (session as any).sub || (session as any).userId || null,
-        sessionId: (session as any).sid || (session as any).sessionId || null,
-      };
+      // Get user ID from session (JWT payload)
+      const userId = (session as any).sub || (session as any).userId;
+      
+      if (!userId) {
+        console.warn('Token verified but no user ID found in session');
+        return true;
+      }
+      
+      // Fetch user details from Clerk
+      try {
+        const clerkUser = await this.clerkClient.users.getUser(userId);
+        // Attach user info to request for use in controllers
+        request.user = {
+          id: userId,
+          email: clerkUser.emailAddresses[0]?.emailAddress || null,
+          firstName: clerkUser.firstName || null,
+          lastName: clerkUser.lastName || null,
+          imageUrl: clerkUser.imageUrl || null,
+        };
+      } catch (userError) {
+        console.warn('Failed to fetch user details from Clerk:', userError);
+        // If we can't fetch user details, still attach the ID
+        request.user = {
+          id: userId,
+          email: null,
+          firstName: null,
+          lastName: null,
+          imageUrl: null,
+        };
+      }
 
       return true;
     } catch (error) {
-      // If token verification fails, allow request but don't set user
-      // This allows optional authentication
+      // If token verification fails, log error but allow request
+      // Controllers will check for req.user and throw 401 if needed
       console.warn('Token verification failed:', error);
+      if (error instanceof Error) {
+        console.warn('Error message:', error.message);
+        console.warn('Error stack:', error.stack);
+      }
       return true;
     }
   }

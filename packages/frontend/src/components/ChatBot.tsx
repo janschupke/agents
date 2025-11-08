@@ -1,8 +1,34 @@
+import { useState, useEffect } from 'react';
 import { useChat } from '../hooks/useChat.js';
 import { ChatBotProps } from '../types/chat.types.js';
 import SessionSidebar from './SessionSidebar.js';
+import { BotService } from '../services/bot.service.js';
 
-export default function ChatBot({ botId }: ChatBotProps) {
+export default function ChatBot({ botId: propBotId }: ChatBotProps) {
+  const [actualBotId, setActualBotId] = useState<number | undefined>(propBotId);
+  const [loadingBot, setLoadingBot] = useState(!propBotId);
+
+  useEffect(() => {
+    if (!propBotId) {
+      // Load first bot for user
+      loadFirstBot();
+    }
+  }, [propBotId]);
+
+  const loadFirstBot = async () => {
+    setLoadingBot(true);
+    try {
+      const bots = await BotService.getAllBots();
+      if (bots.length > 0) {
+        setActualBotId(bots[0].id);
+      }
+    } catch (error) {
+      console.error('Failed to load bots:', error);
+    } finally {
+      setLoadingBot(false);
+    }
+  };
+
   const {
     messages,
     input,
@@ -16,7 +42,17 @@ export default function ChatBot({ botId }: ChatBotProps) {
     sessionsLoading,
     handleSessionSelect,
     handleNewSession,
-  } = useChat({ botId });
+  } = useChat({ botId: actualBotId });
+
+  if (loadingBot || !actualBotId) {
+    return (
+      <div className="flex w-full max-w-6xl h-[600px] bg-background-secondary rounded-lg shadow-lg overflow-hidden items-center justify-center">
+        <div className="text-text-secondary">
+          {loadingBot ? 'Loading...' : 'No bots available. Please create a bot first.'}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex w-full max-w-6xl h-[600px] bg-background-secondary rounded-lg shadow-lg overflow-hidden">

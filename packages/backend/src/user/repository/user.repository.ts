@@ -1,0 +1,59 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { User } from '@prisma/client';
+
+@Injectable()
+export class UserRepository {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async findById(id: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { id },
+    });
+  }
+
+  async create(data: {
+    id: string;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    imageUrl?: string;
+  }): Promise<User> {
+    return this.prisma.user.upsert({
+      where: { id: data.id },
+      update: {
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        imageUrl: data.imageUrl,
+      },
+      create: {
+        id: data.id,
+        email: data.email || null,
+        firstName: data.firstName || null,
+        lastName: data.lastName || null,
+        imageUrl: data.imageUrl || null,
+      },
+    });
+  }
+
+  async update(
+    id: string,
+    data: {
+      email?: string;
+      firstName?: string;
+      lastName?: string;
+      imageUrl?: string;
+    },
+  ): Promise<User> {
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        imageUrl: data.imageUrl,
+      },
+    });
+  }
+}

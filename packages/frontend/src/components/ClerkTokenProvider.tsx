@@ -16,9 +16,12 @@ export default function ClerkTokenProvider({
   useEffect(() => {
     if (isSignedIn) {
       // Set up token getter
+      // getToken() returns a JWT that can be verified by the backend
       tokenProvider.setTokenGetter(async () => {
         try {
-          return await getToken();
+          // Get JWT token (default template)
+          const token = await getToken();
+          return token;
         } catch (error) {
           console.warn('Failed to get Clerk token:', error);
           return null;

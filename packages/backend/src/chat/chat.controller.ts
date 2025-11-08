@@ -8,18 +8,52 @@ import {
   HttpException,
   HttpStatus,
   Query,
+  Request,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { SendMessageDto } from '../common/dto/send-message.dto';
+import { UserService } from '../user/user.service';
+
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    email?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    imageUrl?: string | null;
+  };
+}
 
 @Controller('api/chat')
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly userService: UserService,
+  ) {}
+
+  private async ensureUser(req: AuthenticatedRequest) {
+    if (!req.user?.id) {
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    }
+    // Sync user to DB
+    await this.userService.findOrCreate({
+      id: req.user.id,
+      email: req.user.email || undefined,
+      firstName: req.user.firstName || undefined,
+      lastName: req.user.lastName || undefined,
+      imageUrl: req.user.imageUrl || undefined,
+    });
+    return req.user.id;
+  }
 
   @Get(':botId/sessions')
-  async getSessions(@Param('botId', ParseIntPipe) botId: number) {
+  async getSessions(
+    @Param('botId', ParseIntPipe) botId: number,
+    @Request() req: AuthenticatedRequest,
+  ) {
     try {
-      return await this.chatService.getSessions(botId);
+      const userId = await this.ensureUser(req);
+      return await this.chatService.getSessions(botId, userId);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -33,9 +67,13 @@ export class ChatController {
   }
 
   @Post(':botId/sessions')
-  async createSession(@Param('botId', ParseIntPipe) botId: number) {
+  async createSession(
+    @Param('botId', ParseIntPipe) botId: number,
+    @Request() req: AuthenticatedRequest,
+  ) {
     try {
-      return await this.chatService.createSession(botId);
+      const userId = await this.ensureUser(req);
+      return await this.chatService.createSession(botId, userId);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -51,11 +89,13 @@ export class ChatController {
   @Get(':botId')
   async getChatHistory(
     @Param('botId', ParseIntPipe) botId: number,
+    @Request() req: AuthenticatedRequest,
     @Query('sessionId') sessionId?: string,
   ) {
     try {
+      const userId = await this.ensureUser(req);
       const parsedSessionId = sessionId ? parseInt(sessionId, 10) : undefined;
-      return await this.chatService.getChatHistory(botId, parsedSessionId);
+      return await this.chatService.getChatHistory(botId, userId, parsedSessionId);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -72,6 +112,7 @@ export class ChatController {
   async sendMessage(
     @Param('botId', ParseIntPipe) botId: number,
     @Body() body: SendMessageDto,
+    @Request() req: AuthenticatedRequest,
     @Query('sessionId') sessionId?: string,
   ) {
     if (!body.message || typeof body.message !== 'string') {
@@ -82,8 +123,9 @@ export class ChatController {
     }
 
     try {
+      const userId = await this.ensureUser(req);
       const parsedSessionId = sessionId ? parseInt(sessionId, 10) : undefined;
-      return await this.chatService.sendMessage(botId, body.message, parsedSessionId);
+      return await this.chatService.sendMessage(botId, userId, body.message, parsedSessionId);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
