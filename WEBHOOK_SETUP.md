@@ -17,7 +17,7 @@ This application uses Clerk webhooks to automatically sync user data and roles b
 
 ### 2. Set Environment Variable
 
-Add the webhook secret to your backend `.env` file:
+Add the webhook secret to your API `.env` file:
 
 ```env
 CLERK_WEBHOOK_SECRET=whsec_...
@@ -96,10 +96,10 @@ For testing with actual Clerk webhooks (recommended for integration testing):
    brew install ngrok
    ```
 
-2. **Start your backend:**
+2. **Start your API:**
 
    ```bash
-   cd packages/backend
+   cd packages/api
    pnpm dev
    ```
 
@@ -121,7 +121,7 @@ For testing with actual Clerk webhooks (recommended for integration testing):
 
 5. **Test the webhook:**
    - Create a new user in Clerk
-   - Check your backend logs for webhook events
+   - Check your API logs for webhook events
    - Verify the user was created in your database with roles
 
 ### Option 3: Manual Testing (Without Webhooks)

@@ -1,7 +1,7 @@
 {
-  "name": "frontend",
+  "name": "client",
   "version": "1.0.0",
-  "description": "React frontend for OpenAI chat",
+  "description": "React client for OpenAI chat",
   "type": "module",
   "scripts": {
     "dev": "vite",

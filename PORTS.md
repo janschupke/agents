@@ -4,8 +4,8 @@ This project uses multiple services running on different ports:
 
 ## Port Assignments
 
-- **Backend API**: `3001` (NestJS)
-- **Frontend**: `3000` (Vite/React)
+- **API**: `3001` (NestJS)
+- **Client**: `3000` (Vite/React)
 - **Admin Portal**: `3002` (Vite/React)
 
 ## Running Development Servers
@@ -17,18 +17,18 @@ pnpm dev
 ```
 
 This uses `concurrently` to run all three services with colored output:
-- Backend (blue)
-- Frontend (green)  
+- API (blue)
+- Client (green)  
 - Admin (yellow)
 
 ### Individual Services
 
 ```bash
-# Backend only
-pnpm dev:backend
+# API only
+pnpm dev:api
 
-# Frontend only
-pnpm dev:frontend
+# Client only
+pnpm dev:client
 
 # Admin only
 pnpm dev:admin
@@ -41,10 +41,10 @@ If you encounter `EADDRINUSE` errors:
 ### Check What's Using a Port
 
 ```bash
-# Check port 3001 (backend)
+# Check port 3001 (api)
 lsof -i :3001
 
-# Check port 3000 (frontend)
+# Check port 3000 (client)
 lsof -i :3000
 
 # Check port 3002 (admin)
@@ -63,7 +63,7 @@ kill <PID>
 
 ### Common Issues
 
-1. **Multiple Backend Instances**: If you see multiple `nest start --watch` processes, kill the old ones:
+1. **Multiple API Instances**: If you see multiple `nest start --watch` processes, kill the old ones:
    ```bash
    pkill -f "nest start --watch"
    ```
@@ -78,8 +78,8 @@ kill <PID>
 ## Configuration
 
 Ports are configured in:
-- **Backend**: `packages/backend/src/config/app.config.ts` (default: 3001)
-- **Frontend**: `packages/frontend/vite.config.ts` (default: 3000)
+- **API**: `packages/api/src/config/app.config.ts` (default: 3001)
+- **Client**: `packages/client/vite.config.ts` (default: 3000)
 - **Admin**: `packages/admin/vite.config.ts` (default: 3002)
 
 To change ports, update the respective config files and ensure they don't conflict.

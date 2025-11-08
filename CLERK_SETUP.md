@@ -4,7 +4,7 @@ This application uses Clerk for user authentication. This document describes the
 
 ## Environment Variables
 
-### Frontend (.env or .env.local)
+### Client (.env or .env.local)
 
 Add the following environment variable:
 
@@ -14,7 +14,7 @@ VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
 
 You can find your publishable key in the Clerk Dashboard under API Keys.
 
-### Backend (.env)
+### API (.env)
 
 Add the following environment variable:
 
@@ -32,12 +32,12 @@ You can find your secret key in the Clerk Dashboard under API Keys.
    - Create a new application
 
 2. **Configure Environment Variables**
-   - Add `VITE_CLERK_PUBLISHABLE_KEY` to your frontend `.env` file
-   - Add `CLERK_SECRET_KEY` to your backend `.env` file
+   - Add `VITE_CLERK_PUBLISHABLE_KEY` to your client `.env` file
+   - Add `CLERK_SECRET_KEY` to your API `.env` file
 
 3. **Configure Clerk Application**
    - In the Clerk Dashboard, go to your application settings
-   - Add your frontend URL (e.g., `http://localhost:3000`) to allowed origins
+   - Add your client URL (e.g., `http://localhost:3000`) to allowed origins
    - Configure authentication methods (email, OAuth, etc.) as needed
 
 ## Features
@@ -46,18 +46,18 @@ You can find your secret key in the Clerk Dashboard under API Keys.
 - **Sign In**: Existing users can sign in
 - **Sign Out**: Authenticated users can sign out
 - **Session Management**: Clerk handles session creation and management automatically
-- **Token Verification**: Backend verifies Clerk session tokens on API requests
+- **Token Verification**: API verifies Clerk session tokens on API requests
 
 ## Implementation Details
 
-### Frontend
+### Client
 
 - `ClerkProvider` wraps the app in `main.tsx`
 - `AuthButtons` component provides sign in/up/out UI
 - API requests automatically include Clerk session tokens
 - App shows different UI based on authentication state
 
-### Backend
+### API
 
 - `ClerkGuard` verifies session tokens (optional authentication)
 - User info is attached to requests when token is valid

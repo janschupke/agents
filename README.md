@@ -1,14 +1,15 @@
 # OpenAI Chat Monorepo
 
-A fullstack monorepo with a NestJS backend and React frontend for OpenAI chat functionality.
+A fullstack monorepo with a NestJS API and React client for OpenAI chat functionality.
 
 ## Structure
 
 ```
 .
 ├── packages/
-│   ├── backend/     # NestJS API backend
-│   └── frontend/    # React + Vite frontend
+│   ├── api/         # NestJS API
+│   ├── client/      # React + Vite client
+│   └── admin/       # Admin portal
 ├── pnpm-workspace.yaml
 └── package.json
 ```
@@ -29,7 +30,7 @@ pnpm install
 
 3. Set up environment variables:
 
-Create `.env` file in `packages/backend/`:
+Create `.env` file in `packages/api/`:
 
 ```
 # Pooler connection for regular queries (better for connection pooling)
@@ -60,12 +61,12 @@ PORT=3001
 6. Generate Prisma client:
 
 ```bash
-cd packages/backend
+cd packages/api
 pnpm prisma:generate
 ```
 
-For frontend (optional, for production):
-Create `.env` file in `packages/frontend/`:
+For client (optional, for production):
+Create `.env` file in `packages/client/`:
 
 ```
 VITE_API_URL=http://localhost:3001
@@ -73,7 +74,7 @@ VITE_API_URL=http://localhost:3001
 
 ## Development
 
-Run both backend and frontend in development mode:
+Run API, client, and admin in development mode:
 
 ```bash
 pnpm dev
@@ -81,19 +82,19 @@ pnpm dev
 
 Or run them separately:
 
-Backend:
+API:
 
 ```bash
-cd packages/backend
+cd packages/api
 pnpm dev
 ```
 
-Note: The backend uses NestJS. Make sure you have `@nestjs/cli` installed globally or use `pnpm` to run the commands.
+Note: The API uses NestJS. Make sure you have `@nestjs/cli` installed globally or use `pnpm` to run the commands.
 
-Frontend:
+Client:
 
 ```bash
-cd packages/frontend
+cd packages/client
 pnpm dev
 ```
 
@@ -119,19 +120,19 @@ pnpm build
 
 ## Deployment
 
-### Backend
+### API
 
-The backend can be deployed to any Node.js hosting service (e.g., Railway, Render, Fly.io).
+The API can be deployed to any Node.js hosting service (e.g., Railway, Render, Fly.io).
 
-### Frontend
+### Client
 
-The frontend is configured for Vercel deployment. Simply connect your repository to Vercel and deploy the `packages/frontend` directory.
+The client is configured for Vercel deployment. Simply connect your repository to Vercel and deploy the `packages/client` directory.
 
-For Vercel, you may need to configure the API proxy in `vercel.json` to point to your backend URL.
+For Vercel, you may need to configure the API proxy in `vercel.json` to point to your API URL.
 
 ## Database
 
-The backend uses Prisma for database access. The Prisma schema is located at `packages/backend/prisma/schema.prisma`.
+The API uses Prisma for database access. The Prisma schema is located at `packages/api/prisma/schema.prisma`.
 
 ### Setup
 
@@ -140,7 +141,7 @@ The backend uses Prisma for database access. The Prisma schema is located at `pa
 3. Generate the Prisma client:
 
 ```bash
-cd packages/backend
+cd packages/api
 pnpm prisma:generate
 ```
 
