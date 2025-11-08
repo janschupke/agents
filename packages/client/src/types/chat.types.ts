@@ -59,11 +59,21 @@ export interface Embedding {
 export interface CreateBotRequest {
   name: string;
   description?: string;
+  configs?: {
+    temperature?: number;
+    system_prompt?: string;
+    behavior_rules?: string | unknown;
+  };
 }
 
 export interface UpdateBotRequest {
   name: string;
   description?: string;
+  configs?: {
+    temperature?: number;
+    system_prompt?: string;
+    behavior_rules?: string | unknown;
+  };
 }
 
 export interface User {

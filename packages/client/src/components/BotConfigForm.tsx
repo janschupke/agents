@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Bot, Embedding } from '../types/chat.types.js';
 import { BotService } from '../services/bot.service.js';
-import { IconClose } from './Icons';
+import { IconClose, IconPlus } from './Icons';
 import { SkeletonList } from './Skeleton';
 
 interface BotConfigFormProps {
@@ -12,6 +12,9 @@ interface BotConfigFormProps {
 export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [temperature, setTemperature] = useState(0.7);
+  const [systemPrompt, setSystemPrompt] = useState('');
+  const [behaviorRules, setBehaviorRules] = useState<string[]>([]);
   const [embeddings, setEmbeddings] = useState<Embedding[]>([]);
   const [loadingEmbeddings, setLoadingEmbeddings] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -55,23 +58,83 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
     }
   }, []);
 
-  // Update form fields when bot changes (instant, no API call)
+  // Update form fields when bot changes
   useEffect(() => {
     if (bot) {
       setName(bot.name);
       setDescription(bot.description || '');
       
-      // Load embeddings lazily when bot is selected
+      // Load config and embeddings for existing bots
       if (bot.id > 0) {
+        // Load bot with config
+        BotService.getBot(bot.id)
+          .then((botData: any) => {
+            // Extract config from bot data if available
+            if (botData.config) {
+              const config = botData.config;
+              setTemperature(
+                typeof config.temperature === 'number' ? config.temperature : 0.7
+              );
+              setSystemPrompt(
+                typeof config.system_prompt === 'string' ? config.system_prompt : ''
+              );
+              // Parse behavior_rules into an array of strings
+              let rulesArray: string[] = [];
+              if (config.behavior_rules) {
+                if (typeof config.behavior_rules === 'string') {
+                  try {
+                    const parsed = JSON.parse(config.behavior_rules);
+                    if (Array.isArray(parsed)) {
+                      rulesArray = parsed.map((r) => String(r));
+                    } else if (typeof parsed === 'object' && parsed.rules && Array.isArray(parsed.rules)) {
+                      rulesArray = parsed.rules.map((r: unknown) => String(r));
+                    } else {
+                      rulesArray = [String(parsed)];
+                    }
+                  } catch {
+                    // If it's not valid JSON, treat as a single rule
+                    rulesArray = [config.behavior_rules];
+                  }
+                } else if (Array.isArray(config.behavior_rules)) {
+                  rulesArray = config.behavior_rules.map((r) => String(r));
+                } else if (typeof config.behavior_rules === 'object' && (config.behavior_rules as any).rules) {
+                  const rulesObj = config.behavior_rules as { rules: unknown[] };
+                  rulesArray = rulesObj.rules.map((r) => String(r));
+                } else {
+                  rulesArray = [String(config.behavior_rules)];
+                }
+              }
+              setBehaviorRules(rulesArray);
+            } else {
+              // Reset to defaults
+              setTemperature(0.7);
+              setSystemPrompt('');
+              setBehaviorRules([]);
+            }
+          })
+          .catch((err) => {
+            console.error('Failed to load bot config:', err);
+            // Reset to defaults on error
+            setTemperature(0.7);
+            setSystemPrompt('');
+            setBehaviorRules([]);
+          });
+        
         loadEmbeddingsLazy(bot.id);
       } else {
-        // New bot, no embeddings yet
+        // New bot, reset to defaults
+        setTemperature(0.7);
+        setSystemPrompt('');
+        setBehaviorRules([]);
         setEmbeddings([]);
       }
     } else {
       // No bot selected, clear form
       setName('');
       setDescription('');
+      setTemperature(0.7);
+      setSystemPrompt('');
+      setBehaviorRules([]);
       setEmbeddings([]);
     }
   }, [bot, loadEmbeddingsLazy]);
@@ -84,16 +147,28 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
       return;
     }
 
+    // Convert behavior rules array to JSON
+    // Filter out empty rules and create JSON array
+    const validRules = behaviorRules.filter((rule) => rule.trim().length > 0);
+    const parsedBehaviorRules = validRules.length > 0 ? validRules : undefined;
+
     setSaving(true);
     setError(null);
     try {
       let savedBot: Bot;
+      
+      const configs = {
+        temperature,
+        system_prompt: systemPrompt.trim() || undefined,
+        behavior_rules: parsedBehaviorRules || undefined,
+      };
       
       if (bot.id < 0) {
         // Creating a new bot
         savedBot = await BotService.createBot({
           name: name.trim(),
           description: description.trim() || undefined,
+          configs,
         });
         // Clear cache for this new bot (it will be reloaded)
       } else {
@@ -101,6 +176,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
         await BotService.updateBot(bot.id, {
           name: name.trim(),
           description: description.trim() || undefined,
+          configs,
         });
         savedBot = {
           ...bot,
@@ -210,6 +286,100 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
               className="w-full px-3 py-2 border border-border-input rounded-md text-sm text-text-primary bg-background-secondary focus:outline-none focus:border-border-focus resize-none"
               placeholder="Enter bot description"
             />
+          </div>
+
+          <div>
+            <label
+              htmlFor="bot-temperature"
+              className="block text-sm font-medium text-text-secondary mb-1.5"
+            >
+              Temperature: <span className="font-mono">{temperature.toFixed(2)}</span>
+            </label>
+            <div className="relative">
+              <input
+                id="bot-temperature"
+                type="range"
+                min="0"
+                max="2"
+                step="0.1"
+                value={temperature}
+                onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                className="w-full h-2 bg-background-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                style={{
+                  background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${(temperature / 2) * 100}%, rgb(229, 231, 235) ${(temperature / 2) * 100}%, rgb(229, 231, 235) 100%)`,
+                }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-text-tertiary mt-1">
+              <span>0 (Deterministic)</span>
+              <span>1 (Balanced)</span>
+              <span>2 (Creative)</span>
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="bot-system-prompt"
+              className="block text-sm font-medium text-text-secondary mb-1.5"
+            >
+              System Prompt
+            </label>
+            <textarea
+              id="bot-system-prompt"
+              value={systemPrompt}
+              onChange={(e) => setSystemPrompt(e.target.value)}
+              rows={4}
+              className="w-full px-3 py-2 border border-border-input rounded-md text-sm text-text-primary bg-background-secondary focus:outline-none focus:border-border-focus resize-none font-mono"
+              placeholder="Enter system prompt for the bot"
+            />
+            <p className="text-xs text-text-tertiary mt-1">
+              This prompt defines the bot's role and behavior
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">
+              Behavior Rules
+            </label>
+            <div className="space-y-2">
+              {behaviorRules.map((rule, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={rule}
+                    onChange={(e) => {
+                      const newRules = [...behaviorRules];
+                      newRules[index] = e.target.value;
+                      setBehaviorRules(newRules);
+                    }}
+                    className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background-secondary focus:outline-none focus:border-border-focus"
+                    placeholder={`Rule ${index + 1}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newRules = behaviorRules.filter((_, i) => i !== index);
+                      setBehaviorRules(newRules);
+                    }}
+                    className="h-8 w-8 flex items-center justify-center bg-red-600 text-white border-none rounded-md hover:bg-red-700 transition-colors flex-shrink-0"
+                    title="Remove rule"
+                  >
+                    <IconClose className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setBehaviorRules([...behaviorRules, ''])}
+                className="w-full h-8 px-3 bg-background-secondary border border-border rounded-md text-sm text-text-primary hover:bg-background transition-colors flex items-center justify-center gap-1.5"
+              >
+                <IconPlus className="w-4 h-4" />
+                <span>Add Rule</span>
+              </button>
+            </div>
+            <p className="text-xs text-text-tertiary mt-2">
+              Rules will be saved as a JSON array
+            </p>
           </div>
 
           <div>

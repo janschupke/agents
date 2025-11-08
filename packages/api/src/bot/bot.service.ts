@@ -23,7 +23,7 @@ export class BotService {
     return bot;
   }
 
-  async create(userId: string, name: string, description?: string) {
+  async create(userId: string, name: string, description?: string, configs?: Record<string, unknown>) {
     // User will be created automatically by controller's ensureUser method
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
@@ -41,10 +41,23 @@ export class BotService {
       );
     }
 
-    return this.botRepository.create(userId, name, description);
+    const bot = await this.botRepository.create(userId, name, description);
+    
+    // Set configs if provided
+    if (configs) {
+      await this.botRepository.updateConfigs(bot.id, configs);
+    }
+    
+    return bot;
   }
 
-  async update(id: number, userId: string, name: string, description?: string) {
+  async update(
+    id: number,
+    userId: string,
+    name: string,
+    description?: string,
+    configs?: Record<string, unknown>,
+  ) {
     const bot = await this.botRepository.findByIdAndUserId(id, userId);
     if (!bot) {
       throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
@@ -72,6 +85,12 @@ export class BotService {
     if (!updated) {
       throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
     }
+
+    // Update configs if provided
+    if (configs) {
+      await this.botRepository.updateConfigs(id, configs);
+    }
+
     return updated;
   }
 

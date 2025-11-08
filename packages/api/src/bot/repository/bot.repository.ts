@@ -106,4 +106,44 @@ export class BotRepository {
       },
     });
   }
+
+  async upsertConfig(
+    botId: number,
+    configKey: string,
+    configValue: unknown,
+  ): Promise<void> {
+    // Skip if value is undefined or null
+    if (configValue === undefined || configValue === null) {
+      return;
+    }
+
+    await this.prisma.botConfig.upsert({
+      where: {
+        botId_configKey: {
+          botId,
+          configKey,
+        },
+      },
+      update: {
+        configValue: configValue as any,
+      },
+      create: {
+        botId,
+        configKey,
+        configValue: configValue as any,
+      },
+    });
+  }
+
+  async updateConfigs(
+    botId: number,
+    configs: Record<string, unknown>,
+  ): Promise<void> {
+    // Upsert each config key, skipping undefined/null values
+    for (const [key, value] of Object.entries(configs)) {
+      if (value !== undefined && value !== null) {
+        await this.upsertConfig(botId, key, value);
+      }
+    }
+  }
 }

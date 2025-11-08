@@ -91,12 +91,30 @@ export class BotController {
 
   @Post()
   async createBot(
-    @Body() body: { name: string; description?: string },
+    @Body() body: {
+      name: string;
+      description?: string;
+      configs?: {
+        temperature?: number;
+        system_prompt?: string;
+        behavior_rules?: string | unknown;
+      };
+    },
     @Request() req: AuthenticatedRequest,
   ) {
     try {
       const userId = await this.ensureUser(req);
-      return await this.botService.create(userId, body.name, body.description);
+      
+      // Prepare configs object if provided
+      const configs: Record<string, unknown> | undefined = body.configs
+        ? {
+            temperature: body.configs.temperature,
+            system_prompt: body.configs.system_prompt,
+            behavior_rules: body.configs.behavior_rules,
+          }
+        : undefined;
+      
+      return await this.botService.create(userId, body.name, body.description, configs);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -112,12 +130,36 @@ export class BotController {
   @Put(':id')
   async updateBot(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: { name: string; description?: string },
+    @Body() body: {
+      name: string;
+      description?: string;
+      configs?: {
+        temperature?: number;
+        system_prompt?: string;
+        behavior_rules?: string | unknown;
+      };
+    },
     @Request() req: AuthenticatedRequest,
   ) {
     try {
       const userId = await this.ensureUser(req);
-      return await this.botService.update(id, userId, body.name, body.description);
+      
+      // Prepare configs object if provided
+      const configs: Record<string, unknown> | undefined = body.configs
+        ? {
+            temperature: body.configs.temperature,
+            system_prompt: body.configs.system_prompt,
+            behavior_rules: body.configs.behavior_rules,
+          }
+        : undefined;
+
+      return await this.botService.update(
+        id,
+        userId,
+        body.name,
+        body.description,
+        configs,
+      );
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
