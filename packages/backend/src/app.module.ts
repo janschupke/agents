@@ -6,10 +6,11 @@ import { ChatModule } from './chat/chat.module';
 import { BotModule } from './bot/bot.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
+import { WebhookModule } from './webhook/webhook.module';
 import { ClerkGuard } from './auth/clerk.guard';
 
 @Module({
-  imports: [PrismaModule, HealthcheckModule, ChatModule, BotModule, AuthModule, UserModule],
+  imports: [PrismaModule, HealthcheckModule, ChatModule, BotModule, AuthModule, UserModule, WebhookModule],
   providers: [
     {
       provide: APP_GUARD,

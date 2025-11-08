@@ -17,5 +17,6 @@ export const appConfig = {
   },
   clerk: {
     secretKey: process.env.CLERK_SECRET_KEY || '',
+    webhookSecret: process.env.CLERK_WEBHOOK_SECRET || '',
   },
 } as const;

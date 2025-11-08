@@ -18,6 +18,7 @@ export class UserRepository {
     firstName?: string;
     lastName?: string;
     imageUrl?: string;
+    roles?: string[];
   }): Promise<User> {
     return this.prisma.user.upsert({
       where: { id: data.id },
@@ -26,6 +27,7 @@ export class UserRepository {
         firstName: data.firstName,
         lastName: data.lastName,
         imageUrl: data.imageUrl,
+        roles: data.roles ? (data.roles as any) : undefined,
       },
       create: {
         id: data.id,
@@ -33,6 +35,7 @@ export class UserRepository {
         firstName: data.firstName || null,
         lastName: data.lastName || null,
         imageUrl: data.imageUrl || null,
+        roles: data.roles ? (data.roles as any) : [],
       },
     });
   }
@@ -44,6 +47,7 @@ export class UserRepository {
       firstName?: string;
       lastName?: string;
       imageUrl?: string;
+      roles?: string[];
     },
   ): Promise<User> {
     return this.prisma.user.update({
@@ -53,6 +57,16 @@ export class UserRepository {
         firstName: data.firstName,
         lastName: data.lastName,
         imageUrl: data.imageUrl,
+        roles: data.roles ? (data.roles as any) : undefined,
+      },
+    });
+  }
+
+  async updateRoles(id: string, roles: string[]): Promise<User> {
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        roles: roles as any,
       },
     });
   }

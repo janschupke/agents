@@ -1,5 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { UserRepository } from './repository/user.repository';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -11,6 +12,7 @@ export class UserService {
     firstName?: string;
     lastName?: string;
     imageUrl?: string;
+    roles?: string[];
   }) {
     return this.userRepository.create(userData);
   }
@@ -30,8 +32,15 @@ export class UserService {
       firstName?: string;
       lastName?: string;
       imageUrl?: string;
+      roles?: string[];
     },
   ) {
     return this.userRepository.update(id, data);
+  }
+
+  async syncRolesFromClerk(id: string, clerkRoles: string[] | null | undefined): Promise<User> {
+    // If no roles in Clerk, default to ["user"]
+    const roles = clerkRoles && clerkRoles.length > 0 ? clerkRoles : ['user'];
+    return this.userRepository.updateRoles(id, roles);
   }
 }

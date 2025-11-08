@@ -21,6 +21,7 @@ interface AuthenticatedRequest extends Request {
     firstName?: string | null;
     lastName?: string | null;
     imageUrl?: string | null;
+    roles?: string[];
   };
 }
 
@@ -35,14 +36,19 @@ export class BotController {
     if (!req.user?.id) {
       throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
     }
-    // Sync user to DB
+    // Sync user to DB (including roles)
     await this.userService.findOrCreate({
       id: req.user.id,
       email: req.user.email || undefined,
       firstName: req.user.firstName || undefined,
       lastName: req.user.lastName || undefined,
       imageUrl: req.user.imageUrl || undefined,
+      roles: req.user.roles,
     });
+    // Sync roles from Clerk to DB
+    if (req.user.roles) {
+      await this.userService.syncRolesFromClerk(req.user.id, req.user.roles);
+    }
     return req.user.id;
   }
 

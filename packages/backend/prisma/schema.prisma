@@ -7,31 +7,32 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")      // Pooler connection for regular queries
-  directUrl = env("DIRECT_URL")        // Direct connection for migrations
+  url       = env("DATABASE_URL") // Pooler connection for regular queries
+  directUrl = env("DIRECT_URL") // Direct connection for migrations
 }
 
 model User {
-  id            String   @id // Clerk user ID
-  email         String?
-  firstName     String?  @map("first_name")
-  lastName      String?  @map("last_name")
-  imageUrl      String?  @map("image_url")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  bots          Bot[]
-  chatSessions  ChatSession[]
+  id           String        @id // Clerk user ID
+  email        String?
+  firstName    String?       @map("first_name")
+  lastName     String?       @map("last_name")
+  imageUrl     String?       @map("image_url")
+  roles        Json          @default("[]") // Array of role strings: ["user", "admin"]
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  bots         Bot[]
+  chatSessions ChatSession[]
 
   @@map("users")
 }
 
 model Bot {
-  id          Int      @id @default(autoincrement())
-  userId      String   @map("user_id")
+  id          Int           @id @default(autoincrement())
+  userId      String        @map("user_id")
   name        String
   description String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   configs     BotConfig[]
   sessions    ChatSession[]
 
@@ -40,26 +41,26 @@ model Bot {
 }
 
 model BotConfig {
-  id         Int      @id @default(autoincrement())
-  botId      Int      @map("bot_id")
-  configKey  String   @map("config_key")
-  configValue Json    @map("config_value")
-  createdAt  DateTime @default(now()) @map("created_at")
-  bot        Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+  id          Int      @id @default(autoincrement())
+  botId       Int      @map("bot_id")
+  configKey   String   @map("config_key")
+  configValue Json     @map("config_value")
+  createdAt   DateTime @default(now()) @map("created_at")
+  bot         Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
 
   @@unique([botId, configKey])
   @@map("bot_configs")
 }
 
 model ChatSession {
-  id          Int      @id @default(autoincrement())
-  userId      String   @map("user_id")
-  botId       Int      @map("bot_id")
-  sessionName String?  @map("session_name")
-  createdAt   DateTime @default(now()) @map("created_at")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bot         Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
-  messages    Message[]
+  id           Int           @id @default(autoincrement())
+  userId       String        @map("user_id")
+  botId        Int           @map("bot_id")
+  sessionName  String?       @map("session_name")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bot          Bot           @relation(fields: [botId], references: [id], onDelete: Cascade)
+  messages     Message[]
   memoryChunks MemoryChunk[]
 
   @@index([userId])
@@ -68,12 +69,12 @@ model ChatSession {
 }
 
 model Message {
-  id        Int      @id @default(autoincrement())
-  sessionId Int      @map("session_id")
-  role      String   // 'user' | 'assistant' | 'system'
+  id        Int         @id @default(autoincrement())
+  sessionId Int         @map("session_id")
+  role      String // 'user' | 'assistant' | 'system'
   content   String
   metadata  Json?
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime    @default(now()) @map("created_at")
   session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId, createdAt(sort: Desc)])
@@ -81,13 +82,13 @@ model Message {
 }
 
 model MemoryChunk {
-  id            Int      @id @default(autoincrement())
-  sessionId     Int      @map("session_id")
-  chunk          String
-  vector         Unsupported("real[]")? // REAL[] array for compatibility
+  id              Int                          @id @default(autoincrement())
+  sessionId       Int                          @map("session_id")
+  chunk           String
+  vector          Unsupported("real[]")? // REAL[] array for compatibility
   vectorEmbedding Unsupported("vector(1536)")? @map("vector_embedding") // pgvector type
-  createdAt      DateTime @default(now()) @map("created_at")
-  session        ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  createdAt       DateTime                     @default(now()) @map("created_at")
+  session         ChatSession                  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId, createdAt(sort: Desc)])
   @@map("memory_chunks")

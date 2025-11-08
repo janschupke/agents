@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
   SetMetadata,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { createClerkClient, verifyToken } from '@clerk/clerk-sdk-node';
 import { appConfig } from '../config/app.config';
 
@@ -15,7 +16,7 @@ export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 export class ClerkGuard implements CanActivate {
   private clerkClient: ReturnType<typeof createClerkClient> | null = null;
 
-  constructor() {
+  constructor(private reflector: Reflector) {
     if (appConfig.clerk.secretKey) {
       this.clerkClient = createClerkClient({
         secretKey: appConfig.clerk.secretKey,
@@ -26,6 +27,16 @@ export class ClerkGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    // Check if route is marked as public
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    
+    if (isPublic) {
+      return true;
+    }
+
     // If Clerk is not configured, allow all requests (for development)
     if (!this.clerkClient) {
       return true;
@@ -63,6 +74,10 @@ export class ClerkGuard implements CanActivate {
       // Fetch user details from Clerk
       try {
         const clerkUser = await this.clerkClient.users.getUser(userId);
+        // Extract roles from public metadata, default to ["user"] if not present
+        const publicMetadata = clerkUser.publicMetadata as any;
+        const roles = publicMetadata?.roles || ['user'];
+        
         // Attach user info to request for use in controllers
         request.user = {
           id: userId,
@@ -70,15 +85,17 @@ export class ClerkGuard implements CanActivate {
           firstName: clerkUser.firstName || null,
           lastName: clerkUser.lastName || null,
           imageUrl: clerkUser.imageUrl || null,
+          roles,
         };
       } catch (userError) {
-        // If we can't fetch user details, still attach the ID
+        // If we can't fetch user details, still attach the ID with default role
         request.user = {
           id: userId,
           email: null,
           firstName: null,
           lastName: null,
           imageUrl: null,
+          roles: ['user'],
         };
       }
 
