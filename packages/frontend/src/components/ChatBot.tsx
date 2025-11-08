@@ -13,9 +13,9 @@ export default function ChatBot({ botId }: ChatBotProps) {
   } = useChat({ botId });
 
   return (
-    <div className="flex flex-col w-full max-w-4xl h-[600px] bg-white rounded-lg shadow-lg overflow-hidden">
-      <div className="px-4 py-4 bg-gray-50 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-800">{botName}</h2>
+    <div className="flex flex-col w-full max-w-4xl h-[600px] bg-background-secondary rounded-lg shadow-lg overflow-hidden">
+      <div className="px-4 py-4 bg-background border-b border-border">
+        <h2 className="text-xl font-semibold text-text-secondary">{botName}</h2>
       </div>
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
         {messages
@@ -30,8 +30,8 @@ export default function ChatBot({ botId }: ChatBotProps) {
               <div
                 className={`px-4 py-3 rounded-lg break-words ${
                   message.role === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-800'
+                    ? 'bg-message-user text-message-user-text'
+                    : 'bg-message-assistant text-message-assistant-text'
                 }`}
               >
                 {message.content}
@@ -40,7 +40,7 @@ export default function ChatBot({ botId }: ChatBotProps) {
           ))}
         {loading && (
           <div className="flex max-w-[80%] self-start">
-            <div className="px-4 py-3 rounded-lg bg-gray-200 text-gray-800">
+            <div className="px-4 py-3 rounded-lg bg-message-assistant text-message-assistant-text">
               Thinking...
             </div>
           </div>
@@ -48,7 +48,7 @@ export default function ChatBot({ botId }: ChatBotProps) {
         <div ref={messagesEndRef} />
       </div>
       <form
-        className="flex p-4 border-t border-gray-200 gap-2"
+        className="flex p-4 border-t border-border gap-2"
         onSubmit={handleSubmit}
       >
         <input
@@ -57,12 +57,12 @@ export default function ChatBot({ botId }: ChatBotProps) {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type your message..."
           disabled={loading}
-          className="flex-1 px-3 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:border-blue-600 disabled:bg-gray-50 disabled:cursor-not-allowed"
+          className="flex-1 px-3 py-3 border border-border-input rounded-md text-base text-text-primary bg-background-secondary focus:outline-none focus:border-border-focus disabled:bg-disabled-bg disabled:cursor-not-allowed"
         />
         <button
           type="submit"
           disabled={loading || !input.trim()}
-          className="px-6 py-3 bg-blue-600 text-white border-none rounded-md text-base font-medium cursor-pointer transition-colors hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed"
+          className="px-6 py-3 bg-primary text-text-inverse border-none rounded-md text-base font-medium cursor-pointer transition-colors hover:bg-primary-hover disabled:bg-disabled disabled:cursor-not-allowed"
         >
           Send
         </button>
