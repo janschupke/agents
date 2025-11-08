@@ -76,10 +76,17 @@ export class ChatService {
       }
     }
 
-    // Load messages
-    const messages = await this.messageRepository.findAllBySessionIdForOpenAI(
+    // Load messages with raw data
+    const messageRecords = await this.messageRepository.findAllBySessionIdWithRawData(
       session.id
     );
+
+    const messages = messageRecords.map((msg) => ({
+      role: msg.role as 'user' | 'assistant' | 'system',
+      content: msg.content,
+      rawRequest: msg.rawRequest,
+      rawResponse: msg.rawResponse,
+    }));
 
     return {
       bot: {
@@ -191,19 +198,29 @@ export class ChatService {
       content: message,
     });
 
-    // Save user message to database
-    await this.messageRepository.create(session.id, 'user', message);
-
-    // Call OpenAI API
-    const openai = this.openaiService.getClient();
-    const completion = await openai.chat.completions.create({
+    // Prepare OpenAI API request
+    const openaiRequest = {
       model: String(botConfig.model || 'gpt-4o-mini'),
       messages: messagesForAPI,
       temperature: Number(botConfig.temperature || 0.7),
       max_tokens: botConfig.max_tokens
         ? Number(botConfig.max_tokens)
         : undefined,
-    });
+    };
+
+    // Save user message to database with raw request
+    await this.messageRepository.create(
+      session.id,
+      'user',
+      message,
+      undefined,
+      openaiRequest,
+      undefined
+    );
+
+    // Call OpenAI API
+    const openai = this.openaiService.getClient();
+    const completion = await openai.chat.completions.create(openaiRequest);
 
     const response = completion.choices[0]?.message?.content;
     if (!response) {
@@ -213,11 +230,18 @@ export class ChatService {
       );
     }
 
-    // Save assistant message to database
-    await this.messageRepository.create(session.id, 'assistant', response, {
-      model: botConfig.model,
-      temperature: botConfig.temperature,
-    });
+    // Save assistant message to database with raw response
+    await this.messageRepository.create(
+      session.id,
+      'assistant',
+      response,
+      {
+        model: botConfig.model,
+        temperature: botConfig.temperature,
+      },
+      undefined,
+      completion
+    );
 
     // Save memory chunk periodically
     const allMessages =
@@ -240,6 +264,8 @@ export class ChatService {
         id: session.id,
         session_name: session.sessionName,
       },
+      rawRequest: openaiRequest,
+      rawResponse: completion,
     };
   }
 }

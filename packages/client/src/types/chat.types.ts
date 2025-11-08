@@ -1,6 +1,8 @@
 export interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
+  rawRequest?: unknown; // Raw OpenAI request JSON for user messages
+  rawResponse?: unknown; // Raw OpenAI response JSON for assistant messages
 }
 
 export interface ChatBotProps {
@@ -36,6 +38,8 @@ export interface SendMessageResponse {
     id: number;
     session_name: string | null;
   };
+  rawRequest?: unknown; // Raw OpenAI request JSON
+  rawResponse?: unknown; // Raw OpenAI response JSON
 }
 
 export interface Bot {

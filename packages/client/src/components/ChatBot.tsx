@@ -1,16 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { useChat } from '../hooks/useChat.js';
-import { ChatBotProps } from '../types/chat.types.js';
+import { ChatBotProps, Message } from '../types/chat.types.js';
 import SessionSidebar from './SessionSidebar.js';
 import { BotService } from '../services/bot.service.js';
-import { IconSend } from './Icons';
+import { IconSend, IconSearch } from './Icons';
 import { Skeleton, SkeletonMessage, SkeletonList } from './Skeleton';
+import JsonModal from './JsonModal.js';
 
 export default function ChatBot({ botId: propBotId }: ChatBotProps) {
   const { isSignedIn, isLoaded } = useUser();
   const [actualBotId, setActualBotId] = useState<number | undefined>(propBotId);
   const [loadingBot, setLoadingBot] = useState(!propBotId);
+  const [jsonModal, setJsonModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    data: unknown;
+  }>({ isOpen: false, title: '', data: null });
 
   useEffect(() => {
     if (!propBotId && isSignedIn && isLoaded) {
@@ -29,10 +35,10 @@ export default function ChatBot({ botId: propBotId }: ChatBotProps) {
       if (bots.length > 0) {
         setActualBotId(bots[0].id);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Silently fail if it's an expected auth error (no token yet) or if no bots
       // Will show "No bots available" message
-      if (!error?.expected) {
+      if (error && typeof error === 'object' && 'expected' in error && !error.expected) {
         // Only log unexpected errors
       }
     } finally {
@@ -102,22 +108,11 @@ export default function ChatBot({ botId: propBotId }: ChatBotProps) {
           {messages
             .filter((msg) => msg.role !== 'system')
             .map((message, index) => (
-              <div
+              <MessageBubble
                 key={index}
-                className={`flex max-w-[80%] ${
-                  message.role === 'user' ? 'self-end' : 'self-start'
-                }`}
-              >
-                <div
-                  className={`px-3 py-2 rounded-lg break-words text-sm ${
-                    message.role === 'user'
-                      ? 'bg-message-user text-message-user-text'
-                      : 'bg-message-assistant text-message-assistant-text'
-                  }`}
-                >
-                  {message.content}
-                </div>
-              </div>
+                message={message}
+                onShowJson={(title, data) => setJsonModal({ isOpen: true, title, data })}
+              />
             ))}
           {loading && (
             <div className="flex max-w-[80%] self-start">
@@ -153,6 +148,60 @@ export default function ChatBot({ botId: propBotId }: ChatBotProps) {
             <span className="hidden sm:inline">Send</span>
           </button>
         </form>
+      </div>
+      <JsonModal
+        isOpen={jsonModal.isOpen}
+        onClose={() => setJsonModal({ isOpen: false, title: '', data: null })}
+        title={jsonModal.title}
+        data={jsonModal.data}
+      />
+    </div>
+  );
+}
+
+interface MessageBubbleProps {
+  message: Message;
+  onShowJson: (title: string, data: unknown) => void;
+}
+
+function MessageBubble({ message, onShowJson }: MessageBubbleProps) {
+  const hasRawData = message.role === 'user' 
+    ? message.rawRequest !== undefined
+    : message.rawResponse !== undefined;
+
+  return (
+    <div
+      className={`flex max-w-[80%] ${
+        message.role === 'user' ? 'self-end' : 'self-start'
+      }`}
+    >
+      <div
+        className={`px-3 py-2 rounded-lg break-words text-sm relative group ${
+          message.role === 'user'
+            ? 'bg-message-user text-message-user-text'
+            : 'bg-message-assistant text-message-assistant-text'
+        }`}
+      >
+        <div className="pr-6">{message.content}</div>
+        {hasRawData && (
+          <button
+            onClick={() => {
+              if (message.role === 'user') {
+                onShowJson('OpenAI Request', message.rawRequest);
+              } else {
+                onShowJson('OpenAI Response', message.rawResponse);
+              }
+            }}
+            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-black hover:bg-opacity-10"
+            title={message.role === 'user' ? 'View request JSON' : 'View response JSON'}
+          >
+            <IconSearch className={`w-3.5 h-3.5 ${
+              message.role === 'user' 
+                ? 'text-message-user-text' 
+                : 'text-message-assistant-text'
+            }`} />
+          </button>
+        )}
       </div>
     </div>
   );

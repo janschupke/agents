@@ -15,7 +15,9 @@ export class MessageRepository {
     sessionId: number,
     role: 'user' | 'assistant' | 'system',
     content: string,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
+    rawRequest?: unknown,
+    rawResponse?: unknown
   ): Promise<Message> {
     return this.prisma.message.create({
       data: {
@@ -23,6 +25,8 @@ export class MessageRepository {
         role,
         content,
         metadata: metadata ? (metadata as Prisma.InputJsonValue) : undefined,
+        rawRequest: rawRequest ? (rawRequest as Prisma.InputJsonValue) : undefined,
+        rawResponse: rawResponse ? (rawResponse as Prisma.InputJsonValue) : undefined,
       },
     });
   }
@@ -49,5 +53,16 @@ export class MessageRepository {
       role: msg.role as 'user' | 'assistant' | 'system',
       content: msg.content,
     }));
+  }
+
+  async findAllBySessionIdWithRawData(
+    sessionId: number,
+    limit?: number
+  ): Promise<Message[]> {
+    return this.prisma.message.findMany({
+      where: { sessionId },
+      orderBy: { createdAt: 'asc' },
+      take: limit,
+    });
   }
 }

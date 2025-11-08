@@ -22,6 +22,7 @@ export function useChat({ botId, onError }: UseChatOptions) {
       if (!botId) return;
       try {
         const data = await ChatService.getChatHistory(botId, sessionId);
+        // Messages from API now include rawRequest and rawResponse
         setMessages(data.messages || []);
         setBotName(data.bot?.name || 'Chat Bot');
         if (data.session?.id) {
@@ -115,7 +116,12 @@ export function useChat({ botId, onError }: UseChatOptions) {
   const sendMessage = async (message: string) => {
     if (!message.trim() || loading || !botId) return;
 
-    const userMessage: Message = { role: 'user', content: message };
+    // Prepare user message with raw request data
+    const userMessage: Message = { 
+      role: 'user', 
+      content: message,
+      // We'll update this with the actual request after the API call
+    };
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setLoading(true);
@@ -126,9 +132,21 @@ export function useChat({ botId, onError }: UseChatOptions) {
         message,
         currentSessionId || undefined,
       );
+      
+      // Update the last user message with raw request data
+      setMessages((prev) => {
+        const updated = [...prev];
+        const lastUserMsg = updated[updated.length - 2];
+        if (lastUserMsg && lastUserMsg.role === 'user') {
+          lastUserMsg.rawRequest = data.rawRequest;
+        }
+        return updated;
+      });
+
       const assistantMessage: Message = {
         role: 'assistant',
         content: data.response,
+        rawResponse: data.rawResponse,
       };
       setMessages((prev) => [...prev, assistantMessage]);
 

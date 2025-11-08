@@ -148,5 +148,9 @@ pnpm prisma:generate
 ### Prisma Commands
 
 - `pnpm prisma:generate` - Generate Prisma client
-- `pnpm prisma:migrate` - Run database migrations
+- `pnpm prisma:migrate` - Run database migrations (uses `prisma migrate deploy`)
+- `pnpm prisma:migrate:dev` - Run migrations in development mode (uses shadow database)
+- `pnpm prisma:migrate:apply` - Apply the latest migration directly using DIRECT_URL (bypasses shadow database issues)
 - `pnpm prisma:studio` - Open Prisma Studio (database GUI)
+
+**Note:** If `prisma migrate dev` fails due to shadow database connection issues, use `pnpm prisma:migrate:apply` instead. This script applies migrations directly using the `DIRECT_URL` connection and marks them as applied.
