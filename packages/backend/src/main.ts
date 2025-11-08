@@ -7,9 +7,10 @@ import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // Enable CORS
+  // Enable CORS with credentials support for Clerk
   app.enableCors({
     origin: appConfig.cors.origin,
+    credentials: true,
   });
   
   // Global exception filter

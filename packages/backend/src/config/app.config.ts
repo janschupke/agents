@@ -15,4 +15,7 @@ export const appConfig = {
   openai: {
     apiKey: process.env.OPENAI_API_KEY || '',
   },
+  clerk: {
+    secretKey: process.env.CLERK_SECRET_KEY || '',
+  },
 } as const;

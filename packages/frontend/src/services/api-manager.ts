@@ -1,8 +1,14 @@
 import { API_BASE_URL } from '../constants/api.constants.js';
+import { tokenProvider } from './token-provider.js';
 
 export interface ApiRequestOptions extends RequestInit {
   params?: Record<string, string | number>;
   skipErrorHandling?: boolean;
+}
+
+// Function to get Clerk session token
+async function getClerkToken(): Promise<string | null> {
+  return tokenProvider.getToken();
 }
 
 export interface ApiError {
@@ -74,8 +80,12 @@ export class ApiManager {
     const { params, skipErrorHandling, ...fetchOptions } = options;
 
     const url = this.buildURL(endpoint, params);
+    
+    // Get Clerk token if available
+    const token = await getClerkToken();
     const headers = {
       ...this.defaultHeaders,
+      ...(token && { Authorization: `Bearer ${token}` }),
       ...fetchOptions.headers,
     };
 
