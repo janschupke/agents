@@ -39,6 +39,12 @@
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    
+    /* Design system - unified heights */
+    --button-height: 2rem; /* 32px - h-8 */
+    --button-height-sm: 1.75rem; /* 28px - h-7 */
+    --sidebar-item-height: 2.5rem; /* 40px - compact */
+    --input-height: 2rem; /* 32px - h-8 */
   }
 
   body {

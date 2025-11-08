@@ -7,14 +7,15 @@ import UserDropdown from './components/UserDropdown';
 import UserProfile from './components/UserProfile';
 import { UserService } from './services/user.service';
 import { User } from './types/chat.types';
+import { IconChat, IconSettings } from './components/Icons';
+import { Skeleton } from './components/Skeleton';
 
 type View = 'chat' | 'config' | 'profile';
 
 function App() {
   const [view, setView] = useState<View>('chat');
-  const { isSignedIn, isLoaded, user: clerkUser } = useUser();
+  const { isSignedIn, isLoaded } = useUser();
   const [userInfo, setUserInfo] = useState<User | null>(null);
-  const [loadingUser, setLoadingUser] = useState(false);
 
   useEffect(() => {
     if (isSignedIn && isLoaded) {
@@ -29,49 +30,50 @@ function App() {
   }, [isSignedIn, isLoaded]);
 
   const loadUserInfo = async () => {
-    setLoadingUser(true);
     try {
       const user = await UserService.getCurrentUser();
       setUserInfo(user);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Silently fail if it's an expected auth error (no token yet)
       // Otherwise, user info is optional, we can show Clerk user data instead
-      if (!error?.expected) {
+      if (error && typeof error === 'object' && 'expected' in error && !error.expected) {
         // Only log unexpected errors
       }
       setUserInfo(null);
-    } finally {
-      setLoadingUser(false);
     }
   };
 
   return (
     <div className="flex flex-col min-h-screen h-screen overflow-hidden">
-      <header className="bg-background-secondary px-8 py-4 shadow-md flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-text-secondary">OpenAI Chat</h1>
-        <div className="flex items-center gap-4">
+      <header className="bg-background-secondary px-6 py-3 shadow-sm border-b border-border flex items-center justify-between">
+        <h1 className="text-xl font-semibold text-text-secondary">OpenAI Chat</h1>
+        <div className="flex items-center gap-3">
           {isLoaded && isSignedIn && (
-            <div className="flex items-center gap-3">
-              <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <div className="flex gap-1">
                 <button
                   onClick={() => setView('chat')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`h-8 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
                     view === 'chat'
                       ? 'bg-primary text-text-inverse'
                       : 'bg-background text-text-primary hover:bg-background-secondary'
                   }`}
+                  title="Chat"
                 >
-                  Chat
+                  <IconChat className="w-4 h-4" />
+                  <span className="hidden sm:inline">Chat</span>
                 </button>
                 <button
                   onClick={() => setView('config')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`h-8 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
                     view === 'config'
                       ? 'bg-primary text-text-inverse'
                       : 'bg-background text-text-primary hover:bg-background-secondary'
                   }`}
+                  title="Bot Configuration"
                 >
-                  Bot Configuration
+                  <IconSettings className="w-4 h-4" />
+                  <span className="hidden sm:inline">Config</span>
                 </button>
               </div>
               <UserDropdown
@@ -83,10 +85,13 @@ function App() {
           {!isSignedIn && <AuthButtons />}
         </div>
       </header>
-      <main className="flex-1 flex justify-center items-start p-8 overflow-hidden">
+      <main className="flex-1 flex justify-center items-start p-6 overflow-hidden">
         {!isLoaded ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-text-secondary">Loading...</div>
+          <div className="flex items-center justify-center h-full w-full">
+            <div className="flex flex-col items-center gap-3">
+              <Skeleton className="w-8 h-8 rounded-full" />
+              <Skeleton className="h-4 w-24" />
+            </div>
           </div>
         ) : !isSignedIn ? (
           <div className="flex items-center justify-center h-full">
