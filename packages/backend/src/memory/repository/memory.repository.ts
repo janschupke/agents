@@ -193,6 +193,12 @@ export class MemoryRepository {
     return dotProduct / denominator;
   }
 
+  async deleteById(id: number): Promise<void> {
+    await this.prisma.memoryChunk.delete({
+      where: { id },
+    });
+  }
+
   private parseVector(vector: any): number[] | null {
     if (!vector) return null;
     if (Array.isArray(vector)) return vector;

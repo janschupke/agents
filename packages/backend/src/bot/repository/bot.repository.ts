@@ -69,4 +69,29 @@ export class BotRepository {
     const defaults = this.getDefaultBotConfig();
     return { ...defaults, ...botConfig };
   }
+
+  async findAll(): Promise<Bot[]> {
+    return this.prisma.bot.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async create(name: string, description?: string): Promise<Bot> {
+    return this.prisma.bot.create({
+      data: {
+        name,
+        description: description || null,
+      },
+    });
+  }
+
+  async update(id: number, name: string, description?: string): Promise<Bot> {
+    return this.prisma.bot.update({
+      where: { id },
+      data: {
+        name,
+        description: description || null,
+      },
+    });
+  }
 }

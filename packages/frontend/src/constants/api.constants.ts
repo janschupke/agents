@@ -7,5 +7,10 @@ export const API_ENDPOINTS = {
     return sessionId ? `${base}?sessionId=${sessionId}` : base;
   },
   SESSIONS: (botId: number) => `/api/chat/${botId}/sessions`,
+  BOTS: '/api/bots',
+  BOT: (botId: number) => `/api/bots/${botId}`,
+  BOT_EMBEDDINGS: (botId: number) => `/api/bots/${botId}/embeddings`,
+  BOT_EMBEDDING: (botId: number, embeddingId: number) =>
+    `/api/bots/${botId}/embeddings/${embeddingId}`,
   HEALTHCHECK: '/api/healthcheck',
 } as const;
