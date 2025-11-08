@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { ChatService } from '../services/chat.service.js';
-import { Message } from '../types/chat.types.js';
+import { Message, Session } from '../types/chat.types.js';
 
 interface UseChatOptions {
   botId: number;
@@ -12,11 +12,73 @@ export function useChat({ botId, onError }: UseChatOptions) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [botName, setBotName] = useState<string>('');
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const loadChatHistory = useCallback(
+    async (sessionId?: number) => {
+      try {
+        const data = await ChatService.getChatHistory(botId, sessionId);
+        setMessages(data.messages || []);
+        setBotName(data.bot?.name || 'Chat Bot');
+        if (data.session?.id) {
+          setCurrentSessionId((prev) => {
+            if (prev !== data.session.id) {
+              return data.session.id;
+            }
+            return prev;
+          });
+        }
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error('Unknown error');
+        console.error('Error loading chat history:', err);
+        onError?.(err);
+      }
+    },
+    [botId, onError],
+  );
+
+  const loadSessions = useCallback(async () => {
+    setSessionsLoading(true);
+    try {
+      const sessionsData = await ChatService.getSessions(botId);
+      setSessions(sessionsData);
+      setCurrentSessionId((prev) => {
+        if (prev === null && sessionsData.length > 0) {
+          return sessionsData[0].id;
+        }
+        return prev;
+      });
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error('Unknown error');
+      console.error('Error loading sessions:', err);
+      onError?.(err);
+    } finally {
+      setSessionsLoading(false);
+    }
+  }, [botId, onError]);
+
   useEffect(() => {
-    loadChatHistory();
-  }, [botId]);
+    loadSessions();
+  }, [loadSessions]);
+
+  useEffect(() => {
+    if (sessions.length > 0 && currentSessionId === null) {
+      // If no current session but we have sessions, load the latest one
+      setCurrentSessionId(sessions[0].id);
+    } else if (sessions.length === 0 && currentSessionId === null) {
+      // If no sessions, load chat history which will create a session
+      loadChatHistory();
+    }
+  }, [sessions.length, currentSessionId, loadChatHistory]);
+
+  useEffect(() => {
+    if (currentSessionId !== null) {
+      loadChatHistory(currentSessionId);
+    }
+  }, [currentSessionId, loadChatHistory]);
 
   useEffect(() => {
     scrollToBottom();
@@ -26,15 +88,24 @@ export function useChat({ botId, onError }: UseChatOptions) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const loadChatHistory = async () => {
+  const handleSessionSelect = async (sessionId: number) => {
+    setCurrentSessionId(sessionId);
+    await loadChatHistory(sessionId);
+  };
+
+  const handleNewSession = async () => {
+    setSessionsLoading(true);
     try {
-      const data = await ChatService.getChatHistory(botId);
-      setMessages(data.messages || []);
-      setBotName(data.bot?.name || 'Chat Bot');
+      const newSession = await ChatService.createSession(botId);
+      setSessions((prev) => [newSession, ...prev]);
+      setCurrentSessionId(newSession.id);
+      setMessages([]);
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Unknown error');
-      console.error('Error loading chat history:', err);
+      console.error('Error creating session:', err);
       onError?.(err);
+    } finally {
+      setSessionsLoading(false);
     }
   };
 
@@ -47,12 +118,22 @@ export function useChat({ botId, onError }: UseChatOptions) {
     setLoading(true);
 
     try {
-      const data = await ChatService.sendMessage(botId, message);
+      const data = await ChatService.sendMessage(
+        botId,
+        message,
+        currentSessionId || undefined,
+      );
       const assistantMessage: Message = {
         role: 'assistant',
         content: data.response,
       };
       setMessages((prev) => [...prev, assistantMessage]);
+
+      // Update sessions if a new session was created
+      if (data.session?.id && currentSessionId !== data.session.id) {
+        setCurrentSessionId(data.session.id);
+        await loadSessions();
+      }
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Unknown error');
       console.error('Error sending message:', err);
@@ -81,5 +162,10 @@ export function useChat({ botId, onError }: UseChatOptions) {
     messagesEndRef,
     handleSubmit,
     sendMessage,
+    sessions,
+    currentSessionId,
+    sessionsLoading,
+    handleSessionSelect,
+    handleNewSession,
   };
 }

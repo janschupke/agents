@@ -17,7 +17,41 @@ export class ChatService {
     private readonly openaiService: OpenAIService
   ) {}
 
-  async getChatHistory(botId: number) {
+  async getSessions(botId: number) {
+    // Load bot with config
+    const bot = await this.botRepository.findByIdWithConfig(botId);
+    if (!bot) {
+      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Get all sessions for this bot
+    const sessions = await this.sessionRepository.findAllByBotId(botId);
+
+    return sessions.map((session) => ({
+      id: session.id,
+      session_name: session.sessionName,
+      createdAt: session.createdAt,
+    }));
+  }
+
+  async createSession(botId: number) {
+    // Load bot with config
+    const bot = await this.botRepository.findByIdWithConfig(botId);
+    if (!bot) {
+      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Create new session
+    const session = await this.sessionRepository.create(botId);
+
+    return {
+      id: session.id,
+      session_name: session.sessionName,
+      createdAt: session.createdAt,
+    };
+  }
+
+  async getChatHistory(botId: number, sessionId?: number) {
     // Load bot with config
     const bot = await this.botRepository.findByIdWithConfig(botId);
     if (!bot) {
@@ -25,9 +59,17 @@ export class ChatService {
     }
 
     // Get or create session
-    let session = await this.sessionRepository.findLatestByBotId(botId);
-    if (!session) {
-      session = await this.sessionRepository.create(botId);
+    let session;
+    if (sessionId) {
+      session = await this.sessionRepository.findById(sessionId);
+      if (!session || session.botId !== botId) {
+        throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
+      }
+    } else {
+      session = await this.sessionRepository.findLatestByBotId(botId);
+      if (!session) {
+        session = await this.sessionRepository.create(botId);
+      }
     }
 
     // Load messages
@@ -49,7 +91,7 @@ export class ChatService {
     };
   }
 
-  async sendMessage(botId: number, message: string) {
+  async sendMessage(botId: number, message: string, sessionId?: number) {
     // Load bot with config
     const bot = await this.botRepository.findByIdWithConfig(botId);
     if (!bot) {
@@ -59,9 +101,17 @@ export class ChatService {
     const botConfig = this.botRepository.mergeBotConfig(bot.config);
 
     // Get or create session
-    let session = await this.sessionRepository.findLatestByBotId(botId);
-    if (!session) {
-      session = await this.sessionRepository.create(botId);
+    let session;
+    if (sessionId) {
+      session = await this.sessionRepository.findById(sessionId);
+      if (!session || session.botId !== botId) {
+        throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
+      }
+    } else {
+      session = await this.sessionRepository.findLatestByBotId(botId);
+      if (!session) {
+        session = await this.sessionRepository.create(botId);
+      }
     }
 
     // Load existing messages

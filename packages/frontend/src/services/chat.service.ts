@@ -4,30 +4,47 @@ import {
   ChatHistoryResponse,
   SendMessageRequest,
   SendMessageResponse,
+  Session,
 } from '../types/chat.types.js';
 
 export class ChatService {
   /**
-   * Get chat history for a bot
+   * Get all sessions for a bot
+   */
+  static async getSessions(botId: number): Promise<Session[]> {
+    return apiManager.get<Session[]>(API_ENDPOINTS.SESSIONS(botId));
+  }
+
+  /**
+   * Create a new session for a bot
+   */
+  static async createSession(botId: number): Promise<Session> {
+    return apiManager.post<Session>(API_ENDPOINTS.SESSIONS(botId), {});
+  }
+
+  /**
+   * Get chat history for a bot and optional session
    */
   static async getChatHistory(
     botId: number,
+    sessionId?: number,
   ): Promise<ChatHistoryResponse> {
     return apiManager.get<ChatHistoryResponse>(
-      API_ENDPOINTS.CHAT(botId),
+      API_ENDPOINTS.CHAT(botId, sessionId),
     );
   }
 
   /**
-   * Send a message to a bot
+   * Send a message to a bot in a specific session
    */
   static async sendMessage(
     botId: number,
     message: string,
+    sessionId?: number,
   ): Promise<SendMessageResponse> {
     const body: SendMessageRequest = { message };
     return apiManager.post<SendMessageResponse>(
-      API_ENDPOINTS.CHAT(botId),
+      API_ENDPOINTS.CHAT(botId, sessionId),
       body,
     );
   }
