@@ -4,6 +4,9 @@ import { BotService } from '../services/bot.service.js';
 import BotSidebar from './BotSidebar.js';
 import BotConfigForm from './BotConfigForm.js';
 
+// Temporary bot ID for new bots (negative to indicate not saved)
+let tempBotIdCounter = -1;
+
 export default function BotConfig() {
   const [bots, setBots] = useState<Bot[]>([]);
   const [currentBotId, setCurrentBotId] = useState<number | null>(null);
@@ -17,18 +20,31 @@ export default function BotConfig() {
 
   useEffect(() => {
     if (currentBotId) {
-      loadBot(currentBotId);
+      // Check if it's a temporary bot (negative ID)
+      if (currentBotId < 0) {
+        // Find the temporary bot in the list
+        const tempBot = bots.find((b) => b.id === currentBotId);
+        if (tempBot) {
+          setCurrentBot(tempBot);
+        }
+      } else {
+        loadBot(currentBotId);
+      }
     } else {
       setCurrentBot(null);
     }
-  }, [currentBotId]);
+  }, [currentBotId, bots]);
 
   const loadBots = async () => {
     setLoading(true);
     setError(null);
     try {
       const data = await BotService.getAllBots();
-      setBots(data);
+      // Filter out temporary bots (negative IDs) when loading from server
+      setBots((prev) => {
+        const tempBots = prev.filter((b) => b.id < 0);
+        return [...data, ...tempBots];
+      });
       if (data.length > 0 && !currentBotId) {
         setCurrentBotId(data[0].id);
       }
@@ -36,7 +52,6 @@ export default function BotConfig() {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to load bots';
       setError(errorMessage);
-      console.error('Error loading bots:', err);
     } finally {
       setLoading(false);
     }
@@ -50,7 +65,6 @@ export default function BotConfig() {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to load bot';
       setError(errorMessage);
-      console.error('Error loading bot:', err);
     }
   };
 
@@ -58,38 +72,55 @@ export default function BotConfig() {
     setCurrentBotId(botId);
   };
 
-  const handleNewBot = async () => {
-    const name = prompt('Enter bot name:');
-    if (!name || !name.trim()) {
-      return;
-    }
-
-    const description = prompt('Enter bot description (optional):');
-
-    setLoading(true);
-    setError(null);
-    try {
-      const newBot = await BotService.createBot({
-        name: name.trim(),
-        description: description?.trim() || undefined,
-      });
-      setBots((prev) => [newBot, ...prev]);
-      setCurrentBotId(newBot.id);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to create bot';
-      setError(errorMessage);
-      console.error('Error creating bot:', err);
-      alert(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+  const handleNewBot = () => {
+    // Create a temporary bot object
+    const tempId = tempBotIdCounter--;
+    const newTempBot: Bot = {
+      id: tempId,
+      name: 'New Bot',
+      description: null,
+      createdAt: new Date().toISOString(),
+    };
+    
+    // Add to bots list and select it
+    setBots((prev) => [newTempBot, ...prev]);
+    setCurrentBotId(tempId);
   };
 
-  const handleSave = async () => {
+  const handleSave = async (savedBot: Bot) => {
+    // If it was a temporary bot, remove it from the list and add the saved one
+    if (savedBot.id < 0) {
+      // This shouldn't happen, but handle it just in case
+      return;
+    }
+    
+    // Update the bot in the list
+    setBots((prev) => {
+      const filtered = prev.filter((b) => b.id !== savedBot.id || b.id >= 0);
+      return [savedBot, ...filtered.filter((b) => b.id !== savedBot.id)];
+    });
+    
+    // Reload bots to ensure we have the latest data
     await loadBots();
-    if (currentBotId) {
-      await loadBot(currentBotId);
+    
+    // Select the saved bot
+    setCurrentBotId(savedBot.id);
+  };
+
+  const handleBotDelete = (botId: number) => {
+    // Remove temporary bot from list
+    if (botId < 0) {
+      setBots((prev) => {
+        const filtered = prev.filter((b) => b.id !== botId);
+        // Select first real bot or null
+        const realBots = filtered.filter((b) => b.id >= 0);
+        if (realBots.length > 0 && currentBotId === botId) {
+          setCurrentBotId(realBots[0].id);
+        } else if (currentBotId === botId) {
+          setCurrentBotId(null);
+        }
+        return filtered;
+      });
     }
   };
 
@@ -107,6 +138,7 @@ export default function BotConfig() {
           onBotSelect={handleBotSelect}
           onNewBot={handleNewBot}
           loading={loading}
+          onBotDelete={handleBotDelete}
         />
         <BotConfigForm bot={currentBot} onSave={handleSave} />
       </div>

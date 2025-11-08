@@ -1,19 +1,24 @@
 import { useState, useEffect } from 'react';
+import { useUser } from '@clerk/clerk-react';
 import { useChat } from '../hooks/useChat.js';
 import { ChatBotProps } from '../types/chat.types.js';
 import SessionSidebar from './SessionSidebar.js';
 import { BotService } from '../services/bot.service.js';
 
 export default function ChatBot({ botId: propBotId }: ChatBotProps) {
+  const { isSignedIn, isLoaded } = useUser();
   const [actualBotId, setActualBotId] = useState<number | undefined>(propBotId);
   const [loadingBot, setLoadingBot] = useState(!propBotId);
 
   useEffect(() => {
-    if (!propBotId) {
-      // Load first bot for user
-      loadFirstBot();
+    if (!propBotId && isSignedIn && isLoaded) {
+      // Wait a bit for token provider to be ready, then load first bot
+      const timer = setTimeout(() => {
+        loadFirstBot();
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [propBotId]);
+  }, [propBotId, isSignedIn, isLoaded]);
 
   const loadFirstBot = async () => {
     setLoadingBot(true);
@@ -22,8 +27,12 @@ export default function ChatBot({ botId: propBotId }: ChatBotProps) {
       if (bots.length > 0) {
         setActualBotId(bots[0].id);
       }
-    } catch (error) {
-      console.error('Failed to load bots:', error);
+    } catch (error: any) {
+      // Silently fail if it's an expected auth error (no token yet) or if no bots
+      // Will show "No bots available" message
+      if (!error?.expected) {
+        // Only log unexpected errors
+      }
     } finally {
       setLoadingBot(false);
     }

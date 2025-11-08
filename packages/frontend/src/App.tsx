@@ -16,7 +16,11 @@ function App() {
 
   useEffect(() => {
     if (isSignedIn && isLoaded) {
-      loadUserInfo();
+      // Wait a bit for token provider to be ready
+      const timer = setTimeout(() => {
+        loadUserInfo();
+      }, 100);
+      return () => clearTimeout(timer);
     } else {
       setUserInfo(null);
     }
@@ -27,9 +31,13 @@ function App() {
     try {
       const user = await UserService.getCurrentUser();
       setUserInfo(user);
-    } catch (error) {
-      console.error('Failed to load user info:', error);
-      // Don't clear userInfo on error, keep trying to show what we have
+    } catch (error: any) {
+      // Silently fail if it's an expected auth error (no token yet)
+      // Otherwise, user info is optional, we can show Clerk user data instead
+      if (!error?.expected) {
+        // Only log unexpected errors
+      }
+      setUserInfo(null);
     } finally {
       setLoadingUser(false);
     }

@@ -23,7 +23,6 @@ export default function ClerkTokenProvider({
           const token = await getToken();
           return token;
         } catch (error) {
-          console.warn('Failed to get Clerk token:', error);
           return null;
         }
       });

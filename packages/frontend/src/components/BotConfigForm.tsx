@@ -4,7 +4,7 @@ import { BotService } from '../services/bot.service.js';
 
 interface BotConfigFormProps {
   bot: Bot | null;
-  onSave: () => void;
+  onSave: (savedBot: Bot) => void;
 }
 
 export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
@@ -20,12 +20,18 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
     if (bot) {
       setName(bot.name);
       setDescription(bot.description || '');
-      loadEmbeddings();
+      // Only load embeddings for saved bots (positive IDs)
+      if (bot.id > 0) {
+        loadEmbeddings();
+      } else {
+        // New bot, no embeddings yet
+        setEmbeddings([]);
+      }
     }
   }, [bot]);
 
   const loadEmbeddings = async () => {
-    if (!bot) return;
+    if (!bot || bot.id < 0) return; // Can't load embeddings for unsaved bots
 
     setLoading(true);
     setError(null);
@@ -36,7 +42,6 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to load embeddings';
       setError(errorMessage);
-      console.error('Error loading embeddings:', err);
     } finally {
       setLoading(false);
     }
@@ -53,23 +58,39 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
     setSaving(true);
     setError(null);
     try {
-      await BotService.updateBot(bot.id, {
-        name: name.trim(),
-        description: description.trim() || undefined,
-      });
-      onSave();
+      let savedBot: Bot;
+      
+      if (bot.id < 0) {
+        // Creating a new bot
+        savedBot = await BotService.createBot({
+          name: name.trim(),
+          description: description.trim() || undefined,
+        });
+      } else {
+        // Updating an existing bot
+        await BotService.updateBot(bot.id, {
+          name: name.trim(),
+          description: description.trim() || undefined,
+        });
+        savedBot = {
+          ...bot,
+          name: name.trim(),
+          description: description.trim() || undefined,
+        };
+      }
+      
+      onSave(savedBot);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to save bot';
       setError(errorMessage);
-      console.error('Error saving bot:', err);
     } finally {
       setSaving(false);
     }
   };
 
   const handleDeleteEmbedding = async (embeddingId: number) => {
-    if (!bot) return;
+    if (!bot || bot.id < 0) return; // Can't delete embeddings from unsaved bots
 
     if (!confirm('Are you sure you want to delete this embedding?')) {
       return;
@@ -84,7 +105,6 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to delete embedding';
       setError(errorMessage);
-      console.error('Error deleting embedding:', err);
     } finally {
       setDeletingId(null);
     }
@@ -154,16 +174,22 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
               <h3 className="text-lg font-semibold text-text-secondary">
                 Embeddings
               </h3>
-              <button
-                onClick={loadEmbeddings}
-                disabled={loading}
-                className="px-3 py-1 text-sm bg-background-secondary border border-border rounded-md text-text-primary hover:bg-background disabled:opacity-50"
-              >
-                {loading ? 'Loading...' : 'Refresh'}
-              </button>
+              {bot.id > 0 && (
+                <button
+                  onClick={loadEmbeddings}
+                  disabled={loading}
+                  className="px-3 py-1 text-sm bg-background-secondary border border-border rounded-md text-text-primary hover:bg-background disabled:opacity-50"
+                >
+                  {loading ? 'Loading...' : 'Refresh'}
+                </button>
+              )}
             </div>
 
-            {loading ? (
+            {bot.id < 0 ? (
+              <div className="text-text-secondary text-center py-8">
+                Save the bot to see embeddings
+              </div>
+            ) : loading ? (
               <div className="text-text-secondary text-center py-8">
                 Loading embeddings...
               </div>
@@ -209,7 +235,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
           disabled={saving || !name.trim()}
           className="px-6 py-2 bg-primary text-text-inverse border-none rounded-md text-base font-medium cursor-pointer transition-colors hover:bg-primary-hover disabled:bg-disabled disabled:cursor-not-allowed"
         >
-          {saving ? 'Saving...' : 'Save'}
+          {saving ? 'Saving...' : bot.id < 0 ? 'Create Bot' : 'Save'}
         </button>
       </div>
     </div>

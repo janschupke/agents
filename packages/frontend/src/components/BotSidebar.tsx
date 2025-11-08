@@ -6,6 +6,7 @@ interface BotSidebarProps {
   onBotSelect: (botId: number) => void;
   onNewBot: () => void;
   loading?: boolean;
+  onBotDelete?: (botId: number) => void;
 }
 
 export default function BotSidebar({
@@ -14,6 +15,7 @@ export default function BotSidebar({
   onBotSelect,
   onNewBot,
   loading = false,
+  onBotDelete,
 }: BotSidebarProps) {
   return (
     <div className="flex flex-col w-64 h-full bg-background-secondary border-r border-border overflow-hidden">
@@ -30,28 +32,53 @@ export default function BotSidebar({
         ) : (
           <div className="flex flex-col">
             {bots.map((bot) => (
-              <button
+              <div
                 key={bot.id}
-                onClick={() => onBotSelect(bot.id)}
-                className={`px-4 py-3 text-left border-b border-border transition-colors ${
+                className={`flex items-center border-b border-border ${
                   currentBotId === bot.id
                     ? 'bg-primary text-text-inverse'
-                    : 'bg-background-secondary text-text-primary hover:bg-background'
+                    : 'bg-background-secondary text-text-primary'
                 }`}
               >
-                <div className="text-sm font-medium truncate">{bot.name}</div>
-                {bot.description && (
-                  <div
-                    className={`text-xs mt-1 truncate ${
-                      currentBotId === bot.id
-                        ? 'text-text-inverse opacity-80'
-                        : 'text-text-secondary'
-                    }`}
-                  >
-                    {bot.description}
+                <button
+                  onClick={() => onBotSelect(bot.id)}
+                  className={`flex-1 px-4 py-3 text-left transition-colors ${
+                    currentBotId === bot.id
+                      ? 'text-text-inverse'
+                      : 'hover:bg-background'
+                  }`}
+                >
+                  <div className="text-sm font-medium truncate">
+                    {bot.name}
+                    {bot.id < 0 && (
+                      <span className="ml-2 text-xs opacity-70">(New)</span>
+                    )}
                   </div>
+                  {bot.description && (
+                    <div
+                      className={`text-xs mt-1 truncate ${
+                        currentBotId === bot.id
+                          ? 'text-text-inverse opacity-80'
+                          : 'text-text-secondary'
+                      }`}
+                    >
+                      {bot.description}
+                    </div>
+                  )}
+                </button>
+                {bot.id < 0 && onBotDelete && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onBotDelete(bot.id);
+                    }}
+                    className="px-2 py-1 text-xs text-red-400 hover:text-red-300 mr-2"
+                    title="Cancel"
+                  >
+                    ×
+                  </button>
                 )}
-              </button>
+              </div>
             ))}
           </div>
         )}

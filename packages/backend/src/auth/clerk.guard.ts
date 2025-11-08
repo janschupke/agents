@@ -57,7 +57,6 @@ export class ClerkGuard implements CanActivate {
       const userId = (session as any).sub || (session as any).userId;
       
       if (!userId) {
-        console.warn('Token verified but no user ID found in session');
         return true;
       }
       
@@ -73,7 +72,6 @@ export class ClerkGuard implements CanActivate {
           imageUrl: clerkUser.imageUrl || null,
         };
       } catch (userError) {
-        console.warn('Failed to fetch user details from Clerk:', userError);
         // If we can't fetch user details, still attach the ID
         request.user = {
           id: userId,
@@ -86,13 +84,8 @@ export class ClerkGuard implements CanActivate {
 
       return true;
     } catch (error) {
-      // If token verification fails, log error but allow request
+      // If token verification fails, allow request
       // Controllers will check for req.user and throw 401 if needed
-      console.warn('Token verification failed:', error);
-      if (error instanceof Error) {
-        console.warn('Error message:', error.message);
-        console.warn('Error stack:', error.stack);
-      }
       return true;
     }
   }

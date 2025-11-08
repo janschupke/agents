@@ -15,6 +15,7 @@ export interface ApiError {
   message: string;
   status?: number;
   data?: unknown;
+  expected?: boolean; // Set to true for expected errors (e.g., 401 when not authenticated)
 }
 
 export class ApiManager {
@@ -58,6 +59,19 @@ export class ApiManager {
         data: errorData,
       };
 
+      // Don't throw for 401 if no token was available (user might not be signed in yet)
+      if (response.status === 401) {
+        const token = await getClerkToken();
+        if (!token) {
+          // No token available, this is expected - return a more user-friendly error
+          throw {
+            ...error,
+            message: 'Authentication required',
+            expected: true,
+          } as ApiError & { expected: boolean };
+        }
+      }
+
       throw error;
     }
 
@@ -83,9 +97,6 @@ export class ApiManager {
     
     // Get Clerk token if available
     const token = await getClerkToken();
-    if (!token) {
-      console.warn('No Clerk token available for request to:', endpoint);
-    }
     const headers = {
       ...this.defaultHeaders,
       ...(token && { Authorization: `Bearer ${token}` }),

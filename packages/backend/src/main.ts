@@ -16,6 +16,9 @@ async function bootstrap() {
   // Global exception filter
   app.useGlobalFilters(new AllExceptionsFilter());
   
+  // ClerkGuard is applied globally via APP_GUARD in AppModule
+  // It allows requests without tokens, but sets req.user when token is valid
+  
   await app.listen(appConfig.port);
   console.log(`Server running on http://localhost:${appConfig.port}`);
 }
