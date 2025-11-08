@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import { UserService } from '../services/user.service';
+import { ApiCredentialsService } from '../services/api-credentials.service';
 import { User } from '../types/chat.types';
 import { IconClose } from './Icons';
 
@@ -10,9 +11,16 @@ export default function UserProfile() {
   const { user: clerkUser } = useUser();
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasApiKey, setHasApiKey] = useState(false);
+  const [apiKeyLoading, setApiKeyLoading] = useState(true);
+  const [apiKey, setApiKey] = useState('');
+  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
+  const [apiKeySaving, setApiKeySaving] = useState(false);
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
 
   useEffect(() => {
     loadUserInfo();
+    loadApiKeyStatus();
   }, []);
 
   const loadUserInfo = async () => {
@@ -25,6 +33,79 @@ export default function UserProfile() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadApiKeyStatus = async () => {
+    setApiKeyLoading(true);
+    try {
+      const hasKey = await ApiCredentialsService.hasOpenAIKey();
+      setHasApiKey(hasKey);
+      if (hasKey) {
+        // Show placeholder if key exists
+        setApiKey('••••••••••••••••••••••••••••••••');
+        setShowApiKeyInput(false);
+      } else {
+        setShowApiKeyInput(true);
+      }
+    } catch (error) {
+      console.error('Failed to load API key status:', error);
+      setShowApiKeyInput(true);
+    } finally {
+      setApiKeyLoading(false);
+    }
+  };
+
+  const handleSaveApiKey = async () => {
+    if (!apiKey.trim()) {
+      setApiKeyError('API key cannot be empty');
+      return;
+    }
+
+    setApiKeySaving(true);
+    setApiKeyError(null);
+    try {
+      await ApiCredentialsService.setOpenAIKey(apiKey);
+      setHasApiKey(true);
+      setApiKey('••••••••••••••••••••••••••••••••');
+      setShowApiKeyInput(false);
+      // Dispatch custom event to notify App component
+      window.dispatchEvent(new CustomEvent('apiKeySaved'));
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      setApiKeyError(err.message || 'Failed to save API key');
+    } finally {
+      setApiKeySaving(false);
+    }
+  };
+
+  const handleDeleteApiKey = async () => {
+    if (!confirm('Are you sure you want to delete your API key? You will need to set it again to use the chat.')) {
+      return;
+    }
+
+    setApiKeySaving(true);
+    setApiKeyError(null);
+    try {
+      await ApiCredentialsService.deleteOpenAIKey();
+      setHasApiKey(false);
+      setApiKey('');
+      setShowApiKeyInput(true);
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      setApiKeyError(err.message || 'Failed to delete API key');
+    } finally {
+      setApiKeySaving(false);
+    }
+  };
+
+  const handleApiKeyInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setApiKey(e.target.value);
+    setApiKeyError(null);
+  };
+
+  const handleEditApiKey = () => {
+    setShowApiKeyInput(true);
+    setApiKey('');
   };
 
   const handleClose = () => {
@@ -135,6 +216,100 @@ export default function UserProfile() {
                 <span className="text-text-secondary text-sm">No roles assigned</span>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* API Key Section */}
+        <div className="pt-4 border-t border-border">
+          <div className="mb-4">
+            <label className="text-sm font-medium text-text-secondary block mb-2">
+              OpenAI API Key {!hasApiKey && <span className="text-red-600">*</span>}
+            </label>
+            {!hasApiKey && (
+              <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                <p className="text-sm text-yellow-800">
+                  <strong>Required:</strong> You must set your OpenAI API key to use the chat feature. 
+                  Get your API key from{' '}
+                  <a
+                    href="https://platform.openai.com/api-keys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-yellow-900"
+                  >
+                    OpenAI Platform
+                  </a>
+                </p>
+              </div>
+            )}
+            <p className="text-xs text-text-tertiary mb-3">
+              Your API key is encrypted and stored securely. It will never be sent back to the frontend in plaintext.
+            </p>
+            {apiKeyLoading ? (
+              <div className="text-text-secondary text-sm">Loading...</div>
+            ) : (
+              <div className="space-y-3">
+                {!showApiKeyInput && hasApiKey && apiKey ? (
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="password"
+                      value={apiKey}
+                      disabled
+                      className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background-secondary font-mono"
+                      placeholder="API key is set"
+                    />
+                    <button
+                      onClick={handleEditApiKey}
+                      className="h-8 px-4 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-secondary transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={handleDeleteApiKey}
+                      disabled={apiKeySaving}
+                      className="h-8 px-4 bg-red-600 text-white border-none rounded-md text-sm font-medium hover:bg-red-700 transition-colors disabled:bg-disabled disabled:cursor-not-allowed"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <input
+                      type="password"
+                      value={apiKey}
+                      onChange={handleApiKeyInputChange}
+                      placeholder="Enter your OpenAI API key"
+                      disabled={apiKeySaving}
+                      className="w-full h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background-secondary focus:outline-none focus:border-border-focus disabled:bg-disabled-bg disabled:cursor-not-allowed font-mono"
+                    />
+                    {apiKeyError && (
+                      <p className="text-xs text-red-600">{apiKeyError}</p>
+                    )}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleSaveApiKey}
+                        disabled={apiKeySaving || !apiKey.trim()}
+                        className="h-8 px-4 bg-primary text-text-inverse border-none rounded-md text-sm font-medium cursor-pointer transition-colors hover:bg-primary-hover disabled:bg-disabled disabled:cursor-not-allowed"
+                      >
+                        {apiKeySaving ? 'Saving...' : 'Save'}
+                      </button>
+                      {hasApiKey && (
+                        <button
+                          onClick={() => {
+                            setShowApiKeyInput(false);
+                            setApiKey('••••••••••••••••••••••••••••••••');
+                            setApiKeyError(null);
+                          }}
+                          disabled={apiKeySaving}
+                          className="h-8 px-4 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-secondary transition-colors disabled:bg-disabled disabled:cursor-not-allowed"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

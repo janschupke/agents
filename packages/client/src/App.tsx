@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
 import { useUser, SignIn } from '@clerk/clerk-react';
 import ChatBot from './components/ChatBot';
@@ -6,6 +6,7 @@ import BotConfig from './components/BotConfig';
 import UserDropdown from './components/UserDropdown';
 import UserProfile from './components/UserProfile';
 import { UserService } from './services/user.service';
+import { ApiCredentialsService } from './services/api-credentials.service';
 import { User } from './types/chat.types';
 import { IconChat, IconSettings } from './components/Icons';
 import { Skeleton } from './components/Skeleton';
@@ -13,19 +14,9 @@ import { Skeleton } from './components/Skeleton';
 function AppContent() {
   const { isSignedIn, isLoaded } = useUser();
   const [userInfo, setUserInfo] = useState<User | null>(null);
+  const [hasApiKey, setHasApiKey] = useState<boolean | null>(null);
+  const [apiKeyLoading, setApiKeyLoading] = useState(true);
   const location = useLocation();
-
-  useEffect(() => {
-    if (isSignedIn && isLoaded) {
-      // Wait a bit for token provider to be ready
-      const timer = setTimeout(() => {
-        loadUserInfo();
-      }, 100);
-      return () => clearTimeout(timer);
-    } else {
-      setUserInfo(null);
-    }
-  }, [isSignedIn, isLoaded]);
 
   const loadUserInfo = async () => {
     try {
@@ -41,7 +32,81 @@ function AppContent() {
     }
   };
 
+  const checkApiKey = useCallback(async () => {
+    setApiKeyLoading(true);
+    try {
+      const hasKey = await ApiCredentialsService.hasOpenAIKey();
+      setHasApiKey(hasKey);
+    } catch (error) {
+      // If check fails, assume no key (will redirect to profile)
+      setHasApiKey(false);
+    } finally {
+      setApiKeyLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isSignedIn && isLoaded) {
+      // Wait a bit for token provider to be ready
+      const timer = setTimeout(() => {
+        loadUserInfo();
+        checkApiKey();
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      setUserInfo(null);
+      setHasApiKey(null);
+      setApiKeyLoading(true);
+    }
+  }, [isSignedIn, isLoaded, checkApiKey]);
+
+  // Re-check API key when location changes (especially after saving on profile page)
+  useEffect(() => {
+    if (isSignedIn && isLoaded && location.pathname !== '/profile') {
+      // Re-check API key when navigating away from profile page
+      checkApiKey();
+    }
+  }, [location.pathname, isSignedIn, isLoaded, checkApiKey]);
+
+  // Listen for API key save event from UserProfile component
+  useEffect(() => {
+    if (!isSignedIn || !isLoaded) return;
+
+    const handleApiKeySaved = () => {
+      // Re-check API key status when it's saved
+      checkApiKey();
+    };
+
+    window.addEventListener('apiKeySaved', handleApiKeySaved);
+    return () => {
+      window.removeEventListener('apiKeySaved', handleApiKeySaved);
+    };
+  }, [isSignedIn, isLoaded, checkApiKey]);
+
   const isActiveRoute = (path: string) => location.pathname === path;
+
+  // Show loading while checking API key
+  if (isSignedIn && isLoaded && apiKeyLoading && location.pathname !== '/profile') {
+    return (
+      <div className="flex items-center justify-center h-full w-full">
+        <div className="flex flex-col items-center gap-3">
+          <Skeleton className="w-8 h-8 rounded-full" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to profile if no API key (except if already on profile page)
+  if (
+    isSignedIn &&
+    isLoaded &&
+    hasApiKey === false &&
+    location.pathname !== '/profile' &&
+    location.pathname !== '/'
+  ) {
+    return <Navigate to="/profile" replace />;
+  }
 
   return (
     <div className="flex flex-col min-h-screen h-screen overflow-hidden">

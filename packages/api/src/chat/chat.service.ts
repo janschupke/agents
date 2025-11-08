@@ -5,6 +5,7 @@ import { MessageRepository } from '../message/repository/message.repository';
 import { MemoryRepository } from '../memory/repository/memory.repository';
 import { OpenAIService } from '../openai/openai.service';
 import { UserService } from '../user/user.service';
+import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
 import { MEMORY_CONFIG } from '../common/constants/api.constants';
 import OpenAI from 'openai';
 
@@ -17,6 +18,7 @@ export class ChatService {
     private readonly memoryRepository: MemoryRepository,
     private readonly openaiService: OpenAIService,
     private readonly userService: UserService,
+    private readonly apiCredentialsService: ApiCredentialsService,
   ) {}
 
   async getSessions(botId: number, userId: string) {
@@ -110,6 +112,15 @@ export class ChatService {
   ) {
     // User will be created automatically by controller's ensureUser method
 
+    // Check if user has API key
+    const apiKey = await this.apiCredentialsService.getApiKey(userId, 'openai');
+    if (!apiKey) {
+      throw new HttpException(
+        'OpenAI API key is required. Please set your API key in your profile.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     // Load bot with config
     const bot = await this.botRepository.findByIdWithConfig(botId, userId);
     if (!bot) {
@@ -139,7 +150,7 @@ export class ChatService {
     // Retrieve relevant memories using vector similarity
     let relevantMemories: string[] = [];
     try {
-      const queryVector = await this.openaiService.generateEmbedding(message);
+      const queryVector = await this.openaiService.generateEmbedding(message, apiKey);
       const similar = await this.memoryRepository.findSimilarForBot(
         queryVector,
         botId,
@@ -218,8 +229,8 @@ export class ChatService {
       undefined
     );
 
-    // Call OpenAI API
-    const openai = this.openaiService.getClient();
+    // Call OpenAI API with user's API key
+    const openai = this.openaiService.getClient(apiKey);
     const completion = await openai.chat.completions.create(openaiRequest);
 
     const response = completion.choices[0]?.message?.content;
@@ -251,7 +262,7 @@ export class ChatService {
         const chunk = this.openaiService.createMemoryChunkFromMessages(
           allMessages
         );
-        const embedding = await this.openaiService.generateEmbedding(chunk);
+        const embedding = await this.openaiService.generateEmbedding(chunk, apiKey);
         await this.memoryRepository.create(session.id, chunk, embedding);
       } catch (error) {
         // Ignore memory save errors

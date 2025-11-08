@@ -14,4 +14,7 @@ export const API_ENDPOINTS = {
     `/api/bots/${botId}/embeddings/${embeddingId}`,
   USER_ME: '/api/user/me',
   HEALTHCHECK: '/api/healthcheck',
+  API_CREDENTIALS_STATUS: '/api/api-credentials/status',
+  API_CREDENTIALS_OPENAI: '/api/api-credentials/openai',
+  API_CREDENTIALS_OPENAI_CHECK: '/api/api-credentials/openai/check',
 } as const;

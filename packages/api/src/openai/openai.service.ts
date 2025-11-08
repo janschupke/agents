@@ -6,23 +6,31 @@ config();
 
 @Injectable()
 export class OpenAIService {
-  private readonly openai: OpenAI;
+  private readonly defaultOpenai: OpenAI | null;
 
   constructor() {
+    // Keep default client for backward compatibility (optional)
     const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      throw new Error('OPENAI_API_KEY is not set in .env file');
+    this.defaultOpenai = apiKey ? new OpenAI({ apiKey }) : null;
+  }
+
+  /**
+   * Get OpenAI client with a specific API key
+   */
+  getClient(apiKey?: string): OpenAI {
+    if (apiKey) {
+      return new OpenAI({ apiKey });
     }
-    this.openai = new OpenAI({ apiKey });
+    if (this.defaultOpenai) {
+      return this.defaultOpenai;
+    }
+    throw new Error('No API key provided and OPENAI_API_KEY is not set in .env file');
   }
 
-  getClient(): OpenAI {
-    return this.openai;
-  }
-
-  async generateEmbedding(text: string): Promise<number[]> {
+  async generateEmbedding(text: string, apiKey?: string): Promise<number[]> {
     try {
-      const response = await this.openai.embeddings.create({
+      const openai = this.getClient(apiKey);
+      const response = await openai.embeddings.create({
         model: 'text-embedding-3-small',
         input: text,
       });

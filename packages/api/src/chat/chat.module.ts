@@ -7,9 +7,10 @@ import { MessageRepository } from '../message/repository/message.repository';
 import { MemoryRepository } from '../memory/repository/memory.repository';
 import { OpenAIService } from '../openai/openai.service';
 import { UserModule } from '../user/user.module';
+import { ApiCredentialsModule } from '../api-credentials/api-credentials.module';
 
 @Module({
-  imports: [UserModule],
+  imports: [UserModule, ApiCredentialsModule],
   controllers: [ChatController],
   providers: [
     ChatService,
