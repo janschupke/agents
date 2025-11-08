@@ -3,10 +3,10 @@ import { useUser } from '@clerk/clerk-react';
 import { useChat } from '../hooks/useChat.js';
 import { ChatBotProps, Message } from '../types/chat.types.js';
 import SessionSidebar from './SessionSidebar.js';
-import { BotService } from '../services/bot.service.js';
 import { IconSend, IconSearch } from './Icons';
 import { Skeleton, SkeletonMessage, SkeletonList } from './Skeleton';
 import JsonModal from './JsonModal.js';
+import { useBots } from '../contexts/AppContext.js';
 
 export default function ChatBot({ botId: propBotId }: ChatBotProps) {
   const { isSignedIn, isLoaded } = useUser();
@@ -18,33 +18,22 @@ export default function ChatBot({ botId: propBotId }: ChatBotProps) {
     data: unknown;
   }>({ isOpen: false, title: '', data: null });
 
+  const { bots, loadingBots } = useBots();
+
   useEffect(() => {
     if (!propBotId && isSignedIn && isLoaded) {
-      // Wait a bit for token provider to be ready, then load first bot
-      const timer = setTimeout(() => {
-        loadFirstBot();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [propBotId, isSignedIn, isLoaded]);
-
-  const loadFirstBot = async () => {
-    setLoadingBot(true);
-    try {
-      const bots = await BotService.getAllBots();
-      if (bots.length > 0) {
+      if (!loadingBots && bots.length > 0 && !actualBotId) {
         setActualBotId(bots[0].id);
+        setLoadingBot(false);
+      } else if (!loadingBots && bots.length === 0) {
+        setLoadingBot(false);
+      } else if (loadingBots) {
+        setLoadingBot(true);
       }
-    } catch (error: unknown) {
-      // Silently fail if it's an expected auth error (no token yet) or if no bots
-      // Will show "No bots available" message
-      if (error && typeof error === 'object' && 'expected' in error && !error.expected) {
-        // Only log unexpected errors
-      }
-    } finally {
+    } else if (propBotId) {
       setLoadingBot(false);
     }
-  };
+  }, [propBotId, isSignedIn, isLoaded, loadingBots, bots, actualBotId]);
 
   const {
     messages,

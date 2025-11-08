@@ -1,14 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useUser, SignOutButton } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
-import { User } from '../types/chat.types';
 import { IconUser, IconLogout, IconChevronDown } from './Icons';
+import { useUserInfo } from '../contexts/AppContext';
 
-interface UserDropdownProps {
-  userInfo: User | null;
-}
-
-export default function UserDropdown({ userInfo }: UserDropdownProps) {
+export default function UserDropdown() {
+  const { userInfo } = useUserInfo();
   const { user: clerkUser } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);

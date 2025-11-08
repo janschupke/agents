@@ -3,40 +3,27 @@ import { Bot } from '../types/chat.types.js';
 import { BotService } from '../services/bot.service.js';
 import BotSidebar from './BotSidebar.js';
 import BotConfigForm from './BotConfigForm.js';
+import { useBots } from '../contexts/AppContext.js';
 
 // Temporary bot ID for new bots (negative to indicate not saved)
 let tempBotIdCounter = -1;
 
 export default function BotConfig() {
-  const [bots, setBots] = useState<Bot[]>([]);
+  const {
+    bots: contextBots,
+    loadingBots,
+    refreshBots,
+    addBotToCache,
+    updateBotInCache,
+    removeBotFromCache,
+  } = useBots();
+  const [localBots, setLocalBots] = useState<Bot[]>([]);
   const [currentBotId, setCurrentBotId] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load all bots with their details on mount
-  useEffect(() => {
-    loadAllBots();
-  }, []);
-
-  const loadAllBots = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await BotService.getAllBots();
-      // Filter out temporary bots (negative IDs) when loading from server
-      setBots((prev) => {
-        const tempBots = prev.filter((b) => b.id < 0);
-        return [...data, ...tempBots];
-      });
-      // Don't preselect any bot - let user select
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to load bots';
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Merge context bots with local temporary bots
+  const bots = [...contextBots, ...localBots.filter((b) => b.id < 0)];
+  const loading = loadingBots;
 
   const handleBotSelect = (botId: number) => {
     setCurrentBotId(botId);
@@ -52,35 +39,35 @@ export default function BotConfig() {
       createdAt: new Date().toISOString(),
     };
     
-    // Add to bots list and select it
-    setBots((prev) => [newTempBot, ...prev]);
+    // Add to local bots list and select it
+    setLocalBots((prev) => [newTempBot, ...prev]);
     setCurrentBotId(tempId);
   };
 
   const handleSave = async (savedBot: Bot) => {
-    // If it was a temporary bot, remove it from the list and add the saved one
+    // If it was a temporary bot, remove it from local state
     if (savedBot.id < 0) {
       // This shouldn't happen, but handle it just in case
       return;
     }
     
-    // Update the bot in the list with the saved data
-    setBots((prev) => {
-      const filtered = prev.filter((b) => b.id !== savedBot.id || b.id >= 0);
-      return [savedBot, ...filtered.filter((b) => b.id !== savedBot.id)];
-    });
+    // Remove from local bots if it was there
+    setLocalBots((prev) => prev.filter((b) => b.id !== savedBot.id));
     
-    // Reload bots to ensure we have the latest data
-    await loadAllBots();
+    // Update in context cache
+    updateBotInCache(savedBot);
+    
+    // Refresh bots to ensure we have the latest data from server
+    await refreshBots();
     
     // Select the saved bot
     setCurrentBotId(savedBot.id);
   };
 
   const handleBotDelete = (botId: number) => {
-    // Remove temporary bot from list
+    // Remove temporary bot from local list
     if (botId < 0) {
-      setBots((prev) => {
+      setLocalBots((prev) => {
         const filtered = prev.filter((b) => b.id !== botId);
         // Don't auto-select another bot
         if (currentBotId === botId) {
@@ -88,6 +75,12 @@ export default function BotConfig() {
         }
         return filtered;
       });
+    } else {
+      // Remove from context cache
+      removeBotFromCache(botId);
+      if (currentBotId === botId) {
+        setCurrentBotId(null);
+      }
     }
   };
 

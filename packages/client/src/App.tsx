@@ -5,32 +5,17 @@ import ChatBot from './components/ChatBot';
 import BotConfig from './components/BotConfig';
 import UserDropdown from './components/UserDropdown';
 import UserProfile from './components/UserProfile';
-import { UserService } from './services/user.service';
 import { ApiCredentialsService } from './services/api-credentials.service';
-import { User } from './types/chat.types';
 import { IconChat, IconSettings } from './components/Icons';
 import { Skeleton } from './components/Skeleton';
+import { AppProvider, useUserInfo } from './contexts/AppContext';
 
 function AppContent() {
   const { isSignedIn, isLoaded } = useUser();
-  const [userInfo, setUserInfo] = useState<User | null>(null);
+  const { userInfo } = useUserInfo();
   const [hasApiKey, setHasApiKey] = useState<boolean | null>(null);
   const [apiKeyLoading, setApiKeyLoading] = useState(true);
   const location = useLocation();
-
-  const loadUserInfo = async () => {
-    try {
-      const user = await UserService.getCurrentUser();
-      setUserInfo(user);
-    } catch (error: unknown) {
-      // Silently fail if it's an expected auth error (no token yet)
-      // Otherwise, user info is optional, we can show Clerk user data instead
-      if (error && typeof error === 'object' && 'expected' in error && !error.expected) {
-        // Only log unexpected errors
-      }
-      setUserInfo(null);
-    }
-  };
 
   const checkApiKey = useCallback(async () => {
     setApiKeyLoading(true);
@@ -49,12 +34,10 @@ function AppContent() {
     if (isSignedIn && isLoaded) {
       // Wait a bit for token provider to be ready
       const timer = setTimeout(() => {
-        loadUserInfo();
         checkApiKey();
       }, 100);
       return () => clearTimeout(timer);
     } else {
-      setUserInfo(null);
       setHasApiKey(null);
       setApiKeyLoading(true);
     }
@@ -140,7 +123,7 @@ function AppContent() {
                 <span className="hidden sm:inline">Config</span>
               </Link>
             </div>
-            <UserDropdown userInfo={userInfo} />
+            <UserDropdown />
           </div>
         )}
       </header>
@@ -212,7 +195,9 @@ function SignInPage() {
 function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
     </BrowserRouter>
   );
 }
