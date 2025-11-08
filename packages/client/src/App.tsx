@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import { useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
+import { useUser, SignIn } from '@clerk/clerk-react';
 import ChatBot from './components/ChatBot';
 import BotConfig from './components/BotConfig';
-import AuthButtons from './components/AuthButtons';
 import UserDropdown from './components/UserDropdown';
 import UserProfile from './components/UserProfile';
 import { UserService } from './services/user.service';
@@ -10,12 +10,10 @@ import { User } from './types/chat.types';
 import { IconChat, IconSettings } from './components/Icons';
 import { Skeleton } from './components/Skeleton';
 
-type View = 'chat' | 'config' | 'profile';
-
-function App() {
-  const [view, setView] = useState<View>('chat');
+function AppContent() {
   const { isSignedIn, isLoaded } = useUser();
   const [userInfo, setUserInfo] = useState<User | null>(null);
+  const location = useLocation();
 
   useEffect(() => {
     if (isSignedIn && isLoaded) {
@@ -43,47 +41,43 @@ function App() {
     }
   };
 
+  const isActiveRoute = (path: string) => location.pathname === path;
+
   return (
     <div className="flex flex-col min-h-screen h-screen overflow-hidden">
       <header className="bg-background-secondary px-6 py-3 shadow-sm border-b border-border flex items-center justify-between">
         <h1 className="text-xl font-semibold text-text-secondary">OpenAI Chat</h1>
-        <div className="flex items-center gap-3">
-          {isLoaded && isSignedIn && (
-            <div className="flex items-center gap-2">
-              <div className="flex gap-1">
-                <button
-                  onClick={() => setView('chat')}
-                  className={`h-8 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                    view === 'chat'
-                      ? 'bg-primary text-text-inverse'
-                      : 'bg-background text-text-primary hover:bg-background-secondary'
-                  }`}
-                  title="Chat"
-                >
-                  <IconChat className="w-4 h-4" />
-                  <span className="hidden sm:inline">Chat</span>
-                </button>
-                <button
-                  onClick={() => setView('config')}
-                  className={`h-8 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                    view === 'config'
-                      ? 'bg-primary text-text-inverse'
-                      : 'bg-background text-text-primary hover:bg-background-secondary'
-                  }`}
-                  title="Bot Configuration"
-                >
-                  <IconSettings className="w-4 h-4" />
-                  <span className="hidden sm:inline">Config</span>
-                </button>
-              </div>
-              <UserDropdown
-                userInfo={userInfo}
-                onProfileClick={() => setView('profile')}
-              />
+        {isLoaded && isSignedIn && (
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1">
+              <Link
+                to="/chat"
+                className={`h-8 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                  isActiveRoute('/chat')
+                    ? 'bg-primary text-text-inverse'
+                    : 'bg-background text-text-primary hover:bg-background-secondary'
+                }`}
+                title="Chat"
+              >
+                <IconChat className="w-4 h-4" />
+                <span className="hidden sm:inline">Chat</span>
+              </Link>
+              <Link
+                to="/config"
+                className={`h-8 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                  isActiveRoute('/config')
+                    ? 'bg-primary text-text-inverse'
+                    : 'bg-background text-text-primary hover:bg-background-secondary'
+                }`}
+                title="Bot Configuration"
+              >
+                <IconSettings className="w-4 h-4" />
+                <span className="hidden sm:inline">Config</span>
+              </Link>
             </div>
-          )}
-          {!isSignedIn && <AuthButtons />}
-        </div>
+            <UserDropdown userInfo={userInfo} />
+          </div>
+        )}
       </header>
       <main className="flex-1 flex justify-center items-start p-6 overflow-hidden">
         {!isLoaded ? (
@@ -93,31 +87,68 @@ function App() {
               <Skeleton className="h-4 w-24" />
             </div>
           </div>
-        ) : !isSignedIn ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold text-text-secondary mb-4">
-                Welcome to OpenAI Chat
-              </h2>
-              <p className="text-text-secondary mb-6">
-                Please sign in or sign up to continue
-              </p>
-              <AuthButtons />
-            </div>
-          </div>
-        ) : view === 'chat' ? (
-          <ChatBot />
-        ) : view === 'config' ? (
-          <div className="w-full max-w-7xl h-full">
-            <BotConfig />
-          </div>
-        ) : view === 'profile' ? (
-          <div className="w-full flex justify-center items-start p-8 overflow-y-auto">
-            <UserProfile onClose={() => setView('chat')} />
-          </div>
-        ) : null}
+        ) : (
+          <Routes>
+            <Route
+              path="/"
+              element={
+                isSignedIn ? <Navigate to="/chat" replace /> : <SignInPage />
+              }
+            />
+            <Route
+              path="/chat"
+              element={
+                isSignedIn ? (
+                  <ChatBot />
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              }
+            />
+            <Route
+              path="/config"
+              element={
+                isSignedIn ? (
+                  <div className="w-full max-w-7xl h-full">
+                    <BotConfig />
+                  </div>
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                isSignedIn ? (
+                  <div className="w-full flex justify-center items-start p-8 overflow-y-auto">
+                    <UserProfile />
+                  </div>
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              }
+            />
+          </Routes>
+        )}
       </main>
     </div>
+  );
+}
+
+function SignInPage() {
+  return (
+    <div className="flex items-center justify-center h-full w-full">
+      <SignIn />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }
 

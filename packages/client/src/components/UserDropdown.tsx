@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { useUser, SignOutButton } from '@clerk/clerk-react';
+import { Link } from 'react-router-dom';
 import { User } from '../types/chat.types';
 import { IconUser, IconLogout, IconChevronDown } from './Icons';
 
 interface UserDropdownProps {
   userInfo: User | null;
-  onProfileClick: () => void;
 }
 
-export default function UserDropdown({ userInfo, onProfileClick }: UserDropdownProps) {
+export default function UserDropdown({ userInfo }: UserDropdownProps) {
   const { user: clerkUser } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -64,16 +64,14 @@ export default function UserDropdown({ userInfo, onProfileClick }: UserDropdownP
               <p className="text-xs text-text-tertiary mt-0.5">{userInfo.email}</p>
             )}
           </div>
-          <button
-            onClick={() => {
-              onProfileClick();
-              setIsOpen(false);
-            }}
-            className="w-full text-left px-3 py-2 text-sm text-text-primary hover:bg-background transition-colors flex items-center gap-2"
+          <Link
+            to="/profile"
+            onClick={() => setIsOpen(false)}
+            className="block w-full text-left px-3 py-2 text-sm text-text-primary hover:bg-background transition-colors flex items-center gap-2"
           >
             <IconUser className="w-4 h-4" />
             <span>Profile</span>
-          </button>
+          </Link>
           <div className="border-t border-border mt-1">
             <SignOutButton>
               <button className="w-full text-left px-3 py-2 text-sm text-text-primary hover:bg-background transition-colors flex items-center gap-2">

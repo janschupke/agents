@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import { UserService } from '../services/user.service';
 import { User } from '../types/chat.types';
+import { IconClose } from './Icons';
 
-interface UserProfileProps {
-  onClose: () => void;
-}
-
-export default function UserProfile({ onClose }: UserProfileProps) {
+export default function UserProfile() {
+  const navigate = useNavigate();
   const { user: clerkUser } = useUser();
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,6 +25,10 @@ export default function UserProfile({ onClose }: UserProfileProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClose = () => {
+    navigate('/chat');
   };
 
   if (loading) {
@@ -52,23 +55,11 @@ export default function UserProfile({ onClose }: UserProfileProps) {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-semibold text-text-secondary">User Profile</h2>
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="text-text-secondary hover:text-text-primary transition-colors"
           aria-label="Close"
         >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <IconClose className="w-6 h-6" />
         </button>
       </div>
 
@@ -150,8 +141,8 @@ export default function UserProfile({ onClose }: UserProfileProps) {
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-4 border-t border-border">
           <button
-            onClick={onClose}
-            className="px-4 py-2 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-secondary transition-colors"
+            onClick={handleClose}
+            className="h-8 px-4 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-secondary transition-colors"
           >
             Close
           </button>

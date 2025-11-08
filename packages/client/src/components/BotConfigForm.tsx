@@ -17,7 +17,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Cache embeddings per bot ID
   const embeddingsCache = useRef<Map<number, Embedding[]>>(new Map());
   // Track which bots are currently loading embeddings
