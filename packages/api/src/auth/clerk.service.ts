@@ -1,28 +1,28 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { createClerkClient } from '@clerk/clerk-sdk-node';
+import { createClerkClient } from '@clerk/backend';
 import { appConfig } from '../config/app.config';
 
 @Injectable()
 export class ClerkService {
   private readonly logger = new Logger(ClerkService.name);
-  private readonly clerkClient: ReturnType<typeof createClerkClient> | null = null;
+  private readonly clerk: ReturnType<typeof createClerkClient> | null = null;
 
   constructor() {
     if (appConfig.clerk.secretKey) {
-      this.clerkClient = createClerkClient({
+      this.clerk = createClerkClient({
         secretKey: appConfig.clerk.secretKey,
       });
     }
   }
 
   async updateUserRoles(userId: string, roles: string[]): Promise<void> {
-    if (!this.clerkClient) {
+    if (!this.clerk) {
       this.logger.warn('Clerk client not available, cannot update roles');
       return;
     }
 
     try {
-      await this.clerkClient.users.updateUserMetadata(userId, {
+      await this.clerk.users.updateUserMetadata(userId, {
         publicMetadata: {
           roles,
         },
@@ -35,6 +35,6 @@ export class ClerkService {
   }
 
   getClient(): ReturnType<typeof createClerkClient> | null {
-    return this.clerkClient;
+    return this.clerk;
   }
 }

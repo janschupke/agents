@@ -2,11 +2,10 @@ import {
   Injectable,
   CanActivate,
   ExecutionContext,
-  UnauthorizedException,
   SetMetadata,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { createClerkClient, verifyToken } from '@clerk/clerk-sdk-node';
+import { createClerkClient, verifyToken } from '@clerk/backend';
 import { appConfig } from '../config/app.config';
 
 export const IS_PUBLIC_KEY = 'isPublic';
@@ -29,7 +28,7 @@ interface CachedToken {
 
 @Injectable()
 export class ClerkGuard implements CanActivate {
-  private clerkClient: ReturnType<typeof createClerkClient> | null = null;
+  private clerk: ReturnType<typeof createClerkClient> | null = null;
   // Cache user data for 5 minutes to avoid repeated Clerk API calls
   private userCache = new Map<string, CachedUser>();
   // Cache verified tokens for 1 minute to avoid repeated verifyToken calls
@@ -39,7 +38,7 @@ export class ClerkGuard implements CanActivate {
 
   constructor(private reflector: Reflector) {
     if (appConfig.clerk.secretKey) {
-      this.clerkClient = createClerkClient({
+      this.clerk = createClerkClient({
         secretKey: appConfig.clerk.secretKey,
       });
     } else {
@@ -97,7 +96,6 @@ export class ClerkGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const perfStart = Date.now();
     const request = context.switchToHttp().getRequest();
     const path = request.url;
     
@@ -112,7 +110,7 @@ export class ClerkGuard implements CanActivate {
     }
 
     // If Clerk is not configured, allow all requests (for development)
-    if (!this.clerkClient) {
+    if (!this.clerk) {
       return true;
     }
 
@@ -139,10 +137,6 @@ export class ClerkGuard implements CanActivate {
       if (cachedUserId) {
         // Token was recently verified, use cached userId
         userId = cachedUserId;
-        const totalTime = Date.now() - perfStart;
-        if (totalTime > 10) {
-          console.log(`[Performance] ClerkGuard.verifyToken (cached) - ${totalTime}ms for ${path}`);
-        }
       } else {
         // Verify the session token with Clerk (only if not cached)
         const verifyStart = Date.now();
@@ -151,11 +145,11 @@ export class ClerkGuard implements CanActivate {
         });
         const verifyTime = Date.now() - verifyStart;
         if (verifyTime > 50) {
-          console.log(`[Performance] ClerkGuard.verifyToken took ${verifyTime}ms for ${path}`);
+          console.warn(`[Performance] ClerkGuard.verifyToken took ${verifyTime}ms for ${path}`);
         }
         
         // Get user ID from session (JWT payload)
-        userId = (session as any).sub || (session as any).userId;
+        userId = session.sub || (session as any).userId;
         
         if (userId) {
           // Cache the verified token
@@ -178,20 +172,12 @@ export class ClerkGuard implements CanActivate {
           imageUrl: cachedUser.imageUrl,
           roles: cachedUser.roles,
         };
-        const totalTime = Date.now() - perfStart;
-        if (totalTime > 100) {
-          console.log(`[Performance] ClerkGuard.canActivate COMPLETE (cached) - total: ${totalTime}ms for ${path}`);
-        }
         return true;
       }
       
       // Fetch user details from Clerk only if not cached
       try {
-        const getUserStart = Date.now();
-        console.log(`[Performance] ClerkGuard.getUser START for ${path}`);
-        const clerkUser = await this.clerkClient.users.getUser(userId);
-        const getUserTime = Date.now() - getUserStart;
-        console.log(`[Performance] ClerkGuard.getUser COMPLETE - ${getUserTime}ms for ${path}`);
+        const clerkUser = await this.clerk.users.getUser(userId);
         
         // Extract roles from public metadata, default to ["user"] if not present
         const publicMetadata = clerkUser.publicMetadata as any;
@@ -220,8 +206,7 @@ export class ClerkGuard implements CanActivate {
           roles: userData.roles,
         };
       } catch (userError) {
-        const errorTime = Date.now() - perfStart;
-        console.error(`[Performance] ClerkGuard.getUser ERROR after ${errorTime}ms for ${path}:`, userError);
+        console.error(`ClerkGuard.getUser ERROR for ${path}:`, userError);
         // If we can't fetch user details, still attach the ID with default role
         request.user = {
           id: userId,
@@ -233,14 +218,9 @@ export class ClerkGuard implements CanActivate {
         };
       }
 
-      const totalTime = Date.now() - perfStart;
-      if (totalTime > 100) {
-        console.log(`[Performance] ClerkGuard.canActivate COMPLETE - total: ${totalTime}ms for ${path}`);
-      }
       return true;
     } catch (error) {
-      const errorTime = Date.now() - perfStart;
-      console.error(`[Performance] ClerkGuard.canActivate ERROR after ${errorTime}ms for ${path}:`, error);
+      console.error(`ClerkGuard.canActivate ERROR for ${path}:`, error);
       // If token verification fails, allow request
       // Controllers will check for req.user and throw 401 if needed
       return true;
