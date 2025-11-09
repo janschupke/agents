@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/clerk-react';
-import { useChat } from '../hooks/useChat.js';
+import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { ChatBotProps, Message } from '../types/chat.types.js';
 import SessionSidebar from './SessionSidebar.js';
 import PageContainer from './PageContainer.js';
@@ -8,64 +7,120 @@ import PageHeader from './PageHeader.js';
 import { IconSend, IconSearch } from './Icons';
 import { Skeleton, SkeletonMessage, SkeletonList } from './Skeleton';
 import JsonModal from './JsonModal.js';
-import { useBots, useSelectedBot } from '../contexts/AppContext.js';
+import { useBots } from '../contexts/BotContext';
+import { useSelectedBot } from '../contexts/AppContext';
+import { ChatProvider, useChatContext } from '../contexts/ChatContext';
+import { ChatService } from '../services/chat.service';
 
-export default function ChatBot({ botId: propBotId }: ChatBotProps) {
-  const { isSignedIn, isLoaded } = useUser();
-  const { bots, loadingBots } = useBots();
+function ChatBotContent({ botId: propBotId }: ChatBotProps) {
+  const { isSignedIn, isLoaded } = useAuth();
+  const { bots, loadingBots, getBotSessions, refreshBotSessions, addSessionToBot } = useBots();
   const { selectedBotId, setSelectedBotId } = useSelectedBot();
-  const [actualBotId, setActualBotId] = useState<number | undefined>(propBotId);
-  const [loadingBot, setLoadingBot] = useState(!propBotId);
+  const {
+    messages,
+    botName,
+    currentBotId,
+    currentSessionId,
+    loadingMessages,
+    loadingSession,
+    loadChatHistory,
+    sendMessage: sendMessageToContext,
+  } = useChatContext();
+  
+  const [input, setInput] = useState('');
   const [jsonModal, setJsonModal] = useState<{
     isOpen: boolean;
     title: string;
     data: unknown;
   }>({ isOpen: false, title: '', data: null });
+  
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const actualBotId = propBotId || selectedBotId || (bots.length > 0 ? bots[0].id : null);
+  const sessions = actualBotId ? (getBotSessions(actualBotId) || []) : [];
+  const sessionsLoading = loadingBots;
 
   // Use propBotId if provided, otherwise use persisted selectedBotId, otherwise use first bot
   useEffect(() => {
     if (propBotId) {
-      // If propBotId is provided, use it and update persisted state
-      setActualBotId(propBotId);
       setSelectedBotId(propBotId);
-      setLoadingBot(false);
-    } else if (isSignedIn && isLoaded) {
-      if (!loadingBots) {
-        if (bots.length > 0) {
-          // Use persisted selectedBotId if available and valid, otherwise use first bot
-          const botToUse = selectedBotId && bots.some(b => b.id === selectedBotId)
-            ? selectedBotId
-            : bots[0].id;
-          setActualBotId(botToUse);
-          setSelectedBotId(botToUse);
-          setLoadingBot(false);
-        } else {
-          setActualBotId(undefined);
-          setSelectedBotId(null);
-          setLoadingBot(false);
-        }
-      } else {
-        setLoadingBot(true);
-      }
+    } else if (isSignedIn && isLoaded && !loadingBots && bots.length > 0) {
+      const botToUse = selectedBotId && bots.some(b => b.id === selectedBotId)
+        ? selectedBotId
+        : bots[0].id;
+      setSelectedBotId(botToUse);
     }
   }, [propBotId, isSignedIn, isLoaded, loadingBots, bots, selectedBotId, setSelectedBotId]);
 
-  const {
-    messages,
-    input,
-    setInput,
-    loading,
-    botName,
-    messagesEndRef,
-    handleSubmit,
-    sessions,
-    currentSessionId,
-    sessionsLoading,
-    handleSessionSelect,
-    handleNewSession,
-  } = useChat({ botId: actualBotId });
+  // Deterministically check if we need to load chat
+  // Load if: bot doesn't match OR (no session and no messages)
+  useEffect(() => {
+    if (actualBotId && isSignedIn && isLoaded && !loadingBots && !loadingMessages) {
+      const botMismatch = currentBotId !== actualBotId;
+      const needsLoad = botMismatch || (currentSessionId === null && messages.length === 0);
+      
+      if (needsLoad) {
+        // If bot matches but we need a session, try to use current session or create new one
+        const sessionToLoad = (!botMismatch && currentSessionId) ? currentSessionId : undefined;
+        loadChatHistory(actualBotId, sessionToLoad);
+      }
+    }
+  }, [actualBotId, isSignedIn, isLoaded, loadingBots, loadingMessages, currentBotId, currentSessionId, messages.length, loadChatHistory]);
 
-  if (loadingBot) {
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSessionSelect = async (sessionId: number) => {
+    if (sessionId === currentSessionId || !actualBotId) return;
+    await loadChatHistory(actualBotId, sessionId);
+  };
+
+  const handleNewSession = async () => {
+    if (!actualBotId) return;
+    try {
+      const newSession = await ChatService.createSession(actualBotId);
+      addSessionToBot(actualBotId, newSession);
+      await loadChatHistory(actualBotId, newSession.id);
+    } catch (error) {
+      console.error('Error creating session:', error);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || !actualBotId) return;
+    
+    const message = input;
+    setInput('');
+    
+    try {
+      const result = await sendMessageToContext(actualBotId, message, currentSessionId || undefined);
+      // If a new session was created, add it to BotContext and refresh sessions
+      if (result.isNewSession && result.sessionId && actualBotId) {
+        // Get session details from ChatService to add to BotContext
+        try {
+          const sessions = await ChatService.getSessions(actualBotId);
+          const newSession = sessions.find(s => s.id === result.sessionId);
+          if (newSession) {
+            addSessionToBot(actualBotId, newSession);
+          } else {
+            // Fallback: refresh all sessions
+            await refreshBotSessions(actualBotId);
+          }
+        } catch (error) {
+          // Fallback: refresh all sessions if we can't get the new session
+          await refreshBotSessions(actualBotId);
+        }
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
+  };
+
+  const loading = loadingMessages || loadingSession;
+
+  if (loadingBots) {
     return (
       <PageContainer>
         <div className="flex h-full">
@@ -212,5 +267,13 @@ function MessageBubble({ message, onShowJson }: MessageBubbleProps) {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ChatBot({ botId: propBotId }: ChatBotProps) {
+  return (
+    <ChatProvider>
+      <ChatBotContent botId={propBotId} />
+    </ChatProvider>
   );
 }

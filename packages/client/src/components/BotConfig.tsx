@@ -3,7 +3,7 @@ import { Bot } from '../types/chat.types.js';
 import BotSidebar from './BotSidebar.js';
 import BotConfigForm from './BotConfigForm.js';
 import PageContainer from './PageContainer.js';
-import { useBots } from '../contexts/AppContext.js';
+import { useBots } from '../contexts/BotContext.js';
 
 // Temporary bot ID for new bots (negative to indicate not saved)
 let tempBotIdCounter = -1;
@@ -13,8 +13,9 @@ export default function BotConfig() {
     bots: contextBots,
     loadingBots,
     refreshBots,
-    updateBotInCache,
-    removeBotFromCache,
+    updateBot,
+    addBot,
+    removeBot,
   } = useBots();
   const [localBots, setLocalBots] = useState<Bot[]>([]);
   const [currentBotId, setCurrentBotId] = useState<number | null>(null);
@@ -53,12 +54,19 @@ export default function BotConfig() {
     // Remove from local bots if it was there
     setLocalBots((prev) => prev.filter((b) => b.id !== savedBot.id));
     
-    // Update in context cache (bots list)
-    updateBotInCache(savedBot);
+    // Check if this is a new bot (not in context yet) or an update
+    const existingBot = contextBots.find((b) => b.id === savedBot.id);
+    if (existingBot) {
+      // Update existing bot in context
+      updateBot(savedBot);
+    } else {
+      // Add new bot to context
+      addBot(savedBot);
+    }
     
     // Note: Bot config cache is updated in BotConfigForm when saved
     
-    // Refresh bots to ensure we have the latest data from server
+    // Refresh bots to ensure we have the latest data from server (including sessions)
     await refreshBots();
     
     // Select the saved bot
@@ -77,8 +85,8 @@ export default function BotConfig() {
         return filtered;
       });
     } else {
-      // Remove from context cache
-      removeBotFromCache(botId);
+      // Remove from context
+      removeBot(botId);
       if (currentBotId === botId) {
         setCurrentBotId(null);
       }

@@ -4,7 +4,7 @@ import { BotService } from '../services/bot.service.js';
 import PageHeader from './PageHeader.js';
 import { IconClose, IconPlus } from './Icons';
 import { Skeleton, SkeletonList } from './Skeleton';
-import { useBotConfigCache } from '../contexts/AppContext.js';
+import { useBots } from '../contexts/BotContext.js';
 
 interface BotConfigFormProps {
   bot: Bot | null;
@@ -12,7 +12,7 @@ interface BotConfigFormProps {
 }
 
 export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
-  const { getCachedBotConfig, setCachedBotConfig } = useBotConfigCache();
+  const { getCachedBotConfig, setCachedBotConfig } = useBots();
   
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -216,7 +216,6 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
           temperature,
           system_prompt: systemPrompt.trim(),
           behavior_rules: validRules,
-          lastUpdated: Date.now(),
         });
       }
       

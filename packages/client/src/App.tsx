@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
-import { useUser, SignIn } from '@clerk/clerk-react';
+import { SignIn } from '@clerk/clerk-react';
 import ChatBot from './components/ChatBot';
 import BotConfig from './components/BotConfig';
 import UserDropdown from './components/UserDropdown';
@@ -8,7 +8,10 @@ import UserProfile from './components/UserProfile';
 import Footer from './components/Footer';
 import { IconChat, IconSettings } from './components/Icons';
 import { Skeleton } from './components/Skeleton';
-import { AppProvider, useApiKeyStatus } from './contexts/AppContext';
+import { AppProvider } from './contexts/AppContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { UserProvider, useApiKeyStatus } from './contexts/UserContext';
+import { BotProvider } from './contexts/BotContext';
 
 // Memoized Header component to prevent re-renders
 const AppHeader = memo(function AppHeader() {
@@ -71,7 +74,7 @@ function SignInPage() {
 }
 
 function AppContent() {
-  const { isSignedIn, isLoaded } = useUser();
+  const { isSignedIn, isLoaded } = useAuth();
   const { hasApiKey, loadingApiKey } = useApiKeyStatus();
   const location = useLocation();
 
@@ -137,9 +140,15 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AppProvider>
-        <AppContent />
-      </AppProvider>
+      <AuthProvider>
+        <AppProvider>
+          <UserProvider>
+            <BotProvider>
+              <AppContent />
+            </BotProvider>
+          </UserProvider>
+        </AppProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

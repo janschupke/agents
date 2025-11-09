@@ -5,7 +5,7 @@ import { ApiCredentialsService } from '../services/api-credentials.service';
 import PageContainer from './PageContainer';
 import PageHeader from './PageHeader';
 import { IconClose } from './Icons';
-import { useApiKeyStatus, useUserInfo } from '../contexts/AppContext';
+import { useApiKeyStatus, useUserInfo } from '../contexts/UserContext';
 
 export default function UserProfile() {
   const navigate = useNavigate();
