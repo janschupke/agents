@@ -5,7 +5,6 @@ import {
   Embedding,
   CreateBotRequest,
   UpdateBotRequest,
-  User,
 } from '../types/chat.types.js';
 
 export class BotService {

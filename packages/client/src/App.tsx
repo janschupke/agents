@@ -171,29 +171,12 @@ function AppContent() {
   return (
     <div className="flex flex-col min-h-screen h-screen overflow-hidden">
       <AppHeader />
-      <main className="flex-1 flex justify-center items-start p-6 overflow-hidden">
+      <main className="flex-1 overflow-hidden p-6">
         <Routes>
           <Route path="/" element={<Navigate to="/chat" replace />} />
-          <Route
-            path="/chat"
-            element={<ChatBot />}
-          />
-          <Route
-            path="/config"
-            element={
-              <div className="w-full max-w-7xl h-full">
-                <BotConfig />
-              </div>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <div className="w-full flex justify-center items-start p-8 overflow-y-auto">
-                <UserProfile />
-              </div>
-            }
-          />
+          <Route path="/chat" element={<ChatBot />} />
+          <Route path="/config" element={<BotConfig />} />
+          <Route path="/profile" element={<UserProfile />} />
         </Routes>
       </main>
       <AppFooter />

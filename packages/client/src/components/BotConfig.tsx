@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Bot } from '../types/chat.types.js';
-import { BotService } from '../services/bot.service.js';
 import BotSidebar from './BotSidebar.js';
 import BotConfigForm from './BotConfigForm.js';
+import PageContainer from './PageContainer.js';
 import { useBots } from '../contexts/AppContext.js';
 
 // Temporary bot ID for new bots (negative to indicate not saved)
@@ -13,13 +13,12 @@ export default function BotConfig() {
     bots: contextBots,
     loadingBots,
     refreshBots,
-    addBotToCache,
     updateBotInCache,
     removeBotFromCache,
   } = useBots();
   const [localBots, setLocalBots] = useState<Bot[]>([]);
   const [currentBotId, setCurrentBotId] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   // Merge context bots with local temporary bots
   const bots = [...contextBots, ...localBots.filter((b) => b.id < 0)];
@@ -90,13 +89,13 @@ export default function BotConfig() {
     : null;
 
   return (
-    <div className="flex flex-col h-full bg-background-secondary rounded-lg shadow-lg overflow-hidden">
+    <PageContainer>
       {error && (
         <div className="p-3 bg-red-100 border-b border-red-400 text-red-700">
           {error}
         </div>
       )}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex h-full overflow-hidden">
         <BotSidebar
           bots={bots}
           currentBotId={currentBotId}
@@ -107,6 +106,6 @@ export default function BotConfig() {
         />
         <BotConfigForm bot={currentBot} onSave={handleSave} />
       </div>
-    </div>
+    </PageContainer>
   );
 }

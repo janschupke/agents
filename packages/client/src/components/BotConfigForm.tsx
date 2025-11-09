@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Bot, Embedding } from '../types/chat.types.js';
 import { BotService } from '../services/bot.service.js';
+import PageHeader from './PageHeader.js';
 import { IconClose, IconPlus } from './Icons';
 import { SkeletonList } from './Skeleton';
 
@@ -96,7 +97,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
                     rulesArray = [config.behavior_rules];
                   }
                 } else if (Array.isArray(config.behavior_rules)) {
-                  rulesArray = config.behavior_rules.map((r) => String(r));
+                  rulesArray = config.behavior_rules.map((r: unknown) => String(r));
                 } else if (typeof config.behavior_rules === 'object' && (config.behavior_rules as any).rules) {
                   const rulesObj = config.behavior_rules as { rules: unknown[] };
                   rulesArray = rulesObj.rules.map((r) => String(r));
@@ -181,7 +182,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
         savedBot = {
           ...bot,
           name: name.trim(),
-          description: description.trim() || undefined,
+          description: description.trim() || null,
         };
       }
       
@@ -241,11 +242,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="px-5 py-3 bg-background border-b border-border">
-        <h2 className="text-lg font-semibold text-text-secondary">
-          Bot Configuration
-        </h2>
-      </div>
+      <PageHeader title="Bot Configuration" />
       <div className="flex-1 overflow-y-auto p-5">
         {error && (
           <div className="mb-4 p-2.5 bg-red-100 border border-red-400 text-red-700 rounded text-sm">

@@ -3,6 +3,8 @@ import { useUser } from '@clerk/clerk-react';
 import { useChat } from '../hooks/useChat.js';
 import { ChatBotProps, Message } from '../types/chat.types.js';
 import SessionSidebar from './SessionSidebar.js';
+import PageContainer from './PageContainer.js';
+import PageHeader from './PageHeader.js';
 import { IconSend, IconSearch } from './Icons';
 import { Skeleton, SkeletonMessage, SkeletonList } from './Skeleton';
 import JsonModal from './JsonModal.js';
@@ -52,48 +54,51 @@ export default function ChatBot({ botId: propBotId }: ChatBotProps) {
 
   if (loadingBot) {
     return (
-      <div className="flex w-full max-w-6xl h-[600px] bg-background-secondary rounded-lg shadow-lg overflow-hidden">
-        <div className="w-56 border-r border-border p-3">
-          <Skeleton className="h-6 w-20 mb-3" />
-          <SkeletonList count={5} />
-        </div>
-        <div className="flex-1 p-4">
-          <Skeleton className="h-6 w-32 mb-4" />
-          <div className="space-y-4">
-            <SkeletonMessage />
-            <SkeletonMessage />
-            <SkeletonMessage />
+      <PageContainer>
+        <div className="flex h-full">
+          <div className="w-56 border-r border-border p-3">
+            <Skeleton className="h-6 w-20 mb-3" />
+            <SkeletonList count={5} />
+          </div>
+          <div className="flex-1 p-4">
+            <Skeleton className="h-6 w-32 mb-4" />
+            <div className="space-y-4">
+              <SkeletonMessage />
+              <SkeletonMessage />
+              <SkeletonMessage />
+            </div>
           </div>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   if (!actualBotId) {
     return (
-      <div className="flex w-full max-w-6xl h-[600px] bg-background-secondary rounded-lg shadow-lg overflow-hidden items-center justify-center">
-        <div className="text-text-secondary text-center">
-          <p className="mb-2">No bots available.</p>
-          <p className="text-sm text-text-tertiary">Please create a bot first.</p>
+      <PageContainer>
+        <div className="flex h-full items-center justify-center">
+          <div className="text-text-secondary text-center">
+            <p className="mb-2">No bots available.</p>
+            <p className="text-sm text-text-tertiary">Please create a bot first.</p>
+          </div>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="flex w-full max-w-6xl h-[600px] bg-background-secondary rounded-lg shadow-lg overflow-hidden">
-      <SessionSidebar
-        sessions={sessions}
-        currentSessionId={currentSessionId}
-        onSessionSelect={handleSessionSelect}
-        onNewSession={handleNewSession}
-        loading={sessionsLoading}
-      />
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <div className="px-4 py-2.5 bg-background border-b border-border">
-          <h2 className="text-lg font-semibold text-text-secondary">{botName}</h2>
-        </div>
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+    <PageContainer>
+      <div className="flex h-full">
+        <SessionSidebar
+          sessions={sessions}
+          currentSessionId={currentSessionId}
+          onSessionSelect={handleSessionSelect}
+          onNewSession={handleNewSession}
+          loading={sessionsLoading}
+        />
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <PageHeader title={botName} />
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
           {messages
             .filter((msg) => msg.role !== 'system')
             .map((message, index) => (
@@ -115,8 +120,8 @@ export default function ChatBot({ botId: propBotId }: ChatBotProps) {
             </div>
           )}
           <div ref={messagesEndRef} />
-        </div>
-        <form
+          </div>
+          <form
           className="flex p-3 border-t border-border gap-2"
           onSubmit={handleSubmit}
         >
@@ -137,6 +142,7 @@ export default function ChatBot({ botId: propBotId }: ChatBotProps) {
             <span className="hidden sm:inline">Send</span>
           </button>
         </form>
+        </div>
       </div>
       <JsonModal
         isOpen={jsonModal.isOpen}
@@ -144,7 +150,7 @@ export default function ChatBot({ botId: propBotId }: ChatBotProps) {
         title={jsonModal.title}
         data={jsonModal.data}
       />
-    </div>
+    </PageContainer>
   );
 }
 

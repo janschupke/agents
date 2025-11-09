@@ -4,6 +4,8 @@ import { useUser } from '@clerk/clerk-react';
 import { UserService } from '../services/user.service';
 import { ApiCredentialsService } from '../services/api-credentials.service';
 import { User } from '../types/chat.types';
+import PageContainer from './PageContainer';
+import PageHeader from './PageHeader';
 import { IconClose } from './Icons';
 
 export default function UserProfile() {
@@ -135,11 +137,11 @@ export default function UserProfile() {
 
   if (loading) {
     return (
-      <div className="w-full max-w-2xl mx-auto bg-background-secondary rounded-lg shadow-lg p-8">
-        <div className="flex items-center justify-center h-64">
+      <PageContainer>
+        <div className="flex items-center justify-center h-full">
           <div className="text-text-secondary">Loading...</div>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -153,19 +155,22 @@ export default function UserProfile() {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto bg-background-secondary rounded-lg shadow-lg p-8">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold text-text-secondary">User Profile</h2>
-        <button
-          onClick={handleClose}
-          className="text-text-secondary hover:text-text-primary transition-colors"
-          aria-label="Close"
-        >
-          <IconClose className="w-6 h-6" />
-        </button>
-      </div>
-
-      <div className="space-y-6">
+    <PageContainer>
+      <div className="flex flex-col h-full overflow-hidden">
+        <PageHeader
+          title="User Profile"
+          actions={
+            <button
+              onClick={handleClose}
+              className="text-text-secondary hover:text-text-primary transition-colors"
+              aria-label="Close"
+            >
+              <IconClose className="w-6 h-6" />
+            </button>
+          }
+        />
+        <div className="flex-1 overflow-y-auto p-8">
+          <div className="space-y-6">
         {/* Profile Image */}
         <div className="flex items-center gap-6">
           {displayUser.imageUrl ? (
@@ -343,7 +348,9 @@ export default function UserProfile() {
             Close
           </button>
         </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }
