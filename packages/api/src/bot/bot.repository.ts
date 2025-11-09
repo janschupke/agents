@@ -15,10 +15,9 @@ export class BotRepository {
   }
 
   async findByIdAndUserId(id: number, userId: string): Promise<Bot | null> {
-    const perfStart = Date.now();
     // Use findUnique with compound where for better index usage
     // This is more efficient than findFirst when we have a unique constraint
-    const result = await this.prisma.bot.findFirst({
+    return this.prisma.bot.findFirst({
       where: { id, userId },
       // Select only needed fields to reduce data transfer
       select: {
@@ -29,11 +28,6 @@ export class BotRepository {
         createdAt: true,
       },
     });
-    const perfTime = Date.now() - perfStart;
-    if (perfTime > 50) {
-      console.log(`[Performance] BotRepository.findByIdAndUserId took ${perfTime}ms for bot ${id}`);
-    }
-    return result;
   }
 
   async findByName(name: string, userId: string): Promise<Bot | null> {
@@ -43,7 +37,6 @@ export class BotRepository {
   }
 
   async findConfigsByBotId(botId: number): Promise<Record<string, unknown>> {
-    const perfStart = Date.now();
     // Select only needed fields to reduce data transfer
     const configs = await this.prisma.botConfig.findMany({
       where: { botId },
@@ -52,40 +45,23 @@ export class BotRepository {
         configValue: true,
       },
     });
-    const queryTime = Date.now() - perfStart;
-    if (queryTime > 50) {
-      console.log(`[Performance] BotRepository.findConfigsByBotId query took ${queryTime}ms for bot ${botId}`);
-    }
 
-    const mapStart = Date.now();
     // Use reduce for better performance than for loop
-    const config: Record<string, unknown> = configs.reduce((acc, item) => {
+    return configs.reduce((acc, item) => {
       acc[item.configKey] = item.configValue;
       return acc;
     }, {} as Record<string, unknown>);
-    const mapTime = Date.now() - mapStart;
-    if (mapTime > 10) {
-      console.log(`[Performance] BotRepository.findConfigsByBotId mapping took ${mapTime}ms`);
-    }
-
-    return config;
   }
 
   async findByIdWithConfig(
     id: number,
     userId: string,
   ): Promise<BotWithConfig | null> {
-    const perfStart = Date.now();
     // Load bot and configs in parallel to reduce total time
     const [bot, config] = await Promise.all([
       this.findByIdAndUserId(id, userId),
       this.findConfigsByBotId(id),
     ]);
-    
-    const totalTime = Date.now() - perfStart;
-    if (totalTime > 100) {
-      console.log(`[Performance] BotRepository.findByIdWithConfig COMPLETE (parallel) - total: ${totalTime}ms`);
-    }
     
     if (!bot) {
       return null;

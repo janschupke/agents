@@ -102,13 +102,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       this.logger.warn('Using DATABASE_URL (pooler). Consider using DIRECT_URL for better performance.');
     }
 
-    // Log slow queries (>100ms)
-    this.$on('query' as never, (e: any) => {
-      const duration = e.duration || 0;
-      if (duration > 100) {
-        this.logger.warn(`[Performance] Slow query (${duration}ms): ${e.query.substring(0, 100)}...`);
-      }
-    });
 
     this.$on('error' as never, (e: any) => {
       this.logger.error('Prisma error:', e);
@@ -116,12 +109,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   }
 
   async onModuleInit() {
-    const connectStart = Date.now();
     await this.$connect();
-    const connectTime = Date.now() - connectStart;
-    if (connectTime > 100) {
-      this.logger.warn(`[Performance] Prisma $connect took ${connectTime}ms`);
-    }
   }
 
   async onModuleDestroy() {

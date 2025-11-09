@@ -148,14 +148,9 @@ export class ClerkGuard implements CanActivate {
         userId = cachedUserId;
       } else {
         // Verify the session token with Clerk (only if not cached)
-        const verifyStart = Date.now();
         session = await verifyToken(token, {
           secretKey: appConfig.clerk.secretKey,
         });
-        const verifyTime = Date.now() - verifyStart;
-        if (verifyTime > 50) {
-          console.warn(`[Performance] ClerkGuard.verifyToken took ${verifyTime}ms for ${path}`);
-        }
         
         // Get user ID from session (JWT payload)
         userId = session.sub || (session as any).userId;

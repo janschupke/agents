@@ -20,10 +20,9 @@ export class UserRepository {
     imageUrl?: string;
     roles?: string[];
   }): Promise<User> {
-    const perfStart = Date.now();
     // Use a single upsert that includes roles to avoid separate update
     const roles = data.roles && data.roles.length > 0 ? (data.roles as any) : [];
-    const result = await this.prisma.user.upsert({
+    return this.prisma.user.upsert({
       where: { id: data.id },
       update: {
         email: data.email,
@@ -41,11 +40,6 @@ export class UserRepository {
         roles: roles,
       },
     });
-    const perfTime = Date.now() - perfStart;
-    if (perfTime > 100) {
-      console.log(`[Performance] UserRepository.create (upsert) took ${perfTime}ms for user ${data.id}`);
-    }
-    return result;
   }
 
   async update(
@@ -71,18 +65,12 @@ export class UserRepository {
   }
 
   async updateRoles(id: string, roles: string[]): Promise<User> {
-    const perfStart = Date.now();
-    const result = await this.prisma.user.update({
+    return this.prisma.user.update({
       where: { id },
       data: {
         roles: roles as any,
       },
     });
-    const perfTime = Date.now() - perfStart;
-    if (perfTime > 100) {
-      console.log(`[Performance] UserRepository.updateRoles took ${perfTime}ms for user ${id}`);
-    }
-    return result;
   }
 
   async findAll(): Promise<User[]> {

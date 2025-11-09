@@ -64,20 +64,10 @@ export class ChatController {
     @User() user: AuthenticatedUser,
     @Query('sessionId') sessionId?: string,
   ): Promise<ChatHistoryResponseDto> {
-    const perfStart = Date.now();
-    console.log(`[Performance] ChatController.getChatHistory START - botId: ${botId}, sessionId: ${sessionId}`);
-    
     try {
       const parsedSessionId = sessionId ? parseInt(sessionId, 10) : undefined;
-      const serviceStart = Date.now();
-      const result = await this.chatService.getChatHistory(botId, user.id, parsedSessionId);
-      const serviceTime = Date.now() - serviceStart;
-      const totalTime = Date.now() - perfStart;
-      console.log(`[Performance] ChatController.getChatHistory COMPLETE - total: ${totalTime}ms (service: ${serviceTime}ms), messages: ${result.messages?.length || 0}`);
-      return result;
+      return await this.chatService.getChatHistory(botId, user.id, parsedSessionId);
     } catch (error) {
-      const errorTime = Date.now() - perfStart;
-      console.error(`[Performance] ChatController.getChatHistory ERROR after ${errorTime}ms:`, error);
       if (error instanceof HttpException) {
         throw error;
       }

@@ -59,12 +59,11 @@ export class MessageRepository {
     sessionId: number,
     limit?: number
   ): Promise<Message[]> {
-    const perfStart = Date.now();
     // Default limit to prevent loading too many messages at once
     // This prevents performance issues with large JSON fields (rawRequest/rawResponse)
     const effectiveLimit = limit || 1000;
     
-    const result = await this.prisma.message.findMany({
+    return this.prisma.message.findMany({
       where: { sessionId },
       orderBy: { createdAt: 'asc' },
       take: effectiveLimit,
@@ -80,12 +79,5 @@ export class MessageRepository {
         createdAt: true,
       },
     });
-    
-    const perfTime = Date.now() - perfStart;
-    if (perfTime > 100) {
-      console.log(`[Performance] MessageRepository.findAllBySessionIdWithRawData took ${perfTime}ms for session ${sessionId}, returned ${result.length} messages`);
-    }
-    
-    return result;
   }
 }
