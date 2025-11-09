@@ -8,6 +8,7 @@ interface SessionSidebarProps {
   currentSessionId: number | null;
   onSessionSelect: (sessionId: number) => void;
   onNewSession: () => void;
+  onSessionDelete?: (sessionId: number) => void;
   loading?: boolean;
 }
 
@@ -16,6 +17,7 @@ export default function SessionSidebar({
   currentSessionId,
   onSessionSelect,
   onNewSession,
+  onSessionDelete,
   loading = false,
 }: SessionSidebarProps) {
   return (
@@ -49,6 +51,7 @@ export default function SessionSidebar({
                 session={session}
                 isSelected={currentSessionId === session.id}
                 onSelect={onSessionSelect}
+                onDelete={onSessionDelete}
               />
             ))}
           </div>

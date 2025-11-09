@@ -82,7 +82,22 @@ export function BotProvider({ children }: { children: ReactNode }) {
         ...bot,
         sessions: undefined, // Will be loaded separately
       }));
-      setBots(botsWithSessions);
+      
+      // Update bots while preserving existing sessions temporarily
+      // This ensures newly saved bots stay visible during refresh
+      setBots((prev) => {
+        // Create a map of existing bots with their sessions
+        const existingBotsMap = new Map(prev.map((b) => [b.id, b]));
+        
+        // Merge server data with existing sessions, preserving order from server (newest first)
+        return botsWithSessions.map((bot) => {
+          const existing = existingBotsMap.get(bot.id);
+          return {
+            ...bot,
+            sessions: existing?.sessions, // Preserve existing sessions until refreshed
+          };
+        });
+      });
 
       // Load sessions for all bots in parallel
       const sessionPromises = botsWithSessions.map(async (bot) => {
@@ -134,7 +149,8 @@ export function BotProvider({ children }: { children: ReactNode }) {
       if (prev.some((b) => b.id === bot.id)) {
         return prev.map((b) => (b.id === bot.id ? { ...b, ...bot } : b));
       }
-      return [...prev, { ...bot, sessions: [] }];
+      // Add to top of list (newest first)
+      return [{ ...bot, sessions: [] }, ...prev];
     });
   }, []);
 

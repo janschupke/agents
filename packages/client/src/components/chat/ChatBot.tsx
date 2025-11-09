@@ -8,6 +8,9 @@ import { useBotInitialization } from '../../hooks/useBotInitialization.js';
 import { useSessionValidation } from '../../hooks/useSessionValidation.js';
 import { useChatAutoLoad } from '../../hooks/useChatAutoLoad.js';
 import { useChatHandlers } from '../../hooks/useChatHandlers.js';
+import { useConfirm } from '../../hooks/useConfirm';
+import { useToast } from '../../contexts/ToastContext';
+import { ChatService } from '../../services/chat.service.js';
 import SessionSidebar from '../session/SessionSidebar.js';
 import PageContainer from '../ui/PageContainer.js';
 import JsonModal from '../ui/JsonModal.js';
@@ -19,8 +22,10 @@ import ChatLoadingState from './ChatLoadingState';
 import ChatEmptyState from './ChatEmptyState';
 
 function ChatBotContent({ botId: propBotId }: ChatBotProps) {
-  const { bots, loadingBots, getBotSessions, refreshBotSessions, addSessionToBot } = useBots();
+  const { bots, loadingBots, getBotSessions, refreshBotSessions, addSessionToBot, removeSessionFromBot } = useBots();
   const { selectedBotId, setSelectedBotId } = useSelectedBot();
+  const { confirm, ConfirmDialog } = useConfirm();
+  const { showToast } = useToast();
   const {
     messages,
     setMessages,
@@ -105,6 +110,59 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
     await handleSubmitMessage(message);
   };
 
+  const handleSessionDelete = async (sessionId: number) => {
+    if (!actualBotId) return;
+
+    // Find the session to get its name for confirmation
+    const sessionToDelete = sessions.find((s) => s.id === sessionId);
+    const sessionName = sessionToDelete?.session_name || `Session ${new Date(sessionToDelete?.createdAt || Date.now()).toLocaleDateString()}`;
+
+    // Confirm deletion
+    const confirmed = await confirm({
+      title: 'Delete Session',
+      message: `Are you sure you want to delete "${sessionName}"? This will permanently delete the session and all its messages.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      confirmVariant: 'danger',
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    // Optimistically remove from UI immediately
+    const wasCurrentSession = currentSessionId === sessionId;
+    const remainingSessions = sessions.filter((s) => s.id !== sessionId);
+
+    // Optimistically remove session from context immediately
+    removeSessionFromBot(actualBotId, sessionId);
+
+    // Select first session in list if we deleted the current one
+    if (wasCurrentSession) {
+      if (remainingSessions.length > 0) {
+        // Select the first remaining session
+        await handleSessionSelect(remainingSessions[0].id);
+      } else {
+        // No sessions left, clear selection
+        setCurrentSessionId(null);
+        setMessages([]);
+      }
+    }
+
+    // Delete from API in background
+    try {
+      await ChatService.deleteSession(actualBotId, sessionId);
+      // Refresh sessions to ensure UI is in sync with server
+      await refreshBotSessions(actualBotId);
+      showToast('Session deleted successfully', 'success');
+    } catch (error) {
+      console.error('Failed to delete session:', error);
+      // Revert optimistic update on error
+      await refreshBotSessions(actualBotId);
+      showToast(`Failed to delete session: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+    }
+  };
+
   const loading = loadingMessages || loadingSession;
 
   if (loadingBots) {
@@ -123,6 +181,7 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
           currentSessionId={currentSessionId}
           onSessionSelect={handleSessionSelect}
           onNewSession={handleNewSession}
+          onSessionDelete={handleSessionDelete}
           loading={sessionsLoading}
         />
         <div className="flex flex-col flex-1 overflow-hidden">
@@ -157,6 +216,7 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
         title={jsonModal.title}
         data={jsonModal.data}
       />
+      {ConfirmDialog}
     </PageContainer>
   );
 }

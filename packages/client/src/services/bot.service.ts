@@ -44,4 +44,11 @@ export class BotService {
   static async deleteEmbedding(botId: number, embeddingId: number): Promise<void> {
     return apiManager.delete(API_ENDPOINTS.BOT_EMBEDDING(botId, embeddingId));
   }
+
+  /**
+   * Delete a bot (and all related data: sessions, messages, configs)
+   */
+  static async deleteBot(botId: number): Promise<void> {
+    return apiManager.delete(API_ENDPOINTS.BOT(botId));
+  }
 }

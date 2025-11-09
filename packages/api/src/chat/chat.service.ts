@@ -398,4 +398,25 @@ export class ChatService {
       rawResponse: completion,
     };
   }
+
+  async deleteSession(botId: number, sessionId: number, userId: string) {
+    // Verify the bot belongs to the user
+    const bot = await this.botRepository.findByIdAndUserId(botId, userId);
+    if (!bot) {
+      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Verify the session belongs to the bot and user
+    const session = await this.sessionRepository.findByIdAndUserId(sessionId, userId);
+    if (!session) {
+      throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (session.botId !== botId) {
+      throw new HttpException('Session does not belong to this bot', HttpStatus.BAD_REQUEST);
+    }
+
+    // Delete the session - Prisma will cascade delete all related data (messages, memory chunks)
+    await this.sessionRepository.delete(sessionId, userId);
+  }
 }

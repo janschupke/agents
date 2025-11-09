@@ -179,4 +179,17 @@ export class BotRepository {
       }
     }
   }
+
+  async delete(id: number, userId: string): Promise<void> {
+    // Verify the bot belongs to the user before deleting
+    const bot = await this.findByIdAndUserId(id, userId);
+    if (!bot) {
+      return; // Will be handled by service
+    }
+
+    // Delete the bot - Prisma will cascade delete all related data (sessions, messages, configs)
+    await this.prisma.bot.delete({
+      where: { id },
+    });
+  }
 }

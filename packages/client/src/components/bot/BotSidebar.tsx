@@ -1,5 +1,5 @@
 import { Bot } from '../../types/chat.types.js';
-import { IconPlus, IconClose } from '../ui/Icons';
+import { IconPlus, IconTrash } from '../ui/Icons';
 import { SkeletonList } from '../ui/Skeleton';
 
 interface BotSidebarProps {
@@ -44,7 +44,7 @@ export default function BotSidebar({
             {bots.map((bot) => (
               <div
                 key={bot.id}
-                className={`flex items-center border-b border-border ${
+                className={`group flex items-center border-b border-border ${
                   currentBotId === bot.id
                     ? 'bg-primary text-text-inverse'
                     : 'bg-background text-text-primary'
@@ -72,16 +72,20 @@ export default function BotSidebar({
                     </div>
                   )}
                 </button>
-                {bot.id < 0 && onBotDelete && (
+                {onBotDelete && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onBotDelete(bot.id);
                     }}
-                    className="px-2 py-1 text-text-tertiary hover:text-red-500 transition-colors"
-                    title="Cancel"
+                    className={`px-2 py-1 transition-colors opacity-0 group-hover:opacity-100 ${
+                      currentBotId === bot.id
+                        ? 'text-text-inverse hover:opacity-100'
+                        : 'text-text-tertiary hover:text-red-500'
+                    }`}
+                    title={bot.id < 0 ? 'Cancel' : 'Delete bot'}
                   >
-                    <IconClose className="w-4 h-4" />
+                    <IconTrash className="w-4 h-4" />
                   </button>
                 )}
               </div>

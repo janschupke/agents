@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Param,
   Body,
   ParseIntPipe,
@@ -168,6 +169,28 @@ export class ChatController {
           HttpStatus.UNAUTHORIZED,
         );
       }
+      throw new HttpException(
+        err.message || 'Unknown error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Delete(':botId/sessions/:sessionId')
+  async deleteSession(
+    @Param('botId', ParseIntPipe) botId: number,
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    try {
+      const userId = await this.ensureUser(req);
+      await this.chatService.deleteSession(botId, sessionId, userId);
+      return { success: true };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      const err = error as { message?: string };
       throw new HttpException(
         err.message || 'Unknown error',
         HttpStatus.INTERNAL_SERVER_ERROR,

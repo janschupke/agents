@@ -5,6 +5,7 @@ import PageHeader from '../ui/PageHeader.js';
 import { Skeleton } from '../ui/Skeleton';
 import { IconRefresh } from '../ui/Icons';
 import { useBots } from '../../contexts/BotContext.js';
+import { useConfirm } from '../../hooks/useConfirm';
 import {
   NameField,
   DescriptionField,
@@ -21,6 +22,7 @@ interface BotConfigFormProps {
 
 export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
   const { getCachedBotConfig, setCachedBotConfig } = useBots();
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -247,7 +249,15 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
   const handleDeleteEmbedding = async (embeddingId: number) => {
     if (!bot || bot.id < 0) return; // Can't delete embeddings from unsaved bots
 
-    if (!confirm('Are you sure you want to delete this embedding?')) {
+    const confirmed = await confirm({
+      title: 'Delete Embedding',
+      message: 'Are you sure you want to delete this embedding?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      confirmVariant: 'danger',
+    });
+
+    if (!confirmed) {
       return;
     }
 
@@ -329,7 +339,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
           </div>
         ) : (
           <div className="space-y-5">
-            <NameField value={name} onChange={setName} />
+            <NameField value={name} onChange={setName} autoFocus={bot.id < 0} botId={bot.id} />
             <DescriptionField value={description} onChange={setDescription} />
             <TemperatureField value={temperature} onChange={setTemperature} />
             <SystemPromptField value={systemPrompt} onChange={setSystemPrompt} />
@@ -361,6 +371,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
           </div>
         )}
       </div>
+      {ConfirmDialog}
     </div>
   );
 }

@@ -1,17 +1,39 @@
+import { useRef, useEffect } from 'react';
 import { IconTrash, IconPlus } from '../ui/Icons';
 
 interface NameFieldProps {
   value: string;
   onChange: (value: string) => void;
+  autoFocus?: boolean;
+  botId?: number; // Track bot ID to detect when new bot is selected
 }
 
-export function NameField({ value, onChange }: NameFieldProps) {
+export function NameField({ value, onChange, autoFocus = false, botId }: NameFieldProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const prevBotIdRef = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    // Focus when a new bot (negative ID) is selected
+    if (autoFocus && botId !== undefined && botId < 0 && prevBotIdRef.current !== botId && inputRef.current) {
+      // Small delay to ensure the component is fully rendered and visible
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+        inputRef.current?.select(); // Also select the text if any
+      }, 100);
+      prevBotIdRef.current = botId;
+      return () => clearTimeout(timer);
+    } else if (botId !== undefined) {
+      prevBotIdRef.current = botId;
+    }
+  }, [autoFocus, botId]);
+
   return (
     <div>
       <label htmlFor="bot-name" className="block text-sm font-medium text-text-secondary mb-1.5">
         Bot Name
       </label>
       <input
+        ref={inputRef}
         id="bot-name"
         type="text"
         value={value}

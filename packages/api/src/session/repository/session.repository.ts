@@ -64,4 +64,17 @@ export class SessionRepository {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  async delete(id: number, userId: string): Promise<void> {
+    // Verify the session belongs to the user before deleting
+    const session = await this.findByIdAndUserId(id, userId);
+    if (!session) {
+      return; // Will be handled by service
+    }
+
+    // Delete the session - Prisma will cascade delete all related data (messages, memory chunks)
+    await this.prisma.chatSession.delete({
+      where: { id },
+    });
+  }
 }

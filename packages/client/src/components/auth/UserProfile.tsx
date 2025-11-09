@@ -5,11 +5,15 @@ import PageContainer from '../ui/PageContainer';
 import PageHeader from '../ui/PageHeader';
 import { IconPencil, IconTrash, IconClose, IconCheck } from '../ui/Icons';
 import { useApiKeyStatus, useUserInfo } from '../../contexts/UserContext';
+import { useConfirm } from '../../hooks/useConfirm';
+import { useToast } from '../../contexts/ToastContext';
 
 export default function UserProfile() {
   const { user: clerkUser } = useUser();
   const { hasApiKey: cachedHasApiKey, loadingApiKey, refreshApiKey } = useApiKeyStatus();
   const { userInfo: cachedUserInfo, loadingUser } = useUserInfo();
+  const { confirm, ConfirmDialog } = useConfirm();
+  const { showToast } = useToast();
   const [apiKey, setApiKey] = useState('');
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
   const [apiKeySaving, setApiKeySaving] = useState(false);
@@ -62,20 +66,26 @@ export default function UserProfile() {
       setShowApiKeyInput(false);
       // Dispatch custom event to notify other components
       window.dispatchEvent(new CustomEvent('apiKeySaved'));
+      showToast('API key updated successfully', 'success');
     } catch (error: unknown) {
       const err = error as { message?: string };
       setApiKeyError(err.message || 'Failed to save API key');
+      showToast(`Failed to update API key: ${err.message || 'Unknown error'}`, 'error');
     } finally {
       setApiKeySaving(false);
     }
   };
 
   const handleDeleteApiKey = async () => {
-    if (
-      !confirm(
-        'Are you sure you want to delete your API key? You will need to set it again to use the chat.'
-      )
-    ) {
+    const confirmed = await confirm({
+      title: 'Delete API Key',
+      message: 'Are you sure you want to delete your API key? You will need to set it again to use the chat.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      confirmVariant: 'danger',
+    });
+
+    if (!confirmed) {
       return;
     }
 
@@ -89,9 +99,11 @@ export default function UserProfile() {
       setShowApiKeyInput(true);
       // Dispatch custom event to notify other components
       window.dispatchEvent(new CustomEvent('apiKeySaved'));
+      showToast('API key removed successfully', 'success');
     } catch (error: unknown) {
       const err = error as { message?: string };
       setApiKeyError(err.message || 'Failed to delete API key');
+      showToast(`Failed to remove API key: ${err.message || 'Unknown error'}`, 'error');
     } finally {
       setApiKeySaving(false);
     }
@@ -305,6 +317,7 @@ export default function UserProfile() {
           </div>
         </div>
       </div>
+      {ConfirmDialog}
     </PageContainer>
   );
 }

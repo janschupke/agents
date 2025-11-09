@@ -128,4 +128,14 @@ export class BotService {
 
     await this.memoryRepository.deleteById(embeddingId);
   }
+
+  async delete(id: number, userId: string) {
+    const bot = await this.botRepository.findByIdAndUserId(id, userId);
+    if (!bot) {
+      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Delete the bot - Prisma will cascade delete all related data (sessions, messages, configs, embeddings)
+    await this.botRepository.delete(id, userId);
+  }
 }

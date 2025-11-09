@@ -213,4 +213,25 @@ export class BotController {
       );
     }
   }
+
+  @Delete(':id')
+  async deleteBot(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    try {
+      const userId = await this.ensureUser(req);
+      await this.botService.delete(id, userId);
+      return { success: true };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      const err = error as { message?: string };
+      throw new HttpException(
+        err.message || 'Unknown error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

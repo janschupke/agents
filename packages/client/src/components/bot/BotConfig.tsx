@@ -4,6 +4,8 @@ import BotSidebar from './BotSidebar.js';
 import BotConfigForm from './BotConfigForm.js';
 import PageContainer from '../ui/PageContainer.js';
 import { useBots } from '../../contexts/BotContext.js';
+import { useConfirm } from '../../hooks/useConfirm';
+import { useToast } from '../../contexts/ToastContext';
 import { LocalStorageManager } from '../../utils/localStorage';
 
 // Temporary bot ID for new bots (negative to indicate not saved)
@@ -11,6 +13,8 @@ let tempBotIdCounter = -1;
 
 export default function BotConfig() {
   const { bots: contextBots, loadingBots, refreshBots, updateBot, addBot, removeBot } = useBots();
+  const { confirm, ConfirmDialog } = useConfirm();
+  const { showToast } = useToast();
   const [localBots, setLocalBots] = useState<Bot[]>([]);
   // Load initial bot ID from localStorage
   const [currentBotId, setCurrentBotIdState] = useState<number | null>(() =>
@@ -54,15 +58,26 @@ export default function BotConfig() {
           setCurrentBotIdState(null);
         }
         // If bot exists, keep it - don't override
+      } else {
+        // If no stored bot, auto-select the first bot if available
+        if (allBots.length > 0) {
+          setCurrentBotIdState(allBots[0].id);
+        }
       }
-      // If no stored bot, keep it as null - don't auto-select
     } else if (initializedRef.current && currentBotId !== null) {
       // After initialization, validate bot still exists
       const botExists = allBots.some((b) => b.id === currentBotId);
       if (!botExists) {
-        // Bot no longer exists, clear selection
-        setCurrentBotIdState(null);
+        // Bot no longer exists, select first bot if available
+        if (allBots.length > 0) {
+          setCurrentBotIdState(allBots[0].id);
+        } else {
+          setCurrentBotIdState(null);
+        }
       }
+    } else if (initializedRef.current && currentBotId === null && allBots.length > 0) {
+      // If no bot is selected but bots are available, auto-select the first one
+      setCurrentBotIdState(allBots[0].id);
     }
   }, [loadingBots, contextBots, localBots, currentBotId]);
 
@@ -71,8 +86,8 @@ export default function BotConfig() {
     LocalStorageManager.setSelectedBotIdConfig(botId);
   };
 
-  // Merge context bots with local temporary bots
-  const bots = [...contextBots, ...localBots.filter((b) => b.id < 0)];
+  // Merge context bots with local temporary bots - new bots (localBots) should appear at the top
+  const bots = [...localBots.filter((b) => b.id < 0), ...contextBots];
   const loading = loadingBots;
 
   const handleBotSelect = (botId: number) => {
@@ -88,12 +103,12 @@ export default function BotConfig() {
     const tempId = tempBotIdCounter--;
     const newTempBot: Bot = {
       id: tempId,
-      name: 'New Bot',
+      name: '',
       description: null,
       createdAt: new Date().toISOString(),
     };
 
-    // Add to local bots list and select it
+    // Add to local bots list at the top and select it
     setLocalBots((prev) => [newTempBot, ...prev]);
     setCurrentBotId(tempId);
   };
@@ -105,44 +120,90 @@ export default function BotConfig() {
       return;
     }
 
-    // Remove from local bots if it was there
-    setLocalBots((prev) => prev.filter((b) => b.id !== savedBot.id));
+    // Check if this was a new bot (temp bot) or an update to existing bot
+    const wasTempBot = currentBotId !== null && currentBotId < 0;
 
-    // Check if this is a new bot (not in context yet) or an update
-    const existingBot = contextBots.find((b) => b.id === savedBot.id);
-    if (existingBot) {
-      // Update existing bot in context
-      updateBot(savedBot);
-    } else {
-      // Add new bot to context
+    // Optimistically update the bot in place to keep it at the top
+    if (wasTempBot) {
+      // Remove temp bot from local state
+      setLocalBots((prev) => prev.filter((b) => b.id >= 0));
+      
+      // Add saved bot to context at the top (optimistic update)
+      // addBot will add to top and handle duplicates
       addBot(savedBot);
+      showToast('Bot created successfully', 'success');
+    } else {
+      // Update existing bot in context (keeps position)
+      updateBot(savedBot);
+      showToast('Bot updated successfully', 'success');
     }
 
     // Note: Bot config cache is updated in BotConfigForm when saved
 
-    // Refresh bots to ensure we have the latest data from server (including sessions)
-    await refreshBots();
-
-    // Select the saved bot
+    // Select the saved bot immediately (optimistic)
     setCurrentBotId(savedBot.id);
+
+    // Refresh bots in background to ensure we have the latest data from server (including sessions)
+    // The bot is already in context at the top, so refresh will update it in place
+    // Since server returns newest first, it will stay at the top
+    refreshBots().catch((error) => {
+      console.error('Failed to refresh bots:', error);
+    });
   };
 
-  const handleBotDelete = (botId: number) => {
+  const handleBotDelete = async (botId: number) => {
+    // Find the bot to get its name for confirmation
+    const botToDelete = bots.find((b) => b.id === botId);
+    const botName = botToDelete?.name || 'this bot';
+
+    // Confirm deletion
+    const confirmed = await confirm({
+      title: 'Delete Bot',
+      message: `Are you sure you want to delete "${botName}"? This will permanently delete the bot and all its sessions, messages, and configurations.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      confirmVariant: 'danger',
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    // Optimistically remove from UI immediately
+    const allBots = [...contextBots, ...localBots];
+    const wasCurrentBot = currentBotId === botId;
+
     // Remove temporary bot from local list
     if (botId < 0) {
-      setLocalBots((prev) => {
-        const filtered = prev.filter((b) => b.id !== botId);
-        // Don't auto-select another bot
-        if (currentBotId === botId) {
-          setCurrentBotId(null);
-        }
-        return filtered;
-      });
+      setLocalBots((prev) => prev.filter((b) => b.id !== botId));
     } else {
-      // Remove from context
+      // Optimistically remove from context immediately
       removeBot(botId);
-      if (currentBotId === botId) {
+    }
+
+    // Select first bot in list if we deleted the current one
+    if (wasCurrentBot) {
+      const remainingBots = allBots.filter((b) => b.id !== botId);
+      if (remainingBots.length > 0) {
+        setCurrentBotId(remainingBots[0].id);
+      } else {
         setCurrentBotId(null);
+      }
+    }
+
+    // Delete from API in background (only for saved bots)
+    if (botId >= 0) {
+      try {
+        const { BotService } = await import('../../services/bot.service.js');
+        await BotService.deleteBot(botId);
+        // Refresh bots list to ensure UI is in sync with server
+        await refreshBots();
+        showToast('Bot deleted successfully', 'success');
+      } catch (error) {
+        console.error('Failed to delete bot:', error);
+        // Revert optimistic update on error
+        await refreshBots();
+        showToast(`Failed to delete bot: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
       }
     }
   };
@@ -164,6 +225,7 @@ export default function BotConfig() {
         />
         <BotConfigForm bot={currentBot} onSave={handleSave} />
       </div>
+      {ConfirmDialog}
     </PageContainer>
   );
 }

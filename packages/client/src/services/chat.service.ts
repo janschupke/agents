@@ -40,4 +40,11 @@ export class ChatService {
     const body: SendMessageRequest = { message };
     return apiManager.post<SendMessageResponse>(API_ENDPOINTS.CHAT(botId, sessionId), body);
   }
+
+  /**
+   * Delete a session (and all related messages and memory chunks)
+   */
+  static async deleteSession(botId: number, sessionId: number): Promise<void> {
+    return apiManager.delete(API_ENDPOINTS.SESSION(botId, sessionId));
+  }
 }

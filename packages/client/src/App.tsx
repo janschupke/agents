@@ -13,6 +13,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { UserProvider, useApiKeyStatus } from './contexts/UserContext';
 import { BotProvider } from './contexts/BotContext';
 import { ChatProvider } from './contexts/ChatContext';
+import { ToastProvider } from './contexts/ToastContext';
 
 // Memoized Header component to prevent re-renders
 const AppHeader = memo(function AppHeader() {
@@ -141,7 +142,9 @@ function App() {
           <UserProvider>
             <BotProvider>
               <ChatProvider>
-                <AppContent />
+                <ToastProvider>
+                  <AppContent />
+                </ToastProvider>
               </ChatProvider>
             </BotProvider>
           </UserProvider>
