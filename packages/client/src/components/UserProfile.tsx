@@ -8,7 +8,7 @@ import { IconClose } from './Icons';
 
 export default function UserProfile() {
   const navigate = useNavigate();
-  const { user: clerkUser } = useUser();
+  const { user: clerkUser, isSignedIn, isLoaded } = useUser();
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasApiKey, setHasApiKey] = useState(false);
@@ -19,17 +19,34 @@ export default function UserProfile() {
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
 
   useEffect(() => {
-    loadUserInfo();
-    loadApiKeyStatus();
-  }, []);
+    // Only load data when user is signed in and Clerk is loaded
+    if (isSignedIn && isLoaded) {
+      // Wait a bit for token provider to be ready
+      const timer = setTimeout(() => {
+        loadUserInfo();
+        loadApiKeyStatus();
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      // Reset state when not signed in
+      setLoading(false);
+      setApiKeyLoading(false);
+      setUserInfo(null);
+      setHasApiKey(false);
+    }
+  }, [isSignedIn, isLoaded]);
 
   const loadUserInfo = async () => {
     setLoading(true);
     try {
       const user = await UserService.getCurrentUser();
       setUserInfo(user);
-    } catch (error) {
-      console.error('Failed to load user info:', error);
+    } catch (error: unknown) {
+      // Only log unexpected errors (not 401s when auth isn't ready)
+      const apiError = error as { expected?: boolean; message?: string };
+      if (!apiError.expected) {
+        console.error('Failed to load user info:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -47,8 +64,12 @@ export default function UserProfile() {
       } else {
         setShowApiKeyInput(true);
       }
-    } catch (error) {
-      console.error('Failed to load API key status:', error);
+    } catch (error: unknown) {
+      // Only log unexpected errors (not 401s when auth isn't ready)
+      const apiError = error as { expected?: boolean; message?: string };
+      if (!apiError.expected) {
+        console.error('Failed to load API key status:', error);
+      }
       setShowApiKeyInput(true);
     } finally {
       setApiKeyLoading(false);

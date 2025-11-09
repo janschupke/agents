@@ -98,17 +98,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setBots((prev) => prev.filter((b) => b.id !== id));
   }, []);
 
-  // Load user info when signed in
+  // Load user info once when signed in (not on every route change)
   useEffect(() => {
     if (isSignedIn && isLoaded) {
-      const timer = setTimeout(() => {
-        loadUserInfo();
-      }, 100);
-      return () => clearTimeout(timer);
+      // Only load if we don't already have user info
+      if (!userInfo) {
+        const timer = setTimeout(() => {
+          loadUserInfo();
+        }, 100);
+        return () => clearTimeout(timer);
+      }
     } else {
       setUserInfo(null);
     }
-  }, [isSignedIn, isLoaded, loadUserInfo]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSignedIn, isLoaded]); // Intentionally exclude loadUserInfo and userInfo to prevent re-fetching
 
   // Load bots when signed in
   useEffect(() => {

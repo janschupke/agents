@@ -64,12 +64,16 @@ export class ApiManager {
         const token = await getClerkToken();
         if (!token) {
           // No token available, this is expected - return a more user-friendly error
+          // This happens when components mount before Clerk is ready
           throw {
             ...error,
             message: 'Authentication required',
             expected: true,
           } as ApiError & { expected: boolean };
         }
+        // Token exists but request failed - might be expired or invalid
+        // Still mark as expected since we handle auth errors gracefully
+        error.expected = true;
       }
 
       throw error;
