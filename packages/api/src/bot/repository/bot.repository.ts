@@ -85,7 +85,7 @@ export class BotRepository {
 
     return {
       ...bot,
-      config,
+      configs: config,
     };
   }
 

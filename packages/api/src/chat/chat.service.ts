@@ -151,7 +151,7 @@ export class ChatService {
       throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
     }
 
-    const botConfig = this.botRepository.mergeBotConfig(bot.config);
+    const botConfig = this.botRepository.mergeBotConfig(bot.configs);
 
     // Get or create session
     let session;
