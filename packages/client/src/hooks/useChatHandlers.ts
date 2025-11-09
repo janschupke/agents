@@ -51,19 +51,35 @@ export function useChatHandlers({
 
   const handleNewSession = useCallback(async () => {
     if (!actualBotId) return;
+    
+    // Create temporary session immediately for instant UI feedback
+    const tempSessionId = -Date.now(); // Use negative timestamp as temporary ID
+    const tempSession: Session = {
+      id: tempSessionId,
+      session_name: null,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Optimistically add to list at the top immediately
+    addSessionToBot(actualBotId, tempSession);
+    setCurrentSessionId(tempSessionId);
+    setMessages([]);
+
+    // Create session in background
     try {
       const newSession = await ChatService.createSession(actualBotId);
 
-      // Immediately add to list and highlight - ensure it's added to the correct bot
-      addSessionToBot(actualBotId, newSession);
+      // Replace temporary session with real session by refreshing
+      // This will remove the temp session and add the real one at the top
+      await refreshBotSessions(actualBotId);
+      
+      // Update to real session ID and load chat history
       setCurrentSessionId(newSession.id);
-      setMessages([]);
-
-      // Load chat history
       await loadChatHistory(actualBotId, newSession.id);
     } catch (error) {
       console.error('Error creating session:', error);
-      // Revert on error
+      // Revert on error - remove temp session and clear selection
+      await refreshBotSessions(actualBotId);
       setCurrentSessionId(null);
     }
   }, [
@@ -72,6 +88,7 @@ export function useChatHandlers({
     setMessages,
     loadChatHistory,
     addSessionToBot,
+    refreshBotSessions,
   ]);
 
   const handleSubmit = useCallback(

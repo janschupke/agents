@@ -1,6 +1,7 @@
 import { Message } from '../../types/chat.types.js';
 import MessageBubble from './MessageBubble';
 import { Skeleton } from '../ui/Skeleton';
+import { IconChat } from '../ui/Icons';
 
 interface ChatMessagesProps {
   messages: Message[];
@@ -10,6 +11,17 @@ interface ChatMessagesProps {
 
 export default function ChatMessages({ messages, loading, onShowJson }: ChatMessagesProps) {
   const filteredMessages = messages.filter((msg) => msg.role !== 'system');
+
+  // Show empty state with chat bubble icon if no messages
+  if (filteredMessages.length === 0 && !loading) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="text-center">
+          <IconChat className="w-24 h-24 text-text-tertiary mb-4 mx-auto" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

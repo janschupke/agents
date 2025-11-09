@@ -44,19 +44,19 @@ export default function BotSidebar({
             {bots.map((bot) => (
               <div
                 key={bot.id}
-                className={`group flex items-center border-b border-border ${
+                className={`group flex items-center border-b border-border transition-colors ${
                   currentBotId === bot.id
                     ? 'bg-primary text-text-inverse'
-                    : 'bg-background text-text-primary'
+                    : 'bg-background text-text-primary hover:bg-background-tertiary'
                 }`}
               >
                 <button
                   onClick={() => onBotSelect(bot.id)}
-                  className={`flex-1 px-3 py-2 text-left transition-colors min-w-0 ${
-                    currentBotId === bot.id ? 'text-text-inverse' : 'hover:bg-background-tertiary'
-                  }`}
+                  className="flex-1 px-3 py-2 text-left transition-colors min-w-0 bg-transparent"
                 >
-                  <div className="text-sm font-medium truncate">
+                  <div className={`text-sm font-medium truncate ${
+                    currentBotId === bot.id ? 'text-text-inverse' : ''
+                  }`}>
                     {bot.name}
                     {bot.id < 0 && <span className="ml-1.5 text-xs opacity-70">(New)</span>}
                   </div>
@@ -78,7 +78,7 @@ export default function BotSidebar({
                       e.stopPropagation();
                       onBotDelete(bot.id);
                     }}
-                    className={`px-2 py-1 transition-colors opacity-0 group-hover:opacity-100 ${
+                    className={`px-2 py-1 transition-colors opacity-0 group-hover:opacity-100 bg-transparent ${
                       currentBotId === bot.id
                         ? 'text-text-inverse hover:opacity-100'
                         : 'text-text-tertiary hover:text-red-500'

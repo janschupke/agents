@@ -42,12 +42,24 @@ export function useChatAutoLoad({
       const sessionChanged = lastLoadedRef.current.sessionId !== currentSessionId;
       const botChangedFromLastLoad = lastLoadedRef.current.botId !== actualBotId;
 
-      // If bot changed, clear session and messages immediately
+      // If bot changed, clear session and messages immediately, then auto-select top session
       if (botChanged) {
-        setCurrentSessionId(null);
         setMessages([]);
         lastLoadedRef.current = { botId: null, sessionId: null };
-        // Don't auto-load - wait for user to select a session
+        
+        // Auto-select the top session for the new bot (if sessions are available)
+        const botSessions = getBotSessions(actualBotId) || [];
+        if (botSessions.length > 0) {
+          // Select the first session (top of list)
+          const topSession = botSessions[0];
+          setCurrentSessionId(topSession.id);
+          // Load chat history for the top session
+          lastLoadedRef.current = { botId: actualBotId, sessionId: topSession.id };
+          loadChatHistory(actualBotId, topSession.id);
+        } else {
+          // No sessions yet, clear selection
+          setCurrentSessionId(null);
+        }
         return;
       }
 

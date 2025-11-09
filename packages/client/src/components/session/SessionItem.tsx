@@ -22,16 +22,16 @@ export default function SessionItem({ session, isSelected, onSelect, onDelete }:
 
   return (
     <div
-      className={`group flex items-center border-b border-border ${
+      className={`group flex items-center border-b border-border transition-colors ${
         isSelected
           ? 'bg-primary text-text-inverse'
-          : 'bg-background text-text-primary'
+          : 'bg-background text-text-primary hover:bg-background-tertiary'
       }`}
     >
       <button
         onClick={() => onSelect(session.id)}
-        className={`flex-1 px-3 py-2 text-left transition-colors min-w-0 ${
-          isSelected ? 'text-text-inverse' : 'hover:bg-background-tertiary'
+        className={`flex-1 px-3 py-2 text-left transition-colors min-w-0 bg-transparent ${
+          isSelected ? 'text-text-inverse' : ''
         }`}
       >
         <div className="text-sm font-medium truncate">{formatSessionName(session)}</div>
@@ -49,7 +49,7 @@ export default function SessionItem({ session, isSelected, onSelect, onDelete }:
             e.stopPropagation();
             onDelete(session.id);
           }}
-          className={`px-2 py-1 transition-colors opacity-0 group-hover:opacity-100 ${
+          className={`px-2 py-1 transition-colors opacity-0 group-hover:opacity-100 bg-transparent ${
             isSelected
               ? 'text-text-inverse hover:opacity-100'
               : 'text-text-tertiary hover:text-red-500'

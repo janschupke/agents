@@ -16,7 +16,7 @@ import PageContainer from '../ui/PageContainer.js';
 import JsonModal from '../ui/JsonModal.js';
 import ChatHeader from './ChatHeader';
 import ChatMessages from './ChatMessages';
-import ChatInput from './ChatInput';
+import ChatInput, { ChatInputRef } from './ChatInput';
 import ChatPlaceholder from './ChatPlaceholder';
 import ChatLoadingState from './ChatLoadingState';
 import ChatEmptyState from './ChatEmptyState';
@@ -46,6 +46,7 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
   }>({ isOpen: false, title: '', data: null });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<ChatInputRef>(null);
   const actualBotId = propBotId || selectedBotId || (bots.length > 0 ? bots[0].id : null);
   // Get sessions for the current bot - these are already filtered by botId in BotContext
   const sessions = actualBotId ? getBotSessions(actualBotId) || [] : [];
@@ -88,6 +89,17 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Focus chat input when session changes or new session is created
+  useEffect(() => {
+    if (currentSessionId && !loadingMessages && !loadingSession && !showChatPlaceholder) {
+      // Small delay to ensure the input is rendered and visible
+      const timer = setTimeout(() => {
+        chatInputRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [currentSessionId, loadingMessages, loadingSession, showChatPlaceholder]);
 
   const { handleSessionSelect, handleNewSession, handleSubmit: handleSubmitMessage } =
     useChatHandlers({
@@ -186,7 +198,7 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
         />
         <div className="flex flex-col flex-1 overflow-hidden">
           <ChatHeader />
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 relative">
             {showChatPlaceholder && !loadingMessages && !loadingSession ? (
               <ChatPlaceholder />
             ) : (
@@ -202,6 +214,7 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
           </div>
           {!showChatPlaceholder && (
             <ChatInput
+              ref={chatInputRef}
               input={input}
               onInputChange={setInput}
               onSubmit={handleSubmit}
