@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useRef, useCallback, Re
 import { Message, ChatHistoryResponse } from '../types/chat.types';
 import { ChatService } from '../services/chat.service';
 import { useAuth } from './AuthContext';
+import { LocalStorageManager } from '../utils/localStorage';
 
 interface CachedSessionData {
   messages: Message[];
@@ -46,10 +47,23 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const { isSignedIn, isLoaded } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentBotId, setCurrentBotId] = useState<number | null>(null);
-  const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
+  // Load initial session ID from localStorage (will be validated when bot loads)
+  const [currentSessionId, setCurrentSessionIdState] = useState<number | null>(() => 
+    LocalStorageManager.getSelectedSessionId()
+  );
   const [botName, setBotName] = useState<string>('');
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [loadingSession, setLoadingSession] = useState(false);
+  
+  // Save to localStorage whenever currentSessionId changes
+  useEffect(() => {
+    LocalStorageManager.setSelectedSessionId(currentSessionId);
+  }, [currentSessionId]);
+  
+  // Wrapper to update state (localStorage is saved via useEffect above)
+  const setCurrentSessionId = useCallback((sessionId: number | null) => {
+    setCurrentSessionIdState(sessionId);
+  }, []);
   
   // Session cache using ref
   const sessionCacheRef = useRef<Map<SessionCacheKey, CachedSessionData>>(new Map());

@@ -1,7 +1,8 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { LocalStorageManager } from '../utils/localStorage';
 
 interface AppContextValue {
-  // Selected bot persistence
+  // Selected bot persistence (for chat view)
   selectedBotId: number | null;
   setSelectedBotId: (botId: number | null) => void;
   
@@ -13,8 +14,31 @@ interface AppContextValue {
 const AppContext = createContext<AppContextValue | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [selectedBotId, setSelectedBotId] = useState<number | null>(null);
-  const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
+  // Load initial values from localStorage
+  const [selectedBotId, setSelectedBotIdState] = useState<number | null>(() => 
+    LocalStorageManager.getSelectedBotIdChat()
+  );
+  const [selectedSessionId, setSelectedSessionIdState] = useState<number | null>(() => 
+    LocalStorageManager.getSelectedSessionId()
+  );
+
+  // Save to localStorage whenever values change
+  useEffect(() => {
+    LocalStorageManager.setSelectedBotIdChat(selectedBotId);
+  }, [selectedBotId]);
+
+  useEffect(() => {
+    LocalStorageManager.setSelectedSessionId(selectedSessionId);
+  }, [selectedSessionId]);
+
+  // Wrapper functions to update state (localStorage is saved via useEffect above)
+  const setSelectedBotId = (botId: number | null) => {
+    setSelectedBotIdState(botId);
+  };
+
+  const setSelectedSessionId = (sessionId: number | null) => {
+    setSelectedSessionIdState(sessionId);
+  };
 
   const value: AppContextValue = {
     selectedBotId,

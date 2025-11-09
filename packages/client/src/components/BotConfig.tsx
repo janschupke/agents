@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Bot } from '../types/chat.types.js';
 import BotSidebar from './BotSidebar.js';
 import BotConfigForm from './BotConfigForm.js';
 import PageContainer from './PageContainer.js';
 import { useBots } from '../contexts/BotContext.js';
+import { LocalStorageManager } from '../utils/localStorage';
 
 // Temporary bot ID for new bots (negative to indicate not saved)
 let tempBotIdCounter = -1;
@@ -18,15 +19,75 @@ export default function BotConfig() {
     removeBot,
   } = useBots();
   const [localBots, setLocalBots] = useState<Bot[]>([]);
-  const [currentBotId, setCurrentBotId] = useState<number | null>(null);
+  // Load initial bot ID from localStorage
+  const [currentBotId, setCurrentBotIdState] = useState<number | null>(() => 
+    LocalStorageManager.getSelectedBotIdConfig()
+  );
   const [error] = useState<string | null>(null);
+
+  // Track if we've initialized to avoid overriding stored values
+  const initializedRef = useRef(false);
+  const botsLoadedRef = useRef(false);
+
+  // Save to localStorage whenever currentBotId changes
+  useEffect(() => {
+    LocalStorageManager.setSelectedBotIdConfig(currentBotId);
+  }, [currentBotId]);
+
+  // Validate and initialize currentBotId when bots load
+  useEffect(() => {
+    if (loadingBots) {
+      return;
+    }
+
+    const allBots = [...contextBots, ...localBots];
+    
+    // Track when bots first load
+    const botsJustLoaded = !botsLoadedRef.current && allBots.length > 0;
+    botsLoadedRef.current = allBots.length > 0;
+
+    // Only validate/initialize once when bots first load
+    if (!initializedRef.current && botsJustLoaded) {
+      initializedRef.current = true;
+      
+      // Read current stored botId (loaded from localStorage)
+      const storedBotId = currentBotId;
+      
+      if (storedBotId !== null) {
+        // Validate stored bot exists
+        const botExists = allBots.some((b) => b.id === storedBotId);
+        if (!botExists) {
+          // Selected bot doesn't exist, clear selection
+          setCurrentBotIdState(null);
+        }
+        // If bot exists, keep it - don't override
+      }
+      // If no stored bot, keep it as null - don't auto-select
+    } else if (initializedRef.current && currentBotId !== null) {
+      // After initialization, validate bot still exists
+      const botExists = allBots.some((b) => b.id === currentBotId);
+      if (!botExists) {
+        // Bot no longer exists, clear selection
+        setCurrentBotIdState(null);
+      }
+    }
+  }, [loadingBots, contextBots, localBots, currentBotId]);
+
+  const setCurrentBotId = (botId: number | null) => {
+    setCurrentBotIdState(botId);
+    LocalStorageManager.setSelectedBotIdConfig(botId);
+  };
 
   // Merge context bots with local temporary bots
   const bots = [...contextBots, ...localBots.filter((b) => b.id < 0)];
   const loading = loadingBots;
 
   const handleBotSelect = (botId: number) => {
-    setCurrentBotId(botId);
+    // Validate bot exists before selecting
+    const allBots = [...contextBots, ...localBots];
+    if (allBots.some((b) => b.id === botId)) {
+      setCurrentBotId(botId);
+    }
   };
 
   const handleNewBot = () => {

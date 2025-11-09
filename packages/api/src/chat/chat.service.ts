@@ -205,6 +205,85 @@ export class ChatService {
       }
     }
 
+    // Add behavior rules if present
+    if (botConfig.behavior_rules) {
+      let behaviorRules: string[] = [];
+      
+      // Parse behavior_rules - can be stored as JSON string, object with "rules" array, or direct array
+      try {
+        const rulesValue = botConfig.behavior_rules;
+        
+        if (typeof rulesValue === 'string') {
+          // Try to parse as JSON
+          try {
+            const parsed = JSON.parse(rulesValue);
+            if (Array.isArray(parsed)) {
+              behaviorRules = parsed.map((r) => String(r));
+            } else if (typeof parsed === 'object' && parsed.rules && Array.isArray(parsed.rules)) {
+              behaviorRules = parsed.rules.map((r: unknown) => String(r));
+            } else {
+              behaviorRules = [String(parsed)];
+            }
+          } catch {
+            // Not valid JSON, treat as single rule string
+            behaviorRules = [rulesValue];
+          }
+        } else if (Array.isArray(rulesValue)) {
+          behaviorRules = rulesValue.map((r: unknown) => String(r));
+        } else if (typeof rulesValue === 'object' && rulesValue !== null) {
+          const rulesObj = rulesValue as { rules?: unknown[] };
+          if (rulesObj.rules && Array.isArray(rulesObj.rules)) {
+            behaviorRules = rulesObj.rules.map((r: unknown) => String(r));
+          } else {
+            behaviorRules = [String(rulesValue)];
+          }
+        } else {
+          behaviorRules = [String(rulesValue)];
+        }
+      } catch (error) {
+        console.error('Error parsing behavior rules:', error);
+        // Continue without behavior rules if parsing fails
+      }
+
+      // Format behavior rules as a system message
+      if (behaviorRules.length > 0) {
+        const behaviorRulesText = behaviorRules
+          .filter((rule) => rule.trim().length > 0)
+          .map((rule, index) => `${index + 1}. ${rule.trim()}`)
+          .join('\n');
+        
+        if (behaviorRulesText.length > 0) {
+          const behaviorRulesMessage = `Behavior Rules:\n${behaviorRulesText}`;
+          
+          // Check if behavior rules are already present (exact match)
+          if (
+            !messagesForAPI.some(
+              (m) => m.role === 'system' && m.content === behaviorRulesMessage
+            )
+          ) {
+            // Add behavior rules after system prompt but before other system messages
+            const systemPromptIndex = messagesForAPI.findIndex(
+              (m) => m.role === 'system' && m.content === String(botConfig.system_prompt || '')
+            );
+            
+            if (systemPromptIndex >= 0) {
+              // Insert after system prompt
+              messagesForAPI.splice(systemPromptIndex + 1, 0, {
+                role: 'system',
+                content: behaviorRulesMessage,
+              });
+            } else {
+              // No system prompt found, add at the beginning
+              messagesForAPI.unshift({
+                role: 'system',
+                content: behaviorRulesMessage,
+              });
+            }
+          }
+        }
+      }
+    }
+
     // Add user message
     messagesForAPI.push({
       role: 'user',
