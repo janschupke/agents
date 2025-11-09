@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ChatService } from '../services/chat.service.js';
 import { Message, Session } from '../types/chat.types.js';
+import { useSessionCache } from '../contexts/AppContext.js';
 
 interface UseChatOptions {
   botId?: number;
@@ -8,6 +9,15 @@ interface UseChatOptions {
 }
 
 export function useChat({ botId, onError }: UseChatOptions) {
+  const {
+    getCachedSession,
+    setCachedSession,
+    invalidateSessionCache,
+    getCachedSessionsList,
+    setCachedSessionsList,
+    invalidateSessionsListCache,
+  } = useSessionCache();
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,44 +26,97 @@ export function useChat({ botId, onError }: UseChatOptions) {
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Track current bot/session to detect changes
+  const lastBotIdRef = useRef<number | undefined>(botId);
+  const lastSessionIdRef = useRef<number | null>(null);
 
   const loadChatHistory = useCallback(
-    async (sessionId?: number) => {
+    async (sessionId?: number, forceRefresh = false) => {
       if (!botId) return;
+      
+      // Check cache first (unless force refresh or bot/session changed)
+      const botChanged = lastBotIdRef.current !== botId;
+      const sessionChanged = lastSessionIdRef.current !== sessionId;
+      
+      if (!forceRefresh && !botChanged && !sessionChanged && sessionId) {
+        const cached = getCachedSession(botId, sessionId);
+        if (cached) {
+          setMessages(cached.messages);
+          setBotName(cached.botName);
+          setCurrentSessionId(sessionId);
+          lastBotIdRef.current = botId;
+          lastSessionIdRef.current = sessionId;
+          return;
+        }
+      }
+      
       try {
         const data = await ChatService.getChatHistory(botId, sessionId);
         // Messages from API now include rawRequest and rawResponse
-        setMessages(data.messages || []);
-        setBotName(data.bot?.name || 'Chat Bot');
+        const messagesData = data.messages || [];
+        const botNameData = data.bot?.name || 'Chat Bot';
+        
+        setMessages(messagesData);
+        setBotName(botNameData);
+        
         if (data.session?.id) {
-          setCurrentSessionId((prev) => {
-            if (prev !== data.session.id) {
-              return data.session.id;
-            }
-            return prev;
+          setCurrentSessionId(data.session.id);
+          lastSessionIdRef.current = data.session.id;
+          
+          // Cache the session data
+          setCachedSession(botId, data.session.id, {
+            messages: messagesData,
+            botName: botNameData,
+            session: data.session,
+            bot: data.bot || { id: botId, name: botNameData, description: null },
+            lastUpdated: Date.now(),
           });
         }
+        
+        lastBotIdRef.current = botId;
       } catch (error) {
         const err = error instanceof Error ? error : new Error('Unknown error');
         console.error('Error loading chat history:', err);
         onError?.(err);
       }
     },
-    [botId, onError],
+    [botId, onError, getCachedSession, setCachedSession, botName],
   );
 
-  const loadSessions = useCallback(async () => {
+  const loadSessions = useCallback(async (forceRefresh = false) => {
     if (!botId) return;
+    
+    // Check cache first (unless force refresh or bot changed)
+    const botChanged = lastBotIdRef.current !== botId;
+    
+    if (!forceRefresh && !botChanged) {
+      const cached = getCachedSessionsList(botId);
+      if (cached) {
+        setSessions(cached);
+        setCurrentSessionId((prev) => {
+          if (prev === null && cached.length > 0) {
+            return cached[0].id;
+          }
+          return prev;
+        });
+        lastBotIdRef.current = botId;
+        return;
+      }
+    }
+    
     setSessionsLoading(true);
     try {
       const sessionsData = await ChatService.getSessions(botId);
       setSessions(sessionsData);
+      setCachedSessionsList(botId, sessionsData);
       setCurrentSessionId((prev) => {
         if (prev === null && sessionsData.length > 0) {
           return sessionsData[0].id;
         }
         return prev;
       });
+      lastBotIdRef.current = botId;
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Unknown error');
       console.error('Error loading sessions:', err);
@@ -61,11 +124,30 @@ export function useChat({ botId, onError }: UseChatOptions) {
     } finally {
       setSessionsLoading(false);
     }
-  }, [botId, onError]);
+  }, [botId, onError, getCachedSessionsList, setCachedSessionsList]);
+
+  // Reset state when bot changes (but keep cache - it will be used when switching back)
+  useEffect(() => {
+    if (botId !== lastBotIdRef.current && lastBotIdRef.current !== undefined) {
+      // Clear all session caches for the old bot when switching away
+      const oldBotId = lastBotIdRef.current;
+      invalidateSessionCache(oldBotId); // Clear all sessions for old bot
+      invalidateSessionsListCache(oldBotId);
+      
+      // Reset local state for the new bot
+      setMessages([]);
+      setSessions([]);
+      setCurrentSessionId(null);
+      lastSessionIdRef.current = null;
+    }
+    lastBotIdRef.current = botId;
+  }, [botId, invalidateSessionCache, invalidateSessionsListCache]);
 
   useEffect(() => {
-    loadSessions();
-  }, [loadSessions]);
+    if (botId) {
+      loadSessions();
+    }
+  }, [botId, loadSessions]);
 
   useEffect(() => {
     if (sessions.length > 0 && currentSessionId === null) {
@@ -78,10 +160,13 @@ export function useChat({ botId, onError }: UseChatOptions) {
   }, [sessions.length, currentSessionId, loadChatHistory]);
 
   useEffect(() => {
-    if (currentSessionId !== null) {
-      loadChatHistory(currentSessionId);
+    if (currentSessionId !== null && botId) {
+      // Only reload if session actually changed
+      if (lastSessionIdRef.current !== currentSessionId) {
+        loadChatHistory(currentSessionId);
+      }
     }
-  }, [currentSessionId, loadChatHistory]);
+  }, [currentSessionId, botId, loadChatHistory]);
 
   useEffect(() => {
     scrollToBottom();
@@ -92,6 +177,7 @@ export function useChat({ botId, onError }: UseChatOptions) {
   };
 
   const handleSessionSelect = async (sessionId: number) => {
+    if (sessionId === currentSessionId) return; // Already selected
     setCurrentSessionId(sessionId);
     await loadChatHistory(sessionId);
   };
@@ -101,9 +187,14 @@ export function useChat({ botId, onError }: UseChatOptions) {
     setSessionsLoading(true);
     try {
       const newSession = await ChatService.createSession(botId);
-      setSessions((prev) => [newSession, ...prev]);
+      const updatedSessions = [newSession, ...sessions];
+      setSessions(updatedSessions);
+      setCachedSessionsList(botId, updatedSessions);
       setCurrentSessionId(newSession.id);
       setMessages([]);
+      lastSessionIdRef.current = newSession.id;
+      // Invalidate cache for the new session (it's empty anyway)
+      invalidateSessionCache(botId, newSession.id);
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Unknown error');
       console.error('Error creating session:', err);
@@ -148,13 +239,42 @@ export function useChat({ botId, onError }: UseChatOptions) {
         content: data.response,
         rawResponse: data.rawResponse,
       };
-      setMessages((prev) => [...prev, assistantMessage]);
-
-      // Update sessions if a new session was created
-      if (data.session?.id && currentSessionId !== data.session.id) {
-        setCurrentSessionId(data.session.id);
-        await loadSessions();
-      }
+      
+      // Get current messages state and update cache
+      setMessages((prev) => {
+        const updated = [...prev, assistantMessage];
+        
+        // Update session ID if changed
+        const finalSessionId = data.session?.id || currentSessionId;
+        if (finalSessionId && finalSessionId !== currentSessionId) {
+          setCurrentSessionId(finalSessionId);
+          lastSessionIdRef.current = finalSessionId;
+          loadSessions(true); // Force refresh sessions list
+        }
+        
+        // Update cache with new messages
+        if (botId && finalSessionId) {
+          const cached = getCachedSession(botId, finalSessionId);
+          const currentBotName = botName || 'Chat Bot';
+          if (cached) {
+            setCachedSession(botId, finalSessionId, {
+              ...cached,
+              messages: updated,
+            });
+          } else {
+            // If not cached, cache it now
+            setCachedSession(botId, finalSessionId, {
+              messages: updated,
+              botName: currentBotName,
+              session: data.session || { id: finalSessionId, session_name: null },
+              bot: { id: botId, name: currentBotName, description: null },
+              lastUpdated: Date.now(),
+            });
+          }
+        }
+        
+        return updated;
+      });
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Unknown error');
       console.error('Error sending message:', err);

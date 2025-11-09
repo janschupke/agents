@@ -47,6 +47,11 @@ export interface Bot {
   name: string;
   description: string | null;
   createdAt: string;
+  configs?: {
+    temperature?: number;
+    system_prompt?: string;
+    behavior_rules?: string | unknown;
+  };
 }
 
 export interface Embedding {

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, memo } from 'react';
+import { memo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
 import { useUser, SignIn } from '@clerk/clerk-react';
 import ChatBot from './components/ChatBot';
@@ -6,10 +6,9 @@ import BotConfig from './components/BotConfig';
 import UserDropdown from './components/UserDropdown';
 import UserProfile from './components/UserProfile';
 import Footer from './components/Footer';
-import { ApiCredentialsService } from './services/api-credentials.service';
 import { IconChat, IconSettings } from './components/Icons';
 import { Skeleton } from './components/Skeleton';
-import { AppProvider } from './contexts/AppContext';
+import { AppProvider, useApiKeyStatus } from './contexts/AppContext';
 
 // Memoized Header component to prevent re-renders
 const AppHeader = memo(function AppHeader() {
@@ -73,58 +72,8 @@ function SignInPage() {
 
 function AppContent() {
   const { isSignedIn, isLoaded } = useUser();
-  const [hasApiKey, setHasApiKey] = useState<boolean | null>(null);
-  const [apiKeyLoading, setApiKeyLoading] = useState(true);
+  const { hasApiKey, loadingApiKey } = useApiKeyStatus();
   const location = useLocation();
-
-  const checkApiKey = useCallback(async () => {
-    setApiKeyLoading(true);
-    try {
-      const hasKey = await ApiCredentialsService.hasOpenAIKey();
-      setHasApiKey(hasKey);
-    } catch (error) {
-      // If check fails, assume no key (will redirect to profile)
-      setHasApiKey(false);
-    } finally {
-      setApiKeyLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isSignedIn && isLoaded) {
-      // Wait a bit for token provider to be ready
-      const timer = setTimeout(() => {
-        checkApiKey();
-      }, 100);
-      return () => clearTimeout(timer);
-    } else {
-      setHasApiKey(null);
-      setApiKeyLoading(true);
-    }
-  }, [isSignedIn, isLoaded, checkApiKey]);
-
-  // Re-check API key when location changes (especially after saving on profile page)
-  useEffect(() => {
-    if (isSignedIn && isLoaded && location.pathname !== '/profile') {
-      // Re-check API key when navigating away from profile page
-      checkApiKey();
-    }
-  }, [location.pathname, isSignedIn, isLoaded, checkApiKey]);
-
-  // Listen for API key save event from UserProfile component
-  useEffect(() => {
-    if (!isSignedIn || !isLoaded) return;
-
-    const handleApiKeySaved = () => {
-      // Re-check API key status when it's saved
-      checkApiKey();
-    };
-
-    window.addEventListener('apiKeySaved', handleApiKeySaved);
-    return () => {
-      window.removeEventListener('apiKeySaved', handleApiKeySaved);
-    };
-  }, [isSignedIn, isLoaded, checkApiKey]);
 
   // Show sign-in page when not signed in
   if (!isLoaded) {
@@ -143,7 +92,7 @@ function AppContent() {
   }
 
   // Show loading while checking API key
-  if (apiKeyLoading && location.pathname !== '/profile') {
+  if (loadingApiKey && location.pathname !== '/profile') {
     return (
       <div className="flex flex-col min-h-screen h-screen overflow-hidden">
         <AppHeader />

@@ -53,8 +53,10 @@ export default function BotConfig() {
     // Remove from local bots if it was there
     setLocalBots((prev) => prev.filter((b) => b.id !== savedBot.id));
     
-    // Update in context cache
+    // Update in context cache (bots list)
     updateBotInCache(savedBot);
+    
+    // Note: Bot config cache is updated in BotConfigForm when saved
     
     // Refresh bots to ensure we have the latest data from server
     await refreshBots();

@@ -3,7 +3,8 @@ import { Bot, Embedding } from '../types/chat.types.js';
 import { BotService } from '../services/bot.service.js';
 import PageHeader from './PageHeader.js';
 import { IconClose, IconPlus } from './Icons';
-import { SkeletonList } from './Skeleton';
+import { Skeleton, SkeletonList } from './Skeleton';
+import { useBotConfigCache } from '../contexts/AppContext.js';
 
 interface BotConfigFormProps {
   bot: Bot | null;
@@ -11,6 +12,8 @@ interface BotConfigFormProps {
 }
 
 export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
+  const { getCachedBotConfig, setCachedBotConfig } = useBotConfigCache();
+  
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [temperature, setTemperature] = useState(0.7);
@@ -18,35 +21,27 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
   const [behaviorRules, setBehaviorRules] = useState<string[]>([]);
   const [embeddings, setEmbeddings] = useState<Embedding[]>([]);
   const [loadingEmbeddings, setLoadingEmbeddings] = useState(false);
+  const [loadingConfig, setLoadingConfig] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Cache embeddings per bot ID
-  const embeddingsCache = useRef<Map<number, Embedding[]>>(new Map());
   // Track which bots are currently loading embeddings
   const loadingBots = useRef<Set<number>>(new Set());
 
+  // Load embeddings - always refresh, never cache
   const loadEmbeddingsLazy = useCallback(async (botId: number) => {
-    // Check cache first - if we have cached data, use it instantly
-    if (embeddingsCache.current.has(botId)) {
-      setEmbeddings(embeddingsCache.current.get(botId)!);
-      return;
-    }
-
     // Check if already loading for this bot
     if (loadingBots.current.has(botId)) {
       return;
     }
 
-    // Load embeddings
+    // Load embeddings (always fetch, no cache)
     loadingBots.current.add(botId);
     setLoadingEmbeddings(true);
     setError(null);
     try {
       const data = await BotService.getEmbeddings(botId);
-      // Cache the embeddings
-      embeddingsCache.current.set(botId, data);
       setEmbeddings(data);
     } catch (err) {
       const errorMessage =
@@ -59,6 +54,33 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
     }
   }, []);
 
+  // Helper to parse behavior rules
+  const parseBehaviorRules = useCallback((behavior_rules: unknown): string[] => {
+    if (!behavior_rules) return [];
+    
+    if (typeof behavior_rules === 'string') {
+      try {
+        const parsed = JSON.parse(behavior_rules);
+        if (Array.isArray(parsed)) {
+          return parsed.map((r) => String(r));
+        } else if (typeof parsed === 'object' && (parsed as any).rules && Array.isArray((parsed as any).rules)) {
+          return (parsed as any).rules.map((r: unknown) => String(r));
+        } else {
+          return [String(parsed)];
+        }
+      } catch {
+        return [behavior_rules];
+      }
+    } else if (Array.isArray(behavior_rules)) {
+      return behavior_rules.map((r: unknown) => String(r));
+    } else if (typeof behavior_rules === 'object' && (behavior_rules as any).rules) {
+      const rulesObj = behavior_rules as { rules: unknown[] };
+      return rulesObj.rules.map((r: unknown) => String(r));
+    } else {
+      return [String(behavior_rules)];
+    }
+  }, []);
+
   // Update form fields when bot changes
   useEffect(() => {
     if (bot) {
@@ -67,63 +89,64 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
       
       // Load config and embeddings for existing bots
       if (bot.id > 0) {
-        // Load bot with config
-        BotService.getBot(bot.id)
-          .then((botData: any) => {
-            // Extract config from bot data if available
-            if (botData.config) {
-              const config = botData.config;
-              setTemperature(
-                typeof config.temperature === 'number' ? config.temperature : 0.7
-              );
-              setSystemPrompt(
-                typeof config.system_prompt === 'string' ? config.system_prompt : ''
-              );
-              // Parse behavior_rules into an array of strings
-              let rulesArray: string[] = [];
-              if (config.behavior_rules) {
-                if (typeof config.behavior_rules === 'string') {
-                  try {
-                    const parsed = JSON.parse(config.behavior_rules);
-                    if (Array.isArray(parsed)) {
-                      rulesArray = parsed.map((r) => String(r));
-                    } else if (typeof parsed === 'object' && parsed.rules && Array.isArray(parsed.rules)) {
-                      rulesArray = parsed.rules.map((r: unknown) => String(r));
-                    } else {
-                      rulesArray = [String(parsed)];
-                    }
-                  } catch {
-                    // If it's not valid JSON, treat as a single rule
-                    rulesArray = [config.behavior_rules];
-                  }
-                } else if (Array.isArray(config.behavior_rules)) {
-                  rulesArray = config.behavior_rules.map((r: unknown) => String(r));
-                } else if (typeof config.behavior_rules === 'object' && (config.behavior_rules as any).rules) {
-                  const rulesObj = config.behavior_rules as { rules: unknown[] };
-                  rulesArray = rulesObj.rules.map((r) => String(r));
-                } else {
-                  rulesArray = [String(config.behavior_rules)];
-                }
+        // Check cache first
+        const cached = getCachedBotConfig(bot.id);
+        if (cached) {
+          // Use cached config - no loading needed
+          setTemperature(cached.temperature);
+          setSystemPrompt(cached.system_prompt);
+          setBehaviorRules(cached.behavior_rules);
+          setLoadingConfig(false);
+        } else {
+          // Load bot with config from API
+          setLoadingConfig(true);
+          BotService.getBot(bot.id)
+            .then((botData: any) => {
+              // Extract config from bot data if available
+              if (botData.config) {
+                const config = botData.config;
+                const temp = typeof config.temperature === 'number' ? config.temperature : 0.7;
+                const prompt = typeof config.system_prompt === 'string' ? config.system_prompt : '';
+                const rules = parseBehaviorRules(config.behavior_rules);
+                
+                setTemperature(temp);
+                setSystemPrompt(prompt);
+                setBehaviorRules(rules);
+                
+                // Cache the config
+                setCachedBotConfig(bot.id, {
+                  temperature: temp,
+                  system_prompt: prompt,
+                  behavior_rules: rules,
+                  lastUpdated: Date.now(),
+                });
+              } else {
+                // Reset to defaults
+                const defaults = { temperature: 0.7, system_prompt: '', behavior_rules: [], lastUpdated: Date.now() };
+                setTemperature(defaults.temperature);
+                setSystemPrompt(defaults.system_prompt);
+                setBehaviorRules(defaults.behavior_rules);
+                setCachedBotConfig(bot.id, defaults);
               }
-              setBehaviorRules(rulesArray);
-            } else {
-              // Reset to defaults
-              setTemperature(0.7);
-              setSystemPrompt('');
-              setBehaviorRules([]);
-            }
-          })
-          .catch((err) => {
-            console.error('Failed to load bot config:', err);
-            // Reset to defaults on error
-            setTemperature(0.7);
-            setSystemPrompt('');
-            setBehaviorRules([]);
-          });
+            })
+            .catch((err) => {
+              console.error('Failed to load bot config:', err);
+              // Reset to defaults on error
+              const defaults = { temperature: 0.7, system_prompt: '', behavior_rules: [] };
+              setTemperature(defaults.temperature);
+              setSystemPrompt(defaults.system_prompt);
+              setBehaviorRules(defaults.behavior_rules);
+            })
+            .finally(() => {
+              setLoadingConfig(false);
+            });
+        }
         
+        // Always refresh embeddings (no cache)
         loadEmbeddingsLazy(bot.id);
       } else {
         // New bot, reset to defaults
+        setLoadingConfig(false);
         setTemperature(0.7);
         setSystemPrompt('');
         setBehaviorRules([]);
@@ -138,7 +161,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
       setBehaviorRules([]);
       setEmbeddings([]);
     }
-  }, [bot, loadEmbeddingsLazy]);
+  }, [bot, loadEmbeddingsLazy, getCachedBotConfig, setCachedBotConfig, parseBehaviorRules]);
 
   const handleSave = async () => {
     if (!bot) return;
@@ -186,6 +209,17 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
         };
       }
       
+      // Update bot config cache (lastUpdated is added automatically)
+      if (savedBot.id > 0) {
+        const validRules = behaviorRules.filter((rule) => rule.trim().length > 0);
+        setCachedBotConfig(savedBot.id, {
+          temperature,
+          system_prompt: systemPrompt.trim(),
+          behavior_rules: validRules,
+          lastUpdated: Date.now(),
+        });
+      }
+      
       onSave(savedBot);
     } catch (err) {
       const errorMessage =
@@ -207,10 +241,8 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
     setError(null);
     try {
       await BotService.deleteEmbedding(bot.id, embeddingId);
-      // Update cached embeddings
-      const cached = embeddingsCache.current.get(bot.id) || [];
-      const updated = cached.filter((e) => e.id !== embeddingId);
-      embeddingsCache.current.set(bot.id, updated);
+      // Reload embeddings (always refresh)
+      const updated = embeddings.filter((e) => e.id !== embeddingId);
       setEmbeddings(updated);
     } catch (err) {
       const errorMessage =
@@ -224,8 +256,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
   const handleRefreshEmbeddings = async () => {
     if (!bot || bot.id < 0) return;
     
-    // Clear cache for this bot and reload
-    embeddingsCache.current.delete(bot.id);
+    // Always reload embeddings (no cache)
     loadingBots.current.delete(bot.id);
     await loadEmbeddingsLazy(bot.id);
   };
@@ -250,7 +281,32 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
           </div>
         )}
 
-        <div className="space-y-5">
+        {loadingConfig ? (
+          <div className="space-y-5">
+            <div>
+              <Skeleton className="h-4 w-20 mb-1.5" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+            <div>
+              <Skeleton className="h-4 w-24 mb-1.5" />
+              <Skeleton className="h-20 w-full" />
+            </div>
+            <div>
+              <Skeleton className="h-4 w-32 mb-1.5" />
+              <Skeleton className="h-2 w-full" />
+            </div>
+            <div>
+              <Skeleton className="h-4 w-28 mb-1.5" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+            <div>
+              <Skeleton className="h-4 w-32 mb-1.5" />
+              <Skeleton className="h-10 w-full mb-2" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-5">
           <div>
             <label
               htmlFor="bot-name"
@@ -439,7 +495,8 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
               </div>
             )}
           </div>
-        </div>
+          </div>
+        )}
       </div>
       <div className="px-5 py-3 bg-background border-t border-border">
         <button

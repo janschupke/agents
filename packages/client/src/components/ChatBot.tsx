@@ -8,10 +8,12 @@ import PageHeader from './PageHeader.js';
 import { IconSend, IconSearch } from './Icons';
 import { Skeleton, SkeletonMessage, SkeletonList } from './Skeleton';
 import JsonModal from './JsonModal.js';
-import { useBots } from '../contexts/AppContext.js';
+import { useBots, useSelectedBot } from '../contexts/AppContext.js';
 
 export default function ChatBot({ botId: propBotId }: ChatBotProps) {
   const { isSignedIn, isLoaded } = useUser();
+  const { bots, loadingBots } = useBots();
+  const { selectedBotId, setSelectedBotId } = useSelectedBot();
   const [actualBotId, setActualBotId] = useState<number | undefined>(propBotId);
   const [loadingBot, setLoadingBot] = useState(!propBotId);
   const [jsonModal, setJsonModal] = useState<{
@@ -20,22 +22,33 @@ export default function ChatBot({ botId: propBotId }: ChatBotProps) {
     data: unknown;
   }>({ isOpen: false, title: '', data: null });
 
-  const { bots, loadingBots } = useBots();
-
+  // Use propBotId if provided, otherwise use persisted selectedBotId, otherwise use first bot
   useEffect(() => {
-    if (!propBotId && isSignedIn && isLoaded) {
-      if (!loadingBots && bots.length > 0 && !actualBotId) {
-        setActualBotId(bots[0].id);
-        setLoadingBot(false);
-      } else if (!loadingBots && bots.length === 0) {
-        setLoadingBot(false);
-      } else if (loadingBots) {
+    if (propBotId) {
+      // If propBotId is provided, use it and update persisted state
+      setActualBotId(propBotId);
+      setSelectedBotId(propBotId);
+      setLoadingBot(false);
+    } else if (isSignedIn && isLoaded) {
+      if (!loadingBots) {
+        if (bots.length > 0) {
+          // Use persisted selectedBotId if available and valid, otherwise use first bot
+          const botToUse = selectedBotId && bots.some(b => b.id === selectedBotId)
+            ? selectedBotId
+            : bots[0].id;
+          setActualBotId(botToUse);
+          setSelectedBotId(botToUse);
+          setLoadingBot(false);
+        } else {
+          setActualBotId(undefined);
+          setSelectedBotId(null);
+          setLoadingBot(false);
+        }
+      } else {
         setLoadingBot(true);
       }
-    } else if (propBotId) {
-      setLoadingBot(false);
     }
-  }, [propBotId, isSignedIn, isLoaded, loadingBots, bots, actualBotId]);
+  }, [propBotId, isSignedIn, isLoaded, loadingBots, bots, selectedBotId, setSelectedBotId]);
 
   const {
     messages,

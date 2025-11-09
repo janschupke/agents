@@ -1,82 +1,53 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
-import { UserService } from '../services/user.service';
 import { ApiCredentialsService } from '../services/api-credentials.service';
-import { User } from '../types/chat.types';
 import PageContainer from './PageContainer';
 import PageHeader from './PageHeader';
 import { IconClose } from './Icons';
+import { useApiKeyStatus, useUserInfo } from '../contexts/AppContext';
 
 export default function UserProfile() {
   const navigate = useNavigate();
-  const { user: clerkUser, isSignedIn, isLoaded } = useUser();
-  const [userInfo, setUserInfo] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [hasApiKey, setHasApiKey] = useState(false);
-  const [apiKeyLoading, setApiKeyLoading] = useState(true);
+  const { user: clerkUser } = useUser();
+  const { hasApiKey: cachedHasApiKey, loadingApiKey, refreshApiKey } = useApiKeyStatus();
+  const { userInfo: cachedUserInfo, loadingUser } = useUserInfo();
   const [apiKey, setApiKey] = useState('');
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
   const [apiKeySaving, setApiKeySaving] = useState(false);
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+  
+  // Use cached API key status
+  const hasApiKey = cachedHasApiKey ?? false;
+  const apiKeyLoading = loadingApiKey;
+  
+  // Use cached user info
+  const userInfo = cachedUserInfo;
+  // Only show loading if we don't have user info yet and it's actually loading
+  // If user info is cached, don't show loading state
+  const loading = loadingUser && !cachedUserInfo;
 
   useEffect(() => {
-    // Only load data when user is signed in and Clerk is loaded
-    if (isSignedIn && isLoaded) {
-      // Wait a bit for token provider to be ready
-      const timer = setTimeout(() => {
-        loadUserInfo();
-        loadApiKeyStatus();
-      }, 100);
-      return () => clearTimeout(timer);
+    // User info and API key status are loaded from cache in AppContext
+    // Just update UI state based on cached values
+    if (hasApiKey) {
+      setApiKey('••••••••••••••••••••••••••••••••');
+      setShowApiKeyInput(false);
     } else {
-      // Reset state when not signed in
-      setLoading(false);
-      setApiKeyLoading(false);
-      setUserInfo(null);
-      setHasApiKey(false);
-    }
-  }, [isSignedIn, isLoaded]);
-
-  const loadUserInfo = async () => {
-    setLoading(true);
-    try {
-      const user = await UserService.getCurrentUser();
-      setUserInfo(user);
-    } catch (error: unknown) {
-      // Only log unexpected errors (not 401s when auth isn't ready)
-      const apiError = error as { expected?: boolean; message?: string };
-      if (!apiError.expected) {
-        console.error('Failed to load user info:', error);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadApiKeyStatus = async () => {
-    setApiKeyLoading(true);
-    try {
-      const hasKey = await ApiCredentialsService.hasOpenAIKey();
-      setHasApiKey(hasKey);
-      if (hasKey) {
-        // Show placeholder if key exists
-        setApiKey('••••••••••••••••••••••••••••••••');
-        setShowApiKeyInput(false);
-      } else {
-        setShowApiKeyInput(true);
-      }
-    } catch (error: unknown) {
-      // Only log unexpected errors (not 401s when auth isn't ready)
-      const apiError = error as { expected?: boolean; message?: string };
-      if (!apiError.expected) {
-        console.error('Failed to load API key status:', error);
-      }
       setShowApiKeyInput(true);
-    } finally {
-      setApiKeyLoading(false);
     }
-  };
+  }, [hasApiKey]);
+
+
+  // Update UI when cached API key status changes
+  useEffect(() => {
+    if (hasApiKey) {
+      setApiKey('••••••••••••••••••••••••••••••••');
+      setShowApiKeyInput(false);
+    } else {
+      setShowApiKeyInput(true);
+    }
+  }, [hasApiKey]);
 
   const handleSaveApiKey = async () => {
     if (!apiKey.trim()) {
@@ -88,10 +59,11 @@ export default function UserProfile() {
     setApiKeyError(null);
     try {
       await ApiCredentialsService.setOpenAIKey(apiKey);
-      setHasApiKey(true);
+      // Refresh cached API key status
+      await refreshApiKey();
       setApiKey('••••••••••••••••••••••••••••••••');
       setShowApiKeyInput(false);
-      // Dispatch custom event to notify App component
+      // Dispatch custom event to notify other components
       window.dispatchEvent(new CustomEvent('apiKeySaved'));
     } catch (error: unknown) {
       const err = error as { message?: string };
@@ -110,9 +82,12 @@ export default function UserProfile() {
     setApiKeyError(null);
     try {
       await ApiCredentialsService.deleteOpenAIKey();
-      setHasApiKey(false);
+      // Refresh cached API key status
+      await refreshApiKey();
       setApiKey('');
       setShowApiKeyInput(true);
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new CustomEvent('apiKeySaved'));
     } catch (error: unknown) {
       const err = error as { message?: string };
       setApiKeyError(err.message || 'Failed to delete API key');
