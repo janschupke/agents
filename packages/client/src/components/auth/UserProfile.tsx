@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import { ApiCredentialsService } from '../../services/api-credentials.service';
 import PageContainer from '../ui/PageContainer';
 import PageHeader from '../ui/PageHeader';
-import { IconClose } from '../ui/Icons';
+import { IconPencil, IconTrash, IconClose, IconCheck } from '../ui/Icons';
 import { useApiKeyStatus, useUserInfo } from '../../contexts/UserContext';
 
 export default function UserProfile() {
-  const navigate = useNavigate();
   const { user: clerkUser } = useUser();
   const { hasApiKey: cachedHasApiKey, loadingApiKey, refreshApiKey } = useApiKeyStatus();
   const { userInfo: cachedUserInfo, loadingUser } = useUserInfo();
@@ -106,10 +104,6 @@ export default function UserProfile() {
     setApiKey('');
   };
 
-  const handleClose = () => {
-    navigate('/chat');
-  };
-
   if (loading) {
     return (
       <PageContainer>
@@ -132,18 +126,7 @@ export default function UserProfile() {
   return (
     <PageContainer>
       <div className="flex flex-col h-full overflow-hidden">
-        <PageHeader
-          title="User Profile"
-          actions={
-            <button
-              onClick={handleClose}
-              className="text-text-secondary hover:text-text-primary transition-colors"
-              aria-label="Close"
-            >
-              <IconClose className="w-6 h-6" />
-            </button>
-          }
-        />
+        <PageHeader title="User Profile" />
         <div className="flex-1 overflow-y-auto p-8">
           <div className="space-y-6">
         {/* Profile Image */}
@@ -250,49 +233,41 @@ export default function UserProfile() {
             ) : (
               <div className="space-y-3">
                 {!showApiKeyInput && hasApiKey && apiKey ? (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <input
                       type="password"
                       value={apiKey}
                       disabled
-                      className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background font-mono"
+                      className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-tertiary bg-background-tertiary font-mono cursor-not-allowed"
                       placeholder="API key is set"
                     />
                     <button
                       onClick={handleEditApiKey}
-                      className="h-8 px-4 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-tertiary transition-colors"
+                      className="h-8 w-8 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-background-tertiary rounded transition-colors"
+                      title="Edit API key"
                     >
-                      Edit
+                      <IconPencil className="w-4 h-4" />
                     </button>
                     <button
                       onClick={handleDeleteApiKey}
                       disabled={apiKeySaving}
-                      className="h-8 px-4 bg-red-600 text-white border-none rounded-md text-sm font-medium hover:bg-red-700 transition-colors disabled:bg-disabled disabled:cursor-not-allowed"
+                      className="h-8 w-8 flex items-center justify-center text-text-tertiary hover:text-red-600 hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Delete API key"
                     >
-                      Delete
+                      <IconTrash className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <input
-                      type="password"
-                      value={apiKey}
-                      onChange={handleApiKeyInputChange}
-                      placeholder="Enter your OpenAI API key"
-                      disabled={apiKeySaving}
-                      className="w-full h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus disabled:bg-disabled-bg disabled:cursor-not-allowed font-mono"
-                    />
-                    {apiKeyError && (
-                      <p className="text-xs text-red-600">{apiKeyError}</p>
-                    )}
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleSaveApiKey}
-                        disabled={apiKeySaving || !apiKey.trim()}
-                        className="h-8 px-4 bg-primary text-text-inverse border-none rounded-md text-sm font-medium cursor-pointer transition-colors hover:bg-primary-hover disabled:bg-disabled disabled:cursor-not-allowed"
-                      >
-                        {apiKeySaving ? 'Saving...' : 'Save'}
-                      </button>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="password"
+                        value={apiKey}
+                        onChange={handleApiKeyInputChange}
+                        placeholder="Enter your OpenAI API key"
+                        disabled={apiKeySaving}
+                        className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus disabled:bg-disabled-bg disabled:cursor-not-allowed font-mono"
+                      />
                       {hasApiKey && (
                         <button
                           onClick={() => {
@@ -301,27 +276,29 @@ export default function UserProfile() {
                             setApiKeyError(null);
                           }}
                           disabled={apiKeySaving}
-                          className="h-8 px-4 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-tertiary transition-colors disabled:bg-disabled disabled:cursor-not-allowed"
+                          className="h-8 w-8 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Cancel"
                         >
-                          Cancel
+                          <IconClose className="w-4 h-4" />
                         </button>
                       )}
+                      <button
+                        onClick={handleSaveApiKey}
+                        disabled={apiKeySaving || !apiKey.trim()}
+                        className="h-8 w-8 flex items-center justify-center bg-primary text-text-inverse rounded transition-colors hover:bg-primary-hover disabled:bg-disabled disabled:cursor-not-allowed"
+                        title="Save API key"
+                      >
+                        <IconCheck className="w-4 h-4" />
+                      </button>
                     </div>
+                    {apiKeyError && (
+                      <p className="text-xs text-red-600">{apiKeyError}</p>
+                    )}
                   </div>
                 )}
               </div>
             )}
           </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-border">
-          <button
-            onClick={handleClose}
-            className="h-8 px-4 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-tertiary transition-colors"
-          >
-            Close
-          </button>
         </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { IconClose, IconPlus } from '../ui/Icons';
+import { IconTrash, IconPlus } from '../ui/Icons';
 
 interface NameFieldProps {
   value: string;
@@ -77,7 +77,7 @@ export function TemperatureField({ value, onChange }: TemperatureFieldProps) {
           onChange={(e) => onChange(parseFloat(e.target.value))}
           className="w-full h-2 bg-background rounded-lg appearance-none cursor-pointer accent-primary"
           style={{
-            background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${(value / 2) * 100}%, rgb(229, 231, 235) ${(value / 2) * 100}%, rgb(229, 231, 235) 100%)`,
+            background: `linear-gradient(to right, rgb(var(--color-primary)) 0%, rgb(var(--color-primary)) ${(value / 2) * 100}%, rgb(var(--color-border)) ${(value / 2) * 100}%, rgb(var(--color-border)) 100%)`,
           }}
         />
       </div>
@@ -150,10 +150,10 @@ export function BehaviorRulesField({ rules, onChange }: BehaviorRulesFieldProps)
                 const newRules = rules.filter((_, i) => i !== index);
                 onChange(newRules);
               }}
-              className="h-8 w-8 flex items-center justify-center bg-red-600 text-white border-none rounded-md hover:bg-red-700 transition-colors flex-shrink-0"
+              className="h-8 w-8 flex items-center justify-center text-text-tertiary hover:text-red-600 hover:bg-background-tertiary rounded transition-colors flex-shrink-0"
               title="Remove rule"
             >
-              <IconClose className="w-4 h-4" />
+              <IconTrash className="w-4 h-4" />
             </button>
           </div>
         ))}

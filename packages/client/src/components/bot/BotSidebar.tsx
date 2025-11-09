@@ -21,8 +21,16 @@ export default function BotSidebar({
 }: BotSidebarProps) {
   return (
     <div className="flex flex-col w-56 h-full bg-background-tertiary border-r border-border overflow-hidden">
-      <div className="px-3 py-2.5 bg-background border-b border-border">
+      <div className="px-3 py-2.5 bg-background border-b border-border flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-secondary">Bots</h3>
+        <button
+          onClick={onNewBot}
+          disabled={loading}
+          className="h-6 w-6 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          title="New Bot"
+        >
+          <IconPlus className="w-4 h-4" />
+        </button>
       </div>
       <div className="flex-1 overflow-y-auto">
         {loading && bots.length === 0 ? (
@@ -86,16 +94,6 @@ export default function BotSidebar({
             ))}
           </div>
         )}
-      </div>
-      <div className="p-2.5 border-t border-border">
-        <button
-          onClick={onNewBot}
-          disabled={loading}
-          className="w-full h-8 px-3 bg-primary text-text-inverse border-none rounded-md text-sm font-medium cursor-pointer transition-colors hover:bg-primary-hover disabled:bg-disabled disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
-        >
-          <IconPlus className="w-4 h-4" />
-          <span>New Bot</span>
-        </button>
       </div>
     </div>
   );

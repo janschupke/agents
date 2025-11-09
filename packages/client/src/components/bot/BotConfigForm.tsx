@@ -3,6 +3,7 @@ import { Bot } from '../../types/chat.types.js';
 import { BotService } from '../../services/bot.service.js';
 import PageHeader from '../ui/PageHeader.js';
 import { Skeleton } from '../ui/Skeleton';
+import { IconRefresh } from '../ui/Icons';
 import { useBots } from '../../contexts/BotContext.js';
 import {
   NameField,
@@ -279,7 +280,18 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <PageHeader title="Bot Configuration" />
+      <PageHeader 
+        title="Bot Configuration"
+        actions={
+          <button
+            onClick={handleSave}
+            disabled={saving || !name.trim()}
+            className="h-8 px-4 bg-primary text-text-inverse border-none rounded-md text-sm font-medium cursor-pointer transition-colors hover:bg-primary-hover disabled:bg-disabled disabled:cursor-not-allowed"
+          >
+            {saving ? 'Saving...' : bot.id < 0 ? 'Create Bot' : 'Save'}
+          </button>
+        }
+      />
       <div className="flex-1 overflow-y-auto p-5">
         {error && (
           <div className="mb-4 p-2.5 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
@@ -328,9 +340,10 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
                   <button
                     onClick={handleRefreshEmbeddings}
                     disabled={loadingEmbeddings}
-                    className="h-7 px-3 text-xs bg-background border border-border rounded-md text-text-primary hover:bg-background-tertiary disabled:opacity-50 transition-colors"
+                    className="h-6 w-6 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Refresh embeddings"
                   >
-                    {loadingEmbeddings ? 'Loading...' : 'Refresh'}
+                    <IconRefresh className={`w-4 h-4 ${loadingEmbeddings ? 'animate-spin' : ''}`} />
                   </button>
                 )}
               </div>
@@ -345,15 +358,6 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
             </div>
           </div>
         )}
-      </div>
-      <div className="px-5 py-3 bg-background border-t border-border">
-        <button
-          onClick={handleSave}
-          disabled={saving || !name.trim()}
-          className="h-8 px-4 bg-primary text-text-inverse border-none rounded-md text-sm font-medium cursor-pointer transition-colors hover:bg-primary-hover disabled:bg-disabled disabled:cursor-not-allowed"
-        >
-          {saving ? 'Saving...' : bot.id < 0 ? 'Create Bot' : 'Save'}
-        </button>
       </div>
     </div>
   );

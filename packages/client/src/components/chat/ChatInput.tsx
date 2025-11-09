@@ -24,10 +24,10 @@ export default function ChatInput({ input, onInputChange, onSubmit, disabled }: 
       <button
         type="submit"
         disabled={disabled || !input.trim()}
-        className="h-8 px-4 bg-primary text-text-inverse border-none rounded-md text-sm font-medium cursor-pointer transition-colors hover:bg-primary-hover disabled:bg-disabled disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+        className="h-8 w-8 flex items-center justify-center bg-primary text-text-inverse border-none rounded-md cursor-pointer transition-colors hover:bg-primary-hover disabled:bg-disabled disabled:cursor-not-allowed"
+        title="Send message"
       >
         <IconSend className="w-4 h-4" />
-        <span className="hidden sm:inline">Send</span>
       </button>
     </form>
   );

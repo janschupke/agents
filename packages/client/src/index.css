@@ -4,10 +4,10 @@
 
 @layer base {
   :root {
-    /* Primary colors - Orange */
-    --color-primary: 249 115 22; /* orange-500 */
-    --color-primary-hover: 234 88 12; /* orange-600 */
-    --color-primary-light: 251 146 60; /* orange-400 */
+    /* Primary colors - Orange (toned down) */
+    --color-primary: 234 88 12; /* orange-600 */
+    --color-primary-hover: 194 65 12; /* orange-700 */
+    --color-primary-light: 249 115 22; /* orange-500 */
     
     /* Background colors - Grayscale */
     --color-background: 255 255 255; /* white */
@@ -22,11 +22,11 @@
     
     /* Border colors - Grayscale */
     --color-border: 229 231 235; /* gray-200 */
-    --color-border-focus: 249 115 22; /* orange-500 */
+    --color-border-focus: 234 88 12; /* orange-600 */
     --color-border-input: 209 213 219; /* gray-300 */
     
     /* Message colors - Orange for user, grayscale for assistant */
-    --color-message-user: 249 115 22; /* orange-500 */
+    --color-message-user: 234 88 12; /* orange-600 */
     --color-message-assistant: 243 244 246; /* gray-100 */
     --color-message-user-text: 255 255 255; /* white */
     --color-message-assistant-text: 17 24 39; /* gray-900 */
