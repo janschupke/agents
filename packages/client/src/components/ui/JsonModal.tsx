@@ -18,7 +18,7 @@ export default function JsonModal({ isOpen, onClose, title, data }: JsonModalPro
       onClick={onClose}
     >
       <div 
-        className="bg-background-secondary rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] flex flex-col m-4"
+        className="bg-background border border-border w-full max-w-4xl max-h-[90vh] flex flex-col m-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">

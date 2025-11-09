@@ -19,7 +19,7 @@ export function NameField({ value, onChange }: NameFieldProps) {
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background-secondary focus:outline-none focus:border-border-focus"
+        className="w-full h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus"
         placeholder="Enter bot name"
       />
     </div>
@@ -45,7 +45,7 @@ export function DescriptionField({ value, onChange }: DescriptionFieldProps) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
-        className="w-full px-3 py-2 border border-border-input rounded-md text-sm text-text-primary bg-background-secondary focus:outline-none focus:border-border-focus resize-none"
+        className="w-full px-3 py-2 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus resize-none"
         placeholder="Enter bot description"
       />
     </div>
@@ -75,7 +75,7 @@ export function TemperatureField({ value, onChange }: TemperatureFieldProps) {
           step="0.1"
           value={value}
           onChange={(e) => onChange(parseFloat(e.target.value))}
-          className="w-full h-2 bg-background-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+          className="w-full h-2 bg-background rounded-lg appearance-none cursor-pointer accent-primary"
           style={{
             background: `linear-gradient(to right, rgb(59, 130, 246) 0%, rgb(59, 130, 246) ${(value / 2) * 100}%, rgb(229, 231, 235) ${(value / 2) * 100}%, rgb(229, 231, 235) 100%)`,
           }}
@@ -109,7 +109,7 @@ export function SystemPromptField({ value, onChange }: SystemPromptFieldProps) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={4}
-        className="w-full px-3 py-2 border border-border-input rounded-md text-sm text-text-primary bg-background-secondary focus:outline-none focus:border-border-focus resize-none font-mono"
+        className="w-full px-3 py-2 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus resize-none font-mono"
         placeholder="Enter system prompt for the bot"
       />
       <p className="text-xs text-text-tertiary mt-1">
@@ -141,7 +141,7 @@ export function BehaviorRulesField({ rules, onChange }: BehaviorRulesFieldProps)
                 newRules[index] = e.target.value;
                 onChange(newRules);
               }}
-              className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background-secondary focus:outline-none focus:border-border-focus"
+              className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus"
               placeholder={`Rule ${index + 1}`}
             />
             <button
@@ -160,7 +160,7 @@ export function BehaviorRulesField({ rules, onChange }: BehaviorRulesFieldProps)
         <button
           type="button"
           onClick={() => onChange([...rules, ''])}
-          className="w-full h-8 px-3 bg-background-secondary border border-border rounded-md text-sm text-text-primary hover:bg-background transition-colors flex items-center justify-center gap-1.5"
+          className="w-full h-8 px-3 bg-background border border-border rounded-md text-sm text-text-primary hover:bg-background-tertiary transition-colors flex items-center justify-center gap-1.5"
         >
           <IconPlus className="w-4 h-4" />
           <span>Add Rule</span>

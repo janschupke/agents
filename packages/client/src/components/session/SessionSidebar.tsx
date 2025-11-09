@@ -19,7 +19,7 @@ export default function SessionSidebar({
   loading = false,
 }: SessionSidebarProps) {
   return (
-    <div className="flex flex-col w-56 h-full bg-background-secondary border-r border-border overflow-hidden">
+    <div className="flex flex-col w-56 h-full bg-background-tertiary border-r border-border overflow-hidden">
       <div className="px-3 py-2.5 bg-background border-b border-border">
         <h3 className="text-sm font-semibold text-text-secondary">Sessions</h3>
       </div>

@@ -255,12 +255,12 @@ export default function UserProfile() {
                       type="password"
                       value={apiKey}
                       disabled
-                      className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background-secondary font-mono"
+                      className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background font-mono"
                       placeholder="API key is set"
                     />
                     <button
                       onClick={handleEditApiKey}
-                      className="h-8 px-4 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-secondary transition-colors"
+                      className="h-8 px-4 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-tertiary transition-colors"
                     >
                       Edit
                     </button>
@@ -280,7 +280,7 @@ export default function UserProfile() {
                       onChange={handleApiKeyInputChange}
                       placeholder="Enter your OpenAI API key"
                       disabled={apiKeySaving}
-                      className="w-full h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background-secondary focus:outline-none focus:border-border-focus disabled:bg-disabled-bg disabled:cursor-not-allowed font-mono"
+                      className="w-full h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus disabled:bg-disabled-bg disabled:cursor-not-allowed font-mono"
                     />
                     {apiKeyError && (
                       <p className="text-xs text-red-600">{apiKeyError}</p>
@@ -301,7 +301,7 @@ export default function UserProfile() {
                             setApiKeyError(null);
                           }}
                           disabled={apiKeySaving}
-                          className="h-8 px-4 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-secondary transition-colors disabled:bg-disabled disabled:cursor-not-allowed"
+                          className="h-8 px-4 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-tertiary transition-colors disabled:bg-disabled disabled:cursor-not-allowed"
                         >
                           Cancel
                         </button>
@@ -318,7 +318,7 @@ export default function UserProfile() {
         <div className="flex justify-end gap-3 pt-4 border-t border-border">
           <button
             onClick={handleClose}
-            className="h-8 px-4 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-secondary transition-colors"
+            className="h-8 px-4 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-tertiary transition-colors"
           >
             Close
           </button>

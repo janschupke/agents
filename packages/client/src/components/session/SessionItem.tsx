@@ -24,7 +24,7 @@ export default function SessionItem({ session, isSelected, onSelect }: SessionIt
       className={`px-3 py-2 text-left border-b border-border transition-colors ${
         isSelected
           ? 'bg-primary text-text-inverse'
-          : 'bg-background-secondary text-text-primary hover:bg-background'
+          : 'bg-background text-text-primary hover:bg-background-tertiary'
       }`}
     >
       <div className="text-sm font-medium truncate">

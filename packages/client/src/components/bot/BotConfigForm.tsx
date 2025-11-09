@@ -328,7 +328,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
                   <button
                     onClick={handleRefreshEmbeddings}
                     disabled={loadingEmbeddings}
-                    className="h-7 px-3 text-xs bg-background-secondary border border-border rounded-md text-text-primary hover:bg-background disabled:opacity-50 transition-colors"
+                    className="h-7 px-3 text-xs bg-background border border-border rounded-md text-text-primary hover:bg-background-tertiary disabled:opacity-50 transition-colors"
                   >
                     {loadingEmbeddings ? 'Loading...' : 'Refresh'}
                   </button>

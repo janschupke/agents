@@ -15,7 +15,7 @@ export default function AuthButtons() {
   return (
     <div className="flex items-center gap-2">
       <SignInButton mode="modal">
-        <button className="h-8 px-4 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-secondary transition-colors">
+        <button className="h-8 px-4 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-tertiary transition-colors">
           Sign In
         </button>
       </SignInButton>

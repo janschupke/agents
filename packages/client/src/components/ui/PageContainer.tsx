@@ -7,11 +7,11 @@ interface PageContainerProps {
 
 /**
  * Unified container component for all page views.
- * Ensures consistent styling and full viewport space usage.
+ * Full-width container without margins or shadows, connected to header/footer.
  */
 export default function PageContainer({ children, className = '' }: PageContainerProps) {
   return (
-    <div className={`w-full h-full bg-background-secondary rounded-lg shadow-lg overflow-hidden ${className}`}>
+    <div className={`w-full h-full bg-background overflow-hidden ${className}`}>
       {children}
     </div>
   );

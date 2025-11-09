@@ -36,7 +36,7 @@ export default function UserDropdown() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 h-8 px-2 rounded-md hover:bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+        className="flex items-center gap-2 h-8 px-2 rounded-md hover:bg-background-tertiary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
         aria-label="User menu"
       >
         {userImage ? (
@@ -54,7 +54,7 @@ export default function UserDropdown() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-1 w-56 bg-background-secondary rounded-lg shadow-lg border border-border py-1 z-50">
+        <div className="absolute right-0 mt-1 w-56 bg-background border border-border py-1 z-50">
           <div className="px-3 py-2 border-b border-border">
             <p className="text-sm font-medium text-text-primary">{displayName}</p>
             {userInfo?.email && (
@@ -64,14 +64,14 @@ export default function UserDropdown() {
           <Link
             to="/profile"
             onClick={() => setIsOpen(false)}
-            className="block w-full text-left px-3 py-2 text-sm text-text-primary hover:bg-background transition-colors flex items-center gap-2"
+            className="block w-full text-left px-3 py-2 text-sm text-text-primary hover:bg-background-tertiary transition-colors flex items-center gap-2"
           >
             <IconUser className="w-4 h-4" />
             <span>Profile</span>
           </Link>
           <div className="border-t border-border mt-1">
             <SignOutButton>
-              <button className="w-full text-left px-3 py-2 text-sm text-text-primary hover:bg-background transition-colors flex items-center gap-2">
+              <button className="w-full text-left px-3 py-2 text-sm text-text-primary hover:bg-background-tertiary transition-colors flex items-center gap-2">
                 <IconLogout className="w-4 h-4" />
                 <span>Sign Out</span>
               </button>

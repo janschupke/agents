@@ -19,7 +19,7 @@ export default function ChatInput({ input, onInputChange, onSubmit, disabled }: 
         onChange={(e) => onInputChange(e.target.value)}
         placeholder="Type your message..."
         disabled={disabled}
-        className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background-secondary focus:outline-none focus:border-border-focus disabled:bg-disabled-bg disabled:cursor-not-allowed"
+        className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus disabled:bg-disabled-bg disabled:cursor-not-allowed"
       />
       <button
         type="submit"

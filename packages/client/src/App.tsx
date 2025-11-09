@@ -20,8 +20,8 @@ const AppHeader = memo(function AppHeader() {
   const isActiveRoute = (path: string) => location.pathname === path;
 
   return (
-    <header className="bg-background-secondary px-6 py-3 shadow-sm border-b border-border flex items-center justify-between">
-      <h1 className="text-xl font-semibold text-text-secondary">OpenAI Chat</h1>
+    <header className="bg-background px-6 py-3 border-b border-border flex items-center justify-between">
+      <h1 className="text-xl font-semibold text-text-primary">OpenAI Chat</h1>
       <div className="flex items-center gap-2">
         <div className="flex gap-1">
           <Link
@@ -66,7 +66,7 @@ function SignInPage() {
           <h1 className="text-3xl font-bold text-text-primary mb-2">Welcome</h1>
           <p className="text-text-secondary">Sign in to continue</p>
         </div>
-        <div className="bg-background-secondary rounded-lg shadow-lg p-6">
+        <div className="bg-background border border-border p-6">
           <SignIn />
         </div>
       </div>
@@ -122,9 +122,9 @@ function AppContent() {
 
   // Authenticated layout with header, content, and footer
   return (
-    <div className="flex flex-col min-h-screen h-screen overflow-hidden">
+    <div className="flex flex-col min-h-screen h-screen overflow-hidden bg-background">
       <AppHeader />
-      <main className="flex-1 overflow-hidden p-6">
+      <main className="flex-1 overflow-hidden">
         <Routes>
           <Route path="/" element={<Navigate to="/chat" replace />} />
           <Route path="/chat" element={<ChatBot />} />

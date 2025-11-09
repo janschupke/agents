@@ -42,7 +42,7 @@ export default function BotSelector() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 h-8 px-2 rounded-md hover:bg-background-secondary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+        className="flex items-center gap-2 h-8 px-2 rounded-md hover:bg-background-tertiary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
         aria-label="Select bot"
       >
         <h2 className="text-lg font-semibold text-text-secondary">{displayName}</h2>
@@ -50,7 +50,7 @@ export default function BotSelector() {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 mt-1 w-56 bg-background-secondary rounded-lg shadow-lg border border-border py-1 z-[100] max-h-64 overflow-y-auto">
+        <div className="absolute left-0 mt-1 w-56 bg-background border border-border py-1 z-[100] max-h-64 overflow-y-auto">
           {bots.map((bot) => (
             <button
               key={bot.id}
@@ -58,7 +58,7 @@ export default function BotSelector() {
               className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${
                 bot.id === selectedBotId
                   ? 'bg-primary text-text-inverse'
-                  : 'text-text-primary hover:bg-background'
+                  : 'text-text-primary hover:bg-background-tertiary'
               }`}
             >
               <span className="truncate">{bot.name}</span>
