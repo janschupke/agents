@@ -1,0 +1,212 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { BotService } from './bot.service.js';
+import { Bot, Embedding, CreateBotRequest, UpdateBotRequest } from '../types/chat.types.js';
+import { apiManager } from './api-manager.js';
+
+// Mock ApiManager
+vi.mock('./api-manager.js', () => ({
+  apiManager: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+describe('BotService', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('getAllBots', () => {
+    it('should fetch all bots successfully', async () => {
+      const mockBots: Bot[] = [
+        {
+          id: 1,
+          name: 'Test Bot 1',
+          description: 'Description 1',
+          createdAt: '2024-01-01',
+        },
+        {
+          id: 2,
+          name: 'Test Bot 2',
+          description: 'Description 2',
+          createdAt: '2024-01-02',
+        },
+      ];
+
+      vi.mocked(apiManager.get).mockResolvedValueOnce(mockBots);
+
+      const result = await BotService.getAllBots();
+
+      expect(result).toEqual(mockBots);
+      expect(apiManager.get).toHaveBeenCalledWith('/api/bots');
+    });
+
+    it('should throw error when fetch fails', async () => {
+      vi.mocked(apiManager.get).mockRejectedValueOnce({
+        message: 'Internal server error',
+        status: 500,
+      });
+
+      await expect(BotService.getAllBots()).rejects.toThrow();
+    });
+  });
+
+  describe('getBot', () => {
+    it('should fetch a bot by ID successfully', async () => {
+      const mockBot: Bot = {
+        id: 1,
+        name: 'Test Bot',
+        description: 'Test Description',
+        createdAt: '2024-01-01',
+      };
+
+      vi.mocked(apiManager.get).mockResolvedValueOnce(mockBot);
+
+      const result = await BotService.getBot(1);
+
+      expect(result).toEqual(mockBot);
+      expect(apiManager.get).toHaveBeenCalledWith('/api/bots/1');
+    });
+
+    it('should throw error when bot not found', async () => {
+      vi.mocked(apiManager.get).mockRejectedValueOnce({
+        message: 'Not found',
+        status: 404,
+      });
+
+      await expect(BotService.getBot(999)).rejects.toThrow();
+    });
+  });
+
+  describe('createBot', () => {
+    it('should create a new bot successfully', async () => {
+      const createData: CreateBotRequest = {
+        name: 'New Bot',
+        description: 'New Description',
+        configs: {
+          temperature: 0.7,
+          system_prompt: 'You are a helpful assistant',
+          behavior_rules: ['Be polite', 'Be concise'],
+        },
+      };
+
+      const mockBot: Bot = {
+        id: 1,
+        name: 'New Bot',
+        description: 'New Description',
+        createdAt: '2024-01-01',
+      };
+
+      vi.mocked(apiManager.post).mockResolvedValueOnce(mockBot);
+
+      const result = await BotService.createBot(createData);
+
+      expect(result).toEqual(mockBot);
+      expect(apiManager.post).toHaveBeenCalledWith('/api/bots', createData);
+    });
+
+    it('should throw error when creation fails', async () => {
+      const createData: CreateBotRequest = {
+        name: 'New Bot',
+      };
+
+      vi.mocked(apiManager.post).mockRejectedValueOnce({
+        message: 'Validation error',
+        status: 400,
+      });
+
+      await expect(BotService.createBot(createData)).rejects.toThrow();
+    });
+  });
+
+  describe('updateBot', () => {
+    it('should update a bot successfully', async () => {
+      const updateData: UpdateBotRequest = {
+        name: 'Updated Bot',
+        description: 'Updated Description',
+      };
+
+      const mockBot: Bot = {
+        id: 1,
+        name: 'Updated Bot',
+        description: 'Updated Description',
+        createdAt: '2024-01-01',
+      };
+
+      vi.mocked(apiManager.put).mockResolvedValueOnce(mockBot);
+
+      const result = await BotService.updateBot(1, updateData);
+
+      expect(result).toEqual(mockBot);
+      expect(apiManager.put).toHaveBeenCalledWith('/api/bots/1', updateData);
+    });
+
+    it('should throw error when update fails', async () => {
+      const updateData: UpdateBotRequest = {
+        name: 'Updated Bot',
+      };
+
+      vi.mocked(apiManager.put).mockRejectedValueOnce({
+        message: 'Not found',
+        status: 404,
+      });
+
+      await expect(BotService.updateBot(999, updateData)).rejects.toThrow();
+    });
+  });
+
+  describe('getEmbeddings', () => {
+    it('should fetch embeddings for a bot successfully', async () => {
+      const mockEmbeddings: Embedding[] = [
+        {
+          id: 1,
+          sessionId: 1,
+          chunk: 'Test chunk 1',
+          createdAt: '2024-01-01',
+        },
+        {
+          id: 2,
+          sessionId: 1,
+          chunk: 'Test chunk 2',
+          createdAt: '2024-01-02',
+        },
+      ];
+
+      vi.mocked(apiManager.get).mockResolvedValueOnce(mockEmbeddings);
+
+      const result = await BotService.getEmbeddings(1);
+
+      expect(result).toEqual(mockEmbeddings);
+      expect(apiManager.get).toHaveBeenCalledWith('/api/bots/1/embeddings');
+    });
+
+    it('should return empty array when no embeddings found', async () => {
+      vi.mocked(apiManager.get).mockResolvedValueOnce([]);
+
+      const result = await BotService.getEmbeddings(1);
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('deleteEmbedding', () => {
+    it('should delete an embedding successfully', async () => {
+      vi.mocked(apiManager.delete).mockResolvedValueOnce(undefined);
+
+      await BotService.deleteEmbedding(1, 1);
+
+      expect(apiManager.delete).toHaveBeenCalledWith('/api/bots/1/embeddings/1');
+    });
+
+    it('should throw error when deletion fails', async () => {
+      vi.mocked(apiManager.delete).mockRejectedValueOnce({
+        message: 'Not found',
+        status: 404,
+      });
+
+      await expect(BotService.deleteEmbedding(1, 999)).rejects.toThrow();
+    });
+  });
+});
