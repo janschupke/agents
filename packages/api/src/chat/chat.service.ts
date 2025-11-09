@@ -8,6 +8,7 @@ import { UserService } from '../user/user.service';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
 import { MEMORY_CONFIG } from '../common/constants/api.constants';
 import OpenAI from 'openai';
+import { SessionResponseDto, ChatHistoryResponseDto, SendMessageResponseDto } from '../common/dto/chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -21,7 +22,7 @@ export class ChatService {
     private readonly apiCredentialsService: ApiCredentialsService,
   ) {}
 
-  async getSessions(botId: number, userId: string) {
+  async getSessions(botId: number, userId: string): Promise<SessionResponseDto[]> {
     // Load bot with config
     const bot = await this.botRepository.findByIdWithConfig(botId, userId);
     if (!bot) {
@@ -38,7 +39,7 @@ export class ChatService {
     }));
   }
 
-  async createSession(botId: number, userId: string) {
+  async createSession(botId: number, userId: string): Promise<SessionResponseDto> {
     // User is automatically synced to DB by ClerkGuard
 
     // Load bot with config
@@ -57,7 +58,7 @@ export class ChatService {
     };
   }
 
-  async getChatHistory(botId: number, userId: string, sessionId?: number) {
+  async getChatHistory(botId: number, userId: string, sessionId?: number): Promise<ChatHistoryResponseDto> {
     const perfStart = Date.now();
     console.log(`[Performance] ChatService.getChatHistory START - botId: ${botId}, sessionId: ${sessionId}, userId: ${userId}`);
     
@@ -100,7 +101,7 @@ export class ChatService {
     console.log(`[Performance] ChatService.getChatHistory messages load took ${messagesLoadTime}ms, count: ${messageRecords.length}`);
 
     const mapStart = Date.now();
-    const messages = messageRecords.map((msg) => ({
+    const messages = messageRecords.map((msg: { role: string; content: string; rawRequest?: unknown; rawResponse?: unknown }) => ({
       role: msg.role as 'user' | 'assistant' | 'system',
       content: msg.content,
       rawRequest: msg.rawRequest,
@@ -133,7 +134,7 @@ export class ChatService {
     userId: string,
     message: string,
     sessionId?: number,
-  ) {
+  ): Promise<SendMessageResponseDto> {
     // User is automatically synced to DB by ClerkGuard
 
     // Check if user has API key
@@ -399,7 +400,7 @@ export class ChatService {
     };
   }
 
-  async deleteSession(botId: number, sessionId: number, userId: string) {
+  async deleteSession(botId: number, sessionId: number, userId: string): Promise<void> {
     // Verify the bot belongs to the user
     const bot = await this.botRepository.findByIdAndUserId(botId, userId);
     if (!bot) {

@@ -11,9 +11,10 @@ import {
   Query,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { SendMessageDto } from '../common/dto/send-message.dto';
+import { SendMessageDto, SessionResponseDto, ChatHistoryResponseDto, SendMessageResponseDto } from '../common/dto/chat.dto';
 import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
+import { SuccessResponseDto } from '../common/dto/common.dto';
 
 @Controller('api/chat')
 export class ChatController {
@@ -23,7 +24,7 @@ export class ChatController {
   async getSessions(
     @Param('botId', ParseIntPipe) botId: number,
     @User() user: AuthenticatedUser,
-  ) {
+  ): Promise<SessionResponseDto[]> {
     try {
       return await this.chatService.getSessions(botId, user.id);
     } catch (error) {
@@ -42,7 +43,7 @@ export class ChatController {
   async createSession(
     @Param('botId', ParseIntPipe) botId: number,
     @User() user: AuthenticatedUser,
-  ) {
+  ): Promise<SessionResponseDto> {
     try {
       return await this.chatService.createSession(botId, user.id);
     } catch (error) {
@@ -62,7 +63,7 @@ export class ChatController {
     @Param('botId', ParseIntPipe) botId: number,
     @User() user: AuthenticatedUser,
     @Query('sessionId') sessionId?: string,
-  ) {
+  ): Promise<ChatHistoryResponseDto> {
     const perfStart = Date.now();
     console.log(`[Performance] ChatController.getChatHistory START - botId: ${botId}, sessionId: ${sessionId}`);
     
@@ -94,7 +95,7 @@ export class ChatController {
     @Body() body: SendMessageDto,
     @User() user: AuthenticatedUser,
     @Query('sessionId') sessionId?: string,
-  ) {
+  ): Promise<SendMessageResponseDto> {
     if (!body.message || typeof body.message !== 'string') {
       throw new HttpException(
         'Message is required',
@@ -128,7 +129,7 @@ export class ChatController {
     @Param('botId', ParseIntPipe) botId: number,
     @Param('sessionId', ParseIntPipe) sessionId: number,
     @User() user: AuthenticatedUser,
-  ) {
+  ): Promise<SuccessResponseDto> {
     try {
       await this.chatService.deleteSession(botId, sessionId, user.id);
       return { success: true };

@@ -11,6 +11,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UseGuards } from '@nestjs/common';
 import { RolesGuard } from '../auth/roles.guard';
 import { AuthenticatedUser } from '../common/types/auth.types';
+import { UserResponseDto, UserListResponseDto } from '../common/dto/user.dto';
 
 @Controller('api/user')
 export class UserController {
@@ -22,7 +23,7 @@ export class UserController {
   @Get('all')
   @Roles('admin')
   @UseGuards(RolesGuard)
-  async getAllUsers() {
+  async getAllUsers(): Promise<UserListResponseDto[]> {
     try {
       const users = await this.userService.findAll();
       return users.map((user) => ({
@@ -48,7 +49,7 @@ export class UserController {
   }
 
   @Get('me')
-  async getCurrentUser(@User() user: AuthenticatedUser) {
+  async getCurrentUser(@User() user: AuthenticatedUser): Promise<UserResponseDto> {
     try {
       // Ensure user has roles (default to ["user"] if not present)
       const roles = user.roles && user.roles.length > 0 

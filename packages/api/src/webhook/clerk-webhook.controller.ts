@@ -10,6 +10,7 @@ import {
 import { Request } from 'express';
 import { ClerkWebhookService } from './clerk-webhook.service';
 import { Public } from '../auth/clerk.guard';
+import { WebhookResponseDto } from '../common/dto/webhook.dto';
 
 @Controller('api/webhooks/clerk')
 @Public()
@@ -25,7 +26,7 @@ export class ClerkWebhookController {
     @Headers('svix-timestamp') svixTimestamp: string | undefined,
     @Headers('svix-signature') svixSignature: string | undefined,
     @Req() req: Request & { rawBody?: Buffer; body?: Buffer },
-  ) {
+  ): Promise<WebhookResponseDto> {
     try {
       // Get raw body from middleware (stored in req.rawBody or req.body for webhook routes)
       const rawBody = req.rawBody || req.body;

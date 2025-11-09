@@ -1,6 +1,7 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiCredentialsRepository } from './api-credentials.repository';
 import { EncryptionService } from '../common/services/encryption.service';
+import { ApiCredentialsStatus } from '../common/interfaces/api-credentials.interface';
 
 @Injectable()
 export class ApiCredentialsService {
@@ -62,7 +63,7 @@ export class ApiCredentialsService {
     await this.repository.delete(userId, provider);
   }
 
-  async getCredentialsStatus(userId: string): Promise<{ provider: string; hasKey: boolean }[]> {
+  async getCredentialsStatus(userId: string): Promise<ApiCredentialsStatus[]> {
     const credentials = await this.repository.findByUserId(userId);
     const providers = ['openai']; // Add more providers as needed
     

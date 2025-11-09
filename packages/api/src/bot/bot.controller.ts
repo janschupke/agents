@@ -13,13 +13,16 @@ import {
 import { BotService } from './bot.service';
 import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
+import { CreateBotDto, UpdateBotDto } from '../common/dto/bot.dto';
+import { SuccessResponseDto } from '../common/dto/common.dto';
+import { BotResponse, EmbeddingResponse } from '../common/interfaces/bot.interface';
 
 @Controller('api/bots')
 export class BotController {
   constructor(private readonly botService: BotService) {}
 
   @Get()
-  async getAllBots(@User() user: AuthenticatedUser) {
+  async getAllBots(@User() user: AuthenticatedUser): Promise<BotResponse[]> {
     try {
       return await this.botService.findAll(user.id);
     } catch (error) {
@@ -38,7 +41,7 @@ export class BotController {
   async getBot(
     @Param('id', ParseIntPipe) id: number,
     @User() user: AuthenticatedUser,
-  ) {
+  ): Promise<BotResponse> {
     try {
       return await this.botService.findById(id, user.id);
     } catch (error) {
@@ -55,17 +58,9 @@ export class BotController {
 
   @Post()
   async createBot(
-    @Body() body: {
-      name: string;
-      description?: string;
-      configs?: {
-        temperature?: number;
-        system_prompt?: string;
-        behavior_rules?: string | unknown;
-      };
-    },
+    @Body() body: CreateBotDto,
     @User() user: AuthenticatedUser,
-  ) {
+  ): Promise<BotResponse> {
     try {
       // Prepare configs object if provided
       const configs: Record<string, unknown> | undefined = body.configs
@@ -73,6 +68,8 @@ export class BotController {
             temperature: body.configs.temperature,
             system_prompt: body.configs.system_prompt,
             behavior_rules: body.configs.behavior_rules,
+            model: body.configs.model,
+            max_tokens: body.configs.max_tokens,
           }
         : undefined;
       
@@ -92,17 +89,9 @@ export class BotController {
   @Put(':id')
   async updateBot(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: {
-      name: string;
-      description?: string;
-      configs?: {
-        temperature?: number;
-        system_prompt?: string;
-        behavior_rules?: string | unknown;
-      };
-    },
+    @Body() body: UpdateBotDto,
     @User() user: AuthenticatedUser,
-  ) {
+  ): Promise<BotResponse> {
     try {
       // Prepare configs object if provided
       const configs: Record<string, unknown> | undefined = body.configs
@@ -110,6 +99,8 @@ export class BotController {
             temperature: body.configs.temperature,
             system_prompt: body.configs.system_prompt,
             behavior_rules: body.configs.behavior_rules,
+            model: body.configs.model,
+            max_tokens: body.configs.max_tokens,
           }
         : undefined;
 
@@ -136,7 +127,7 @@ export class BotController {
   async getEmbeddings(
     @Param('id', ParseIntPipe) id: number,
     @User() user: AuthenticatedUser,
-  ) {
+  ): Promise<EmbeddingResponse[]> {
     try {
       return await this.botService.getEmbeddings(id, user.id);
     } catch (error) {
@@ -156,7 +147,7 @@ export class BotController {
     @Param('id', ParseIntPipe) id: number,
     @Param('embeddingId', ParseIntPipe) embeddingId: number,
     @User() user: AuthenticatedUser,
-  ) {
+  ): Promise<SuccessResponseDto> {
     try {
       await this.botService.deleteEmbedding(id, embeddingId, user.id);
       return { success: true };
@@ -176,7 +167,7 @@ export class BotController {
   async deleteBot(
     @Param('id', ParseIntPipe) id: number,
     @User() user: AuthenticatedUser,
-  ) {
+  ): Promise<SuccessResponseDto> {
     try {
       await this.botService.delete(id, user.id);
       return { success: true };
