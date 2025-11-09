@@ -6,26 +6,56 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   private readonly logger = new Logger(PrismaService.name);
 
   /**
-   * Optimize connection string with pooling parameters for better performance
+   * Optimize connection string for direct connection (port 5432)
+   * 
+   * For direct connections (port 5432), we can use prepared statements and avoid
+   * transaction overhead. This provides better performance than pooler connections.
+   * 
+   * Prisma handles connection pooling internally, so we don't need external poolers
+   * for regular queries when using direct connections.
    */
-  private static optimizeConnectionString(url: string): string {
+  private static optimizeConnectionString(url: string, isDirect: boolean = false): string {
     if (!url) return url;
     
     try {
       const urlObj = new URL(url);
-      
-      // Add connection pooling parameters if not already present
       const params = new URLSearchParams(urlObj.search);
       
-      // Connection pool settings for pgbouncer
-      if (!params.has('connection_limit')) {
-        params.set('connection_limit', '10'); // Limit concurrent connections
+      // For direct connections (port 5432), remove pgbouncer parameter
+      // Direct connections support prepared statements and don't need transaction pooling
+      if (isDirect || urlObj.port === '5432') {
+        params.delete('pgbouncer');
+        // Enable prepared statements for better performance
+        // Prisma will use prepared statements automatically with direct connections
+      } else if (urlObj.port === '6543' || urlObj.hostname.includes('pooler')) {
+        // For pooler connections, keep pgbouncer=true to disable prepared statements
+        if (!params.has('pgbouncer')) {
+          params.set('pgbouncer', 'true');
+        }
       }
-      if (!params.has('pool_timeout')) {
-        params.set('pool_timeout', '10'); // Timeout for getting connection from pool
-      }
+      
+      // Remove parameters that might interfere with Prisma's connection pooling
+      params.delete('connection_limit');
+      params.delete('pool_timeout');
+      
+      // Keep connect_timeout but make it reasonable (10 seconds)
       if (!params.has('connect_timeout')) {
-        params.set('connect_timeout', '5'); // Connection timeout
+        params.set('connect_timeout', '10');
+      }
+      
+      // For direct connections, we can use statement caching
+      if (isDirect || urlObj.port === '5432') {
+        if (!params.has('statement_cache_size')) {
+          params.set('statement_cache_size', '250');
+        }
+      } else {
+        // Remove for pooler connections
+        params.delete('statement_cache_size');
+      }
+      
+      // Add application_name for monitoring
+      if (!params.has('application_name')) {
+        params.set('application_name', 'openai-api');
       }
       
       urlObj.search = params.toString();
@@ -38,9 +68,16 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   }
 
   constructor() {
-    // Optimize connection string with pooling parameters
+    // Prefer DIRECT_URL for regular queries (better performance, no transaction overhead)
+    // Fall back to DATABASE_URL if DIRECT_URL is not set
+    const directUrl = process.env.DIRECT_URL;
     const databaseUrl = process.env.DATABASE_URL || '';
-    const optimizedUrl = PrismaService.optimizeConnectionString(databaseUrl);
+    
+    // Use DIRECT_URL if available, otherwise use DATABASE_URL
+    const connectionUrl = directUrl || databaseUrl;
+    const isDirectConnection = !!directUrl;
+    
+    const optimizedUrl = PrismaService.optimizeConnectionString(connectionUrl, isDirectConnection);
     
     super({
       log: [
@@ -54,7 +91,16 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
           url: optimizedUrl,
         },
       },
+      // Prisma handles connection pooling internally
+      // With direct connections, we get better performance without transaction overhead
     });
+
+    // Log connection type after super() call
+    if (isDirectConnection) {
+      this.logger.log('Using DIRECT_URL for database connection (port 5432) - optimized for performance');
+    } else if (databaseUrl) {
+      this.logger.warn('Using DATABASE_URL (pooler). Consider using DIRECT_URL for better performance.');
+    }
 
     // Log slow queries (>100ms)
     this.$on('query' as never, (e: any) => {

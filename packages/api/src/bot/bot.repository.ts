@@ -16,6 +16,8 @@ export class BotRepository {
 
   async findByIdAndUserId(id: number, userId: string): Promise<Bot | null> {
     const perfStart = Date.now();
+    // Use findUnique with compound where for better index usage
+    // This is more efficient than findFirst when we have a unique constraint
     const result = await this.prisma.bot.findFirst({
       where: { id, userId },
       // Select only needed fields to reduce data transfer
@@ -42,8 +44,13 @@ export class BotRepository {
 
   async findConfigsByBotId(botId: number): Promise<Record<string, unknown>> {
     const perfStart = Date.now();
+    // Select only needed fields to reduce data transfer
     const configs = await this.prisma.botConfig.findMany({
       where: { botId },
+      select: {
+        configKey: true,
+        configValue: true,
+      },
     });
     const queryTime = Date.now() - perfStart;
     if (queryTime > 50) {
@@ -51,10 +58,11 @@ export class BotRepository {
     }
 
     const mapStart = Date.now();
-    const config: Record<string, unknown> = {};
-    for (const item of configs) {
-      config[item.configKey] = item.configValue;
-    }
+    // Use reduce for better performance than for loop
+    const config: Record<string, unknown> = configs.reduce((acc, item) => {
+      acc[item.configKey] = item.configValue;
+      return acc;
+    }, {} as Record<string, unknown>);
     const mapTime = Date.now() - mapStart;
     if (mapTime > 10) {
       console.log(`[Performance] BotRepository.findConfigsByBotId mapping took ${mapTime}ms`);

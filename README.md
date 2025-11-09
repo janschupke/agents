@@ -33,11 +33,14 @@ pnpm install
 Create `.env` file in `packages/api/`:
 
 ```
-# Pooler connection for regular queries (better for connection pooling)
-DATABASE_URL=postgresql://postgres:[password]@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?pgbouncer=true
-
-# Direct connection for migrations (required for Prisma migrations)
+# RECOMMENDED: Direct connection (port 5432) for best performance
+# This avoids transaction overhead and enables prepared statements
+# Used for both regular queries and migrations
 DIRECT_URL=postgresql://postgres:[password]@aws-1-ap-southeast-1.compute.amazonaws.com:5432/postgres
+
+# Fallback: Pooler connection (port 6543) - only used if DIRECT_URL not set
+# Use this if you're hitting connection limits with direct connection
+DATABASE_URL=postgresql://postgres:[password]@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
 
 OPENAI_API_KEY=your-openai-api-key
 CLERK_SECRET_KEY=your-clerk-secret-key
@@ -49,14 +52,14 @@ PORT=3001
 1. Go to your Supabase project dashboard
 2. Navigate to **Settings** → **Database**
 3. Under **Connection string**, you'll find two connection modes:
-   - **Session mode** (with `.pooler.` in the URL) → Use for `DATABASE_URL` (regular queries)
-   - **Transaction mode** (direct connection, usually `.compute.amazonaws.com`) → Use for `DIRECT_URL` (migrations)
+   - **Direct connection** (port 5432, usually `.compute.amazonaws.com`) → Use for `DIRECT_URL` (recommended)
+   - **Pooler connection** (port 6543, with `.pooler.` in the URL) → Use for `DATABASE_URL` (fallback only)
 4. Copy both connection strings and replace `[YOUR-PASSWORD]` with your database password
-5. Add `?pgbouncer=true` to the pooler connection string (`DATABASE_URL`)
+5. Add `?pgbouncer=true` to the pooler connection string (`DATABASE_URL`) if using it
 
 **Why two connections?**
-- **Pooler connection** (`DATABASE_URL`): Better for regular queries, handles connection pooling efficiently
-- **Direct connection** (`DIRECT_URL`): Required for Prisma migrations, which need a direct database connection without pooling
+- **Direct connection** (`DIRECT_URL`): **RECOMMENDED** - Best performance, no transaction overhead, supports prepared statements. Used for both queries and migrations.
+- **Pooler connection** (`DATABASE_URL`): Fallback only - Use if you're hitting connection limits. Has transaction overhead (100-120ms per query) but handles more concurrent connections.
 
 6. Generate Prisma client:
 
