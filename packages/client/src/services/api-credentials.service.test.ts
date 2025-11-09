@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ApiCredentialsService, CredentialStatus } from './api-credentials.service.js';
+import { ApiCredentialsService } from './api-credentials.service.js';
 import { apiManager } from './api-manager.js';
 
 // Mock ApiManager
@@ -16,31 +16,6 @@ describe('ApiCredentialsService', () => {
     vi.clearAllMocks();
     // Suppress console.error in tests
     vi.spyOn(console, 'error').mockImplementation(() => {});
-  });
-
-  describe('getCredentialsStatus', () => {
-    it('should fetch credentials status successfully', async () => {
-      const mockStatus: CredentialStatus[] = [
-        { provider: 'openai', hasKey: true },
-        { provider: 'anthropic', hasKey: false },
-      ];
-
-      vi.mocked(apiManager.get).mockResolvedValueOnce(mockStatus);
-
-      const result = await ApiCredentialsService.getCredentialsStatus();
-
-      expect(result).toEqual(mockStatus);
-      expect(apiManager.get).toHaveBeenCalledWith('/api/api-credentials/status');
-    });
-
-    it('should throw error when fetch fails', async () => {
-      vi.mocked(apiManager.get).mockRejectedValueOnce({
-        message: 'Internal server error',
-        status: 500,
-      });
-
-      await expect(ApiCredentialsService.getCredentialsStatus()).rejects.toThrow();
-    });
   });
 
   describe('hasOpenAIKey', () => {

@@ -1,19 +1,7 @@
 import { apiManager } from './api-manager.js';
 import { API_ENDPOINTS } from '../constants/api.constants.js';
 
-export interface CredentialStatus {
-  provider: string;
-  hasKey: boolean;
-}
-
 export class ApiCredentialsService {
-  /**
-   * Get credentials status for all providers
-   */
-  static async getCredentialsStatus(): Promise<CredentialStatus[]> {
-    return apiManager.get<CredentialStatus[]>(API_ENDPOINTS.API_CREDENTIALS_STATUS);
-  }
-
   /**
    * Check if user has OpenAI API key
    */
