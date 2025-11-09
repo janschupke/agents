@@ -282,13 +282,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  // Reset state when bot changes - clear messages and session
+  // Reset state when bot changes - clear messages and session only when bot actually changes
   useEffect(() => {
     // If bot changed completely, clear caches and state
     if (currentBotId !== null && currentBotId !== lastBotIdRef.current && lastBotIdRef.current !== null) {
       // Clear all session caches for the old bot when switching away
       invalidateSessionCache(lastBotIdRef.current);
-      // Clear session and messages when bot changes
+      // Clear session and messages when bot changes (but preserve if navigating back to same bot)
+      // Only clear if we're actually switching to a different bot
       setCurrentSessionId(null);
       setMessages([]);
       lastSessionIdRef.current = null;

@@ -9,7 +9,7 @@ import JsonModal from './JsonModal.js';
 import BotSelector from './BotSelector.js';
 import { useBots } from '../contexts/BotContext';
 import { useSelectedBot } from '../contexts/AppContext';
-import { ChatProvider, useChatContext } from '../contexts/ChatContext';
+import { useChatContext } from '../contexts/ChatContext';
 import { ChatService } from '../services/chat.service';
 
 function ChatBotContent({ botId: propBotId }: ChatBotProps) {
@@ -125,19 +125,21 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
     }
   }, [loadingBots, isSignedIn, isLoaded, selectedBotId, currentSessionId, getBotSessions, setCurrentSessionId]);
 
-  // Track if we've attempted to load the initial session
-  const initialLoadAttemptedRef = useRef(false);
+  // Track the last loaded bot/session combination to avoid unnecessary refetches
+  const lastLoadedRef = useRef<{ botId: number | null; sessionId: number | null }>({ botId: null, sessionId: null });
   
-  // When bot changes, clear chat and session immediately, and auto-load if session exists
+  // When bot or session changes, handle accordingly
   useEffect(() => {
     if (actualBotId && isSignedIn && isLoaded && !loadingBots) {
-      const botMismatch = currentBotId !== null && currentBotId !== actualBotId;
+      const botChanged = currentBotId !== null && currentBotId !== actualBotId;
+      const sessionChanged = lastLoadedRef.current.sessionId !== currentSessionId;
+      const botChangedFromLastLoad = lastLoadedRef.current.botId !== actualBotId;
       
       // If bot changed, clear session and messages immediately
-      if (botMismatch) {
+      if (botChanged) {
         setCurrentSessionId(null);
         setMessages([]);
-        initialLoadAttemptedRef.current = false;
+        lastLoadedRef.current = { botId: null, sessionId: null };
         // Don't auto-load - wait for user to select a session
         return;
       }
@@ -155,24 +157,29 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
             // Session doesn't belong to this bot, clear it
             setCurrentSessionId(null);
             setMessages([]);
-            initialLoadAttemptedRef.current = false;
+            lastLoadedRef.current = { botId: null, sessionId: null };
             return;
           }
         }
         
-        // Session is valid (or sessions not loaded yet - will validate later)
-        // Load messages if:
-        // 1. No messages loaded yet, OR
-        // 2. Bot/session mismatch (currentBotId doesn't match), OR
-        // 3. Haven't attempted initial load yet
-        const needsLoad = messages.length === 0 || 
-                         currentBotId !== actualBotId || 
-                         (!initialLoadAttemptedRef.current && !loadingMessages);
+        // Check if we need to load:
+        // 1. Bot or session changed from last load, OR
+        // 2. No messages loaded and bot/session matches
+        const needsLoad = (botChangedFromLastLoad || sessionChanged) || 
+                         (messages.length === 0 && currentBotId === actualBotId);
         
         if (needsLoad && !loadingMessages) {
-          initialLoadAttemptedRef.current = true;
+          // Update ref before loading to prevent duplicate loads
+          lastLoadedRef.current = { botId: actualBotId, sessionId: currentSessionId };
           loadChatHistory(actualBotId, currentSessionId);
+        } else if (!needsLoad && currentBotId === actualBotId) {
+          // Bot/session matches and we have messages - preserve them
+          // Update ref to track current state
+          lastLoadedRef.current = { botId: actualBotId, sessionId: currentSessionId };
         }
+      } else if (currentBotId === actualBotId && messages.length > 0) {
+        // No session selected but we have messages for this bot - preserve them
+        lastLoadedRef.current = { botId: actualBotId, sessionId: null };
       }
     }
   }, [actualBotId, isSignedIn, isLoaded, loadingBots, currentBotId, currentSessionId, messages.length, loadingMessages, loadChatHistory, setCurrentSessionId, setMessages, getBotSessions]);
@@ -413,9 +420,5 @@ function MessageBubble({ message, onShowJson }: MessageBubbleProps) {
 }
 
 export default function ChatBot({ botId: propBotId }: ChatBotProps) {
-  return (
-    <ChatProvider>
-      <ChatBotContent botId={propBotId} />
-    </ChatProvider>
-  );
+  return <ChatBotContent botId={propBotId} />;
 }
