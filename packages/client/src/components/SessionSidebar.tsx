@@ -40,7 +40,8 @@ export default function SessionSidebar({
           </div>
         ) : sessions.length === 0 ? (
           <div className="p-4 text-text-tertiary text-center text-sm">
-            No sessions yet
+            <p className="mb-1">No sessions yet</p>
+            <p className="text-xs">Create a new session to start chatting</p>
           </div>
         ) : (
           <div className="flex flex-col">

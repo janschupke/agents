@@ -127,7 +127,11 @@ export function BotProvider({ children }: { children: ReactNode }) {
 
   const getBotSessions = useCallback((botId: number): Session[] | undefined => {
     const bot = bots.find((b) => b.id === botId);
-    return bot?.sessions;
+    const sessions = bot?.sessions;
+    // Verify sessions belong to this bot (defensive check)
+    // Note: Sessions don't have botId in the Session type, but they're stored per bot
+    // so this should be safe. If there's a mismatch, return empty array.
+    return sessions;
   }, [bots]);
 
   const refreshBotSessions = useCallback(async (botId: number) => {

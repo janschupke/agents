@@ -23,6 +23,7 @@ interface ChatContextValue {
   // Current session info
   currentBotId: number | null;
   currentSessionId: number | null;
+  setCurrentSessionId: (sessionId: number | null) => void;
   botName: string;
   
   // Loading states
@@ -267,17 +268,19 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  // Reset state when bot changes - clear messages if bot/session mismatch
-  // Only clear if we're not loading (to avoid clearing during normal load)
+  // Reset state when bot changes - clear messages and session
   useEffect(() => {
-    // If bot changed completely, clear caches
+    // If bot changed completely, clear caches and state
     if (currentBotId !== null && currentBotId !== lastBotIdRef.current && lastBotIdRef.current !== null) {
       // Clear all session caches for the old bot when switching away
       invalidateSessionCache(lastBotIdRef.current);
+      // Clear session and messages when bot changes
+      setCurrentSessionId(null);
+      setMessages([]);
       lastSessionIdRef.current = null;
     }
     lastBotIdRef.current = currentBotId;
-  }, [currentBotId, invalidateSessionCache]);
+  }, [currentBotId, invalidateSessionCache, setCurrentSessionId, setMessages]);
 
   const value: ChatContextValue = {
     messages,
@@ -286,6 +289,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     updateLastUserMessage,
     currentBotId,
     currentSessionId,
+    setCurrentSessionId,
     botName,
     loadingMessages,
     loadingSession,

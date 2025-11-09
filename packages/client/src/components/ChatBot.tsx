@@ -3,10 +3,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { ChatBotProps, Message } from '../types/chat.types.js';
 import SessionSidebar from './SessionSidebar.js';
 import PageContainer from './PageContainer.js';
-import PageHeader from './PageHeader.js';
 import { IconSend, IconSearch } from './Icons';
 import { Skeleton, SkeletonMessage, SkeletonList } from './Skeleton';
 import JsonModal from './JsonModal.js';
+import BotSelector from './BotSelector.js';
 import { useBots } from '../contexts/BotContext';
 import { useSelectedBot } from '../contexts/AppContext';
 import { ChatProvider, useChatContext } from '../contexts/ChatContext';
@@ -18,9 +18,10 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
   const { selectedBotId, setSelectedBotId } = useSelectedBot();
   const {
     messages,
-    botName,
+    setMessages,
     currentBotId,
     currentSessionId,
+    setCurrentSessionId,
     loadingMessages,
     loadingSession,
     loadChatHistory,
@@ -36,8 +37,14 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const actualBotId = propBotId || selectedBotId || (bots.length > 0 ? bots[0].id : null);
+  // Get sessions for the current bot - these are already filtered by botId in BotContext
   const sessions = actualBotId ? (getBotSessions(actualBotId) || []) : [];
   const sessionsLoading = loadingBots;
+  
+  // Show placeholder if bot changed or no session selected for current bot
+  const botMismatch = actualBotId !== null && (currentBotId === null || currentBotId !== actualBotId);
+  const noSessionForCurrentBot = actualBotId !== null && currentBotId === actualBotId && currentSessionId === null && messages.length === 0;
+  const showChatPlaceholder = botMismatch || noSessionForCurrentBot;
 
   // Use propBotId if provided, otherwise use persisted selectedBotId, otherwise use first bot
   useEffect(() => {
@@ -51,20 +58,28 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
     }
   }, [propBotId, isSignedIn, isLoaded, loadingBots, bots, selectedBotId, setSelectedBotId]);
 
-  // Deterministically check if we need to load chat
-  // Load if: bot doesn't match OR (no session and no messages)
+  // When bot changes, clear chat and session immediately
   useEffect(() => {
-    if (actualBotId && isSignedIn && isLoaded && !loadingBots && !loadingMessages) {
-      const botMismatch = currentBotId !== actualBotId;
-      const needsLoad = botMismatch || (currentSessionId === null && messages.length === 0);
+    if (actualBotId && isSignedIn && isLoaded && !loadingBots) {
+      const botMismatch = currentBotId !== null && currentBotId !== actualBotId;
       
-      if (needsLoad) {
-        // If bot matches but we need a session, try to use current session or create new one
-        const sessionToLoad = (!botMismatch && currentSessionId) ? currentSessionId : undefined;
-        loadChatHistory(actualBotId, sessionToLoad);
+      // If bot changed, clear session and messages immediately
+      if (botMismatch) {
+        setCurrentSessionId(null);
+        setMessages([]);
+        // Don't auto-load - wait for user to select a session
+        return;
+      }
+      
+      // Only auto-load if bot matches and we have a session that matches the current bot
+      if (!botMismatch && currentSessionId && currentBotId === actualBotId) {
+        // Bot matches and we have a session - load it if not already loaded
+        if (messages.length === 0 && !loadingMessages) {
+          loadChatHistory(actualBotId, currentSessionId);
+        }
       }
     }
-  }, [actualBotId, isSignedIn, isLoaded, loadingBots, loadingMessages, currentBotId, currentSessionId, messages.length, loadChatHistory]);
+  }, [actualBotId, isSignedIn, isLoaded, loadingBots, currentBotId, currentSessionId, messages.length, loadingMessages, loadChatHistory, setCurrentSessionId, setMessages]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -73,6 +88,14 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
 
   const handleSessionSelect = async (sessionId: number) => {
     if (sessionId === currentSessionId || !actualBotId) return;
+    
+    // Optimistically update session ID immediately for instant UI feedback
+    setCurrentSessionId(sessionId);
+    
+    // Clear messages to show loading state
+    setMessages([]);
+    
+    // Load chat history
     await loadChatHistory(actualBotId, sessionId);
   };
 
@@ -80,10 +103,18 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
     if (!actualBotId) return;
     try {
       const newSession = await ChatService.createSession(actualBotId);
+      
+      // Immediately add to list and highlight - ensure it's added to the correct bot
       addSessionToBot(actualBotId, newSession);
+      setCurrentSessionId(newSession.id);
+      setMessages([]);
+      
+      // Load chat history
       await loadChatHistory(actualBotId, newSession.id);
     } catch (error) {
       console.error('Error creating session:', error);
+      // Revert on error
+      setCurrentSessionId(null);
     }
   };
 
@@ -165,51 +196,66 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
           loading={sessionsLoading}
         />
         <div className="flex flex-col flex-1 overflow-hidden">
-          <PageHeader title={botName} />
+          <div className="px-5 py-3 bg-background border-b border-border flex items-center justify-between">
+            <BotSelector />
+          </div>
           <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-          {messages
-            .filter((msg) => msg.role !== 'system')
-            .map((message, index) => (
-              <MessageBubble
-                key={index}
-                message={message}
-                onShowJson={(title, data) => setJsonModal({ isOpen: true, title, data })}
-              />
-            ))}
-          {loading && (
-            <div className="flex max-w-[80%] self-start">
-              <div className="px-3 py-2 rounded-lg bg-message-assistant text-message-assistant-text text-sm">
-                <div className="flex items-center gap-2">
-                  <Skeleton className="w-2 h-2 rounded-full" />
-                  <Skeleton className="w-2 h-2 rounded-full" />
-                  <Skeleton className="w-2 h-2 rounded-full" />
-                </div>
+          {showChatPlaceholder && !loadingMessages && !loadingSession ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center text-text-secondary">
+                <p className="mb-2">Select a session to start chatting</p>
+                <p className="text-sm text-text-tertiary">Choose a session from the sidebar or create a new one</p>
               </div>
             </div>
+          ) : (
+            <>
+              {messages
+                .filter((msg) => msg.role !== 'system')
+                .map((message, index) => (
+                  <MessageBubble
+                    key={index}
+                    message={message}
+                    onShowJson={(title, data) => setJsonModal({ isOpen: true, title, data })}
+                  />
+                ))}
+              {(loading || (loadingMessages && messages.length === 0)) && (
+                <div className="flex max-w-[80%] self-start">
+                  <div className="px-3 py-2 rounded-lg bg-message-assistant text-message-assistant-text text-sm">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="w-2 h-2 rounded-full" />
+                      <Skeleton className="w-2 h-2 rounded-full" />
+                      <Skeleton className="w-2 h-2 rounded-full" />
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </>
           )}
-          <div ref={messagesEndRef} />
           </div>
-          <form
-          className="flex p-3 border-t border-border gap-2"
-          onSubmit={handleSubmit}
-        >
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            disabled={loading}
-            className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background-secondary focus:outline-none focus:border-border-focus disabled:bg-disabled-bg disabled:cursor-not-allowed"
-          />
-          <button
-            type="submit"
-            disabled={loading || !input.trim()}
-            className="h-8 px-4 bg-primary text-text-inverse border-none rounded-md text-sm font-medium cursor-pointer transition-colors hover:bg-primary-hover disabled:bg-disabled disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
-          >
-            <IconSend className="w-4 h-4" />
-            <span className="hidden sm:inline">Send</span>
-          </button>
-        </form>
+          {!showChatPlaceholder && (
+            <form
+              className="flex p-3 border-t border-border gap-2"
+              onSubmit={handleSubmit}
+            >
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Type your message..."
+                disabled={loading}
+                className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background-secondary focus:outline-none focus:border-border-focus disabled:bg-disabled-bg disabled:cursor-not-allowed"
+              />
+              <button
+                type="submit"
+                disabled={loading || !input.trim()}
+                className="h-8 px-4 bg-primary text-text-inverse border-none rounded-md text-sm font-medium cursor-pointer transition-colors hover:bg-primary-hover disabled:bg-disabled disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+              >
+                <IconSend className="w-4 h-4" />
+                <span className="hidden sm:inline">Send</span>
+              </button>
+            </form>
+          )}
         </div>
       </div>
       <JsonModal
