@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { HttpException } from '@nestjs/common';
 import { HealthcheckService } from './healthcheck.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -7,9 +8,7 @@ describe('HealthcheckService', () => {
   let prismaService: PrismaService;
 
   const mockPrismaService = {
-    bot: {
-      findMany: jest.fn(),
-    },
+    $queryRaw: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -36,27 +35,25 @@ describe('HealthcheckService', () => {
   });
 
   describe('check', () => {
-    it('should return health check status with bots', async () => {
-      const mockBots = [
-        { id: 1, name: 'Test Bot', description: 'Test Description' },
-      ];
-      mockPrismaService.bot.findMany.mockResolvedValue(mockBots);
+    it('should return health check status when database connection is successful', async () => {
+      mockPrismaService.$queryRaw.mockResolvedValue([{ '?column?': 1 }]);
 
       const result = await service.check();
 
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         status: 'ok',
         message: 'Health check successful',
-        bots: mockBots,
       });
-      expect(prismaService.bot.findMany).toHaveBeenCalledWith({ take: 10 });
+      expect(result.timestamp).toBeDefined();
+      expect(prismaService.$queryRaw).toHaveBeenCalled();
     });
 
     it('should throw HttpException on database error', async () => {
       const error = new Error('Database connection failed');
-      mockPrismaService.bot.findMany.mockRejectedValue(error);
+      mockPrismaService.$queryRaw.mockRejectedValue(error);
 
-      await expect(service.check()).rejects.toThrow();
+      await expect(service.check()).rejects.toThrow(HttpException);
+      await expect(service.check()).rejects.toThrow('Database connection failed');
     });
   });
 });

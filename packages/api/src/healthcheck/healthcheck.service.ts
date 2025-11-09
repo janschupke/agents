@@ -7,20 +7,22 @@ export class HealthcheckService {
 
   async check() {
     try {
-      // Test connection by querying bots table
-      const bots = await this.prisma.bot.findMany({
-        take: 10,
-      });
+      // Test database connection with a simple query that doesn't access any data
+      await this.prisma.$queryRaw`SELECT 1`;
 
       return {
         status: 'ok',
         message: 'Health check successful',
-        bots: bots || [],
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       const err = error as { message?: string; code?: string };
       throw new HttpException(
-        err.message || 'Unknown error',
+        {
+          status: 'error',
+          message: err.message || 'Database connection failed',
+          timestamp: new Date().toISOString(),
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

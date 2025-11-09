@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import type { Bot } from '@prisma/client';
-import { BotWithConfig } from '../../common/interfaces/bot.interface';
-import { DEFAULT_BOT_CONFIG } from '../../common/constants/api.constants';
+import { BotWithConfig } from '../common/interfaces/bot.interface';
+import { DEFAULT_BOT_CONFIG } from '../common/constants/api.constants';
 
 @Injectable()
 export class BotRepository {

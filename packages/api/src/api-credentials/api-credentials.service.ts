@@ -1,5 +1,5 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { ApiCredentialsRepository } from './repository/api-credentials.repository';
+import { ApiCredentialsRepository } from './api-credentials.repository';
 import { EncryptionService } from '../common/services/encryption.service';
 
 @Injectable()

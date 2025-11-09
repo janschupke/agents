@@ -1,5 +1,5 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { UserRepository } from './repository/user.repository';
+import { UserRepository } from './user.repository';
 import { User } from '@prisma/client';
 
 @Injectable()

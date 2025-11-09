@@ -1,8 +1,8 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { BotRepository } from '../bot/repository/bot.repository';
-import { SessionRepository } from '../session/repository/session.repository';
-import { MessageRepository } from '../message/repository/message.repository';
-import { MemoryRepository } from '../memory/repository/memory.repository';
+import { BotRepository } from '../bot/bot.repository';
+import { SessionRepository } from '../session/session.repository';
+import { MessageRepository } from '../message/message.repository';
+import { MemoryRepository } from '../memory/memory.repository';
 import { OpenAIService } from '../openai/openai.service';
 import { UserService } from '../user/user.service';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
