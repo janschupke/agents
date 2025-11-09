@@ -1,5 +1,5 @@
 import { SignInButton, SignUpButton, useUser } from '@clerk/clerk-react';
-import { Skeleton } from './Skeleton';
+import { Skeleton } from '../ui/Skeleton';
 
 export default function AuthButtons() {
   const { isSignedIn, isLoaded } = useUser();

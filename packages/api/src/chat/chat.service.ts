@@ -58,13 +58,22 @@ export class ChatService {
   }
 
   async getChatHistory(botId: number, userId: string, sessionId?: number) {
+    const perfStart = Date.now();
+    console.log(`[Performance] ChatService.getChatHistory START - botId: ${botId}, sessionId: ${sessionId}, userId: ${userId}`);
+    
     // Load bot with config
+    const botLoadStart = Date.now();
     const bot = await this.botRepository.findByIdWithConfig(botId, userId);
+    const botLoadTime = Date.now() - botLoadStart;
+    if (botLoadTime > 50) {
+      console.log(`[Performance] ChatService.getChatHistory bot load took ${botLoadTime}ms`);
+    }
     if (!bot) {
       throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
     }
 
     // Get or create session
+    const sessionLoadStart = Date.now();
     let session;
     if (sessionId) {
       session = await this.sessionRepository.findByIdAndUserId(sessionId, userId);
@@ -77,18 +86,33 @@ export class ChatService {
         session = await this.sessionRepository.create(userId, botId);
       }
     }
+    const sessionLoadTime = Date.now() - sessionLoadStart;
+    if (sessionLoadTime > 50) {
+      console.log(`[Performance] ChatService.getChatHistory session load took ${sessionLoadTime}ms`);
+    }
 
     // Load messages with raw data
+    const messagesLoadStart = Date.now();
     const messageRecords = await this.messageRepository.findAllBySessionIdWithRawData(
       session.id
     );
+    const messagesLoadTime = Date.now() - messagesLoadStart;
+    console.log(`[Performance] ChatService.getChatHistory messages load took ${messagesLoadTime}ms, count: ${messageRecords.length}`);
 
+    const mapStart = Date.now();
     const messages = messageRecords.map((msg) => ({
       role: msg.role as 'user' | 'assistant' | 'system',
       content: msg.content,
       rawRequest: msg.rawRequest,
       rawResponse: msg.rawResponse,
     }));
+    const mapTime = Date.now() - mapStart;
+    if (mapTime > 50) {
+      console.log(`[Performance] ChatService.getChatHistory message mapping took ${mapTime}ms`);
+    }
+
+    const totalTime = Date.now() - perfStart;
+    console.log(`[Performance] ChatService.getChatHistory COMPLETE - total: ${totalTime}ms (bot: ${botLoadTime}ms, session: ${sessionLoadTime}ms, messages: ${messagesLoadTime}ms, map: ${mapTime}ms)`);
 
     return {
       bot: {

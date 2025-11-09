@@ -95,12 +95,24 @@ export class ApiManager {
     endpoint: string,
     options: ApiRequestOptions = {},
   ): Promise<T> {
+    const perfStart = performance.now();
     const { params, skipErrorHandling, ...fetchOptions } = options;
 
+    const urlBuildStart = performance.now();
     const url = this.buildURL(endpoint, params);
+    const urlBuildTime = performance.now() - urlBuildStart;
+    if (urlBuildTime > 1) {
+      console.log(`[Performance] ApiManager.buildURL took ${urlBuildTime}ms for ${endpoint}`);
+    }
     
+    const tokenStart = performance.now();
     // Get Clerk token if available
     const token = await getClerkToken();
+    const tokenTime = performance.now() - tokenStart;
+    if (tokenTime > 10) {
+      console.log(`[Performance] ApiManager.getClerkToken took ${tokenTime}ms`);
+    }
+    
     const headers = {
       ...this.defaultHeaders,
       ...(token && { Authorization: `Bearer ${token}` }),
@@ -108,13 +120,25 @@ export class ApiManager {
     };
 
     try {
+      const fetchStart = performance.now();
+      console.log(`[Performance] ApiManager.fetch START - ${fetchOptions.method || 'GET'} ${url}`);
       const response = await fetch(url, {
         ...fetchOptions,
         headers,
       });
+      const fetchTime = performance.now() - fetchStart;
+      console.log(`[Performance] ApiManager.fetch COMPLETE - ${fetchTime}ms, status: ${response.status}, ok: ${response.ok}`);
 
-      return await this.handleResponse<T>(response);
+      const responseStart = performance.now();
+      const result = await this.handleResponse<T>(response);
+      const responseTime = performance.now() - responseStart;
+      const totalTime = performance.now() - perfStart;
+      console.log(`[Performance] ApiManager.request COMPLETE - total: ${totalTime}ms (fetch: ${fetchTime}ms, response: ${responseTime}ms)`);
+      return result;
     } catch (error) {
+      const errorTime = performance.now() - perfStart;
+      console.error(`[Performance] ApiManager.request ERROR after ${errorTime}ms:`, error);
+      
       if (skipErrorHandling) {
         throw error;
       }

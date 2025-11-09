@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
-import { ApiCredentialsService } from '../services/api-credentials.service';
-import PageContainer from './PageContainer';
-import PageHeader from './PageHeader';
-import { IconClose } from './Icons';
-import { useApiKeyStatus, useUserInfo } from '../contexts/UserContext';
+import { ApiCredentialsService } from '../../services/api-credentials.service';
+import PageContainer from '../ui/PageContainer';
+import PageHeader from '../ui/PageHeader';
+import { IconClose } from '../ui/Icons';
+import { useApiKeyStatus, useUserInfo } from '../../contexts/UserContext';
 
 export default function UserProfile() {
   const navigate = useNavigate();

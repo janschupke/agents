@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { IconChevronDown } from './Icons';
-import { useBots } from '../contexts/BotContext';
-import { useSelectedBot } from '../contexts/AppContext';
+import { IconChevronDown } from '../ui/Icons';
+import { useBots } from '../../contexts/BotContext';
+import { useSelectedBot } from '../../contexts/AppContext';
 
 export default function BotSelector() {
   const { bots, loadingBots } = useBots();

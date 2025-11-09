@@ -19,12 +19,24 @@ export const tokenProvider = {
   },
 
   async getToken(): Promise<string | null> {
+    const perfStart = performance.now();
     if (tokenGetter) {
       try {
-        return await tokenGetter();
+        const tokenStart = performance.now();
+        const token = await tokenGetter();
+        const tokenTime = performance.now() - tokenStart;
+        if (tokenTime > 10) {
+          console.log(`[Performance] tokenProvider.getToken (from getter) took ${tokenTime}ms`);
+        }
+        return token;
       } catch (error) {
-        console.warn('Failed to get token from getter:', error);
+        const errorTime = performance.now() - perfStart;
+        console.warn(`[Performance] tokenProvider.getToken failed after ${errorTime}ms:`, error);
       }
+    }
+    const totalTime = performance.now() - perfStart;
+    if (totalTime > 1) {
+      console.log(`[Performance] tokenProvider.getToken (cached) took ${totalTime}ms`);
     }
     return currentToken;
   },

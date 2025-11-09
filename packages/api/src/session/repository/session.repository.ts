@@ -30,9 +30,19 @@ export class SessionRepository {
     id: number,
     userId: string,
   ): Promise<ChatSession | null> {
-    return this.prisma.chatSession.findFirst({
-      where: { id, userId },
+    const perfStart = Date.now();
+    // Use findFirst with compound where for better index usage
+    const result = await this.prisma.chatSession.findFirst({
+      where: { 
+        id,
+        userId,
+      },
     });
+    const perfTime = Date.now() - perfStart;
+    if (perfTime > 50) {
+      console.log(`[Performance] SessionRepository.findByIdAndUserId took ${perfTime}ms for session ${id}`);
+    }
+    return result;
   }
 
   async findLatestByBotId(

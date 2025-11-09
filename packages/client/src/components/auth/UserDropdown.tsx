@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useUser, SignOutButton } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
-import { IconUser, IconLogout, IconChevronDown } from './Icons';
-import { useUserInfo } from '../contexts/UserContext';
+import { IconUser, IconLogout, IconChevronDown } from '../ui/Icons';
+import { useUserInfo } from '../../contexts/UserContext';
 
 export default function UserDropdown() {
   const { userInfo } = useUserInfo();

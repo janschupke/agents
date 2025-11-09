@@ -33,21 +33,30 @@ export class ChatController {
   ) {}
 
   private async ensureUser(req: AuthenticatedRequest) {
+    const perfStart = Date.now();
     if (!req.user?.id) {
       throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
     }
-    // Sync user to DB (including roles)
+    
+    // Sync user to DB (including roles) - roles are now included in the upsert
+    // This eliminates the need for a separate syncRolesFromClerk call
+    const findOrCreateStart = Date.now();
     await this.userService.findOrCreate({
       id: req.user.id,
       email: req.user.email || undefined,
       firstName: req.user.firstName || undefined,
       lastName: req.user.lastName || undefined,
       imageUrl: req.user.imageUrl || undefined,
-      roles: req.user.roles,
+      roles: req.user.roles || ['user'],
     });
-    // Sync roles from Clerk to DB
-    if (req.user.roles) {
-      await this.userService.syncRolesFromClerk(req.user.id, req.user.roles);
+    const findOrCreateTime = Date.now() - findOrCreateStart;
+    if (findOrCreateTime > 50) {
+      console.log(`[Performance] ChatController.ensureUser findOrCreate took ${findOrCreateTime}ms`);
+    }
+    
+    const totalTime = Date.now() - perfStart;
+    if (totalTime > 100) {
+      console.log(`[Performance] ChatController.ensureUser COMPLETE - total: ${totalTime}ms`);
     }
     return req.user.id;
   }
@@ -98,11 +107,27 @@ export class ChatController {
     @Request() req: AuthenticatedRequest,
     @Query('sessionId') sessionId?: string,
   ) {
+    const perfStart = Date.now();
+    console.log(`[Performance] ChatController.getChatHistory START - botId: ${botId}, sessionId: ${sessionId}`);
+    
     try {
+      const ensureUserStart = Date.now();
       const userId = await this.ensureUser(req);
+      const ensureUserTime = Date.now() - ensureUserStart;
+      if (ensureUserTime > 50) {
+        console.log(`[Performance] ChatController.getChatHistory ensureUser took ${ensureUserTime}ms`);
+      }
+      
       const parsedSessionId = sessionId ? parseInt(sessionId, 10) : undefined;
-      return await this.chatService.getChatHistory(botId, userId, parsedSessionId);
+      const serviceStart = Date.now();
+      const result = await this.chatService.getChatHistory(botId, userId, parsedSessionId);
+      const serviceTime = Date.now() - serviceStart;
+      const totalTime = Date.now() - perfStart;
+      console.log(`[Performance] ChatController.getChatHistory COMPLETE - total: ${totalTime}ms (ensureUser: ${ensureUserTime}ms, service: ${serviceTime}ms), messages: ${result.messages?.length || 0}`);
+      return result;
     } catch (error) {
+      const errorTime = Date.now() - perfStart;
+      console.error(`[Performance] ChatController.getChatHistory ERROR after ${errorTime}ms:`, error);
       if (error instanceof HttpException) {
         throw error;
       }

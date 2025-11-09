@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bot } from '../types/chat.types.js';
+import { Bot } from '../../types/chat.types.js';
 import BotSidebar from './BotSidebar.js';
 import BotConfigForm from './BotConfigForm.js';
-import PageContainer from './PageContainer.js';
-import { useBots } from '../contexts/BotContext.js';
-import { LocalStorageManager } from '../utils/localStorage';
+import PageContainer from '../ui/PageContainer.js';
+import { useBots } from '../../contexts/BotContext.js';
+import { LocalStorageManager } from '../../utils/localStorage';
 
 // Temporary bot ID for new bots (negative to indicate not saved)
 let tempBotIdCounter = -1;

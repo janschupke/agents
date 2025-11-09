@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import { tokenProvider } from '../services/token-provider.js';
+import { tokenProvider } from '../../services/token-provider.js';
 
 /**
  * Component that sets up token provider for API requests

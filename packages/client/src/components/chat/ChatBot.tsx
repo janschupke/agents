@@ -1,19 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { ChatBotProps } from '../types/chat.types.js';
-import SessionSidebar from './session/SessionSidebar.js';
-import PageContainer from './ui/PageContainer.js';
-import JsonModal from './ui/JsonModal.js';
-import ChatHeader from './chat/ChatHeader';
-import ChatMessages from './chat/ChatMessages';
-import ChatInput from './chat/ChatInput';
-import ChatPlaceholder from './chat/ChatPlaceholder';
-import ChatLoadingState from './chat/ChatLoadingState';
-import ChatEmptyState from './chat/ChatEmptyState';
-import { useBots } from '../contexts/BotContext';
-import { useSelectedBot } from '../contexts/AppContext';
-import { useChatContext } from '../contexts/ChatContext';
-import { ChatService } from '../services/chat.service';
+import { useAuth } from '../../contexts/AuthContext';
+import { ChatBotProps } from '../../types/chat.types.js';
+import SessionSidebar from '../session/SessionSidebar.js';
+import PageContainer from '../ui/PageContainer.js';
+import JsonModal from '../ui/JsonModal.js';
+import ChatHeader from './ChatHeader';
+import ChatMessages from './ChatMessages';
+import ChatInput from './ChatInput';
+import ChatPlaceholder from './ChatPlaceholder';
+import ChatLoadingState from './ChatLoadingState';
+import ChatEmptyState from './ChatEmptyState';
+import { useBots } from '../../contexts/BotContext';
+import { useSelectedBot } from '../../contexts/AppContext';
+import { useChatContext } from '../../contexts/ChatContext';
+import { ChatService } from '../../services/chat.service';
 
 function ChatBotContent({ botId: propBotId }: ChatBotProps) {
   const { isSignedIn, isLoaded } = useAuth();
