@@ -16,7 +16,7 @@ export default function EmbeddingsList({
   loading,
   deletingId,
   onDelete,
-  onRefresh,
+  onRefresh: _onRefresh, // eslint-disable-line @typescript-eslint/no-unused-vars
   botId,
 }: EmbeddingsListProps) {
   if (botId < 0) {
@@ -46,19 +46,14 @@ export default function EmbeddingsList({
   return (
     <div className="space-y-2">
       {embeddings.map((embedding) => (
-        <div
-          key={embedding.id}
-          className="p-3 bg-background border border-border rounded-md"
-        >
+        <div key={embedding.id} className="p-3 bg-background border border-border rounded-md">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <div className="text-xs text-text-tertiary mb-1">
                 Session ID: {embedding.sessionId} • Created:{' '}
                 {new Date(embedding.createdAt).toLocaleString()}
               </div>
-              <div className="text-sm text-text-primary break-words">
-                {embedding.chunk}
-              </div>
+              <div className="text-sm text-text-primary break-words">{embedding.chunk}</div>
             </div>
             <button
               onClick={() => onDelete(embedding.id)}

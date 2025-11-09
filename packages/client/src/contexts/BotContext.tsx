@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  ReactNode,
+} from 'react';
 import { Bot, Session } from '../types/chat.types';
 import { BotService } from '../services/bot.service';
 import { ChatService } from '../services/chat.service';
@@ -17,24 +25,27 @@ interface BotContextValue {
   updateBot: (bot: Bot) => void;
   addBot: (bot: Bot) => void;
   removeBot: (id: number) => void;
-  
+
   // Sessions for a specific bot
   getBotSessions: (botId: number) => Session[] | undefined;
   refreshBotSessions: (botId: number) => Promise<void>;
   addSessionToBot: (botId: number, session: Session) => void;
   removeSessionFromBot: (botId: number, sessionId: number) => void;
-  
+
   // Bot config cache (not embeddings)
   getCachedBotConfig: (botId: number) => {
     temperature: number;
     system_prompt: string;
     behavior_rules: string[];
   } | null;
-  setCachedBotConfig: (botId: number, config: {
-    temperature: number;
-    system_prompt: string;
-    behavior_rules: string[];
-  }) => void;
+  setCachedBotConfig: (
+    botId: number,
+    config: {
+      temperature: number;
+      system_prompt: string;
+      behavior_rules: string[];
+    }
+  ) => void;
   invalidateBotConfigCache: (botId: number) => void;
 }
 
@@ -44,14 +55,19 @@ export function BotProvider({ children }: { children: ReactNode }) {
   const { isSignedIn, isLoaded } = useAuth();
   const [bots, setBots] = useState<BotWithSessions[]>([]);
   const [loadingBots, setLoadingBots] = useState(false);
-  
+
   // Bot config cache using ref
-  const botConfigCacheRef = useRef<Map<number, {
-    temperature: number;
-    system_prompt: string;
-    behavior_rules: string[];
-    lastUpdated: number;
-  }>>(new Map());
+  const botConfigCacheRef = useRef<
+    Map<
+      number,
+      {
+        temperature: number;
+        system_prompt: string;
+        behavior_rules: string[];
+        lastUpdated: number;
+      }
+    >
+  >(new Map());
 
   const loadBots = useCallback(async () => {
     if (!isSignedIn || !isLoaded) {
@@ -62,12 +78,12 @@ export function BotProvider({ children }: { children: ReactNode }) {
     setLoadingBots(true);
     try {
       const data = await BotService.getAllBots();
-      const botsWithSessions: BotWithSessions[] = data.map(bot => ({
+      const botsWithSessions: BotWithSessions[] = data.map((bot) => ({
         ...bot,
         sessions: undefined, // Will be loaded separately
       }));
       setBots(botsWithSessions);
-      
+
       // Load sessions for all bots in parallel
       const sessionPromises = botsWithSessions.map(async (bot) => {
         try {
@@ -78,9 +94,9 @@ export function BotProvider({ children }: { children: ReactNode }) {
           return { botId: bot.id, sessions: [] };
         }
       });
-      
+
       const sessionResults = await Promise.all(sessionPromises);
-      setBots((prev) => 
+      setBots((prev) =>
         prev.map((bot) => {
           const sessionResult = sessionResults.find((r) => r.botId === bot.id);
           return {
@@ -101,9 +117,12 @@ export function BotProvider({ children }: { children: ReactNode }) {
     await loadBots();
   }, [loadBots]);
 
-  const getBot = useCallback((id: number): BotWithSessions | undefined => {
-    return bots.find((bot) => bot.id === id);
-  }, [bots]);
+  const getBot = useCallback(
+    (id: number): BotWithSessions | undefined => {
+      return bots.find((bot) => bot.id === id);
+    },
+    [bots]
+  );
 
   const updateBot = useCallback((bot: Bot) => {
     setBots((prev) => prev.map((b) => (b.id === bot.id ? { ...b, ...bot } : b)));
@@ -125,27 +144,31 @@ export function BotProvider({ children }: { children: ReactNode }) {
     botConfigCacheRef.current.delete(id);
   }, []);
 
-  const getBotSessions = useCallback((botId: number): Session[] | undefined => {
-    const bot = bots.find((b) => b.id === botId);
-    const sessions = bot?.sessions;
-    // Verify sessions belong to this bot (defensive check)
-    // Note: Sessions don't have botId in the Session type, but they're stored per bot
-    // so this should be safe. If there's a mismatch, return empty array.
-    return sessions;
-  }, [bots]);
+  const getBotSessions = useCallback(
+    (botId: number): Session[] | undefined => {
+      const bot = bots.find((b) => b.id === botId);
+      const sessions = bot?.sessions;
+      // Verify sessions belong to this bot (defensive check)
+      // Note: Sessions don't have botId in the Session type, but they're stored per bot
+      // so this should be safe. If there's a mismatch, return empty array.
+      return sessions;
+    },
+    [bots]
+  );
 
-  const refreshBotSessions = useCallback(async (botId: number) => {
-    if (!isSignedIn || !isLoaded) return;
-    
-    try {
-      const sessions = await ChatService.getSessions(botId);
-      setBots((prev) =>
-        prev.map((bot) => (bot.id === botId ? { ...bot, sessions } : bot))
-      );
-    } catch (error) {
-      console.error(`Failed to refresh sessions for bot ${botId}:`, error);
-    }
-  }, [isSignedIn, isLoaded]);
+  const refreshBotSessions = useCallback(
+    async (botId: number) => {
+      if (!isSignedIn || !isLoaded) return;
+
+      try {
+        const sessions = await ChatService.getSessions(botId);
+        setBots((prev) => prev.map((bot) => (bot.id === botId ? { ...bot, sessions } : bot)));
+      } catch (error) {
+        console.error(`Failed to refresh sessions for bot ${botId}:`, error);
+      }
+    },
+    [isSignedIn, isLoaded]
+  );
 
   const addSessionToBot = useCallback((botId: number, session: Session) => {
     setBots((prev) =>
@@ -183,13 +206,19 @@ export function BotProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const setCachedBotConfig = useCallback((botId: number, config: {
-    temperature: number;
-    system_prompt: string;
-    behavior_rules: string[];
-  }) => {
-    botConfigCacheRef.current.set(botId, { ...config, lastUpdated: Date.now() });
-  }, []);
+  const setCachedBotConfig = useCallback(
+    (
+      botId: number,
+      config: {
+        temperature: number;
+        system_prompt: string;
+        behavior_rules: string[];
+      }
+    ) => {
+      botConfigCacheRef.current.set(botId, { ...config, lastUpdated: Date.now() });
+    },
+    []
+  );
 
   const invalidateBotConfigCache = useCallback((botId: number) => {
     botConfigCacheRef.current.delete(botId);

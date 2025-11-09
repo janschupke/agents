@@ -12,7 +12,9 @@ interface PageHeaderProps {
  */
 export default function PageHeader({ title, actions, className = '' }: PageHeaderProps) {
   return (
-    <div className={`px-5 py-3 bg-background border-b border-border flex items-center justify-between ${className}`}>
+    <div
+      className={`px-5 py-3 bg-background border-b border-border flex items-center justify-between ${className}`}
+    >
       <h2 className="text-lg font-semibold text-text-secondary">{title}</h2>
       {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>

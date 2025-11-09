@@ -11,8 +11,6 @@ interface PageContainerProps {
  */
 export default function PageContainer({ children, className = '' }: PageContainerProps) {
   return (
-    <div className={`w-full h-full bg-background overflow-hidden ${className}`}>
-      {children}
-    </div>
+    <div className={`w-full h-full bg-background overflow-hidden ${className}`}>{children}</div>
   );
 }

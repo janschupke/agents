@@ -34,7 +34,7 @@ export class ApiManager {
    */
   private buildURL(endpoint: string, params?: Record<string, string | number>): string {
     const url = new URL(endpoint, this.baseURL);
-    
+
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
         url.searchParams.append(key, String(value));
@@ -91,10 +91,7 @@ export class ApiManager {
   /**
    * Make API request
    */
-  private async request<T>(
-    endpoint: string,
-    options: ApiRequestOptions = {},
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options: ApiRequestOptions = {}): Promise<T> {
     const perfStart = performance.now();
     const { params, skipErrorHandling, ...fetchOptions } = options;
 
@@ -104,7 +101,7 @@ export class ApiManager {
     if (urlBuildTime > 1) {
       console.log(`[Performance] ApiManager.buildURL took ${urlBuildTime}ms for ${endpoint}`);
     }
-    
+
     const tokenStart = performance.now();
     // Get Clerk token if available
     const token = await getClerkToken();
@@ -112,7 +109,7 @@ export class ApiManager {
     if (tokenTime > 10) {
       console.log(`[Performance] ApiManager.getClerkToken took ${tokenTime}ms`);
     }
-    
+
     const headers = {
       ...this.defaultHeaders,
       ...(token && { Authorization: `Bearer ${token}` }),
@@ -127,27 +124,33 @@ export class ApiManager {
         headers,
       });
       const fetchTime = performance.now() - fetchStart;
-      console.log(`[Performance] ApiManager.fetch COMPLETE - ${fetchTime}ms, status: ${response.status}, ok: ${response.ok}`);
+      console.log(
+        `[Performance] ApiManager.fetch COMPLETE - ${fetchTime}ms, status: ${response.status}, ok: ${response.ok}`
+      );
 
       const responseStart = performance.now();
       const result = await this.handleResponse<T>(response);
       const responseTime = performance.now() - responseStart;
       const totalTime = performance.now() - perfStart;
-      console.log(`[Performance] ApiManager.request COMPLETE - total: ${totalTime}ms (fetch: ${fetchTime}ms, response: ${responseTime}ms)`);
+      console.log(
+        `[Performance] ApiManager.request COMPLETE - total: ${totalTime}ms (fetch: ${fetchTime}ms, response: ${responseTime}ms)`
+      );
       return result;
     } catch (error) {
       const errorTime = performance.now() - perfStart;
       console.error(`[Performance] ApiManager.request ERROR after ${errorTime}ms:`, error);
-      
+
       if (skipErrorHandling) {
         throw error;
       }
 
+      // If error is already an ApiError (from handleResponse), re-throw it
+      if (error && typeof error === 'object' && 'message' in error && 'status' in error) {
+        throw error;
+      }
+
       const apiError: ApiError = {
-        message:
-          error instanceof Error
-            ? error.message
-            : 'An unexpected error occurred',
+        message: error instanceof Error ? error.message : 'An unexpected error occurred',
       };
 
       throw apiError;
@@ -167,11 +170,7 @@ export class ApiManager {
   /**
    * POST request
    */
-  async post<T>(
-    endpoint: string,
-    data?: unknown,
-    options?: ApiRequestOptions,
-  ): Promise<T> {
+  async post<T>(endpoint: string, data?: unknown, options?: ApiRequestOptions): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: 'POST',
@@ -182,11 +181,7 @@ export class ApiManager {
   /**
    * PUT request
    */
-  async put<T>(
-    endpoint: string,
-    data?: unknown,
-    options?: ApiRequestOptions,
-  ): Promise<T> {
+  async put<T>(endpoint: string, data?: unknown, options?: ApiRequestOptions): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: 'PUT',
@@ -197,11 +192,7 @@ export class ApiManager {
   /**
    * PATCH request
    */
-  async patch<T>(
-    endpoint: string,
-    data?: unknown,
-    options?: ApiRequestOptions,
-  ): Promise<T> {
+  async patch<T>(endpoint: string, data?: unknown, options?: ApiRequestOptions): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: 'PATCH',

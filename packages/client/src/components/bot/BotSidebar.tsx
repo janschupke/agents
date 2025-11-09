@@ -38,9 +38,7 @@ export default function BotSidebar({
             <SkeletonList count={5} />
           </div>
         ) : bots.length === 0 ? (
-          <div className="p-4 text-text-tertiary text-center text-sm">
-            No bots yet
-          </div>
+          <div className="p-4 text-text-tertiary text-center text-sm">No bots yet</div>
         ) : (
           <div className="flex flex-col">
             {bots.map((bot) => (
@@ -55,16 +53,12 @@ export default function BotSidebar({
                 <button
                   onClick={() => onBotSelect(bot.id)}
                   className={`flex-1 px-3 py-2 text-left transition-colors min-w-0 ${
-                    currentBotId === bot.id
-                      ? 'text-text-inverse'
-                      : 'hover:bg-background-tertiary'
+                    currentBotId === bot.id ? 'text-text-inverse' : 'hover:bg-background-tertiary'
                   }`}
                 >
                   <div className="text-sm font-medium truncate">
                     {bot.name}
-                    {bot.id < 0 && (
-                      <span className="ml-1.5 text-xs opacity-70">(New)</span>
-                    )}
+                    {bot.id < 0 && <span className="ml-1.5 text-xs opacity-70">(New)</span>}
                   </div>
                   {bot.description && (
                     <div

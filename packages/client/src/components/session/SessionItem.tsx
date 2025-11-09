@@ -27,14 +27,10 @@ export default function SessionItem({ session, isSelected, onSelect }: SessionIt
           : 'bg-background text-text-primary hover:bg-background-tertiary'
       }`}
     >
-      <div className="text-sm font-medium truncate">
-        {formatSessionName(session)}
-      </div>
+      <div className="text-sm font-medium truncate">{formatSessionName(session)}</div>
       <div
         className={`text-xs mt-0.5 ${
-          isSelected
-            ? 'text-text-inverse opacity-80'
-            : 'text-text-tertiary'
+          isSelected ? 'text-text-inverse opacity-80' : 'text-text-tertiary'
         }`}
       >
         {new Date(session.createdAt).toLocaleDateString()}

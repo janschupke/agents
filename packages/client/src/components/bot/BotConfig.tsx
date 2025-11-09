@@ -10,17 +10,10 @@ import { LocalStorageManager } from '../../utils/localStorage';
 let tempBotIdCounter = -1;
 
 export default function BotConfig() {
-  const {
-    bots: contextBots,
-    loadingBots,
-    refreshBots,
-    updateBot,
-    addBot,
-    removeBot,
-  } = useBots();
+  const { bots: contextBots, loadingBots, refreshBots, updateBot, addBot, removeBot } = useBots();
   const [localBots, setLocalBots] = useState<Bot[]>([]);
   // Load initial bot ID from localStorage
-  const [currentBotId, setCurrentBotIdState] = useState<number | null>(() => 
+  const [currentBotId, setCurrentBotIdState] = useState<number | null>(() =>
     LocalStorageManager.getSelectedBotIdConfig()
   );
   const [error] = useState<string | null>(null);
@@ -41,7 +34,7 @@ export default function BotConfig() {
     }
 
     const allBots = [...contextBots, ...localBots];
-    
+
     // Track when bots first load
     const botsJustLoaded = !botsLoadedRef.current && allBots.length > 0;
     botsLoadedRef.current = allBots.length > 0;
@@ -49,10 +42,10 @@ export default function BotConfig() {
     // Only validate/initialize once when bots first load
     if (!initializedRef.current && botsJustLoaded) {
       initializedRef.current = true;
-      
+
       // Read current stored botId (loaded from localStorage)
       const storedBotId = currentBotId;
-      
+
       if (storedBotId !== null) {
         // Validate stored bot exists
         const botExists = allBots.some((b) => b.id === storedBotId);
@@ -99,7 +92,7 @@ export default function BotConfig() {
       description: null,
       createdAt: new Date().toISOString(),
     };
-    
+
     // Add to local bots list and select it
     setLocalBots((prev) => [newTempBot, ...prev]);
     setCurrentBotId(tempId);
@@ -111,10 +104,10 @@ export default function BotConfig() {
       // This shouldn't happen, but handle it just in case
       return;
     }
-    
+
     // Remove from local bots if it was there
     setLocalBots((prev) => prev.filter((b) => b.id !== savedBot.id));
-    
+
     // Check if this is a new bot (not in context yet) or an update
     const existingBot = contextBots.find((b) => b.id === savedBot.id);
     if (existingBot) {
@@ -124,12 +117,12 @@ export default function BotConfig() {
       // Add new bot to context
       addBot(savedBot);
     }
-    
+
     // Note: Bot config cache is updated in BotConfigForm when saved
-    
+
     // Refresh bots to ensure we have the latest data from server (including sessions)
     await refreshBots();
-    
+
     // Select the saved bot
     setCurrentBotId(savedBot.id);
   };
@@ -155,17 +148,11 @@ export default function BotConfig() {
   };
 
   // Get current bot from the bots list (instant, no API call)
-  const currentBot = currentBotId
-    ? bots.find((b) => b.id === currentBotId) || null
-    : null;
+  const currentBot = currentBotId ? bots.find((b) => b.id === currentBotId) || null : null;
 
   return (
     <PageContainer>
-      {error && (
-        <div className="p-3 bg-red-100 border-b border-red-400 text-red-700">
-          {error}
-        </div>
-      )}
+      {error && <div className="p-3 bg-red-100 border-b border-red-400 text-red-700">{error}</div>}
       <div className="flex h-full overflow-hidden">
         <BotSidebar
           bots={bots}

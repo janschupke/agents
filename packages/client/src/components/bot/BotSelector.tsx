@@ -26,7 +26,7 @@ export default function BotSelector() {
     };
   }, [isOpen]);
 
-  const currentBot = bots.find(b => b.id === selectedBotId);
+  const currentBot = bots.find((b) => b.id === selectedBotId);
   const displayName = currentBot?.name || 'Select Bot';
 
   const handleBotSelect = (botId: number) => {
@@ -46,7 +46,9 @@ export default function BotSelector() {
         aria-label="Select bot"
       >
         <h2 className="text-lg font-semibold text-text-secondary">{displayName}</h2>
-        <IconChevronDown className={`w-4 h-4 text-text-tertiary transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <IconChevronDown
+          className={`w-4 h-4 text-text-tertiary transition-transform ${isOpen ? 'rotate-180' : ''}`}
+        />
       </button>
 
       {isOpen && (
@@ -62,9 +64,7 @@ export default function BotSelector() {
               }`}
             >
               <span className="truncate">{bot.name}</span>
-              {bot.id === selectedBotId && (
-                <span className="ml-auto text-xs">✓</span>
-              )}
+              {bot.id === selectedBotId && <span className="ml-auto text-xs">✓</span>}
             </button>
           ))}
         </div>

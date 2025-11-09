@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ChatService } from '../services/chat.service.js';
 import { Message, Session } from '../types/chat.types.js';
-import { useSessionCache } from '../contexts/AppContext.js';
+import { useChatContext } from '../contexts/ChatContext.js';
 
 interface UseChatOptions {
   botId?: number;
@@ -9,14 +9,31 @@ interface UseChatOptions {
 }
 
 export function useChat({ botId, onError }: UseChatOptions) {
-  const {
-    getCachedSession,
-    setCachedSession,
-    invalidateSessionCache,
-    getCachedSessionsList,
-    setCachedSessionsList,
-    invalidateSessionsListCache,
-  } = useSessionCache();
+  const { getCachedSession, setCachedSession, invalidateSessionCache } = useChatContext();
+
+  // Local cache for sessions list (not in ChatContext)
+  const sessionsListCacheRef = useRef<Map<number, { sessions: Session[]; lastUpdated: number }>>(
+    new Map()
+  );
+
+  const getCachedSessionsList = useCallback((botId: number): Session[] | null => {
+    const cached = sessionsListCacheRef.current.get(botId);
+    if (!cached) return null;
+    // Cache valid for 5 minutes
+    if (Date.now() - cached.lastUpdated > 5 * 60 * 1000) {
+      sessionsListCacheRef.current.delete(botId);
+      return null;
+    }
+    return cached.sessions;
+  }, []);
+
+  const setCachedSessionsList = useCallback((botId: number, sessions: Session[]) => {
+    sessionsListCacheRef.current.set(botId, { sessions, lastUpdated: Date.now() });
+  }, []);
+
+  const invalidateSessionsListCache = useCallback((botId: number) => {
+    sessionsListCacheRef.current.delete(botId);
+  }, []);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -26,7 +43,7 @@ export function useChat({ botId, onError }: UseChatOptions) {
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+
   // Track current bot/session to detect changes
   const lastBotIdRef = useRef<number | undefined>(botId);
   const lastSessionIdRef = useRef<number | null>(null);
@@ -34,11 +51,11 @@ export function useChat({ botId, onError }: UseChatOptions) {
   const loadChatHistory = useCallback(
     async (sessionId?: number, forceRefresh = false) => {
       if (!botId) return;
-      
+
       // Check cache first (unless force refresh or bot/session changed)
       const botChanged = lastBotIdRef.current !== botId;
       const sessionChanged = lastSessionIdRef.current !== sessionId;
-      
+
       if (!forceRefresh && !botChanged && !sessionChanged && sessionId) {
         const cached = getCachedSession(botId, sessionId);
         if (cached) {
@@ -50,20 +67,20 @@ export function useChat({ botId, onError }: UseChatOptions) {
           return;
         }
       }
-      
+
       try {
         const data = await ChatService.getChatHistory(botId, sessionId);
         // Messages from API now include rawRequest and rawResponse
         const messagesData = data.messages || [];
         const botNameData = data.bot?.name || 'Chat Bot';
-        
+
         setMessages(messagesData);
         setBotName(botNameData);
-        
+
         if (data.session?.id) {
           setCurrentSessionId(data.session.id);
           lastSessionIdRef.current = data.session.id;
-          
+
           // Cache the session data
           setCachedSession(botId, data.session.id, {
             messages: messagesData,
@@ -73,7 +90,7 @@ export function useChat({ botId, onError }: UseChatOptions) {
             lastUpdated: Date.now(),
           });
         }
-        
+
         lastBotIdRef.current = botId;
       } catch (error) {
         const err = error instanceof Error ? error : new Error('Unknown error');
@@ -81,50 +98,53 @@ export function useChat({ botId, onError }: UseChatOptions) {
         onError?.(err);
       }
     },
-    [botId, onError, getCachedSession, setCachedSession, botName],
+    [botId, onError, getCachedSession, setCachedSession]
   );
 
-  const loadSessions = useCallback(async (forceRefresh = false) => {
-    if (!botId) return;
-    
-    // Check cache first (unless force refresh or bot changed)
-    const botChanged = lastBotIdRef.current !== botId;
-    
-    if (!forceRefresh && !botChanged) {
-      const cached = getCachedSessionsList(botId);
-      if (cached) {
-        setSessions(cached);
+  const loadSessions = useCallback(
+    async (forceRefresh = false) => {
+      if (!botId) return;
+
+      // Check cache first (unless force refresh or bot changed)
+      const botChanged = lastBotIdRef.current !== botId;
+
+      if (!forceRefresh && !botChanged) {
+        const cached = getCachedSessionsList(botId);
+        if (cached) {
+          setSessions(cached);
+          setCurrentSessionId((prev) => {
+            if (prev === null && cached.length > 0) {
+              return cached[0].id;
+            }
+            return prev;
+          });
+          lastBotIdRef.current = botId;
+          return;
+        }
+      }
+
+      setSessionsLoading(true);
+      try {
+        const sessionsData = await ChatService.getSessions(botId);
+        setSessions(sessionsData);
+        setCachedSessionsList(botId, sessionsData);
         setCurrentSessionId((prev) => {
-          if (prev === null && cached.length > 0) {
-            return cached[0].id;
+          if (prev === null && sessionsData.length > 0) {
+            return sessionsData[0].id;
           }
           return prev;
         });
         lastBotIdRef.current = botId;
-        return;
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error('Unknown error');
+        console.error('Error loading sessions:', err);
+        onError?.(err);
+      } finally {
+        setSessionsLoading(false);
       }
-    }
-    
-    setSessionsLoading(true);
-    try {
-      const sessionsData = await ChatService.getSessions(botId);
-      setSessions(sessionsData);
-      setCachedSessionsList(botId, sessionsData);
-      setCurrentSessionId((prev) => {
-        if (prev === null && sessionsData.length > 0) {
-          return sessionsData[0].id;
-        }
-        return prev;
-      });
-      lastBotIdRef.current = botId;
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error('Unknown error');
-      console.error('Error loading sessions:', err);
-      onError?.(err);
-    } finally {
-      setSessionsLoading(false);
-    }
-  }, [botId, onError, getCachedSessionsList, setCachedSessionsList]);
+    },
+    [botId, onError, getCachedSessionsList, setCachedSessionsList]
+  );
 
   // Reset state when bot changes (but keep cache - it will be used when switching back)
   useEffect(() => {
@@ -133,7 +153,7 @@ export function useChat({ botId, onError }: UseChatOptions) {
       const oldBotId = lastBotIdRef.current;
       invalidateSessionCache(oldBotId); // Clear all sessions for old bot
       invalidateSessionsListCache(oldBotId);
-      
+
       // Reset local state for the new bot
       setMessages([]);
       setSessions([]);
@@ -157,7 +177,7 @@ export function useChat({ botId, onError }: UseChatOptions) {
       // If no sessions, load chat history which will create a session
       loadChatHistory();
     }
-  }, [sessions.length, currentSessionId, loadChatHistory]);
+  }, [sessions, currentSessionId, loadChatHistory]);
 
   useEffect(() => {
     if (currentSessionId !== null && botId) {
@@ -208,8 +228,8 @@ export function useChat({ botId, onError }: UseChatOptions) {
     if (!message.trim() || loading || !botId) return;
 
     // Prepare user message with raw request data
-    const userMessage: Message = { 
-      role: 'user', 
+    const userMessage: Message = {
+      role: 'user',
       content: message,
       // We'll update this with the actual request after the API call
     };
@@ -218,12 +238,8 @@ export function useChat({ botId, onError }: UseChatOptions) {
     setLoading(true);
 
     try {
-      const data = await ChatService.sendMessage(
-        botId,
-        message,
-        currentSessionId || undefined,
-      );
-      
+      const data = await ChatService.sendMessage(botId, message, currentSessionId || undefined);
+
       // Update the last user message with raw request data
       setMessages((prev) => {
         const updated = [...prev];
@@ -239,11 +255,11 @@ export function useChat({ botId, onError }: UseChatOptions) {
         content: data.response,
         rawResponse: data.rawResponse,
       };
-      
+
       // Get current messages state and update cache
       setMessages((prev) => {
         const updated = [...prev, assistantMessage];
-        
+
         // Update session ID if changed
         const finalSessionId = data.session?.id || currentSessionId;
         if (finalSessionId && finalSessionId !== currentSessionId) {
@@ -251,7 +267,7 @@ export function useChat({ botId, onError }: UseChatOptions) {
           lastSessionIdRef.current = finalSessionId;
           loadSessions(true); // Force refresh sessions list
         }
-        
+
         // Update cache with new messages
         if (botId && finalSessionId) {
           const cached = getCachedSession(botId, finalSessionId);
@@ -272,7 +288,7 @@ export function useChat({ botId, onError }: UseChatOptions) {
             });
           }
         }
-        
+
         return updated;
       });
     } catch (error) {

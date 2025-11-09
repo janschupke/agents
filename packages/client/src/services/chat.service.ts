@@ -25,13 +25,8 @@ export class ChatService {
   /**
    * Get chat history for a bot and optional session
    */
-  static async getChatHistory(
-    botId: number,
-    sessionId?: number,
-  ): Promise<ChatHistoryResponse> {
-    return apiManager.get<ChatHistoryResponse>(
-      API_ENDPOINTS.CHAT(botId, sessionId),
-    );
+  static async getChatHistory(botId: number, sessionId?: number): Promise<ChatHistoryResponse> {
+    return apiManager.get<ChatHistoryResponse>(API_ENDPOINTS.CHAT(botId, sessionId));
   }
 
   /**
@@ -40,12 +35,9 @@ export class ChatService {
   static async sendMessage(
     botId: number,
     message: string,
-    sessionId?: number,
+    sessionId?: number
   ): Promise<SendMessageResponse> {
     const body: SendMessageRequest = { message };
-    return apiManager.post<SendMessageResponse>(
-      API_ENDPOINTS.CHAT(botId, sessionId),
-      body,
-    );
+    return apiManager.post<SendMessageResponse>(API_ENDPOINTS.CHAT(botId, sessionId), body);
   }
 }

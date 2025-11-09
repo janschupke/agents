@@ -9,10 +9,7 @@ interface ChatInputProps {
 
 export default function ChatInput({ input, onInputChange, onSubmit, disabled }: ChatInputProps) {
   return (
-    <form
-      className="flex p-3 border-t border-border gap-2"
-      onSubmit={onSubmit}
-    >
+    <form className="flex p-3 border-t border-border gap-2" onSubmit={onSubmit}>
       <input
         type="text"
         value={input}

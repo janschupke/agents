@@ -4,6 +4,13 @@ import { ApiManager } from './api-manager.js';
 // Mock fetch globally
 global.fetch = vi.fn();
 
+// Mock tokenProvider
+vi.mock('./token-provider.js', () => ({
+  tokenProvider: {
+    getToken: vi.fn().mockResolvedValue(null),
+  },
+}));
+
 describe('ApiManager', () => {
   let apiManager: ApiManager;
 
@@ -31,7 +38,7 @@ describe('ApiManager', () => {
           headers: expect.objectContaining({
             'Content-Type': 'application/json',
           }),
-        }),
+        })
       );
     });
 
@@ -49,7 +56,7 @@ describe('ApiManager', () => {
 
       expect(fetch).toHaveBeenCalledWith(
         'http://localhost:3001/api/test?page=1&limit=10',
-        expect.any(Object),
+        expect.any(Object)
       );
     });
   });
@@ -76,7 +83,7 @@ describe('ApiManager', () => {
           headers: expect.objectContaining({
             'Content-Type': 'application/json',
           }),
-        }),
+        })
       );
     });
   });
@@ -111,9 +118,9 @@ describe('ApiManager', () => {
       expect(apiManager.getBaseURL()).toBe('http://example.com');
     });
 
-    it('should set default headers', () => {
+    it('should set default headers', async () => {
       apiManager.setDefaultHeaders({ Authorization: 'Bearer token' });
-      
+
       const mockResponse = { data: 'test' };
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
@@ -121,7 +128,7 @@ describe('ApiManager', () => {
         headers: new Headers({ 'content-type': 'application/json' }),
       } as Response);
 
-      apiManager.get('/api/test');
+      await apiManager.get('/api/test');
 
       expect(fetch).toHaveBeenCalledWith(
         expect.any(String),
@@ -130,7 +137,7 @@ describe('ApiManager', () => {
             'Content-Type': 'application/json',
             Authorization: 'Bearer token',
           }),
-        }),
+        })
       );
     });
   });

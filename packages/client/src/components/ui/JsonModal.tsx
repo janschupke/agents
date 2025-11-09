@@ -13,11 +13,11 @@ export default function JsonModal({ isOpen, onClose, title, data }: JsonModalPro
   const jsonString = JSON.stringify(data, null, 2);
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-background border border-border w-full max-w-4xl max-h-[90vh] flex flex-col m-4"
         onClick={(e) => e.stopPropagation()}
       >

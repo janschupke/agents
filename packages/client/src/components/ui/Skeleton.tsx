@@ -1,13 +1,16 @@
 // Skeleton loading components
-import React from 'react';
 
-export function Skeleton({ className = "" }: { className?: string }) {
-  return (
-    <div className={`animate-pulse bg-background-tertiary rounded ${className}`} />
-  );
+export function Skeleton({ className = '' }: { className?: string }) {
+  return <div className={`animate-pulse bg-background-tertiary rounded ${className}`} />;
 }
 
-export function SkeletonText({ lines = 1, className = "" }: { lines?: number; className?: string }) {
+export function SkeletonText({
+  lines = 1,
+  className = '',
+}: {
+  lines?: number;
+  className?: string;
+}) {
   return (
     <div className={className}>
       {Array.from({ length: lines }, (_, i) => (
@@ -17,11 +20,11 @@ export function SkeletonText({ lines = 1, className = "" }: { lines?: number; cl
   );
 }
 
-export function SkeletonButton({ className = "" }: { className?: string }) {
+export function SkeletonButton({ className = '' }: { className?: string }) {
   return <Skeleton className={`h-8 rounded-md ${className}`} />;
 }
 
-export function SkeletonSidebarItem({ className = "" }: { className?: string }) {
+export function SkeletonSidebarItem({ className = '' }: { className?: string }) {
   return (
     <div className={`flex items-center gap-3 p-2 ${className}`}>
       <Skeleton className="w-8 h-8 rounded" />
@@ -33,7 +36,7 @@ export function SkeletonSidebarItem({ className = "" }: { className?: string }) 
   );
 }
 
-export function SkeletonMessage({ className = "" }: { className?: string }) {
+export function SkeletonMessage({ className = '' }: { className?: string }) {
   return (
     <div className={`flex gap-2 ${className}`}>
       <Skeleton className="w-8 h-8 rounded-full" />
@@ -45,7 +48,13 @@ export function SkeletonMessage({ className = "" }: { className?: string }) {
   );
 }
 
-export function SkeletonList({ count = 3, className = "" }: { count?: number; className?: string }) {
+export function SkeletonList({
+  count = 3,
+  className = '',
+}: {
+  count?: number;
+  className?: string;
+}) {
   return (
     <div className={className}>
       {Array.from({ length: count }, (_, i) => (

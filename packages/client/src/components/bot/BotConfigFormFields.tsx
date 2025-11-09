@@ -8,10 +8,7 @@ interface NameFieldProps {
 export function NameField({ value, onChange }: NameFieldProps) {
   return (
     <div>
-      <label
-        htmlFor="bot-name"
-        className="block text-sm font-medium text-text-secondary mb-1.5"
-      >
+      <label htmlFor="bot-name" className="block text-sm font-medium text-text-secondary mb-1.5">
         Bot Name
       </label>
       <input
@@ -127,9 +124,7 @@ interface BehaviorRulesFieldProps {
 export function BehaviorRulesField({ rules, onChange }: BehaviorRulesFieldProps) {
   return (
     <div>
-      <label className="block text-sm font-medium text-text-secondary mb-1.5">
-        Behavior Rules
-      </label>
+      <label className="block text-sm font-medium text-text-secondary mb-1.5">Behavior Rules</label>
       <div className="space-y-2">
         {rules.map((rule, index) => (
           <div key={index} className="flex items-center gap-2">
@@ -166,9 +161,7 @@ export function BehaviorRulesField({ rules, onChange }: BehaviorRulesFieldProps)
           <span>Add Rule</span>
         </button>
       </div>
-      <p className="text-xs text-text-tertiary mt-2">
-        Rules will be saved as a JSON array
-      </p>
+      <p className="text-xs text-text-tertiary mt-2">Rules will be saved as a JSON array</p>
     </div>
   );
 }

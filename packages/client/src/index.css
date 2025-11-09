@@ -8,33 +8,33 @@
     --color-primary: 234 88 12; /* orange-600 */
     --color-primary-hover: 194 65 12; /* orange-700 */
     --color-primary-light: 249 115 22; /* orange-500 */
-    
+
     /* Background colors - Grayscale */
     --color-background: 255 255 255; /* white */
     --color-background-secondary: 249 250 251; /* gray-50 */
     --color-background-tertiary: 243 244 246; /* gray-100 */
-    
+
     /* Text colors - Grayscale */
     --color-text-primary: 17 24 39; /* gray-900 */
     --color-text-secondary: 31 41 55; /* gray-800 */
     --color-text-tertiary: 107 114 128; /* gray-500 */
     --color-text-inverse: 255 255 255; /* white */
-    
+
     /* Border colors - Grayscale */
     --color-border: 229 231 235; /* gray-200 */
     --color-border-focus: 234 88 12; /* orange-600 */
     --color-border-input: 209 213 219; /* gray-300 */
-    
+
     /* Message colors - Orange for user, grayscale for assistant */
     --color-message-user: 234 88 12; /* orange-600 */
     --color-message-assistant: 243 244 246; /* gray-100 */
     --color-message-user-text: 255 255 255; /* white */
     --color-message-assistant-text: 17 24 39; /* gray-900 */
-    
+
     /* State colors - Grayscale */
     --color-disabled: 156 163 175; /* gray-400 */
     --color-disabled-bg: 243 244 246; /* gray-100 */
-    
+
     /* Design system - unified heights */
     --button-height: 2rem; /* 32px - h-8 */
     --button-height-sm: 1.75rem; /* 28px - h-7 */

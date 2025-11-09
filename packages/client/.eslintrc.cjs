@@ -15,4 +15,14 @@ module.exports = {
       { allowConstantExport: true },
     ],
   },
+  overrides: [
+    {
+      files: ['src/contexts/**/*.tsx', 'src/hooks/**/*.ts'],
+      rules: {
+        'react-refresh/only-export-components': 'off',
+      },
+    },
+  ],
+  // Treat warnings as errors
+  reportUnusedDisableDirectives: true,
 };

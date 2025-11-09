@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  ReactNode,
+} from 'react';
 import { Message, ChatHistoryResponse } from '../types/chat.types';
 import { ChatService } from '../services/chat.service';
 import { useAuth } from './AuthContext';
@@ -20,21 +28,25 @@ interface ChatContextValue {
   setMessages: (messages: Message[]) => void;
   addMessage: (message: Message) => void;
   updateLastUserMessage: (update: Partial<Message>) => void;
-  
+
   // Current session info
   currentBotId: number | null;
   currentSessionId: number | null;
   setCurrentSessionId: (sessionId: number | null) => void;
   botName: string;
-  
+
   // Loading states
   loadingMessages: boolean;
   loadingSession: boolean;
-  
+
   // Actions
   loadChatHistory: (botId: number, sessionId?: number, forceRefresh?: boolean) => Promise<void>;
-  sendMessage: (botId: number, message: string, sessionId?: number) => Promise<{ sessionId: number | null; isNewSession: boolean }>;
-  
+  sendMessage: (
+    botId: number,
+    message: string,
+    sessionId?: number
+  ) => Promise<{ sessionId: number | null; isNewSession: boolean }>;
+
   // Cache management
   getCachedSession: (botId: number, sessionId: number) => CachedSessionData | null;
   setCachedSession: (botId: number, sessionId: number, data: CachedSessionData) => void;
@@ -48,39 +60,45 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentBotId, setCurrentBotId] = useState<number | null>(null);
   // Load initial session ID from localStorage (will be validated when bot loads)
-  const [currentSessionId, setCurrentSessionIdState] = useState<number | null>(() => 
+  const [currentSessionId, setCurrentSessionIdState] = useState<number | null>(() =>
     LocalStorageManager.getSelectedSessionId()
   );
   const [botName, setBotName] = useState<string>('');
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [loadingSession, setLoadingSession] = useState(false);
-  
+
   // Save to localStorage whenever currentSessionId changes
   useEffect(() => {
     LocalStorageManager.setSelectedSessionId(currentSessionId);
   }, [currentSessionId]);
-  
+
   // Wrapper to update state (localStorage is saved via useEffect above)
   const setCurrentSessionId = useCallback((sessionId: number | null) => {
     setCurrentSessionIdState(sessionId);
   }, []);
-  
+
   // Session cache using ref
   const sessionCacheRef = useRef<Map<SessionCacheKey, CachedSessionData>>(new Map());
-  
+
   // Track current bot/session to detect changes
   const lastBotIdRef = useRef<number | null>(null);
   const lastSessionIdRef = useRef<number | null>(null);
 
-  const getCachedSession = useCallback((botId: number, sessionId: number): CachedSessionData | null => {
-    const key: SessionCacheKey = `${botId}-${sessionId}`;
-    return sessionCacheRef.current.get(key) || null;
-  }, []);
+  const getCachedSession = useCallback(
+    (botId: number, sessionId: number): CachedSessionData | null => {
+      const key: SessionCacheKey = `${botId}-${sessionId}`;
+      return sessionCacheRef.current.get(key) || null;
+    },
+    []
+  );
 
-  const setCachedSession = useCallback((botId: number, sessionId: number, data: CachedSessionData) => {
-    const key: SessionCacheKey = `${botId}-${sessionId}`;
-    sessionCacheRef.current.set(key, { ...data, lastUpdated: Date.now() });
-  }, []);
+  const setCachedSession = useCallback(
+    (botId: number, sessionId: number, data: CachedSessionData) => {
+      const key: SessionCacheKey = `${botId}-${sessionId}`;
+      sessionCacheRef.current.set(key, { ...data, lastUpdated: Date.now() });
+    },
+    []
+  );
 
   const invalidateSessionCache = useCallback((botId: number, sessionId?: number) => {
     if (sessionId !== undefined) {
@@ -101,27 +119,33 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const loadChatHistory = useCallback(
     async (botId: number, sessionId?: number, forceRefresh = false) => {
       const perfStart = performance.now();
-      console.log(`[Performance] loadChatHistory START - botId: ${botId}, sessionId: ${sessionId}, forceRefresh: ${forceRefresh}`);
-      
+      console.log(
+        `[Performance] loadChatHistory START - botId: ${botId}, sessionId: ${sessionId}, forceRefresh: ${forceRefresh}`
+      );
+
       if (!isSignedIn || !isLoaded) {
         console.log(`[Performance] loadChatHistory ABORT - not signed in or not loaded`);
         return;
       }
-      
+
       // Check if we already have the correct bot/session loaded (no need to reload)
       // Use refs to avoid stale closure issues - refs are updated when we load
-      if (!forceRefresh && 
-          lastBotIdRef.current === botId && 
-          lastSessionIdRef.current === (sessionId || null)) {
-        console.log(`[Performance] loadChatHistory SKIP - already loaded (${performance.now() - perfStart}ms)`);
+      if (
+        !forceRefresh &&
+        lastBotIdRef.current === botId &&
+        lastSessionIdRef.current === (sessionId || null)
+      ) {
+        console.log(
+          `[Performance] loadChatHistory SKIP - already loaded (${performance.now() - perfStart}ms)`
+        );
         return;
       }
-      
+
       // Check cache first (unless force refresh or bot/session changed)
       const botChanged = lastBotIdRef.current !== botId;
       const sessionChanged = lastSessionIdRef.current !== sessionId;
       const cacheCheckStart = performance.now();
-      
+
       if (!forceRefresh && !botChanged && !sessionChanged && sessionId) {
         const cached = getCachedSession(botId, sessionId);
         if (cached) {
@@ -133,7 +157,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           setCurrentSessionId(sessionId);
           lastBotIdRef.current = botId;
           lastSessionIdRef.current = sessionId;
-          console.log(`[Performance] loadChatHistory COMPLETE (cache) - total: ${performance.now() - perfStart}ms`);
+          console.log(
+            `[Performance] loadChatHistory COMPLETE (cache) - total: ${performance.now() - perfStart}ms`
+          );
           return;
         }
       }
@@ -141,33 +167,39 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       if (cacheCheckTime > 1) {
         console.log(`[Performance] loadChatHistory cache check took ${cacheCheckTime}ms`);
       }
-      
+
       const loadingStart = performance.now();
       setLoadingMessages(true);
-      console.log(`[Performance] loadChatHistory setLoadingMessages(true) - ${performance.now() - loadingStart}ms`);
-      
+      console.log(
+        `[Performance] loadChatHistory setLoadingMessages(true) - ${performance.now() - loadingStart}ms`
+      );
+
       try {
         const apiCallStart = performance.now();
-        console.log(`[Performance] loadChatHistory API CALL START - botId: ${botId}, sessionId: ${sessionId}`);
+        console.log(
+          `[Performance] loadChatHistory API CALL START - botId: ${botId}, sessionId: ${sessionId}`
+        );
         const data = await ChatService.getChatHistory(botId, sessionId);
         const apiCallTime = performance.now() - apiCallStart;
-        console.log(`[Performance] loadChatHistory API CALL COMPLETE - ${apiCallTime}ms, messages: ${data.messages?.length || 0}`);
-        
+        console.log(
+          `[Performance] loadChatHistory API CALL COMPLETE - ${apiCallTime}ms, messages: ${data.messages?.length || 0}`
+        );
+
         const stateUpdateStart = performance.now();
         const messagesData = data.messages || [];
         const botNameData = data.bot?.name || 'Chat Bot';
         const finalSessionId = data.session?.id || sessionId || null;
-        
+
         setMessages(messagesData);
         setBotName(botNameData);
         setCurrentBotId(botId);
         setCurrentSessionId(finalSessionId);
         const stateUpdateTime = performance.now() - stateUpdateStart;
         console.log(`[Performance] loadChatHistory state updates - ${stateUpdateTime}ms`);
-        
+
         if (finalSessionId) {
           lastSessionIdRef.current = finalSessionId;
-          
+
           const cacheUpdateStart = performance.now();
           // Cache the session data
           setCachedSession(botId, finalSessionId, {
@@ -182,10 +214,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             console.log(`[Performance] loadChatHistory cache update - ${cacheUpdateTime}ms`);
           }
         }
-        
+
         lastBotIdRef.current = botId;
         const totalTime = performance.now() - perfStart;
-        console.log(`[Performance] loadChatHistory COMPLETE - total: ${totalTime}ms (API: ${apiCallTime}ms, state: ${stateUpdateTime}ms)`);
+        console.log(
+          `[Performance] loadChatHistory COMPLETE - total: ${totalTime}ms (API: ${apiCallTime}ms, state: ${stateUpdateTime}ms)`
+        );
       } catch (error) {
         const err = error instanceof Error ? error : new Error('Unknown error');
         const errorTime = performance.now() - perfStart;
@@ -200,23 +234,41 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         setLoadingMessages(false);
         const loadingEndTime = performance.now() - loadingEndStart;
         if (loadingEndTime > 1) {
-          console.log(`[Performance] loadChatHistory setLoadingMessages(false) - ${loadingEndTime}ms`);
+          console.log(
+            `[Performance] loadChatHistory setLoadingMessages(false) - ${loadingEndTime}ms`
+          );
         }
       }
     },
-    [isSignedIn, isLoaded, getCachedSession, setCachedSession],
+    [
+      isSignedIn,
+      isLoaded,
+      getCachedSession,
+      setCachedSession,
+      setCurrentSessionId,
+      setCurrentBotId,
+      setMessages,
+      setBotName,
+      setLoadingMessages,
+    ]
   );
 
   const sendMessage = useCallback(
-    async (botId: number, message: string, sessionId?: number) => {
-      if (!isSignedIn || !isLoaded) return;
+    async (
+      botId: number,
+      message: string,
+      sessionId?: number
+    ): Promise<{ sessionId: number | null; isNewSession: boolean }> => {
+      if (!isSignedIn || !isLoaded) {
+        return { sessionId: currentSessionId, isNewSession: false };
+      }
 
       // Prepare user message
-      const userMessage: Message = { 
-        role: 'user', 
+      const userMessage: Message = {
+        role: 'user',
         content: message,
       };
-      
+
       setMessages((prev) => [...prev, userMessage]);
       setLoadingSession(true);
 
@@ -224,9 +276,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         const data = await ChatService.sendMessage(
           botId,
           message,
-          sessionId || currentSessionId || undefined,
+          sessionId || currentSessionId || undefined
         );
-        
+
         // Update the last user message with raw request data
         setMessages((prev) => {
           const updated = [...prev];
@@ -242,19 +294,19 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           content: data.response,
           rawResponse: data.rawResponse,
         };
-        
+
         // Update messages and session ID if changed
         const finalSessionId = data.session?.id || currentSessionId;
         const isNewSession = finalSessionId !== null && finalSessionId !== currentSessionId;
-        
+
         setMessages((prev) => {
           const updated = [...prev, assistantMessage];
-          
+
           if (finalSessionId && finalSessionId !== currentSessionId) {
             setCurrentSessionId(finalSessionId);
             lastSessionIdRef.current = finalSessionId;
           }
-          
+
           // Update cache with new messages
           if (botId && finalSessionId) {
             const cached = getCachedSession(botId, finalSessionId);
@@ -275,16 +327,16 @@ export function ChatProvider({ children }: { children: ReactNode }) {
               });
             }
           }
-          
+
           return updated;
         });
-        
+
         // Ensure current bot ID is set
         if (currentBotId !== botId) {
           setCurrentBotId(botId);
           lastBotIdRef.current = botId;
         }
-        
+
         // Return session info for syncing with BotContext
         return { sessionId: finalSessionId, isNewSession };
       } catch (error) {
@@ -295,12 +347,25 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           content: `Error: ${err.message}`,
         };
         setMessages((prev) => [...prev, errorMessage]);
-        throw err;
+        // Return error state instead of throwing to match return type
+        return { sessionId: currentSessionId, isNewSession: false };
       } finally {
         setLoadingSession(false);
       }
     },
-    [isSignedIn, isLoaded, currentSessionId, botName, getCachedSession, setCachedSession],
+    [
+      isSignedIn,
+      isLoaded,
+      currentSessionId,
+      currentBotId,
+      botName,
+      getCachedSession,
+      setCachedSession,
+      setCurrentSessionId,
+      setCurrentBotId,
+      setMessages,
+      setLoadingSession,
+    ]
   );
 
   const addMessage = useCallback((message: Message) => {
@@ -323,7 +388,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   // Reset state when bot changes - clear messages and session only when bot actually changes
   useEffect(() => {
     // If bot changed completely, clear caches and state
-    if (currentBotId !== null && currentBotId !== lastBotIdRef.current && lastBotIdRef.current !== null) {
+    if (
+      currentBotId !== null &&
+      currentBotId !== lastBotIdRef.current &&
+      lastBotIdRef.current !== null
+    ) {
       // Clear all session caches for the old bot when switching away
       invalidateSessionCache(lastBotIdRef.current);
       // Clear session and messages when bot changes (but preserve if navigating back to same bot)

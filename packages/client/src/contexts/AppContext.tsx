@@ -5,7 +5,7 @@ interface AppContextValue {
   // Selected bot persistence (for chat view)
   selectedBotId: number | null;
   setSelectedBotId: (botId: number | null) => void;
-  
+
   // Selected session ID (for navigation/state tracking)
   selectedSessionId: number | null;
   setSelectedSessionId: (sessionId: number | null) => void;
@@ -15,10 +15,10 @@ const AppContext = createContext<AppContextValue | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   // Load initial values from localStorage
-  const [selectedBotId, setSelectedBotIdState] = useState<number | null>(() => 
+  const [selectedBotId, setSelectedBotIdState] = useState<number | null>(() =>
     LocalStorageManager.getSelectedBotIdChat()
   );
-  const [selectedSessionId, setSelectedSessionIdState] = useState<number | null>(() => 
+  const [selectedSessionId, setSelectedSessionIdState] = useState<number | null>(() =>
     LocalStorageManager.getSelectedSessionId()
   );
 
