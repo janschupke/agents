@@ -1,6 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+
 import { ChatBotProps } from '../../types/chat.types.js';
+import { useBots } from '../../contexts/BotContext';
+import { useSelectedBot } from '../../contexts/AppContext';
+import { useChatContext } from '../../contexts/ChatContext';
+import { useBotInitialization } from '../../hooks/useBotInitialization.js';
+import { useSessionValidation } from '../../hooks/useSessionValidation.js';
+import { useChatAutoLoad } from '../../hooks/useChatAutoLoad.js';
+import { useChatHandlers } from '../../hooks/useChatHandlers.js';
 import SessionSidebar from '../session/SessionSidebar.js';
 import PageContainer from '../ui/PageContainer.js';
 import JsonModal from '../ui/JsonModal.js';
@@ -10,13 +17,8 @@ import ChatInput from './ChatInput';
 import ChatPlaceholder from './ChatPlaceholder';
 import ChatLoadingState from './ChatLoadingState';
 import ChatEmptyState from './ChatEmptyState';
-import { useBots } from '../../contexts/BotContext';
-import { useSelectedBot } from '../../contexts/AppContext';
-import { useChatContext } from '../../contexts/ChatContext';
-import { ChatService } from '../../services/chat.service';
 
 function ChatBotContent({ botId: propBotId }: ChatBotProps) {
-  const { isSignedIn, isLoaded } = useAuth();
   const { bots, loadingBots, getBotSessions, refreshBotSessions, addSessionToBot } = useBots();
   const { selectedBotId, setSelectedBotId } = useSelectedBot();
   const {
@@ -54,228 +56,45 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
     messages.length === 0;
   const showChatPlaceholder = botMismatch || noSessionForCurrentBot;
 
-  // Track if we've initialized to avoid overriding stored values
-  const initializedRef = useRef(false);
-  const botsLoadedRef = useRef(false);
-
-  // Use propBotId if provided, otherwise validate and use persisted selectedBotId, otherwise use first bot
-  useEffect(() => {
-    if (propBotId) {
-      setSelectedBotId(propBotId);
-      initializedRef.current = true;
-      return;
-    }
-
-    if (!isSignedIn || !isLoaded || loadingBots || bots.length === 0) {
-      return;
-    }
-
-    // Track when bots first load
-    const botsJustLoaded = !botsLoadedRef.current;
-    botsLoadedRef.current = true;
-
-    // Only initialize once when bots first load
-    if (!initializedRef.current && botsJustLoaded) {
-      initializedRef.current = true;
-
-      // Read current selectedBotId from context (loaded from localStorage)
-      const currentSelectedBotId = selectedBotId;
-
-      // If we have a stored selectedBotId, validate it first
-      if (currentSelectedBotId !== null) {
-        const botExists = bots.some((b) => b.id === currentSelectedBotId);
-        if (botExists) {
-          // Valid bot, keep it - don't override
-          return;
-        } else {
-          // Invalid bot, clear it and select first bot
-          setSelectedBotId(bots[0].id);
-        }
-      } else {
-        // No stored bot, use first bot
-        setSelectedBotId(bots[0].id);
-      }
-    }
-  }, [propBotId, isSignedIn, isLoaded, loadingBots, bots, selectedBotId, setSelectedBotId]);
-
-  // Separate effect to validate bot still exists (after initialization)
-  useEffect(() => {
-    if (initializedRef.current && !loadingBots && bots.length > 0 && selectedBotId !== null) {
-      if (!bots.some((b) => b.id === selectedBotId)) {
-        // Bot no longer exists, clear it
-        setSelectedBotId(null);
-      }
-    }
-  }, [loadingBots, bots, selectedBotId, setSelectedBotId]);
-
-  // Track if we've validated session to avoid clearing valid stored sessions
-  const sessionValidatedRef = useRef(false);
-
-  // Validate selectedSessionId belongs to selectedBotId when sessions are available
-  useEffect(() => {
-    if (
-      !loadingBots &&
-      isSignedIn &&
-      isLoaded &&
-      selectedBotId !== null &&
-      currentSessionId !== null
-    ) {
-      const botSessions = getBotSessions(selectedBotId) || [];
-
-      // Only validate once sessions are loaded (not empty array)
-      // Empty array might mean sessions haven't loaded yet
-      if (botSessions.length > 0) {
-        sessionValidatedRef.current = true;
-        if (!botSessions.some((s) => s.id === currentSessionId)) {
-          // Session doesn't belong to selected bot, clear it
-          setCurrentSessionId(null);
-        }
-      } else if (sessionValidatedRef.current) {
-        // Sessions were loaded before but now empty - might have been deleted
-        // Only clear if we've validated before (sessions were loaded)
-        setCurrentSessionId(null);
-      }
-    }
-  }, [
+  // Use custom hooks for complex logic
+  useBotInitialization({
+    propBotId,
+    bots,
     loadingBots,
-    isSignedIn,
-    isLoaded,
     selectedBotId,
-    currentSessionId,
-    getBotSessions,
-    setCurrentSessionId,
-  ]);
-
-  // Track the last loaded bot/session combination to avoid unnecessary refetches
-  const lastLoadedRef = useRef<{ botId: number | null; sessionId: number | null }>({
-    botId: null,
-    sessionId: null,
+    setSelectedBotId,
   });
 
-  // When bot or session changes, handle accordingly
-  useEffect(() => {
-    if (actualBotId && isSignedIn && isLoaded && !loadingBots) {
-      const botChanged = currentBotId !== null && currentBotId !== actualBotId;
-      const sessionChanged = lastLoadedRef.current.sessionId !== currentSessionId;
-      const botChangedFromLastLoad = lastLoadedRef.current.botId !== actualBotId;
-
-      // If bot changed, clear session and messages immediately
-      if (botChanged) {
-        setCurrentSessionId(null);
-        setMessages([]);
-        lastLoadedRef.current = { botId: null, sessionId: null };
-        // Don't auto-load - wait for user to select a session
-        return;
-      }
-
-      // Auto-load if we have a session for the current bot
-      if (currentSessionId && actualBotId) {
-        // Check if session belongs to this bot (sessions might not be loaded yet)
-        const botSessions = getBotSessions(actualBotId) || [];
-
-        // If sessions are loaded, validate the session belongs to the bot
-        if (botSessions.length > 0) {
-          const sessionBelongsToBot = botSessions.some((s) => s.id === currentSessionId);
-
-          if (!sessionBelongsToBot) {
-            // Session doesn't belong to this bot, clear it
-            setCurrentSessionId(null);
-            setMessages([]);
-            lastLoadedRef.current = { botId: null, sessionId: null };
-            return;
-          }
-        }
-
-        // Check if we need to load:
-        // 1. Bot or session changed from last load, OR
-        // 2. No messages loaded and bot/session matches
-        const needsLoad =
-          botChangedFromLastLoad ||
-          sessionChanged ||
-          (messages.length === 0 && currentBotId === actualBotId);
-
-        if (needsLoad && !loadingMessages) {
-          // Update ref before loading to prevent duplicate loads
-          lastLoadedRef.current = { botId: actualBotId, sessionId: currentSessionId };
-          loadChatHistory(actualBotId, currentSessionId);
-        } else if (!needsLoad && currentBotId === actualBotId) {
-          // Bot/session matches and we have messages - preserve them
-          // Update ref to track current state
-          lastLoadedRef.current = { botId: actualBotId, sessionId: currentSessionId };
-        }
-      } else if (currentBotId === actualBotId && messages.length > 0) {
-        // No session selected but we have messages for this bot - preserve them
-        lastLoadedRef.current = { botId: actualBotId, sessionId: null };
-      }
-    }
-  }, [
-    actualBotId,
-    isSignedIn,
-    isLoaded,
-    loadingBots,
-    currentBotId,
+  useSessionValidation({
+    selectedBotId,
     currentSessionId,
-    messages.length,
-    loadingMessages,
-    loadChatHistory,
     setCurrentSessionId,
-    setMessages,
     getBotSessions,
-  ]);
+    loadingBots,
+  });
+
+  useChatAutoLoad({
+    actualBotId,
+    loadingBots,
+    getBotSessions,
+  });
 
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSessionSelect = async (sessionId: number) => {
-    const perfStart = performance.now();
-    console.log(
-      `[Performance] handleSessionSelect START - sessionId: ${sessionId}, currentSessionId: ${currentSessionId}, actualBotId: ${actualBotId}`
-    );
-
-    if (sessionId === currentSessionId || !actualBotId) {
-      console.log(`[Performance] handleSessionSelect SKIP - same session or no bot`);
-      return;
-    }
-
-    const optimisticUpdateStart = performance.now();
-    // Optimistically update session ID immediately for instant UI feedback
-    setCurrentSessionId(sessionId);
-
-    // Clear messages to show loading state
-    setMessages([]);
-    const optimisticUpdateTime = performance.now() - optimisticUpdateStart;
-    console.log(`[Performance] handleSessionSelect optimistic update - ${optimisticUpdateTime}ms`);
-
-    const loadStart = performance.now();
-    // Load chat history
-    await loadChatHistory(actualBotId, sessionId);
-    const loadTime = performance.now() - loadStart;
-    const totalTime = performance.now() - perfStart;
-    console.log(
-      `[Performance] handleSessionSelect COMPLETE - loadChatHistory: ${loadTime}ms, total: ${totalTime}ms`
-    );
-  };
-
-  const handleNewSession = async () => {
-    if (!actualBotId) return;
-    try {
-      const newSession = await ChatService.createSession(actualBotId);
-
-      // Immediately add to list and highlight - ensure it's added to the correct bot
-      addSessionToBot(actualBotId, newSession);
-      setCurrentSessionId(newSession.id);
-      setMessages([]);
-
-      // Load chat history
-      await loadChatHistory(actualBotId, newSession.id);
-    } catch (error) {
-      console.error('Error creating session:', error);
-      // Revert on error
-      setCurrentSessionId(null);
-    }
-  };
+  const { handleSessionSelect, handleNewSession, handleSubmit: handleSubmitMessage } =
+    useChatHandlers({
+      actualBotId,
+      currentSessionId,
+      setCurrentSessionId,
+      setMessages,
+      loadChatHistory,
+      sendMessageToContext,
+      addSessionToBot,
+      refreshBotSessions,
+    });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -283,33 +102,7 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
 
     const message = input;
     setInput('');
-
-    try {
-      const result = await sendMessageToContext(
-        actualBotId,
-        message,
-        currentSessionId || undefined
-      );
-      // If a new session was created, add it to BotContext and refresh sessions
-      if (result.isNewSession && result.sessionId && actualBotId) {
-        // Get session details from ChatService to add to BotContext
-        try {
-          const sessions = await ChatService.getSessions(actualBotId);
-          const newSession = sessions.find((s) => s.id === result.sessionId);
-          if (newSession) {
-            addSessionToBot(actualBotId, newSession);
-          } else {
-            // Fallback: refresh all sessions
-            await refreshBotSessions(actualBotId);
-          }
-        } catch (error) {
-          // Fallback: refresh all sessions if we can't get the new session
-          await refreshBotSessions(actualBotId);
-        }
-      }
-    } catch (error) {
-      console.error('Error sending message:', error);
-    }
+    await handleSubmitMessage(message);
   };
 
   const loading = loadingMessages || loadingSession;

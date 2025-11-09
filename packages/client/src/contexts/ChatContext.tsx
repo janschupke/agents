@@ -118,13 +118,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const loadChatHistory = useCallback(
     async (botId: number, sessionId?: number, forceRefresh = false) => {
-      const perfStart = performance.now();
-      console.log(
-        `[Performance] loadChatHistory START - botId: ${botId}, sessionId: ${sessionId}, forceRefresh: ${forceRefresh}`
-      );
-
       if (!isSignedIn || !isLoaded) {
-        console.log(`[Performance] loadChatHistory ABORT - not signed in or not loaded`);
         return;
       }
 
@@ -135,57 +129,30 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         lastBotIdRef.current === botId &&
         lastSessionIdRef.current === (sessionId || null)
       ) {
-        console.log(
-          `[Performance] loadChatHistory SKIP - already loaded (${performance.now() - perfStart}ms)`
-        );
         return;
       }
 
       // Check cache first (unless force refresh or bot/session changed)
       const botChanged = lastBotIdRef.current !== botId;
       const sessionChanged = lastSessionIdRef.current !== sessionId;
-      const cacheCheckStart = performance.now();
 
       if (!forceRefresh && !botChanged && !sessionChanged && sessionId) {
         const cached = getCachedSession(botId, sessionId);
         if (cached) {
-          const cacheTime = performance.now() - cacheCheckStart;
-          console.log(`[Performance] loadChatHistory CACHE HIT (${cacheTime}ms)`);
           setMessages(cached.messages);
           setBotName(cached.botName);
           setCurrentBotId(botId);
           setCurrentSessionId(sessionId);
           lastBotIdRef.current = botId;
           lastSessionIdRef.current = sessionId;
-          console.log(
-            `[Performance] loadChatHistory COMPLETE (cache) - total: ${performance.now() - perfStart}ms`
-          );
           return;
         }
       }
-      const cacheCheckTime = performance.now() - cacheCheckStart;
-      if (cacheCheckTime > 1) {
-        console.log(`[Performance] loadChatHistory cache check took ${cacheCheckTime}ms`);
-      }
 
-      const loadingStart = performance.now();
       setLoadingMessages(true);
-      console.log(
-        `[Performance] loadChatHistory setLoadingMessages(true) - ${performance.now() - loadingStart}ms`
-      );
 
       try {
-        const apiCallStart = performance.now();
-        console.log(
-          `[Performance] loadChatHistory API CALL START - botId: ${botId}, sessionId: ${sessionId}`
-        );
         const data = await ChatService.getChatHistory(botId, sessionId);
-        const apiCallTime = performance.now() - apiCallStart;
-        console.log(
-          `[Performance] loadChatHistory API CALL COMPLETE - ${apiCallTime}ms, messages: ${data.messages?.length || 0}`
-        );
-
-        const stateUpdateStart = performance.now();
         const messagesData = data.messages || [];
         const botNameData = data.bot?.name || 'Chat Bot';
         const finalSessionId = data.session?.id || sessionId || null;
@@ -194,13 +161,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         setBotName(botNameData);
         setCurrentBotId(botId);
         setCurrentSessionId(finalSessionId);
-        const stateUpdateTime = performance.now() - stateUpdateStart;
-        console.log(`[Performance] loadChatHistory state updates - ${stateUpdateTime}ms`);
 
         if (finalSessionId) {
           lastSessionIdRef.current = finalSessionId;
 
-          const cacheUpdateStart = performance.now();
           // Cache the session data
           setCachedSession(botId, finalSessionId, {
             messages: messagesData,
@@ -209,35 +173,19 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             bot: data.bot || { id: botId, name: botNameData, description: null },
             lastUpdated: Date.now(),
           });
-          const cacheUpdateTime = performance.now() - cacheUpdateStart;
-          if (cacheUpdateTime > 1) {
-            console.log(`[Performance] loadChatHistory cache update - ${cacheUpdateTime}ms`);
-          }
         }
 
         lastBotIdRef.current = botId;
-        const totalTime = performance.now() - perfStart;
-        console.log(
-          `[Performance] loadChatHistory COMPLETE - total: ${totalTime}ms (API: ${apiCallTime}ms, state: ${stateUpdateTime}ms)`
-        );
       } catch (error) {
         const err = error instanceof Error ? error : new Error('Unknown error');
-        const errorTime = performance.now() - perfStart;
-        console.error(`[Performance] loadChatHistory ERROR after ${errorTime}ms:`, err);
+        console.error('Error loading chat history:', err);
         // Clear messages on error to show invalid state
         setMessages([]);
         setCurrentBotId(null);
         setCurrentSessionId(null);
         throw err;
       } finally {
-        const loadingEndStart = performance.now();
         setLoadingMessages(false);
-        const loadingEndTime = performance.now() - loadingEndStart;
-        if (loadingEndTime > 1) {
-          console.log(
-            `[Performance] loadChatHistory setLoadingMessages(false) - ${loadingEndTime}ms`
-          );
-        }
       }
     },
     [
