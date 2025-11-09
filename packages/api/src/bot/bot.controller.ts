@@ -9,54 +9,19 @@ import {
   ParseIntPipe,
   HttpException,
   HttpStatus,
-  Request,
 } from '@nestjs/common';
 import { BotService } from './bot.service';
-import { UserService } from '../user/user.service';
-
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    email?: string | null;
-    firstName?: string | null;
-    lastName?: string | null;
-    imageUrl?: string | null;
-    roles?: string[];
-  };
-}
+import { User } from '../auth/decorators/user.decorator';
+import { AuthenticatedUser } from '../common/types/auth.types';
 
 @Controller('api/bots')
 export class BotController {
-  constructor(
-    private readonly botService: BotService,
-    private readonly userService: UserService,
-  ) {}
-
-  private async ensureUser(req: AuthenticatedRequest) {
-    if (!req.user?.id) {
-      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-    }
-    // Sync user to DB (including roles)
-    await this.userService.findOrCreate({
-      id: req.user.id,
-      email: req.user.email || undefined,
-      firstName: req.user.firstName || undefined,
-      lastName: req.user.lastName || undefined,
-      imageUrl: req.user.imageUrl || undefined,
-      roles: req.user.roles,
-    });
-    // Sync roles from Clerk to DB
-    if (req.user.roles) {
-      await this.userService.syncRolesFromClerk(req.user.id, req.user.roles);
-    }
-    return req.user.id;
-  }
+  constructor(private readonly botService: BotService) {}
 
   @Get()
-  async getAllBots(@Request() req: AuthenticatedRequest) {
+  async getAllBots(@User() user: AuthenticatedUser) {
     try {
-      const userId = await this.ensureUser(req);
-      return await this.botService.findAll(userId);
+      return await this.botService.findAll(user.id);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -72,11 +37,10 @@ export class BotController {
   @Get(':id')
   async getBot(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req: AuthenticatedRequest,
+    @User() user: AuthenticatedUser,
   ) {
     try {
-      const userId = await this.ensureUser(req);
-      return await this.botService.findById(id, userId);
+      return await this.botService.findById(id, user.id);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -100,11 +64,9 @@ export class BotController {
         behavior_rules?: string | unknown;
       };
     },
-    @Request() req: AuthenticatedRequest,
+    @User() user: AuthenticatedUser,
   ) {
     try {
-      const userId = await this.ensureUser(req);
-      
       // Prepare configs object if provided
       const configs: Record<string, unknown> | undefined = body.configs
         ? {
@@ -114,7 +76,7 @@ export class BotController {
           }
         : undefined;
       
-      return await this.botService.create(userId, body.name, body.description, configs);
+      return await this.botService.create(user.id, body.name, body.description, configs);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -139,11 +101,9 @@ export class BotController {
         behavior_rules?: string | unknown;
       };
     },
-    @Request() req: AuthenticatedRequest,
+    @User() user: AuthenticatedUser,
   ) {
     try {
-      const userId = await this.ensureUser(req);
-      
       // Prepare configs object if provided
       const configs: Record<string, unknown> | undefined = body.configs
         ? {
@@ -155,7 +115,7 @@ export class BotController {
 
       return await this.botService.update(
         id,
-        userId,
+        user.id,
         body.name,
         body.description,
         configs,
@@ -175,11 +135,10 @@ export class BotController {
   @Get(':id/embeddings')
   async getEmbeddings(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req: AuthenticatedRequest,
+    @User() user: AuthenticatedUser,
   ) {
     try {
-      const userId = await this.ensureUser(req);
-      return await this.botService.getEmbeddings(id, userId);
+      return await this.botService.getEmbeddings(id, user.id);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -196,11 +155,10 @@ export class BotController {
   async deleteEmbedding(
     @Param('id', ParseIntPipe) id: number,
     @Param('embeddingId', ParseIntPipe) embeddingId: number,
-    @Request() req: AuthenticatedRequest,
+    @User() user: AuthenticatedUser,
   ) {
     try {
-      const userId = await this.ensureUser(req);
-      await this.botService.deleteEmbedding(id, embeddingId, userId);
+      await this.botService.deleteEmbedding(id, embeddingId, user.id);
       return { success: true };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -217,11 +175,10 @@ export class BotController {
   @Delete(':id')
   async deleteBot(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req: AuthenticatedRequest,
+    @User() user: AuthenticatedUser,
   ) {
     try {
-      const userId = await this.ensureUser(req);
-      await this.botService.delete(id, userId);
+      await this.botService.delete(id, user.id);
       return { success: true };
     } catch (error) {
       if (error instanceof HttpException) {

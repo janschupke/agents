@@ -3,10 +3,15 @@ import {
   CanActivate,
   ExecutionContext,
   SetMetadata,
+  UnauthorizedException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { createClerkClient, verifyToken } from '@clerk/backend';
 import { appConfig } from '../config/app.config';
+import { UserService } from '../user/user.service';
+import { AuthenticatedUser } from '../common/types/auth.types';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
@@ -36,7 +41,11 @@ export class ClerkGuard implements CanActivate {
   private readonly USER_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
   private readonly TOKEN_CACHE_TTL = 60 * 1000; // 1 minute (tokens can expire)
 
-  constructor(private reflector: Reflector) {
+  constructor(
+    private reflector: Reflector,
+    @Inject(forwardRef(() => UserService))
+    private userService: UserService,
+  ) {
     if (appConfig.clerk.secretKey) {
       this.clerk = createClerkClient({
         secretKey: appConfig.clerk.secretKey,
@@ -116,9 +125,9 @@ export class ClerkGuard implements CanActivate {
 
     const authHeader = request.headers.authorization;
 
-    // If no auth header, don't set user (controllers will handle 401)
+    // If no auth header, throw 401 for protected routes
     if (!authHeader) {
-      return true;
+      throw new UnauthorizedException('Missing authorization header');
     }
 
     try {
@@ -126,7 +135,7 @@ export class ClerkGuard implements CanActivate {
       const token = authHeader.replace('Bearer ', '').trim();
       
       if (!token) {
-        return true;
+        throw new UnauthorizedException('Invalid authorization token');
       }
       
       // Check if we've recently verified this token (cache for 1 minute)
@@ -158,72 +167,72 @@ export class ClerkGuard implements CanActivate {
       }
       
       if (!userId) {
-        return true;
+        throw new UnauthorizedException('Invalid token: user ID not found');
       }
       
       // Check cache first to avoid repeated Clerk API calls
-      const cachedUser = this.getCachedUser(userId);
-      if (cachedUser) {
-        request.user = {
-          id: cachedUser.id,
-          email: cachedUser.email,
-          firstName: cachedUser.firstName,
-          lastName: cachedUser.lastName,
-          imageUrl: cachedUser.imageUrl,
-          roles: cachedUser.roles,
-        };
-        return true;
+      let userData: CachedUser | null = this.getCachedUser(userId);
+      
+      if (!userData) {
+        // Fetch user details from Clerk only if not cached
+        try {
+          const clerkUser = await this.clerk.users.getUser(userId);
+          
+          // Extract roles from public metadata, default to ["user"] if not present
+          const publicMetadata = clerkUser.publicMetadata as any;
+          const roles = publicMetadata?.roles || ['user'];
+          
+          userData = {
+            id: userId,
+            email: clerkUser.emailAddresses[0]?.emailAddress || null,
+            firstName: clerkUser.firstName || null,
+            lastName: clerkUser.lastName || null,
+            imageUrl: clerkUser.imageUrl || null,
+            roles,
+            cachedAt: Date.now(),
+          };
+          
+          // Cache the user data
+          this.setCachedUser(userData);
+        } catch (userError) {
+          console.error(`ClerkGuard.getUser ERROR for ${path}:`, userError);
+          throw new UnauthorizedException('Failed to fetch user information');
+        }
       }
       
-      // Fetch user details from Clerk only if not cached
+      // Sync user to database (including roles)
+      // This ensures the user exists in DB and roles are synced from Clerk
       try {
-        const clerkUser = await this.clerk.users.getUser(userId);
-        
-        // Extract roles from public metadata, default to ["user"] if not present
-        const publicMetadata = clerkUser.publicMetadata as any;
-        const roles = publicMetadata?.roles || ['user'];
-        
-        const userData: CachedUser = {
-          id: userId,
-          email: clerkUser.emailAddresses[0]?.emailAddress || null,
-          firstName: clerkUser.firstName || null,
-          lastName: clerkUser.lastName || null,
-          imageUrl: clerkUser.imageUrl || null,
-          roles,
-          cachedAt: Date.now(),
-        };
-        
-        // Cache the user data
-        this.setCachedUser(userData);
-        
-        // Attach user info to request for use in controllers
-        request.user = {
+        await this.userService.findOrCreate({
           id: userData.id,
-          email: userData.email,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          imageUrl: userData.imageUrl,
+          email: userData.email || undefined,
+          firstName: userData.firstName || undefined,
+          lastName: userData.lastName || undefined,
+          imageUrl: userData.imageUrl || undefined,
           roles: userData.roles,
-        };
-      } catch (userError) {
-        console.error(`ClerkGuard.getUser ERROR for ${path}:`, userError);
-        // If we can't fetch user details, still attach the ID with default role
-        request.user = {
-          id: userId,
-          email: null,
-          firstName: null,
-          lastName: null,
-          imageUrl: null,
-          roles: ['user'],
-        };
+        });
+      } catch (dbError) {
+        // Log but don't fail - user can still proceed
+        console.error(`ClerkGuard.syncUser ERROR for ${path}:`, dbError);
       }
+      
+      // Attach user info to request for use in controllers
+      request.user = {
+        id: userData.id,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        imageUrl: userData.imageUrl,
+        roles: userData.roles,
+      } as AuthenticatedUser;
 
       return true;
     } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
       console.error(`ClerkGuard.canActivate ERROR for ${path}:`, error);
-      // If token verification fails, allow request
-      // Controllers will check for req.user and throw 401 if needed
-      return true;
+      throw new UnauthorizedException('Authentication failed');
     }
   }
 }

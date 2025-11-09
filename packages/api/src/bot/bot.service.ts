@@ -24,7 +24,7 @@ export class BotService {
   }
 
   async create(userId: string, name: string, description?: string, configs?: Record<string, unknown>) {
-    // User will be created automatically by controller's ensureUser method
+    // User is automatically synced to DB by ClerkGuard
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       throw new HttpException(

@@ -1,23 +1,16 @@
 import {
   Controller,
   Get,
-  Request,
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ClerkService } from '../auth/clerk.service';
-
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    email?: string | null;
-    firstName?: string | null;
-    lastName?: string | null;
-    imageUrl?: string | null;
-    roles?: string[];
-  };
-}
+import { User } from '../auth/decorators/user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UseGuards } from '@nestjs/common';
+import { RolesGuard } from '../auth/roles.guard';
+import { AuthenticatedUser } from '../common/types/auth.types';
 
 @Controller('api/user')
 export class UserController {
@@ -27,17 +20,9 @@ export class UserController {
   ) {}
 
   @Get('all')
-  async getAllUsers(@Request() req: AuthenticatedRequest) {
-    if (!req.user?.id) {
-      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-    }
-
-    // Check if user has admin role
-    const roles = req.user.roles || [];
-    if (!roles.includes('admin')) {
-      throw new HttpException('Forbidden: Admin access required', HttpStatus.FORBIDDEN);
-    }
-
+  @Roles('admin')
+  @UseGuards(RolesGuard)
+  async getAllUsers() {
     try {
       const users = await this.userService.findAll();
       return users.map((user) => ({
@@ -63,21 +48,17 @@ export class UserController {
   }
 
   @Get('me')
-  async getCurrentUser(@Request() req: AuthenticatedRequest) {
-    if (!req.user?.id) {
-      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-    }
-
+  async getCurrentUser(@User() user: AuthenticatedUser) {
     try {
       // Ensure user has roles (default to ["user"] if not present)
-      const roles = req.user.roles && req.user.roles.length > 0 
-        ? req.user.roles 
+      const roles = user.roles && user.roles.length > 0 
+        ? user.roles 
         : ['user'];
 
       // If user doesn't have roles in Clerk metadata, update Clerk
-      if (!req.user.roles || req.user.roles.length === 0) {
+      if (!user.roles || user.roles.length === 0) {
         try {
-          await this.clerkService.updateUserRoles(req.user.id, roles);
+          await this.clerkService.updateUserRoles(user.id, roles);
         } catch (error) {
           // Log but don't fail - roles will still be set in DB
           console.warn('Failed to update Clerk roles, continuing with DB sync:', error);
@@ -85,20 +66,11 @@ export class UserController {
       }
 
       // Sync user from Clerk to DB (including roles)
-      const user = await this.userService.findOrCreate({
-        id: req.user.id,
-        email: req.user.email || undefined,
-        firstName: req.user.firstName || undefined,
-        lastName: req.user.lastName || undefined,
-        imageUrl: req.user.imageUrl || undefined,
-        roles,
-      });
-
-      // Sync roles from Clerk to DB
-      await this.userService.syncRolesFromClerk(req.user.id, roles);
+      // Note: User is already synced by ClerkGuard, but we ensure roles are synced
+      await this.userService.syncRolesFromClerk(user.id, roles);
 
       // Get fresh user data with roles from DB
-      const dbUser = await this.userService.findById(req.user.id);
+      const dbUser = await this.userService.findById(user.id);
       const dbRoles = (dbUser.roles as any) || ['user'];
 
       return {

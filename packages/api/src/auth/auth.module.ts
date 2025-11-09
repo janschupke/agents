@@ -1,9 +1,12 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ClerkGuard } from './clerk.guard';
 import { ClerkService } from './clerk.service';
+import { RolesGuard } from './roles.guard';
+import { UserModule } from '../user/user.module';
 
 @Module({
-  providers: [ClerkGuard, ClerkService],
-  exports: [ClerkGuard, ClerkService],
+  imports: [forwardRef(() => UserModule)],
+  providers: [ClerkGuard, ClerkService, RolesGuard],
+  exports: [ClerkGuard, ClerkService, RolesGuard],
 })
 export class AuthModule {}

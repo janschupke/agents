@@ -39,7 +39,7 @@ export class ChatService {
   }
 
   async createSession(botId: number, userId: string) {
-    // User will be created automatically by controller's ensureUser method
+    // User is automatically synced to DB by ClerkGuard
 
     // Load bot with config
     const bot = await this.botRepository.findByIdWithConfig(botId, userId);
@@ -134,7 +134,7 @@ export class ChatService {
     message: string,
     sessionId?: number,
   ) {
-    // User will be created automatically by controller's ensureUser method
+    // User is automatically synced to DB by ClerkGuard
 
     // Check if user has API key
     const apiKey = await this.apiCredentialsService.getApiKey(userId, 'openai');

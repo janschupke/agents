@@ -4,35 +4,21 @@ import {
   Post,
   Delete,
   Body,
-  Request,
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
 import { ApiCredentialsService } from './api-credentials.service';
-
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    email?: string | null;
-    firstName?: string | null;
-    lastName?: string | null;
-    imageUrl?: string | null;
-    roles?: string[];
-  };
-}
+import { User } from '../auth/decorators/user.decorator';
+import { AuthenticatedUser } from '../common/types/auth.types';
 
 @Controller('api/api-credentials')
 export class ApiCredentialsController {
   constructor(private readonly apiCredentialsService: ApiCredentialsService) {}
 
   @Get('status')
-  async getCredentialsStatus(@Request() req: AuthenticatedRequest) {
-    if (!req.user?.id) {
-      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-    }
-
+  async getCredentialsStatus(@User() user: AuthenticatedUser) {
     try {
-      return await this.apiCredentialsService.getCredentialsStatus(req.user.id);
+      return await this.apiCredentialsService.getCredentialsStatus(user.id);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -47,19 +33,15 @@ export class ApiCredentialsController {
 
   @Post('openai')
   async setOpenAIKey(
-    @Request() req: AuthenticatedRequest,
+    @User() user: AuthenticatedUser,
     @Body() body: { apiKey: string },
   ) {
-    if (!req.user?.id) {
-      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-    }
-
     if (!body.apiKey || typeof body.apiKey !== 'string') {
       throw new HttpException('API key is required', HttpStatus.BAD_REQUEST);
     }
 
     try {
-      await this.apiCredentialsService.setApiKey(req.user.id, 'openai', body.apiKey);
+      await this.apiCredentialsService.setApiKey(user.id, 'openai', body.apiKey);
       return { success: true };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -74,13 +56,9 @@ export class ApiCredentialsController {
   }
 
   @Delete('openai')
-  async deleteOpenAIKey(@Request() req: AuthenticatedRequest) {
-    if (!req.user?.id) {
-      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-    }
-
+  async deleteOpenAIKey(@User() user: AuthenticatedUser) {
     try {
-      await this.apiCredentialsService.deleteApiKey(req.user.id, 'openai');
+      await this.apiCredentialsService.deleteApiKey(user.id, 'openai');
       return { success: true };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -95,13 +73,9 @@ export class ApiCredentialsController {
   }
 
   @Get('openai/check')
-  async checkOpenAIKey(@Request() req: AuthenticatedRequest) {
-    if (!req.user?.id) {
-      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-    }
-
+  async checkOpenAIKey(@User() user: AuthenticatedUser) {
     try {
-      const hasKey = await this.apiCredentialsService.hasApiKey(req.user.id, 'openai');
+      const hasKey = await this.apiCredentialsService.hasApiKey(user.id, 'openai');
       return { hasKey };
     } catch (error) {
       if (error instanceof HttpException) {
