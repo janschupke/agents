@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { ChatBotProps } from '../../types/chat.types.js';
 import { useBots } from '../../contexts/BotContext';
@@ -39,6 +39,7 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
   } = useChatContext();
 
   const [input, setInput] = useState('');
+  const [creatingSession, setCreatingSession] = useState(false);
   const [jsonModal, setJsonModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -113,6 +114,16 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
       refreshBotSessions,
     });
 
+  // Wrap handleNewSession to track loading state
+  const handleNewSessionWithLoading = useCallback(async () => {
+    setCreatingSession(true);
+    try {
+      await handleNewSession();
+    } finally {
+      setCreatingSession(false);
+    }
+  }, [handleNewSession]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || !actualBotId) return;
@@ -175,7 +186,8 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
     }
   };
 
-  const loading = loadingMessages || loadingSession;
+  // Show loading state if creating session or loading messages/session
+  const loading = loadingMessages || loadingSession || creatingSession;
 
   if (loadingBots) {
     return <ChatLoadingState />;
@@ -192,7 +204,7 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
           sessions={sessions}
           currentSessionId={currentSessionId}
           onSessionSelect={handleSessionSelect}
-          onNewSession={handleNewSession}
+          onNewSession={handleNewSessionWithLoading}
           onSessionDelete={handleSessionDelete}
           loading={sessionsLoading}
         />

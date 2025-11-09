@@ -122,6 +122,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // Don't try to load history for temporary sessions (negative IDs)
+      // These are created optimistically and don't exist on the server yet
+      if (sessionId !== undefined && sessionId < 0) {
+        return;
+      }
+
       // Check if we already have the correct bot/session loaded (no need to reload)
       // Use refs to avoid stale closure issues - refs are updated when we load
       if (

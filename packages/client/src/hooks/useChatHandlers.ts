@@ -63,9 +63,10 @@ export function useChatHandlers({
     // Optimistically add to list at the top immediately
     addSessionToBot(actualBotId, tempSession);
     setCurrentSessionId(tempSessionId);
-    setMessages([]);
+    setMessages([]); // Clear messages - new session has no messages
 
-    // Create session in background
+    // Create session in background and wait for successful response
+    // Keep UI in loading state until session is created
     try {
       const newSession = await ChatService.createSession(actualBotId);
 
@@ -73,20 +74,22 @@ export function useChatHandlers({
       // This will remove the temp session and add the real one at the top
       await refreshBotSessions(actualBotId);
       
-      // Update to real session ID and load chat history
+      // Only after successful session creation, update to real session ID
+      // No need to load chat history - new sessions are empty
+      // Just update the session ID and messages stay empty (no loading needed)
       setCurrentSessionId(newSession.id);
-      await loadChatHistory(actualBotId, newSession.id);
+      // Messages are already empty, no need to call loadChatHistory
     } catch (error) {
       console.error('Error creating session:', error);
       // Revert on error - remove temp session and clear selection
       await refreshBotSessions(actualBotId);
       setCurrentSessionId(null);
+      setMessages([]);
     }
   }, [
     actualBotId,
     setCurrentSessionId,
     setMessages,
-    loadChatHistory,
     addSessionToBot,
     refreshBotSessions,
   ]);

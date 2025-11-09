@@ -65,6 +65,12 @@ export function useChatAutoLoad({
 
       // Auto-load if we have a session for the current bot
       if (currentSessionId && actualBotId) {
+        // Don't try to load history for temporary sessions (negative IDs)
+        // These are created optimistically and will be replaced with real sessions
+        if (currentSessionId < 0) {
+          return;
+        }
+
         // Check if session belongs to this bot (sessions might not be loaded yet)
         const botSessions = getBotSessions(actualBotId) || [];
 
