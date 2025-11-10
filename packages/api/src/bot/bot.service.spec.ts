@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
 import { BotService } from './bot.service';
 import { BotRepository } from './bot.repository';
 import { MemoryRepository } from '../memory/memory.repository';
@@ -7,9 +7,6 @@ import { UserService } from '../user/user.service';
 
 describe('BotService', () => {
   let service: BotService;
-  let botRepository: BotRepository;
-  let memoryRepository: MemoryRepository;
-  let userService: UserService;
 
   const mockBotRepository = {
     findAll: jest.fn(),
@@ -53,9 +50,6 @@ describe('BotService', () => {
     }).compile();
 
     service = module.get<BotService>(BotService);
-    botRepository = module.get<BotRepository>(BotRepository);
-    memoryRepository = module.get<MemoryRepository>(MemoryRepository);
-    userService = module.get<UserService>(UserService);
   });
 
   afterEach(() => {
@@ -79,7 +73,7 @@ describe('BotService', () => {
       const result = await service.findAll(userId);
 
       expect(result).toEqual(mockBots);
-      expect(botRepository.findAll).toHaveBeenCalledWith(userId);
+      expect(mockBotRepository.findAll).toHaveBeenCalledWith(userId);
     });
   });
 
@@ -107,8 +101,11 @@ describe('BotService', () => {
         ...mockBot,
         configs: mockBotWithConfig.configs,
       });
-      expect(botRepository.findByIdWithConfig).toHaveBeenCalledWith(botId, userId);
-      expect(botRepository.findById).toHaveBeenCalledWith(botId);
+      expect(mockBotRepository.findByIdWithConfig).toHaveBeenCalledWith(
+        botId,
+        userId
+      );
+      expect(mockBotRepository.findById).toHaveBeenCalledWith(botId);
     });
 
     it('should throw HttpException if bot not found', async () => {
@@ -117,8 +114,12 @@ describe('BotService', () => {
 
       mockBotRepository.findByIdWithConfig.mockResolvedValue(null);
 
-      await expect(service.findById(botId, userId)).rejects.toThrow(HttpException);
-      await expect(service.findById(botId, userId)).rejects.toThrow('Bot not found');
+      await expect(service.findById(botId, userId)).rejects.toThrow(
+        HttpException
+      );
+      await expect(service.findById(botId, userId)).rejects.toThrow(
+        'Bot not found'
+      );
     });
   });
 
@@ -141,9 +142,16 @@ describe('BotService', () => {
       const result = await service.create(userId, name, description, configs);
 
       expect(result).toEqual(mockBot);
-      expect(botRepository.findByName).toHaveBeenCalledWith(name, userId);
-      expect(botRepository.create).toHaveBeenCalledWith(userId, name, description);
-      expect(botRepository.updateConfigs).toHaveBeenCalledWith(mockBot.id, configs);
+      expect(mockBotRepository.findByName).toHaveBeenCalledWith(name, userId);
+      expect(mockBotRepository.create).toHaveBeenCalledWith(
+        userId,
+        name,
+        description
+      );
+      expect(mockBotRepository.updateConfigs).toHaveBeenCalledWith(
+        mockBot.id,
+        configs
+      );
     });
 
     it('should create a bot without configs', async () => {
@@ -162,7 +170,7 @@ describe('BotService', () => {
       const result = await service.create(userId, name);
 
       expect(result).toEqual(mockBot);
-      expect(botRepository.updateConfigs).not.toHaveBeenCalled();
+      expect(mockBotRepository.updateConfigs).not.toHaveBeenCalled();
     });
 
     it('should throw HttpException if name is empty', async () => {
@@ -170,7 +178,9 @@ describe('BotService', () => {
       const name = '';
 
       await expect(service.create(userId, name)).rejects.toThrow(HttpException);
-      await expect(service.create(userId, name)).rejects.toThrow('Bot name is required');
+      await expect(service.create(userId, name)).rejects.toThrow(
+        'Bot name is required'
+      );
     });
 
     it('should throw HttpException if name is only whitespace', async () => {
@@ -178,7 +188,9 @@ describe('BotService', () => {
       const name = '   ';
 
       await expect(service.create(userId, name)).rejects.toThrow(HttpException);
-      await expect(service.create(userId, name)).rejects.toThrow('Bot name is required');
+      await expect(service.create(userId, name)).rejects.toThrow(
+        'Bot name is required'
+      );
     });
 
     it('should throw HttpException if bot with same name exists', async () => {
@@ -190,7 +202,7 @@ describe('BotService', () => {
 
       await expect(service.create(userId, name)).rejects.toThrow(HttpException);
       await expect(service.create(userId, name)).rejects.toThrow(
-        'Bot with this name already exists',
+        'Bot with this name already exists'
       );
     });
   });
@@ -218,12 +230,29 @@ describe('BotService', () => {
       mockBotRepository.findByName.mockResolvedValue(null);
       mockBotRepository.update.mockResolvedValue(updatedBot);
 
-      const result = await service.update(botId, userId, name, description, configs);
+      const result = await service.update(
+        botId,
+        userId,
+        name,
+        description,
+        configs
+      );
 
       expect(result).toEqual(updatedBot);
-      expect(botRepository.findByIdAndUserId).toHaveBeenCalledWith(botId, userId);
-      expect(botRepository.update).toHaveBeenCalledWith(botId, userId, name, description);
-      expect(botRepository.updateConfigs).toHaveBeenCalledWith(botId, configs);
+      expect(mockBotRepository.findByIdAndUserId).toHaveBeenCalledWith(
+        botId,
+        userId
+      );
+      expect(mockBotRepository.update).toHaveBeenCalledWith(
+        botId,
+        userId,
+        name,
+        description
+      );
+      expect(mockBotRepository.updateConfigs).toHaveBeenCalledWith(
+        botId,
+        configs
+      );
     });
 
     it('should throw HttpException if bot not found', async () => {
@@ -233,8 +262,12 @@ describe('BotService', () => {
 
       mockBotRepository.findByIdAndUserId.mockResolvedValue(null);
 
-      await expect(service.update(botId, userId, name)).rejects.toThrow(HttpException);
-      await expect(service.update(botId, userId, name)).rejects.toThrow('Bot not found');
+      await expect(service.update(botId, userId, name)).rejects.toThrow(
+        HttpException
+      );
+      await expect(service.update(botId, userId, name)).rejects.toThrow(
+        'Bot not found'
+      );
     });
 
     it('should throw HttpException if name is empty', async () => {
@@ -245,8 +278,12 @@ describe('BotService', () => {
 
       mockBotRepository.findByIdAndUserId.mockResolvedValue(existingBot);
 
-      await expect(service.update(botId, userId, name)).rejects.toThrow(HttpException);
-      await expect(service.update(botId, userId, name)).rejects.toThrow('Bot name is required');
+      await expect(service.update(botId, userId, name)).rejects.toThrow(
+        HttpException
+      );
+      await expect(service.update(botId, userId, name)).rejects.toThrow(
+        'Bot name is required'
+      );
     });
 
     it('should throw HttpException if new name conflicts with another bot', async () => {
@@ -259,9 +296,11 @@ describe('BotService', () => {
       mockBotRepository.findByIdAndUserId.mockResolvedValue(existingBot);
       mockBotRepository.findByName.mockResolvedValue(conflictingBot);
 
-      await expect(service.update(botId, userId, name)).rejects.toThrow(HttpException);
       await expect(service.update(botId, userId, name)).rejects.toThrow(
-        'Bot with this name already exists',
+        HttpException
+      );
+      await expect(service.update(botId, userId, name)).rejects.toThrow(
+        'Bot with this name already exists'
       );
     });
   });
@@ -281,7 +320,9 @@ describe('BotService', () => {
       ];
 
       mockBotRepository.findByIdAndUserId.mockResolvedValue(mockBot);
-      mockMemoryRepository.findAllByBotIdAndUserId.mockResolvedValue(mockEmbeddings);
+      mockMemoryRepository.findAllByBotIdAndUserId.mockResolvedValue(
+        mockEmbeddings
+      );
 
       const result = await service.getEmbeddings(botId, userId);
 
@@ -293,8 +334,14 @@ describe('BotService', () => {
           createdAt: mockEmbeddings[0].createdAt,
         },
       ]);
-      expect(botRepository.findByIdAndUserId).toHaveBeenCalledWith(botId, userId);
-      expect(memoryRepository.findAllByBotIdAndUserId).toHaveBeenCalledWith(botId, userId);
+      expect(mockBotRepository.findByIdAndUserId).toHaveBeenCalledWith(
+        botId,
+        userId
+      );
+      expect(mockMemoryRepository.findAllByBotIdAndUserId).toHaveBeenCalledWith(
+        botId,
+        userId
+      );
     });
 
     it('should throw HttpException if bot not found', async () => {
@@ -303,8 +350,12 @@ describe('BotService', () => {
 
       mockBotRepository.findByIdAndUserId.mockResolvedValue(null);
 
-      await expect(service.getEmbeddings(botId, userId)).rejects.toThrow(HttpException);
-      await expect(service.getEmbeddings(botId, userId)).rejects.toThrow('Bot not found');
+      await expect(service.getEmbeddings(botId, userId)).rejects.toThrow(
+        HttpException
+      );
+      await expect(service.getEmbeddings(botId, userId)).rejects.toThrow(
+        'Bot not found'
+      );
     });
   });
 
@@ -323,11 +374,13 @@ describe('BotService', () => {
       ];
 
       mockBotRepository.findByIdAndUserId.mockResolvedValue(mockBot);
-      mockMemoryRepository.findAllByBotIdAndUserId.mockResolvedValue(mockEmbeddings);
+      mockMemoryRepository.findAllByBotIdAndUserId.mockResolvedValue(
+        mockEmbeddings
+      );
 
       await service.deleteEmbedding(botId, embeddingId, userId);
 
-      expect(memoryRepository.deleteById).toHaveBeenCalledWith(embeddingId);
+      expect(mockMemoryRepository.deleteById).toHaveBeenCalledWith(embeddingId);
     });
 
     it('should throw HttpException if bot not found', async () => {
@@ -337,12 +390,12 @@ describe('BotService', () => {
 
       mockBotRepository.findByIdAndUserId.mockResolvedValue(null);
 
-      await expect(service.deleteEmbedding(botId, embeddingId, userId)).rejects.toThrow(
-        HttpException,
-      );
-      await expect(service.deleteEmbedding(botId, embeddingId, userId)).rejects.toThrow(
-        'Bot not found',
-      );
+      await expect(
+        service.deleteEmbedding(botId, embeddingId, userId)
+      ).rejects.toThrow(HttpException);
+      await expect(
+        service.deleteEmbedding(botId, embeddingId, userId)
+      ).rejects.toThrow('Bot not found');
     });
 
     it('should throw HttpException if embedding not found', async () => {
@@ -359,14 +412,16 @@ describe('BotService', () => {
       ];
 
       mockBotRepository.findByIdAndUserId.mockResolvedValue(mockBot);
-      mockMemoryRepository.findAllByBotIdAndUserId.mockResolvedValue(mockEmbeddings);
+      mockMemoryRepository.findAllByBotIdAndUserId.mockResolvedValue(
+        mockEmbeddings
+      );
 
-      await expect(service.deleteEmbedding(botId, embeddingId, userId)).rejects.toThrow(
-        HttpException,
-      );
-      await expect(service.deleteEmbedding(botId, embeddingId, userId)).rejects.toThrow(
-        'Embedding not found or does not belong to this bot',
-      );
+      await expect(
+        service.deleteEmbedding(botId, embeddingId, userId)
+      ).rejects.toThrow(HttpException);
+      await expect(
+        service.deleteEmbedding(botId, embeddingId, userId)
+      ).rejects.toThrow('Embedding not found or does not belong to this bot');
     });
   });
 
@@ -381,8 +436,11 @@ describe('BotService', () => {
 
       await service.delete(botId, userId);
 
-      expect(botRepository.findByIdAndUserId).toHaveBeenCalledWith(botId, userId);
-      expect(botRepository.delete).toHaveBeenCalledWith(botId, userId);
+      expect(mockBotRepository.findByIdAndUserId).toHaveBeenCalledWith(
+        botId,
+        userId
+      );
+      expect(mockBotRepository.delete).toHaveBeenCalledWith(botId, userId);
     });
 
     it('should throw HttpException if bot not found', async () => {
@@ -391,8 +449,12 @@ describe('BotService', () => {
 
       mockBotRepository.findByIdAndUserId.mockResolvedValue(null);
 
-      await expect(service.delete(botId, userId)).rejects.toThrow(HttpException);
-      await expect(service.delete(botId, userId)).rejects.toThrow('Bot not found');
+      await expect(service.delete(botId, userId)).rejects.toThrow(
+        HttpException
+      );
+      await expect(service.delete(botId, userId)).rejects.toThrow(
+        'Bot not found'
+      );
     });
   });
 });

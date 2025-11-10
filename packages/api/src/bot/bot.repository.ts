@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import type { Bot } from '@prisma/client';
+import type { Bot, Prisma } from '@prisma/client';
 import { BotWithConfig } from '../common/interfaces/bot.interface';
 import { DEFAULT_BOT_CONFIG } from '../common/constants/api.constants';
 
@@ -47,22 +47,25 @@ export class BotRepository {
     });
 
     // Use reduce for better performance than for loop
-    return configs.reduce((acc, item) => {
-      acc[item.configKey] = item.configValue;
-      return acc;
-    }, {} as Record<string, unknown>);
+    return configs.reduce(
+      (acc, item) => {
+        acc[item.configKey] = item.configValue;
+        return acc;
+      },
+      {} as Record<string, unknown>
+    );
   }
 
   async findByIdWithConfig(
     id: number,
-    userId: string,
+    userId: string
   ): Promise<BotWithConfig | null> {
     // Load bot and configs in parallel to reduce total time
     const [bot, config] = await Promise.all([
       this.findByIdAndUserId(id, userId),
       this.findConfigsByBotId(id),
     ]);
-    
+
     if (!bot) {
       return null;
     }
@@ -92,7 +95,7 @@ export class BotRepository {
   async create(
     userId: string,
     name: string,
-    description?: string,
+    description?: string
   ): Promise<Bot> {
     return this.prisma.bot.create({
       data: {
@@ -107,12 +110,12 @@ export class BotRepository {
     id: number,
     userId: string,
     name: string,
-    description?: string,
+    description?: string
   ): Promise<Bot> {
     // First verify the bot belongs to the user
     const bot = await this.findByIdAndUserId(id, userId);
     if (!bot) {
-      return null as any; // Will be handled by service
+      return null as unknown as Bot; // Will be handled by service
     }
 
     return this.prisma.bot.update({
@@ -127,7 +130,7 @@ export class BotRepository {
   async upsertConfig(
     botId: number,
     configKey: string,
-    configValue: unknown,
+    configValue: unknown
   ): Promise<void> {
     // Skip if value is undefined or null
     if (configValue === undefined || configValue === null) {
@@ -142,19 +145,19 @@ export class BotRepository {
         },
       },
       update: {
-        configValue: configValue as any,
+        configValue: configValue as Prisma.InputJsonValue,
       },
       create: {
         botId,
         configKey,
-        configValue: configValue as any,
+        configValue: configValue as Prisma.InputJsonValue,
       },
     });
   }
 
   async updateConfigs(
     botId: number,
-    configs: Record<string, unknown>,
+    configs: Record<string, unknown>
   ): Promise<void> {
     // Upsert each config key, skipping undefined/null values
     for (const [key, value] of Object.entries(configs)) {

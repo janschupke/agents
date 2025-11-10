@@ -8,37 +8,39 @@
     --color-primary: 37 99 235; /* blue-600 */
     --color-primary-hover: 29 78 216; /* blue-700 */
     --color-primary-light: 59 130 246; /* blue-500 */
-    
+
     /* Background colors */
     --color-background: 249 250 251; /* gray-50 */
     --color-background-secondary: 255 255 255; /* white */
     --color-background-tertiary: 243 244 246; /* gray-100 */
-    
+
     /* Text colors */
     --color-text-primary: 17 24 39; /* gray-900 */
     --color-text-secondary: 31 41 55; /* gray-800 */
     --color-text-tertiary: 107 114 128; /* gray-500 */
     --color-text-inverse: 255 255 255; /* white */
-    
+
     /* Border colors */
     --color-border: 229 231 235; /* gray-200 */
     --color-border-focus: 37 99 235; /* blue-600 */
     --color-border-input: 209 213 219; /* gray-300 */
-    
+
     /* Message colors */
     --color-message-user: 37 99 235; /* blue-600 */
     --color-message-assistant: 229 231 235; /* gray-200 */
     --color-message-user-text: 255 255 255; /* white */
     --color-message-assistant-text: 17 24 39; /* gray-900 */
-    
+
     /* Disabled colors */
     --color-disabled: 156 163 175; /* gray-400 */
     --color-disabled-bg: 243 244 246; /* gray-100 */
-    
+
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-md:
+      0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg:
+      0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   }
 }
 

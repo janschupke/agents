@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { BotRepository } from '../bot/bot.repository';
 import { SessionRepository } from '../session/session.repository';
@@ -10,11 +10,6 @@ import { UserService } from '../user/user.service';
 
 describe('ChatService', () => {
   let service: ChatService;
-  let botRepository: BotRepository;
-  let sessionRepository: SessionRepository;
-  let messageRepository: MessageRepository;
-  let memoryRepository: MemoryRepository;
-  let openaiService: OpenAIService;
 
   const mockBotRepository = {
     findByIdWithConfig: jest.fn(),
@@ -78,11 +73,6 @@ describe('ChatService', () => {
     }).compile();
 
     service = module.get<ChatService>(ChatService);
-    botRepository = module.get<BotRepository>(BotRepository);
-    sessionRepository = module.get<SessionRepository>(SessionRepository);
-    messageRepository = module.get<MessageRepository>(MessageRepository);
-    memoryRepository = module.get<MemoryRepository>(MemoryRepository);
-    openaiService = module.get<OpenAIService>(OpenAIService);
   });
 
   afterEach(() => {
@@ -116,7 +106,7 @@ describe('ChatService', () => {
       mockBotRepository.findByIdWithConfig.mockResolvedValue(mockBot);
       mockSessionRepository.findLatestByBotId.mockResolvedValue(mockSession);
       mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue(
-        mockMessages,
+        mockMessages
       );
 
       const result = await service.getChatHistory(botId, userId);
@@ -166,10 +156,10 @@ describe('ChatService', () => {
       mockBotRepository.findByIdWithConfig.mockResolvedValue(null);
 
       await expect(service.getChatHistory(botId, userId)).rejects.toThrow(
-        HttpException,
+        HttpException
       );
       await expect(service.getChatHistory(botId, userId)).rejects.toThrow(
-        'Bot not found',
+        'Bot not found'
       );
     });
   });
@@ -182,7 +172,7 @@ describe('ChatService', () => {
       mockBotRepository.findByIdWithConfig.mockResolvedValue(null);
 
       await expect(service.sendMessage(botId, userId, message)).rejects.toThrow(
-        HttpException,
+        HttpException
       );
     });
 

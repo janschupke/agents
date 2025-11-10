@@ -3,9 +3,9 @@ import { UnauthorizedException } from '@nestjs/common';
 import { ClerkWebhookService } from './clerk-webhook.service';
 import { UserService } from '../user/user.service';
 import { ClerkService } from '../auth/clerk.service';
-import { appConfig } from '../config/app.config';
 
 // Mock the app config
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 jest.mock('../config/app.config', () => ({
   appConfig: {
     clerk: {
@@ -16,6 +16,7 @@ jest.mock('../config/app.config', () => ({
 }));
 
 // Mock svix
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 jest.mock('svix', () => ({
   Webhook: jest.fn().mockImplementation(() => ({
     verify: jest.fn(),
@@ -84,7 +85,7 @@ describe('ClerkWebhookService', () => {
               image_url: 'https://example.com/image.jpg',
               public_metadata: { roles: ['user'] },
             },
-          }),
+          })
         ),
       };
 
@@ -103,10 +104,15 @@ describe('ClerkWebhookService', () => {
       };
 
       // Mock the Webhook constructor
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { Webhook } = require('svix');
       Webhook.mockImplementation(() => mockWebhook);
 
-      const serviceWithWebhook = new ClerkWebhookService(userService, clerkService);
+      const serviceWithWebhook = new ClerkWebhookService(
+        userService,
+        clerkService
+      );
       mockUserService.findOrCreate.mockResolvedValue({
         id: 'user-123',
         email: 'test@example.com',
@@ -139,7 +145,7 @@ describe('ClerkWebhookService', () => {
               last_name: 'Smith',
               public_metadata: { roles: ['admin'] },
             },
-          }),
+          })
         ),
       };
 
@@ -156,10 +162,15 @@ describe('ClerkWebhookService', () => {
         }),
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { Webhook } = require('svix');
       Webhook.mockImplementation(() => mockWebhook);
 
-      const serviceWithWebhook = new ClerkWebhookService(userService, clerkService);
+      const serviceWithWebhook = new ClerkWebhookService(
+        userService,
+        clerkService
+      );
       mockUserService.update.mockResolvedValue({ id: 'user-123' });
       mockUserService.syncRolesFromClerk.mockResolvedValue({ id: 'user-123' });
 
@@ -172,7 +183,10 @@ describe('ClerkWebhookService', () => {
         imageUrl: undefined,
         roles: ['admin'],
       });
-      expect(mockUserService.syncRolesFromClerk).toHaveBeenCalledWith('user-123', ['admin']);
+      expect(mockUserService.syncRolesFromClerk).toHaveBeenCalledWith(
+        'user-123',
+        ['admin']
+      );
     });
 
     it('should throw UnauthorizedException if webhook verification fails', async () => {
@@ -180,7 +194,9 @@ describe('ClerkWebhookService', () => {
         svixId: 'svix-id',
         svixTimestamp: '1234567890',
         svixSignature: 'signature',
-        payload: Buffer.from(JSON.stringify({ type: 'user.created', data: {} })),
+        payload: Buffer.from(
+          JSON.stringify({ type: 'user.created', data: {} })
+        ),
       };
 
       const mockWebhook = {
@@ -189,16 +205,21 @@ describe('ClerkWebhookService', () => {
         }),
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { Webhook } = require('svix');
       Webhook.mockImplementation(() => mockWebhook);
 
-      const serviceWithWebhook = new ClerkWebhookService(userService, clerkService);
+      const serviceWithWebhook = new ClerkWebhookService(
+        userService,
+        clerkService
+      );
 
       await expect(serviceWithWebhook.handleWebhook(payload)).rejects.toThrow(
-        UnauthorizedException,
+        UnauthorizedException
       );
       await expect(serviceWithWebhook.handleWebhook(payload)).rejects.toThrow(
-        'Invalid webhook signature',
+        'Invalid webhook signature'
       );
     });
 
@@ -214,7 +235,7 @@ describe('ClerkWebhookService', () => {
               id: 'user-123',
               email_addresses: [{ email_address: 'test@example.com' }],
             },
-          }),
+          })
         ),
       };
 
@@ -228,10 +249,15 @@ describe('ClerkWebhookService', () => {
         }),
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { Webhook } = require('svix');
       Webhook.mockImplementation(() => mockWebhook);
 
-      const serviceWithWebhook = new ClerkWebhookService(userService, clerkService);
+      const serviceWithWebhook = new ClerkWebhookService(
+        userService,
+        clerkService
+      );
       mockUserService.findOrCreate.mockResolvedValue({ id: 'user-123' });
       mockClerkService.updateUserRoles.mockResolvedValue(undefined);
 
@@ -245,7 +271,10 @@ describe('ClerkWebhookService', () => {
         imageUrl: undefined,
         roles: ['user'],
       });
-      expect(mockClerkService.updateUserRoles).toHaveBeenCalledWith('user-123', ['user']);
+      expect(mockClerkService.updateUserRoles).toHaveBeenCalledWith(
+        'user-123',
+        ['user']
+      );
     });
   });
 

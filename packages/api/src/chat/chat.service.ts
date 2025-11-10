@@ -7,8 +7,11 @@ import { OpenAIService } from '../openai/openai.service';
 import { UserService } from '../user/user.service';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
 import { MEMORY_CONFIG } from '../common/constants/api.constants';
-import OpenAI from 'openai';
-import { SessionResponseDto, ChatHistoryResponseDto, SendMessageResponseDto } from '../common/dto/chat.dto';
+import {
+  SessionResponseDto,
+  ChatHistoryResponseDto,
+  SendMessageResponseDto,
+} from '../common/dto/chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -19,10 +22,13 @@ export class ChatService {
     private readonly memoryRepository: MemoryRepository,
     private readonly openaiService: OpenAIService,
     private readonly userService: UserService,
-    private readonly apiCredentialsService: ApiCredentialsService,
+    private readonly apiCredentialsService: ApiCredentialsService
   ) {}
 
-  async getSessions(botId: number, userId: string): Promise<SessionResponseDto[]> {
+  async getSessions(
+    botId: number,
+    userId: string
+  ): Promise<SessionResponseDto[]> {
     // Load bot with config
     const bot = await this.botRepository.findByIdWithConfig(botId, userId);
     if (!bot) {
@@ -39,7 +45,10 @@ export class ChatService {
     }));
   }
 
-  async createSession(botId: number, userId: string): Promise<SessionResponseDto> {
+  async createSession(
+    botId: number,
+    userId: string
+  ): Promise<SessionResponseDto> {
     // User is automatically synced to DB by ClerkGuard
 
     // Load bot with config
@@ -58,7 +67,11 @@ export class ChatService {
     };
   }
 
-  async getChatHistory(botId: number, userId: string, sessionId?: number): Promise<ChatHistoryResponseDto> {
+  async getChatHistory(
+    botId: number,
+    userId: string,
+    sessionId?: number
+  ): Promise<ChatHistoryResponseDto> {
     // Load bot with config
     const bot = await this.botRepository.findByIdWithConfig(botId, userId);
     if (!bot) {
@@ -68,7 +81,10 @@ export class ChatService {
     // Get or create session
     let session;
     if (sessionId) {
-      session = await this.sessionRepository.findByIdAndUserId(sessionId, userId);
+      session = await this.sessionRepository.findByIdAndUserId(
+        sessionId,
+        userId
+      );
       if (!session || session.botId !== botId) {
         throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
       }
@@ -80,16 +96,22 @@ export class ChatService {
     }
 
     // Load messages with raw data
-    const messageRecords = await this.messageRepository.findAllBySessionIdWithRawData(
-      session.id
-    );
+    const messageRecords =
+      await this.messageRepository.findAllBySessionIdWithRawData(session.id);
 
-    const messages = messageRecords.map((msg: { role: string; content: string; rawRequest?: unknown; rawResponse?: unknown }) => ({
-      role: msg.role as 'user' | 'assistant' | 'system',
-      content: msg.content,
-      rawRequest: msg.rawRequest,
-      rawResponse: msg.rawResponse,
-    }));
+    const messages = messageRecords.map(
+      (msg: {
+        role: string;
+        content: string;
+        rawRequest?: unknown;
+        rawResponse?: unknown;
+      }) => ({
+        role: msg.role as 'user' | 'assistant' | 'system',
+        content: msg.content,
+        rawRequest: msg.rawRequest,
+        rawResponse: msg.rawResponse,
+      })
+    );
 
     return {
       bot: {
@@ -109,7 +131,7 @@ export class ChatService {
     botId: number,
     userId: string,
     message: string,
-    sessionId?: number,
+    sessionId?: number
   ): Promise<SendMessageResponseDto> {
     // User is automatically synced to DB by ClerkGuard
 
@@ -118,7 +140,7 @@ export class ChatService {
     if (!apiKey) {
       throw new HttpException(
         'OpenAI API key is required. Please set your API key in your profile.',
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.BAD_REQUEST
       );
     }
 
@@ -133,7 +155,10 @@ export class ChatService {
     // Get or create session
     let session;
     if (sessionId) {
-      session = await this.sessionRepository.findByIdAndUserId(sessionId, userId);
+      session = await this.sessionRepository.findByIdAndUserId(
+        sessionId,
+        userId
+      );
       if (!session || session.botId !== botId) {
         throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
       }
@@ -151,7 +176,10 @@ export class ChatService {
     // Retrieve relevant memories using vector similarity
     let relevantMemories: string[] = [];
     try {
-      const queryVector = await this.openaiService.generateEmbedding(message, apiKey);
+      const queryVector = await this.openaiService.generateEmbedding(
+        message,
+        apiKey
+      );
       const similar = await this.memoryRepository.findSimilarForBot(
         queryVector,
         botId,
@@ -161,7 +189,9 @@ export class ChatService {
       );
       if (similar.length > 0) {
         relevantMemories = similar.map((m: { chunk: string }) => m.chunk);
-        console.log(`Found ${relevantMemories.length} relevant memories for bot ${botId}`);
+        console.log(
+          `Found ${relevantMemories.length} relevant memories for bot ${botId}`
+        );
       }
     } catch (error) {
       console.error('Error retrieving memories:', error);
@@ -209,18 +239,22 @@ export class ChatService {
     // Add behavior rules if present
     if (botConfig.behavior_rules) {
       let behaviorRules: string[] = [];
-      
+
       // Parse behavior_rules - can be stored as JSON string, object with "rules" array, or direct array
       try {
         const rulesValue = botConfig.behavior_rules;
-        
+
         if (typeof rulesValue === 'string') {
           // Try to parse as JSON
           try {
             const parsed = JSON.parse(rulesValue);
             if (Array.isArray(parsed)) {
               behaviorRules = parsed.map((r) => String(r));
-            } else if (typeof parsed === 'object' && parsed.rules && Array.isArray(parsed.rules)) {
+            } else if (
+              typeof parsed === 'object' &&
+              parsed.rules &&
+              Array.isArray(parsed.rules)
+            ) {
               behaviorRules = parsed.rules.map((r: unknown) => String(r));
             } else {
               behaviorRules = [String(parsed)];
@@ -252,10 +286,10 @@ export class ChatService {
           .filter((rule) => rule.trim().length > 0)
           .map((rule, index) => `${index + 1}. ${rule.trim()}`)
           .join('\n');
-        
+
         if (behaviorRulesText.length > 0) {
           const behaviorRulesMessage = `Behavior Rules:\n${behaviorRulesText}`;
-          
+
           // Check if behavior rules are already present (exact match)
           if (
             !messagesForAPI.some(
@@ -264,9 +298,11 @@ export class ChatService {
           ) {
             // Add behavior rules after system prompt but before other system messages
             const systemPromptIndex = messagesForAPI.findIndex(
-              (m) => m.role === 'system' && m.content === String(botConfig.system_prompt || '')
+              (m) =>
+                m.role === 'system' &&
+                m.content === String(botConfig.system_prompt || '')
             );
-            
+
             if (systemPromptIndex >= 0) {
               // Insert after system prompt
               messagesForAPI.splice(systemPromptIndex + 1, 0, {
@@ -319,7 +355,7 @@ export class ChatService {
     if (!response) {
       throw new HttpException(
         'No response from OpenAI',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
 
@@ -339,20 +375,25 @@ export class ChatService {
     // Save memory chunk periodically (every N messages, or on first message)
     const allMessages =
       await this.messageRepository.findAllBySessionIdForOpenAI(session.id);
-    const shouldSaveMemory = 
+    const shouldSaveMemory =
       allMessages.length === 1 || // Save on first message
-      (allMessages.length > 0 && allMessages.length % MEMORY_CONFIG.MEMORY_SAVE_INTERVAL === 0);
-    
+      (allMessages.length > 0 &&
+        allMessages.length % MEMORY_CONFIG.MEMORY_SAVE_INTERVAL === 0);
+
     if (shouldSaveMemory) {
       try {
-        const chunk = this.openaiService.createMemoryChunkFromMessages(
-          allMessages
-        );
+        const chunk =
+          this.openaiService.createMemoryChunkFromMessages(allMessages);
         if (chunk && chunk.trim().length > 0) {
-          const embedding = await this.openaiService.generateEmbedding(chunk, apiKey);
+          const embedding = await this.openaiService.generateEmbedding(
+            chunk,
+            apiKey
+          );
           if (embedding && embedding.length > 0) {
             await this.memoryRepository.create(session.id, chunk, embedding);
-            console.log(`Saved memory chunk for session ${session.id} (${allMessages.length} messages)`);
+            console.log(
+              `Saved memory chunk for session ${session.id} (${allMessages.length} messages)`
+            );
           } else {
             console.warn('Empty embedding generated, skipping memory save');
           }
@@ -376,7 +417,11 @@ export class ChatService {
     };
   }
 
-  async deleteSession(botId: number, sessionId: number, userId: string): Promise<void> {
+  async deleteSession(
+    botId: number,
+    sessionId: number,
+    userId: string
+  ): Promise<void> {
     // Verify the bot belongs to the user
     const bot = await this.botRepository.findByIdAndUserId(botId, userId);
     if (!bot) {
@@ -384,13 +429,19 @@ export class ChatService {
     }
 
     // Verify the session belongs to the bot and user
-    const session = await this.sessionRepository.findByIdAndUserId(sessionId, userId);
+    const session = await this.sessionRepository.findByIdAndUserId(
+      sessionId,
+      userId
+    );
     if (!session) {
       throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
     }
 
     if (session.botId !== botId) {
-      throw new HttpException('Session does not belong to this bot', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Session does not belong to this bot',
+        HttpStatus.BAD_REQUEST
+      );
     }
 
     // Delete the session - Prisma will cascade delete all related data (messages, memory chunks)

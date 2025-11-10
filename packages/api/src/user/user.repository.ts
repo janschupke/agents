@@ -21,7 +21,8 @@ export class UserRepository {
     roles?: string[];
   }): Promise<User> {
     // Use a single upsert that includes roles to avoid separate update
-    const roles = data.roles && data.roles.length > 0 ? (data.roles as any) : [];
+    const roles =
+      data.roles && data.roles.length > 0 ? (data.roles as string[]) : [];
     return this.prisma.user.upsert({
       where: { id: data.id },
       update: {
@@ -50,7 +51,7 @@ export class UserRepository {
       lastName?: string;
       imageUrl?: string;
       roles?: string[];
-    },
+    }
   ): Promise<User> {
     return this.prisma.user.update({
       where: { id },
@@ -59,7 +60,7 @@ export class UserRepository {
         firstName: data.firstName,
         lastName: data.lastName,
         imageUrl: data.imageUrl,
-        roles: data.roles ? (data.roles as any) : undefined,
+        roles: data.roles ? (data.roles as string[]) : undefined,
       },
     });
   }
@@ -68,7 +69,7 @@ export class UserRepository {
     return this.prisma.user.update({
       where: { id },
       data: {
-        roles: roles as any,
+        roles: roles as string[],
       },
     });
   }

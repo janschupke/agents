@@ -22,6 +22,7 @@ function App() {
       setUserInfo(null);
       setUsers([]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSignedIn, isLoaded]);
 
   const checkAdminAccess = async () => {
@@ -41,13 +42,14 @@ function App() {
 
       // Load all users
       await loadUsers();
-    } catch (error: any) {
-      if (error?.status === 403) {
+    } catch (error: unknown) {
+      const err = error as { status?: number; message?: string };
+      if (err?.status === 403) {
         setError('Access denied. Admin role required.');
-      } else if (error?.status === 401) {
+      } else if (err?.status === 401) {
         setError('Please sign in to continue.');
       } else {
-        setError(error?.message || 'Failed to load user data');
+        setError(err?.message || 'Failed to load user data');
       }
     } finally {
       setLoading(false);
@@ -58,11 +60,12 @@ function App() {
     try {
       const allUsers = await UserService.getAllUsers();
       setUsers(allUsers);
-    } catch (error: any) {
-      if (error?.status === 403) {
+    } catch (error: unknown) {
+      const err = error as { status?: number; message?: string };
+      if (err?.status === 403) {
         setError('Access denied. Admin role required.');
       } else {
-        setError(error?.message || 'Failed to load users');
+        setError(err?.message || 'Failed to load users');
       }
     }
   };
@@ -79,7 +82,9 @@ function App() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-full max-w-md bg-background-secondary rounded-lg shadow-lg p-8">
-          <h1 className="text-2xl font-semibold text-text-secondary mb-2">Admin Portal</h1>
+          <h1 className="text-2xl font-semibold text-text-secondary mb-2">
+            Admin Portal
+          </h1>
           <p className="text-text-tertiary mb-6">
             Please sign in with an admin account to continue.
           </p>
@@ -105,7 +110,9 @@ function App() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-full max-w-md bg-background-secondary rounded-lg shadow-lg p-8">
-          <h1 className="text-2xl font-semibold text-text-secondary mb-2">Access Denied</h1>
+          <h1 className="text-2xl font-semibold text-text-secondary mb-2">
+            Access Denied
+          </h1>
           <p className="text-text-tertiary mb-6">{error}</p>
           <SignOutButton>
             <button className="px-4 py-2 bg-primary text-text-inverse rounded-md text-sm font-medium hover:bg-primary-hover transition-colors">
@@ -121,7 +128,9 @@ function App() {
     <div className="min-h-screen bg-background">
       <header className="bg-background-secondary px-8 py-4 shadow-md">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-text-secondary">Admin Portal</h1>
+          <h1 className="text-2xl font-semibold text-text-secondary">
+            Admin Portal
+          </h1>
           <div className="flex items-center gap-4">
             {userInfo && (
               <div className="flex items-center gap-2 text-sm text-text-secondary">
@@ -149,7 +158,9 @@ function App() {
       </header>
       <main className="p-8">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-text-secondary mb-2">All Users</h2>
+          <h2 className="text-xl font-semibold text-text-secondary mb-2">
+            All Users
+          </h2>
           <p className="text-text-tertiary text-sm">
             Total: {users.length} user{users.length !== 1 ? 's' : ''}
           </p>

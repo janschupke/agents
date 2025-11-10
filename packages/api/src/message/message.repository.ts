@@ -25,8 +25,12 @@ export class MessageRepository {
         role,
         content,
         metadata: metadata ? (metadata as Prisma.InputJsonValue) : undefined,
-        rawRequest: rawRequest ? (rawRequest as Prisma.InputJsonValue) : undefined,
-        rawResponse: rawResponse ? (rawResponse as Prisma.InputJsonValue) : undefined,
+        rawRequest: rawRequest
+          ? (rawRequest as Prisma.InputJsonValue)
+          : undefined,
+        rawResponse: rawResponse
+          ? (rawResponse as Prisma.InputJsonValue)
+          : undefined,
       },
     });
   }
@@ -62,7 +66,7 @@ export class MessageRepository {
     // Default limit to prevent loading too many messages at once
     // This prevents performance issues with large JSON fields (rawRequest/rawResponse)
     const effectiveLimit = limit || 1000;
-    
+
     return this.prisma.message.findMany({
       where: { sessionId },
       orderBy: { createdAt: 'asc' },

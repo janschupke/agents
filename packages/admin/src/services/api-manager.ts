@@ -29,9 +29,12 @@ export class ApiManager {
     };
   }
 
-  private buildURL(endpoint: string, params?: Record<string, string | number>): string {
+  private buildURL(
+    endpoint: string,
+    params?: Record<string, string | number>
+  ): string {
     const url = new URL(endpoint, this.baseURL);
-    
+
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
         url.searchParams.append(key, String(value));
@@ -77,24 +80,24 @@ export class ApiManager {
 
   private async request<T>(
     endpoint: string,
-    options: ApiRequestOptions = {},
+    options: ApiRequestOptions = {}
   ): Promise<T> {
     const { params, skipErrorHandling, ...fetchOptions } = options;
 
     const url = this.buildURL(endpoint, params);
-    
+
     // Get token with retry logic
     let token = await getClerkToken();
     if (!token) {
       // Wait a bit and try again (token provider might not be ready yet)
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       token = await getClerkToken();
     }
-    
+
     if (!token) {
       console.warn('[API Manager] No token available for request to:', url);
     }
-    
+
     const headers = {
       ...this.defaultHeaders,
       ...(token && { Authorization: `Bearer ${token}` }),
@@ -131,7 +134,11 @@ export class ApiManager {
     });
   }
 
-  async post<T>(endpoint: string, data?: unknown, options?: ApiRequestOptions): Promise<T> {
+  async post<T>(
+    endpoint: string,
+    data?: unknown,
+    options?: ApiRequestOptions
+  ): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: 'POST',
@@ -139,7 +146,11 @@ export class ApiManager {
     });
   }
 
-  async put<T>(endpoint: string, data?: unknown, options?: ApiRequestOptions): Promise<T> {
+  async put<T>(
+    endpoint: string,
+    data?: unknown,
+    options?: ApiRequestOptions
+  ): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: 'PUT',

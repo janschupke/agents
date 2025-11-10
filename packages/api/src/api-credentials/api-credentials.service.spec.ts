@@ -64,7 +64,11 @@ describe('ApiCredentialsService', () => {
       await service.setApiKey(userId, provider, apiKey);
 
       expect(encryptionService.encrypt).toHaveBeenCalledWith(apiKey);
-      expect(repository.create).toHaveBeenCalledWith(userId, provider, encryptedKey);
+      expect(repository.create).toHaveBeenCalledWith(
+        userId,
+        provider,
+        encryptedKey
+      );
     });
 
     it('should throw HttpException if API key is empty', async () => {
@@ -72,9 +76,11 @@ describe('ApiCredentialsService', () => {
       const provider = 'openai';
       const apiKey = '';
 
-      await expect(service.setApiKey(userId, provider, apiKey)).rejects.toThrow(HttpException);
       await expect(service.setApiKey(userId, provider, apiKey)).rejects.toThrow(
-        'API key cannot be empty',
+        HttpException
+      );
+      await expect(service.setApiKey(userId, provider, apiKey)).rejects.toThrow(
+        'API key cannot be empty'
       );
     });
 
@@ -83,9 +89,11 @@ describe('ApiCredentialsService', () => {
       const provider = 'openai';
       const apiKey = '   ';
 
-      await expect(service.setApiKey(userId, provider, apiKey)).rejects.toThrow(HttpException);
       await expect(service.setApiKey(userId, provider, apiKey)).rejects.toThrow(
-        'API key cannot be empty',
+        HttpException
+      );
+      await expect(service.setApiKey(userId, provider, apiKey)).rejects.toThrow(
+        'API key cannot be empty'
       );
     });
 
@@ -99,9 +107,11 @@ describe('ApiCredentialsService', () => {
         throw error;
       });
 
-      await expect(service.setApiKey(userId, provider, apiKey)).rejects.toThrow(HttpException);
       await expect(service.setApiKey(userId, provider, apiKey)).rejects.toThrow(
-        'Failed to save API key: Encryption failed',
+        HttpException
+      );
+      await expect(service.setApiKey(userId, provider, apiKey)).rejects.toThrow(
+        'Failed to save API key: Encryption failed'
       );
     });
 
@@ -110,13 +120,20 @@ describe('ApiCredentialsService', () => {
       const provider = 'openai';
       const apiKey = 'test-api-key';
       const encryptedKey = 'encrypted-key';
-      const httpException = new HttpException('Repository error', HttpStatus.CONFLICT);
+      const httpException = new HttpException(
+        'Repository error',
+        HttpStatus.CONFLICT
+      );
 
       mockEncryptionService.encrypt.mockReturnValue(encryptedKey);
       mockRepository.create.mockRejectedValue(httpException);
 
-      await expect(service.setApiKey(userId, provider, apiKey)).rejects.toThrow(HttpException);
-      await expect(service.setApiKey(userId, provider, apiKey)).rejects.toThrow('Repository error');
+      await expect(service.setApiKey(userId, provider, apiKey)).rejects.toThrow(
+        HttpException
+      );
+      await expect(service.setApiKey(userId, provider, apiKey)).rejects.toThrow(
+        'Repository error'
+      );
     });
   });
 
@@ -142,9 +159,15 @@ describe('ApiCredentialsService', () => {
       const result = await service.getApiKey(userId, provider);
 
       expect(result).toBe(decryptedKey);
-      expect(repository.findByUserIdAndProvider).toHaveBeenCalledWith(userId, provider);
+      expect(repository.findByUserIdAndProvider).toHaveBeenCalledWith(
+        userId,
+        provider
+      );
       expect(encryptionService.decrypt).toHaveBeenCalledWith(encryptedKey);
-      expect(repository.updateLastUsedAt).toHaveBeenCalledWith(userId, provider);
+      expect(repository.updateLastUsedAt).toHaveBeenCalledWith(
+        userId,
+        provider
+      );
     });
 
     it('should return null if credential not found', async () => {
@@ -178,9 +201,11 @@ describe('ApiCredentialsService', () => {
         throw error;
       });
 
-      await expect(service.getApiKey(userId, provider)).rejects.toThrow(HttpException);
       await expect(service.getApiKey(userId, provider)).rejects.toThrow(
-        'Failed to decrypt API key: Decryption failed',
+        HttpException
+      );
+      await expect(service.getApiKey(userId, provider)).rejects.toThrow(
+        'Failed to decrypt API key: Decryption failed'
       );
     });
   });
@@ -229,7 +254,10 @@ describe('ApiCredentialsService', () => {
 
       await service.deleteApiKey(userId, provider);
 
-      expect(repository.findByUserIdAndProvider).toHaveBeenCalledWith(userId, provider);
+      expect(repository.findByUserIdAndProvider).toHaveBeenCalledWith(
+        userId,
+        provider
+      );
       expect(repository.delete).toHaveBeenCalledWith(userId, provider);
     });
 
@@ -239,8 +267,12 @@ describe('ApiCredentialsService', () => {
 
       mockRepository.findByUserIdAndProvider.mockResolvedValue(null);
 
-      await expect(service.deleteApiKey(userId, provider)).rejects.toThrow(HttpException);
-      await expect(service.deleteApiKey(userId, provider)).rejects.toThrow('API key not found');
+      await expect(service.deleteApiKey(userId, provider)).rejects.toThrow(
+        HttpException
+      );
+      await expect(service.deleteApiKey(userId, provider)).rejects.toThrow(
+        'API key not found'
+      );
     });
   });
 
@@ -262,9 +294,7 @@ describe('ApiCredentialsService', () => {
 
       const result = await service.getCredentialsStatus(userId);
 
-      expect(result).toEqual([
-        { provider: 'openai', hasKey: true },
-      ]);
+      expect(result).toEqual([{ provider: 'openai', hasKey: true }]);
       expect(repository.findByUserId).toHaveBeenCalledWith(userId);
     });
 
@@ -275,9 +305,7 @@ describe('ApiCredentialsService', () => {
 
       const result = await service.getCredentialsStatus(userId);
 
-      expect(result).toEqual([
-        { provider: 'openai', hasKey: false },
-      ]);
+      expect(result).toEqual([{ provider: 'openai', hasKey: false }]);
     });
   });
 });

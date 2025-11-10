@@ -32,15 +32,19 @@ export class ClerkWebhookService {
 
   constructor(
     private readonly userService: UserService,
-    private readonly clerkService: ClerkService,
+    private readonly clerkService: ClerkService
   ) {
     if (appConfig.clerk.webhookSecret) {
       this.webhook = new Webhook(appConfig.clerk.webhookSecret);
     } else {
       if (appConfig.nodeEnv === 'production') {
-        this.logger.warn('CLERK_WEBHOOK_SECRET is not set in production. Webhook verification will be disabled.');
+        this.logger.warn(
+          'CLERK_WEBHOOK_SECRET is not set in production. Webhook verification will be disabled.'
+        );
       } else {
-        this.logger.warn('CLERK_WEBHOOK_SECRET is not set. Webhook verification disabled for local development.');
+        this.logger.warn(
+          'CLERK_WEBHOOK_SECRET is not set. Webhook verification disabled for local development.'
+        );
       }
     }
   }
@@ -52,20 +56,19 @@ export class ClerkWebhookService {
         throw new UnauthorizedException('Webhook secret not configured');
       }
       // In development, skip verification and parse the payload directly
-      this.logger.warn('Processing webhook without verification (development mode)');
+      this.logger.warn(
+        'Processing webhook without verification (development mode)'
+      );
       return this.handleWebhookWithoutVerification(payload);
     }
 
     try {
       // Verify webhook signature
-      const evt = this.webhook.verify(
-        payload.payload,
-        {
-          'svix-id': payload.svixId,
-          'svix-timestamp': payload.svixTimestamp,
-          'svix-signature': payload.svixSignature,
-        },
-      ) as ClerkWebhookEvent;
+      const evt = this.webhook.verify(payload.payload, {
+        'svix-id': payload.svixId,
+        'svix-timestamp': payload.svixTimestamp,
+        'svix-signature': payload.svixSignature,
+      }) as ClerkWebhookEvent;
 
       this.logger.log(`Received webhook event: ${evt.type}`);
 
@@ -172,20 +175,24 @@ export class ClerkWebhookService {
     try {
       // Get all users from Clerk
       const clerkUsers = await clerkClient.users.getUserList();
-      
+
       for (const clerkUser of clerkUsers.data) {
         const userId = clerkUser.id;
-        const roles = (clerkUser.publicMetadata as any)?.roles;
+        const roles = (
+          clerkUser.publicMetadata as { roles?: string[] } | null | undefined
+        )?.roles;
 
         // If user doesn't have roles, set default and update both Clerk and DB
         if (!roles || !Array.isArray(roles) || roles.length === 0) {
           const defaultRoles = ['user'];
-          
+
           // Update Clerk
           await this.updateClerkRoles(userId, defaultRoles);
-          
+
           // Update or create in DB
-          const dbUser = await this.userService.findById(userId).catch(() => null);
+          const dbUser = await this.userService
+            .findById(userId)
+            .catch(() => null);
           if (dbUser) {
             await this.userService.syncRolesFromClerk(userId, defaultRoles);
           } else {
@@ -198,11 +205,15 @@ export class ClerkWebhookService {
               roles: defaultRoles,
             });
           }
-          
-          this.logger.log(`Synced roles for user ${userId}: ${defaultRoles.join(', ')}`);
+
+          this.logger.log(
+            `Synced roles for user ${userId}: ${defaultRoles.join(', ')}`
+          );
         } else {
           // User has roles, just sync to DB
-          const dbUser = await this.userService.findById(userId).catch(() => null);
+          const dbUser = await this.userService
+            .findById(userId)
+            .catch(() => null);
           if (dbUser) {
             await this.userService.syncRolesFromClerk(userId, roles);
           } else {

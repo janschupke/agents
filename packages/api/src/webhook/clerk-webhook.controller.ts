@@ -25,7 +25,7 @@ export class ClerkWebhookController {
     @Headers('svix-id') svixId: string | undefined,
     @Headers('svix-timestamp') svixTimestamp: string | undefined,
     @Headers('svix-signature') svixSignature: string | undefined,
-    @Req() req: Request & { rawBody?: Buffer; body?: Buffer },
+    @Req() req: Request & { rawBody?: Buffer; body?: Buffer }
   ): Promise<WebhookResponseDto> {
     try {
       // Get raw body from middleware (stored in req.rawBody or req.body for webhook routes)
@@ -33,7 +33,7 @@ export class ClerkWebhookController {
       if (!rawBody || !Buffer.isBuffer(rawBody)) {
         throw new Error('Raw body not available or invalid');
       }
-      
+
       await this.webhookService.handleWebhook({
         svixId: svixId || '',
         svixTimestamp: svixTimestamp || '',

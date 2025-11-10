@@ -21,6 +21,9 @@ describe('BotController', () => {
   const mockUser: AuthenticatedUser = {
     id: 'user-123',
     email: 'test@example.com',
+    firstName: 'John',
+    lastName: 'Doe',
+    imageUrl: null,
     roles: ['user'],
   };
 
@@ -63,26 +66,41 @@ describe('BotController', () => {
     });
 
     it('should throw HttpException on service error', async () => {
-      const error = new HttpException('Service error', HttpStatus.INTERNAL_SERVER_ERROR);
+      const error = new HttpException(
+        'Service error',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
       mockBotService.findAll.mockRejectedValue(error);
 
-      await expect(controller.getAllBots(mockUser)).rejects.toThrow(HttpException);
-      await expect(controller.getAllBots(mockUser)).rejects.toThrow('Service error');
+      await expect(controller.getAllBots(mockUser)).rejects.toThrow(
+        HttpException
+      );
+      await expect(controller.getAllBots(mockUser)).rejects.toThrow(
+        'Service error'
+      );
     });
 
     it('should handle unknown errors', async () => {
       const error = new Error('Unknown error');
       mockBotService.findAll.mockRejectedValue(error);
 
-      await expect(controller.getAllBots(mockUser)).rejects.toThrow(HttpException);
-      await expect(controller.getAllBots(mockUser)).rejects.toThrow('Unknown error');
+      await expect(controller.getAllBots(mockUser)).rejects.toThrow(
+        HttpException
+      );
+      await expect(controller.getAllBots(mockUser)).rejects.toThrow(
+        'Unknown error'
+      );
     });
   });
 
   describe('getBot', () => {
     it('should return a bot by id', async () => {
       const botId = 1;
-      const mockBot = { id: botId, name: 'Test Bot', description: 'Test Description' };
+      const mockBot = {
+        id: botId,
+        name: 'Test Bot',
+        description: 'Test Description',
+      };
 
       mockBotService.findById.mockResolvedValue(mockBot);
 
@@ -97,8 +115,12 @@ describe('BotController', () => {
       const error = new HttpException('Bot not found', HttpStatus.NOT_FOUND);
       mockBotService.findById.mockRejectedValue(error);
 
-      await expect(controller.getBot(botId, mockUser)).rejects.toThrow(HttpException);
-      await expect(controller.getBot(botId, mockUser)).rejects.toThrow('Bot not found');
+      await expect(controller.getBot(botId, mockUser)).rejects.toThrow(
+        HttpException
+      );
+      await expect(controller.getBot(botId, mockUser)).rejects.toThrow(
+        'Bot not found'
+      );
     });
   });
 
@@ -126,7 +148,7 @@ describe('BotController', () => {
         expect.objectContaining({
           temperature: createDto.configs.temperature,
           system_prompt: createDto.configs.system_prompt,
-        }),
+        })
       );
     });
 
@@ -146,18 +168,23 @@ describe('BotController', () => {
         mockUser.id,
         createDto.name,
         createDto.description,
-        undefined,
+        undefined
       );
     });
 
     it('should throw HttpException on service error', async () => {
       const createDto = { name: 'New Bot' };
-      const error = new HttpException('Bot name already exists', HttpStatus.CONFLICT);
+      const error = new HttpException(
+        'Bot name already exists',
+        HttpStatus.CONFLICT
+      );
       mockBotService.create.mockRejectedValue(error);
 
-      await expect(controller.createBot(createDto, mockUser)).rejects.toThrow(HttpException);
       await expect(controller.createBot(createDto, mockUser)).rejects.toThrow(
-        'Bot name already exists',
+        HttpException
+      );
+      await expect(controller.createBot(createDto, mockUser)).rejects.toThrow(
+        'Bot name already exists'
       );
     });
   });
@@ -186,7 +213,7 @@ describe('BotController', () => {
         updateDto.description,
         expect.objectContaining({
           temperature: updateDto.configs.temperature,
-        }),
+        })
       );
     });
 
@@ -196,12 +223,12 @@ describe('BotController', () => {
       const error = new HttpException('Bot not found', HttpStatus.NOT_FOUND);
       mockBotService.update.mockRejectedValue(error);
 
-      await expect(controller.updateBot(botId, updateDto, mockUser)).rejects.toThrow(
-        HttpException,
-      );
-      await expect(controller.updateBot(botId, updateDto, mockUser)).rejects.toThrow(
-        'Bot not found',
-      );
+      await expect(
+        controller.updateBot(botId, updateDto, mockUser)
+      ).rejects.toThrow(HttpException);
+      await expect(
+        controller.updateBot(botId, updateDto, mockUser)
+      ).rejects.toThrow('Bot not found');
     });
   });
 
@@ -230,8 +257,12 @@ describe('BotController', () => {
       const error = new HttpException('Bot not found', HttpStatus.NOT_FOUND);
       mockBotService.getEmbeddings.mockRejectedValue(error);
 
-      await expect(controller.getEmbeddings(botId, mockUser)).rejects.toThrow(HttpException);
-      await expect(controller.getEmbeddings(botId, mockUser)).rejects.toThrow('Bot not found');
+      await expect(controller.getEmbeddings(botId, mockUser)).rejects.toThrow(
+        HttpException
+      );
+      await expect(controller.getEmbeddings(botId, mockUser)).rejects.toThrow(
+        'Bot not found'
+      );
     });
   });
 
@@ -242,24 +273,35 @@ describe('BotController', () => {
 
       mockBotService.deleteEmbedding.mockResolvedValue(undefined);
 
-      const result = await controller.deleteEmbedding(botId, embeddingId, mockUser);
+      const result = await controller.deleteEmbedding(
+        botId,
+        embeddingId,
+        mockUser
+      );
 
       expect(result).toEqual({ success: true });
-      expect(botService.deleteEmbedding).toHaveBeenCalledWith(botId, embeddingId, mockUser.id);
+      expect(botService.deleteEmbedding).toHaveBeenCalledWith(
+        botId,
+        embeddingId,
+        mockUser.id
+      );
     });
 
     it('should throw HttpException on service error', async () => {
       const botId = 1;
       const embeddingId = 1;
-      const error = new HttpException('Embedding not found', HttpStatus.NOT_FOUND);
+      const error = new HttpException(
+        'Embedding not found',
+        HttpStatus.NOT_FOUND
+      );
       mockBotService.deleteEmbedding.mockRejectedValue(error);
 
-      await expect(controller.deleteEmbedding(botId, embeddingId, mockUser)).rejects.toThrow(
-        HttpException,
-      );
-      await expect(controller.deleteEmbedding(botId, embeddingId, mockUser)).rejects.toThrow(
-        'Embedding not found',
-      );
+      await expect(
+        controller.deleteEmbedding(botId, embeddingId, mockUser)
+      ).rejects.toThrow(HttpException);
+      await expect(
+        controller.deleteEmbedding(botId, embeddingId, mockUser)
+      ).rejects.toThrow('Embedding not found');
     });
   });
 
@@ -280,8 +322,12 @@ describe('BotController', () => {
       const error = new HttpException('Bot not found', HttpStatus.NOT_FOUND);
       mockBotService.delete.mockRejectedValue(error);
 
-      await expect(controller.deleteBot(botId, mockUser)).rejects.toThrow(HttpException);
-      await expect(controller.deleteBot(botId, mockUser)).rejects.toThrow('Bot not found');
+      await expect(controller.deleteBot(botId, mockUser)).rejects.toThrow(
+        HttpException
+      );
+      await expect(controller.deleteBot(botId, mockUser)).rejects.toThrow(
+        'Bot not found'
+      );
     });
   });
 });

@@ -18,7 +18,7 @@ export class HealthcheckController {
       const err = error as { message?: string };
       throw new HttpException(
         err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }

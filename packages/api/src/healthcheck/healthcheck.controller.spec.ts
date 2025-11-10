@@ -51,11 +51,16 @@ describe('HealthcheckController', () => {
     });
 
     it('should throw HttpException on service error', async () => {
-      const error = new HttpException('Database connection failed', HttpStatus.INTERNAL_SERVER_ERROR);
+      const error = new HttpException(
+        'Database connection failed',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
       mockHealthcheckService.check.mockRejectedValue(error);
 
       await expect(controller.check()).rejects.toThrow(HttpException);
-      await expect(controller.check()).rejects.toThrow('Database connection failed');
+      await expect(controller.check()).rejects.toThrow(
+        'Database connection failed'
+      );
     });
 
     it('should handle unknown errors', async () => {

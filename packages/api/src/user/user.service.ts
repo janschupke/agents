@@ -33,12 +33,15 @@ export class UserService {
       lastName?: string;
       imageUrl?: string;
       roles?: string[];
-    },
+    }
   ) {
     return this.userRepository.update(id, data);
   }
 
-  async syncRolesFromClerk(id: string, clerkRoles: string[] | null | undefined): Promise<User> {
+  async syncRolesFromClerk(
+    id: string,
+    clerkRoles: string[] | null | undefined
+  ): Promise<User> {
     // If no roles in Clerk, default to ["user"]
     const roles = clerkRoles && clerkRoles.length > 0 ? clerkRoles : ['user'];
     return this.userRepository.updateRoles(id, roles);

@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ClerkService } from './clerk.service';
-import { appConfig } from '../config/app.config';
 
 // Mock the app config
 jest.mock('../config/app.config', () => ({
@@ -46,7 +45,13 @@ describe('ClerkService', () => {
       const mockClient = service.getClient();
 
       if (mockClient) {
-        const updateSpy = jest.spyOn(mockClient.users, 'updateUserMetadata').mockResolvedValue({} as any);
+        const updateSpy = jest
+          .spyOn(mockClient.users, 'updateUserMetadata')
+          .mockResolvedValue(
+            {} as unknown as Awaited<
+              ReturnType<typeof mockClient.users.updateUserMetadata>
+            >
+          );
 
         await service.updateUserRoles(userId, roles);
 
@@ -64,7 +69,9 @@ describe('ClerkService', () => {
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
       // Mock appConfig to not have secretKey
-      jest.spyOn(require('../config/app.config'), 'appConfig', 'get').mockReturnValue({
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const appConfigModule = require('../config/app.config');
+      jest.spyOn(appConfigModule, 'appConfig', 'get').mockReturnValue({
         clerk: {
           secretKey: null,
         },
@@ -84,9 +91,13 @@ describe('ClerkService', () => {
       const mockClient = service.getClient();
 
       if (mockClient) {
-        jest.spyOn(mockClient.users, 'updateUserMetadata').mockRejectedValue(error);
+        jest
+          .spyOn(mockClient.users, 'updateUserMetadata')
+          .mockRejectedValue(error);
 
-        await expect(service.updateUserRoles(userId, roles)).rejects.toThrow('Clerk API error');
+        await expect(service.updateUserRoles(userId, roles)).rejects.toThrow(
+          'Clerk API error'
+        );
       }
     });
   });
@@ -99,7 +110,9 @@ describe('ClerkService', () => {
 
     it('should return null if Clerk client is not available', () => {
       // Create a service without Clerk client
-      jest.spyOn(require('../config/app.config'), 'appConfig', 'get').mockReturnValue({
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const appConfigModule = require('../config/app.config');
+      jest.spyOn(appConfigModule, 'appConfig', 'get').mockReturnValue({
         clerk: {
           secretKey: null,
         },

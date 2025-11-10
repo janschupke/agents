@@ -55,7 +55,7 @@ describe('EncryptionService', () => {
       const serviceWithoutKey = new EncryptionService();
 
       expect(() => serviceWithoutKey.encrypt('test')).toThrow(
-        'ENCRYPTION_KEY environment variable is required',
+        'ENCRYPTION_KEY environment variable is required'
       );
     });
 
@@ -64,7 +64,7 @@ describe('EncryptionService', () => {
       const serviceWithWrongKey = new EncryptionService();
 
       expect(() => serviceWithWrongKey.encrypt('test')).toThrow(
-        'ENCRYPTION_KEY must be exactly 32 bytes',
+        'ENCRYPTION_KEY must be exactly 32 bytes'
       );
     });
   });
@@ -95,17 +95,23 @@ describe('EncryptionService', () => {
     });
 
     it('should throw error if encrypted data is empty', () => {
-      expect(() => service.decrypt('')).toThrow('Encrypted data cannot be empty');
+      expect(() => service.decrypt('')).toThrow(
+        'Encrypted data cannot be empty'
+      );
     });
 
     it('should throw error if encrypted data format is invalid', () => {
       const invalidData = 'invalid-encrypted-data';
-      expect(() => service.decrypt(invalidData)).toThrow('Invalid encrypted data format');
+      expect(() => service.decrypt(invalidData)).toThrow(
+        'Invalid encrypted data format'
+      );
     });
 
     it('should throw error if encrypted data is too short', () => {
       const shortData = Buffer.alloc(10).toString('base64');
-      expect(() => service.decrypt(shortData)).toThrow('Invalid encrypted data format');
+      expect(() => service.decrypt(shortData)).toThrow(
+        'Invalid encrypted data format'
+      );
     });
 
     it('should throw error if decryption fails (tampered data)', () => {
@@ -125,7 +131,7 @@ describe('EncryptionService', () => {
       const serviceWithoutKey = new EncryptionService();
 
       expect(() => serviceWithoutKey.decrypt(encrypted)).toThrow(
-        'ENCRYPTION_KEY environment variable is required',
+        'ENCRYPTION_KEY environment variable is required'
       );
     });
   });
@@ -137,7 +143,7 @@ describe('EncryptionService', () => {
         'text with\nnewlines',
         'text with\ttabs',
         'text with "quotes"',
-        'text with \'single quotes\'',
+        "text with 'single quotes'",
         'JSON: {"key": "value"}',
         'Unicode: 你好世界 🌍',
         'Empty spaces:     ',

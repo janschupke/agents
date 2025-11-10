@@ -7,12 +7,19 @@ import { ApiCredentialsStatus } from '../common/interfaces/api-credentials.inter
 export class ApiCredentialsService {
   constructor(
     private readonly repository: ApiCredentialsRepository,
-    private readonly encryptionService: EncryptionService,
+    private readonly encryptionService: EncryptionService
   ) {}
 
-  async setApiKey(userId: string, provider: string, apiKey: string): Promise<void> {
+  async setApiKey(
+    userId: string,
+    provider: string,
+    apiKey: string
+  ): Promise<void> {
     if (!apiKey || apiKey.trim().length === 0) {
-      throw new HttpException('API key cannot be empty', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'API key cannot be empty',
+        HttpStatus.BAD_REQUEST
+      );
     }
 
     try {
@@ -25,19 +32,24 @@ export class ApiCredentialsService {
       const err = error as { message?: string };
       throw new HttpException(
         `Failed to save API key: ${err.message || 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
 
   async getApiKey(userId: string, provider: string): Promise<string | null> {
-    const credential = await this.repository.findByUserIdAndProvider(userId, provider);
+    const credential = await this.repository.findByUserIdAndProvider(
+      userId,
+      provider
+    );
     if (!credential) {
       return null;
     }
 
     try {
-      const decryptedKey = this.encryptionService.decrypt(credential.encryptedKey);
+      const decryptedKey = this.encryptionService.decrypt(
+        credential.encryptedKey
+      );
       // Update last used timestamp
       await this.repository.updateLastUsedAt(userId, provider);
       return decryptedKey;
@@ -45,7 +57,7 @@ export class ApiCredentialsService {
       const err = error as { message?: string };
       throw new HttpException(
         `Failed to decrypt API key: ${err.message || 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -55,7 +67,10 @@ export class ApiCredentialsService {
   }
 
   async deleteApiKey(userId: string, provider: string): Promise<void> {
-    const credential = await this.repository.findByUserIdAndProvider(userId, provider);
+    const credential = await this.repository.findByUserIdAndProvider(
+      userId,
+      provider
+    );
     if (!credential) {
       throw new HttpException('API key not found', HttpStatus.NOT_FOUND);
     }
@@ -66,7 +81,7 @@ export class ApiCredentialsService {
   async getCredentialsStatus(userId: string): Promise<ApiCredentialsStatus[]> {
     const credentials = await this.repository.findByUserId(userId);
     const providers = ['openai']; // Add more providers as needed
-    
+
     return providers.map((provider) => {
       const hasKey = credentials.some((c) => c.provider === provider);
       return { provider, hasKey };

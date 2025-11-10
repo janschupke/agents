@@ -8,7 +8,7 @@ export class ApiCredentialsRepository {
 
   async findByUserIdAndProvider(
     userId: string,
-    provider: string,
+    provider: string
   ): Promise<UserApiCredential | null> {
     return this.prisma.userApiCredential.findUnique({
       where: {
@@ -29,7 +29,7 @@ export class ApiCredentialsRepository {
   async create(
     userId: string,
     provider: string,
-    encryptedKey: string,
+    encryptedKey: string
   ): Promise<UserApiCredential> {
     return this.prisma.userApiCredential.upsert({
       where: {
@@ -52,7 +52,7 @@ export class ApiCredentialsRepository {
 
   async updateLastUsedAt(
     userId: string,
-    provider: string,
+    provider: string
   ): Promise<UserApiCredential> {
     return this.prisma.userApiCredential.update({
       where: {

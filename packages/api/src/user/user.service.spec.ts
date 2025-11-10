@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 
@@ -189,7 +189,10 @@ describe('UserService', () => {
       const result = await service.syncRolesFromClerk(userId, clerkRoles);
 
       expect(result).toEqual(updatedUser);
-      expect(userRepository.updateRoles).toHaveBeenCalledWith(userId, clerkRoles);
+      expect(userRepository.updateRoles).toHaveBeenCalledWith(
+        userId,
+        clerkRoles
+      );
     });
 
     it('should default to ["user"] if no roles provided', async () => {

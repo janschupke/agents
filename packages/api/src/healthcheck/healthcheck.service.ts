@@ -23,7 +23,7 @@ export class HealthcheckService {
           message: err.message || 'Database connection failed',
           timestamp: new Date().toISOString(),
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }

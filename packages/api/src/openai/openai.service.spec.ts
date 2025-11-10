@@ -7,7 +7,11 @@ jest.mock('openai');
 
 describe('OpenAIService', () => {
   let service: OpenAIService;
-  let mockOpenAIClient: jest.Mocked<OpenAI>;
+  let mockOpenAIClient: {
+    embeddings: {
+      create: jest.Mock;
+    };
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -50,7 +54,7 @@ describe('OpenAIService', () => {
       const serviceWithoutEnv = new OpenAIService();
 
       expect(() => serviceWithoutEnv.getClient()).toThrow(
-        'No API key provided and OPENAI_API_KEY is not set in .env file',
+        'No API key provided and OPENAI_API_KEY is not set in .env file'
       );
     });
   });
@@ -71,9 +75,15 @@ describe('OpenAIService', () => {
             ],
           }),
         },
-      } as any;
+      } as {
+        embeddings: {
+          create: jest.Mock;
+        };
+      };
 
-      (OpenAI as jest.MockedClass<typeof OpenAI>).mockImplementation(() => mockOpenAIClient);
+      (OpenAI as jest.MockedClass<typeof OpenAI>).mockImplementation(
+        () => mockOpenAIClient as unknown as OpenAI
+      );
 
       const result = await service.generateEmbedding(text, apiKey);
 
@@ -90,18 +100,22 @@ describe('OpenAIService', () => {
       const apiKey = 'test-api-key';
       const text = 'test text';
 
-      mockOpenAIClient = {
-        embeddings: {
-          create: jest.fn().mockResolvedValue({
-            data: [],
-          }),
-        },
-      } as any;
+      const mockEmbeddings = {
+        create: jest.fn().mockResolvedValue({
+          data: [],
+        }),
+      };
 
-      (OpenAI as jest.MockedClass<typeof OpenAI>).mockImplementation(() => mockOpenAIClient);
+      mockOpenAIClient = {
+        embeddings: mockEmbeddings,
+      };
+
+      (OpenAI as jest.MockedClass<typeof OpenAI>).mockImplementation(
+        () => mockOpenAIClient as unknown as OpenAI
+      );
 
       await expect(service.generateEmbedding(text, apiKey)).rejects.toThrow(
-        'No embedding returned from OpenAI',
+        'No embedding returned from OpenAI'
       );
     });
 
@@ -114,12 +128,18 @@ describe('OpenAIService', () => {
         embeddings: {
           create: jest.fn().mockRejectedValue(new Error(errorMessage)),
         },
-      } as any;
+      } as {
+        embeddings: {
+          create: jest.Mock;
+        };
+      };
 
-      (OpenAI as jest.MockedClass<typeof OpenAI>).mockImplementation(() => mockOpenAIClient);
+      (OpenAI as jest.MockedClass<typeof OpenAI>).mockImplementation(
+        () => mockOpenAIClient as unknown as OpenAI
+      );
 
       await expect(service.generateEmbedding(text, apiKey)).rejects.toThrow(
-        `Failed to generate embedding: ${errorMessage}`,
+        `Failed to generate embedding: ${errorMessage}`
       );
     });
 
@@ -139,15 +159,21 @@ describe('OpenAIService', () => {
             ],
           }),
         },
-      } as any;
+      } as {
+        embeddings: {
+          create: jest.Mock;
+        };
+      };
 
-      (OpenAI as jest.MockedClass<typeof OpenAI>).mockImplementation(() => mockOpenAIClient);
+      (OpenAI as jest.MockedClass<typeof OpenAI>).mockImplementation(
+        () => mockOpenAIClient as unknown as OpenAI
+      );
 
       const result = await service.generateEmbedding(text, apiKey);
 
       expect(result).toEqual(mockEmbedding);
       expect(consoleSpy).toHaveBeenCalledWith(
-        'Warning: Expected embedding dimension 1536, got 1000',
+        'Warning: Expected embedding dimension 1536, got 1000'
       );
 
       consoleSpy.mockRestore();

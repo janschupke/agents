@@ -11,7 +11,16 @@ import { ApiCredentialsModule } from './api-credentials/api-credentials.module';
 import { ClerkGuard } from './auth/clerk.guard';
 
 @Module({
-  imports: [PrismaModule, HealthcheckModule, ChatModule, BotModule, AuthModule, UserModule, WebhookModule, ApiCredentialsModule],
+  imports: [
+    PrismaModule,
+    HealthcheckModule,
+    ChatModule,
+    BotModule,
+    AuthModule,
+    UserModule,
+    WebhookModule,
+    ApiCredentialsModule,
+  ],
   providers: [
     {
       provide: APP_GUARD,

@@ -44,7 +44,10 @@ export default function UserList({ users, loading }: UserListProps) {
           </thead>
           <tbody className="divide-y divide-border">
             {users.map((user) => (
-              <tr key={user.id} className="hover:bg-background-tertiary transition-colors">
+              <tr
+                key={user.id}
+                className="hover:bg-background-tertiary transition-colors"
+              >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-3">
                     {user.imageUrl ? (
@@ -55,7 +58,9 @@ export default function UserList({ users, loading }: UserListProps) {
                       />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-text-inverse font-semibold">
-                        {(user.firstName || user.email || 'U').charAt(0).toUpperCase()}
+                        {(user.firstName || user.email || 'U')
+                          .charAt(0)
+                          .toUpperCase()}
                       </div>
                     )}
                     <div>
@@ -71,7 +76,9 @@ export default function UserList({ users, loading }: UserListProps) {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-text-primary">{user.email || '-'}</div>
+                  <div className="text-sm text-text-primary">
+                    {user.email || '-'}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-wrap gap-2">
@@ -89,7 +96,9 @@ export default function UserList({ users, loading }: UserListProps) {
                         </span>
                       ))
                     ) : (
-                      <span className="text-xs text-text-tertiary">No roles</span>
+                      <span className="text-xs text-text-tertiary">
+                        No roles
+                      </span>
                     )}
                   </div>
                 </td>

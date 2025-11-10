@@ -6,8 +6,13 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:react-hooks/recommended',
   ],
-  ignorePatterns: ['dist', '.eslintrc.cjs'],
+  ignorePatterns: ['dist', '.eslintrc.cjs', 'vite.config.ts'],
   parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+    project: './tsconfig.json',
+  },
   plugins: ['react-refresh'],
   rules: {
     'react-refresh/only-export-components': [
@@ -16,14 +21,4 @@ module.exports = {
     ],
     '@typescript-eslint/no-explicit-any': 'error',
   },
-  overrides: [
-    {
-      files: ['src/contexts/**/*.tsx', 'src/hooks/**/*.ts'],
-      rules: {
-        'react-refresh/only-export-components': 'off',
-      },
-    },
-  ],
-  // Treat warnings as errors
-  reportUnusedDisableDirectives: true,
 };

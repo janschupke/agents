@@ -27,9 +27,14 @@ export class ClerkService {
           roles,
         },
       });
-      this.logger.log(`Updated Clerk roles for user ${userId}: ${roles.join(', ')}`);
+      this.logger.log(
+        `Updated Clerk roles for user ${userId}: ${roles.join(', ')}`
+      );
     } catch (error) {
-      this.logger.error(`Failed to update Clerk roles for user ${userId}:`, error);
+      this.logger.error(
+        `Failed to update Clerk roles for user ${userId}:`,
+        error
+      );
       throw error;
     }
   }

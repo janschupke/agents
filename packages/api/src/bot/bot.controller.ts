@@ -15,7 +15,10 @@ import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
 import { CreateBotDto, UpdateBotDto } from '../common/dto/bot.dto';
 import { SuccessResponseDto } from '../common/dto/common.dto';
-import { BotResponse, EmbeddingResponse } from '../common/interfaces/bot.interface';
+import {
+  BotResponse,
+  EmbeddingResponse,
+} from '../common/interfaces/bot.interface';
 
 @Controller('api/bots')
 export class BotController {
@@ -32,7 +35,7 @@ export class BotController {
       const err = error as { message?: string };
       throw new HttpException(
         err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -40,7 +43,7 @@ export class BotController {
   @Get(':id')
   async getBot(
     @Param('id', ParseIntPipe) id: number,
-    @User() user: AuthenticatedUser,
+    @User() user: AuthenticatedUser
   ): Promise<BotResponse> {
     try {
       return await this.botService.findById(id, user.id);
@@ -51,7 +54,7 @@ export class BotController {
       const err = error as { message?: string };
       throw new HttpException(
         err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -59,7 +62,7 @@ export class BotController {
   @Post()
   async createBot(
     @Body() body: CreateBotDto,
-    @User() user: AuthenticatedUser,
+    @User() user: AuthenticatedUser
   ): Promise<BotResponse> {
     try {
       // Prepare configs object if provided
@@ -72,8 +75,13 @@ export class BotController {
             max_tokens: body.configs.max_tokens,
           }
         : undefined;
-      
-      return await this.botService.create(user.id, body.name, body.description, configs);
+
+      return await this.botService.create(
+        user.id,
+        body.name,
+        body.description,
+        configs
+      );
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -81,7 +89,7 @@ export class BotController {
       const err = error as { message?: string };
       throw new HttpException(
         err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -90,7 +98,7 @@ export class BotController {
   async updateBot(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateBotDto,
-    @User() user: AuthenticatedUser,
+    @User() user: AuthenticatedUser
   ): Promise<BotResponse> {
     try {
       // Prepare configs object if provided
@@ -109,7 +117,7 @@ export class BotController {
         user.id,
         body.name,
         body.description,
-        configs,
+        configs
       );
     } catch (error) {
       if (error instanceof HttpException) {
@@ -118,7 +126,7 @@ export class BotController {
       const err = error as { message?: string };
       throw new HttpException(
         err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -126,7 +134,7 @@ export class BotController {
   @Get(':id/embeddings')
   async getEmbeddings(
     @Param('id', ParseIntPipe) id: number,
-    @User() user: AuthenticatedUser,
+    @User() user: AuthenticatedUser
   ): Promise<EmbeddingResponse[]> {
     try {
       return await this.botService.getEmbeddings(id, user.id);
@@ -137,7 +145,7 @@ export class BotController {
       const err = error as { message?: string };
       throw new HttpException(
         err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -146,7 +154,7 @@ export class BotController {
   async deleteEmbedding(
     @Param('id', ParseIntPipe) id: number,
     @Param('embeddingId', ParseIntPipe) embeddingId: number,
-    @User() user: AuthenticatedUser,
+    @User() user: AuthenticatedUser
   ): Promise<SuccessResponseDto> {
     try {
       await this.botService.deleteEmbedding(id, embeddingId, user.id);
@@ -158,7 +166,7 @@ export class BotController {
       const err = error as { message?: string };
       throw new HttpException(
         err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -166,7 +174,7 @@ export class BotController {
   @Delete(':id')
   async deleteBot(
     @Param('id', ParseIntPipe) id: number,
-    @User() user: AuthenticatedUser,
+    @User() user: AuthenticatedUser
   ): Promise<SuccessResponseDto> {
     try {
       await this.botService.delete(id, user.id);
@@ -178,7 +186,7 @@ export class BotController {
       const err = error as { message?: string };
       throw new HttpException(
         err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }

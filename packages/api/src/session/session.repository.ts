@@ -9,7 +9,7 @@ export class SessionRepository {
   async create(
     userId: string,
     botId: number,
-    sessionName?: string,
+    sessionName?: string
   ): Promise<ChatSession> {
     return this.prisma.chatSession.create({
       data: {
@@ -28,11 +28,11 @@ export class SessionRepository {
 
   async findByIdAndUserId(
     id: number,
-    userId: string,
+    userId: string
   ): Promise<ChatSession | null> {
     // Use findFirst with compound where for better index usage
     return this.prisma.chatSession.findFirst({
-      where: { 
+      where: {
         id,
         userId,
       },
@@ -41,7 +41,7 @@ export class SessionRepository {
 
   async findLatestByBotId(
     botId: number,
-    userId: string,
+    userId: string
   ): Promise<ChatSession | null> {
     return this.prisma.chatSession.findFirst({
       where: { botId, userId },
@@ -49,10 +49,7 @@ export class SessionRepository {
     });
   }
 
-  async findAllByBotId(
-    botId: number,
-    userId: string,
-  ): Promise<ChatSession[]> {
+  async findAllByBotId(botId: number, userId: string): Promise<ChatSession[]> {
     return this.prisma.chatSession.findMany({
       where: { botId, userId },
       orderBy: { createdAt: 'desc' },

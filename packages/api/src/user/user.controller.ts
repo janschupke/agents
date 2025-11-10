@@ -1,9 +1,4 @@
-import {
-  Controller,
-  Get,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ClerkService } from '../auth/clerk.service';
 import { User } from '../auth/decorators/user.decorator';
@@ -17,7 +12,7 @@ import { UserResponseDto, UserListResponseDto } from '../common/dto/user.dto';
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly clerkService: ClerkService,
+    private readonly clerkService: ClerkService
   ) {}
 
   @Get('all')
@@ -32,7 +27,7 @@ export class UserController {
         firstName: user.firstName,
         lastName: user.lastName,
         imageUrl: user.imageUrl,
-        roles: (user.roles as any) || [],
+        roles: (user.roles as string[]) || [],
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       }));
@@ -43,18 +38,18 @@ export class UserController {
       const err = error as { message?: string };
       throw new HttpException(
         err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
 
   @Get('me')
-  async getCurrentUser(@User() user: AuthenticatedUser): Promise<UserResponseDto> {
+  async getCurrentUser(
+    @User() user: AuthenticatedUser
+  ): Promise<UserResponseDto> {
     try {
       // Ensure user has roles (default to ["user"] if not present)
-      const roles = user.roles && user.roles.length > 0 
-        ? user.roles 
-        : ['user'];
+      const roles = user.roles && user.roles.length > 0 ? user.roles : ['user'];
 
       // If user doesn't have roles in Clerk metadata, update Clerk
       if (!user.roles || user.roles.length === 0) {
@@ -62,7 +57,10 @@ export class UserController {
           await this.clerkService.updateUserRoles(user.id, roles);
         } catch (error) {
           // Log but don't fail - roles will still be set in DB
-          console.warn('Failed to update Clerk roles, continuing with DB sync:', error);
+          console.warn(
+            'Failed to update Clerk roles, continuing with DB sync:',
+            error
+          );
         }
       }
 
@@ -72,7 +70,7 @@ export class UserController {
 
       // Get fresh user data with roles from DB
       const dbUser = await this.userService.findById(user.id);
-      const dbRoles = (dbUser.roles as any) || ['user'];
+      const dbRoles = (dbUser.roles as string[]) || ['user'];
 
       return {
         id: dbUser.id,
@@ -89,7 +87,7 @@ export class UserController {
       const err = error as { message?: string };
       throw new HttpException(
         err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }

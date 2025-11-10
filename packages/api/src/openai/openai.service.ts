@@ -24,7 +24,9 @@ export class OpenAIService {
     if (this.defaultOpenai) {
       return this.defaultOpenai;
     }
-    throw new Error('No API key provided and OPENAI_API_KEY is not set in .env file');
+    throw new Error(
+      'No API key provided and OPENAI_API_KEY is not set in .env file'
+    );
   }
 
   async generateEmbedding(text: string, apiKey?: string): Promise<number[]> {
@@ -39,7 +41,9 @@ export class OpenAIService {
       if (response.data && response.data.length > 0) {
         const embedding = response.data[0].embedding;
         if (embedding.length !== 1536) {
-          console.warn(`Warning: Expected embedding dimension 1536, got ${embedding.length}`);
+          console.warn(
+            `Warning: Expected embedding dimension 1536, got ${embedding.length}`
+          );
         }
         return embedding;
       }
@@ -47,7 +51,10 @@ export class OpenAIService {
       throw new Error('No embedding returned from OpenAI');
     } catch (error) {
       const err = error as { message?: string };
-      console.error('Error generating embedding:', err.message || 'Unknown error');
+      console.error(
+        'Error generating embedding:',
+        err.message || 'Unknown error'
+      );
       throw new Error(
         `Failed to generate embedding: ${err.message || 'Unknown error'}`
       );

@@ -53,7 +53,9 @@ describe('HealthcheckService', () => {
       mockPrismaService.$queryRaw.mockRejectedValue(error);
 
       await expect(service.check()).rejects.toThrow(HttpException);
-      await expect(service.check()).rejects.toThrow('Database connection failed');
+      await expect(service.check()).rejects.toThrow(
+        'Database connection failed'
+      );
     });
   });
 });

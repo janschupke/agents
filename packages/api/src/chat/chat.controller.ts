@@ -11,7 +11,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { SendMessageDto, SessionResponseDto, ChatHistoryResponseDto, SendMessageResponseDto } from '../common/dto/chat.dto';
+import {
+  SendMessageDto,
+  SessionResponseDto,
+  ChatHistoryResponseDto,
+  SendMessageResponseDto,
+} from '../common/dto/chat.dto';
 import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
 import { SuccessResponseDto } from '../common/dto/common.dto';
@@ -23,7 +28,7 @@ export class ChatController {
   @Get(':botId/sessions')
   async getSessions(
     @Param('botId', ParseIntPipe) botId: number,
-    @User() user: AuthenticatedUser,
+    @User() user: AuthenticatedUser
   ): Promise<SessionResponseDto[]> {
     try {
       return await this.chatService.getSessions(botId, user.id);
@@ -34,7 +39,7 @@ export class ChatController {
       const err = error as { message?: string };
       throw new HttpException(
         err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -42,7 +47,7 @@ export class ChatController {
   @Post(':botId/sessions')
   async createSession(
     @Param('botId', ParseIntPipe) botId: number,
-    @User() user: AuthenticatedUser,
+    @User() user: AuthenticatedUser
   ): Promise<SessionResponseDto> {
     try {
       return await this.chatService.createSession(botId, user.id);
@@ -53,7 +58,7 @@ export class ChatController {
       const err = error as { message?: string };
       throw new HttpException(
         err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -62,11 +67,15 @@ export class ChatController {
   async getChatHistory(
     @Param('botId', ParseIntPipe) botId: number,
     @User() user: AuthenticatedUser,
-    @Query('sessionId') sessionId?: string,
+    @Query('sessionId') sessionId?: string
   ): Promise<ChatHistoryResponseDto> {
     try {
       const parsedSessionId = sessionId ? parseInt(sessionId, 10) : undefined;
-      return await this.chatService.getChatHistory(botId, user.id, parsedSessionId);
+      return await this.chatService.getChatHistory(
+        botId,
+        user.id,
+        parsedSessionId
+      );
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -74,7 +83,7 @@ export class ChatController {
       const err = error as { message?: string };
       throw new HttpException(
         err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -84,18 +93,20 @@ export class ChatController {
     @Param('botId', ParseIntPipe) botId: number,
     @Body() body: SendMessageDto,
     @User() user: AuthenticatedUser,
-    @Query('sessionId') sessionId?: string,
+    @Query('sessionId') sessionId?: string
   ): Promise<SendMessageResponseDto> {
     if (!body.message || typeof body.message !== 'string') {
-      throw new HttpException(
-        'Message is required',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new HttpException('Message is required', HttpStatus.BAD_REQUEST);
     }
 
     try {
       const parsedSessionId = sessionId ? parseInt(sessionId, 10) : undefined;
-      return await this.chatService.sendMessage(botId, user.id, body.message, parsedSessionId);
+      return await this.chatService.sendMessage(
+        botId,
+        user.id,
+        body.message,
+        parsedSessionId
+      );
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -104,12 +115,12 @@ export class ChatController {
       if (err.status === 401) {
         throw new HttpException(
           'Invalid API key. Please check your .env file.',
-          HttpStatus.UNAUTHORIZED,
+          HttpStatus.UNAUTHORIZED
         );
       }
       throw new HttpException(
         err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -118,7 +129,7 @@ export class ChatController {
   async deleteSession(
     @Param('botId', ParseIntPipe) botId: number,
     @Param('sessionId', ParseIntPipe) sessionId: number,
-    @User() user: AuthenticatedUser,
+    @User() user: AuthenticatedUser
   ): Promise<SuccessResponseDto> {
     try {
       await this.chatService.deleteSession(botId, sessionId, user.id);
@@ -130,7 +141,7 @@ export class ChatController {
       const err = error as { message?: string };
       throw new HttpException(
         err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }

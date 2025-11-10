@@ -8,7 +8,6 @@ import { AuthenticatedUser } from '../common/types/auth.types';
 describe('UserController', () => {
   let controller: UserController;
   let userService: UserService;
-  let clerkService: ClerkService;
 
   const mockUserService = {
     findAll: jest.fn(),
@@ -23,6 +22,9 @@ describe('UserController', () => {
   const mockUser: AuthenticatedUser = {
     id: 'user-123',
     email: 'test@example.com',
+    firstName: 'John',
+    lastName: 'Doe',
+    imageUrl: null,
     roles: ['user'],
   };
 
@@ -43,7 +45,6 @@ describe('UserController', () => {
 
     controller = module.get<UserController>(UserController);
     userService = module.get<UserService>(UserService);
-    clerkService = module.get<ClerkService>(ClerkService);
   });
 
   afterEach(() => {
@@ -109,7 +110,10 @@ describe('UserController', () => {
     });
 
     it('should throw HttpException on service error', async () => {
-      const error = new HttpException('Service error', HttpStatus.INTERNAL_SERVER_ERROR);
+      const error = new HttpException(
+        'Service error',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
       mockUserService.findAll.mockRejectedValue(error);
 
       await expect(controller.getAllUsers()).rejects.toThrow(HttpException);
@@ -143,7 +147,9 @@ describe('UserController', () => {
         imageUrl: dbUser.imageUrl,
         roles: dbUser.roles,
       });
-      expect(userService.syncRolesFromClerk).toHaveBeenCalledWith(mockUser.id, ['user']);
+      expect(userService.syncRolesFromClerk).toHaveBeenCalledWith(mockUser.id, [
+        'user',
+      ]);
       expect(userService.findById).toHaveBeenCalledWith(mockUser.id);
     });
 
@@ -151,6 +157,9 @@ describe('UserController', () => {
       const userWithoutRoles: AuthenticatedUser = {
         id: 'user-123',
         email: 'test@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        imageUrl: null,
         roles: [],
       };
       const dbUser = {
@@ -171,14 +180,24 @@ describe('UserController', () => {
       const result = await controller.getCurrentUser(userWithoutRoles);
 
       expect(result.roles).toEqual(['user']);
-      expect(mockClerkService.updateUserRoles).toHaveBeenCalledWith(userWithoutRoles.id, ['user']);
-      expect(userService.syncRolesFromClerk).toHaveBeenCalledWith(userWithoutRoles.id, ['user']);
+      expect(mockClerkService.updateUserRoles).toHaveBeenCalledWith(
+        userWithoutRoles.id,
+        ['user']
+      );
+      expect(userService.syncRolesFromClerk).toHaveBeenCalledWith(
+        userWithoutRoles.id,
+        ['user']
+      );
     });
 
     it('should update Clerk roles if user has no roles', async () => {
       const userWithoutRoles: AuthenticatedUser = {
         id: 'user-123',
         email: 'test@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        imageUrl: null,
+        roles: [],
       };
       const dbUser = {
         id: userWithoutRoles.id,
@@ -194,13 +213,19 @@ describe('UserController', () => {
 
       await controller.getCurrentUser(userWithoutRoles);
 
-      expect(mockClerkService.updateUserRoles).toHaveBeenCalledWith(userWithoutRoles.id, ['user']);
+      expect(mockClerkService.updateUserRoles).toHaveBeenCalledWith(
+        userWithoutRoles.id,
+        ['user']
+      );
     });
 
     it('should not fail if Clerk update fails', async () => {
       const userWithoutRoles: AuthenticatedUser = {
         id: 'user-123',
         email: 'test@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        imageUrl: null,
         roles: [],
       };
       const dbUser = {
@@ -212,7 +237,9 @@ describe('UserController', () => {
       };
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
-      mockClerkService.updateUserRoles.mockRejectedValue(new Error('Clerk error'));
+      mockClerkService.updateUserRoles.mockRejectedValue(
+        new Error('Clerk error')
+      );
       mockUserService.syncRolesFromClerk.mockResolvedValue(dbUser);
       mockUserService.findById.mockResolvedValue(dbUser);
 
@@ -227,8 +254,12 @@ describe('UserController', () => {
       const error = new HttpException('User not found', HttpStatus.NOT_FOUND);
       mockUserService.syncRolesFromClerk.mockRejectedValue(error);
 
-      await expect(controller.getCurrentUser(mockUser)).rejects.toThrow(HttpException);
-      await expect(controller.getCurrentUser(mockUser)).rejects.toThrow('User not found');
+      await expect(controller.getCurrentUser(mockUser)).rejects.toThrow(
+        HttpException
+      );
+      await expect(controller.getCurrentUser(mockUser)).rejects.toThrow(
+        'User not found'
+      );
     });
   });
 });
