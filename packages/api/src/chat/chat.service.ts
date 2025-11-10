@@ -6,6 +6,7 @@ import { MemoryRepository } from '../memory/memory.repository';
 import { OpenAIService } from '../openai/openai.service';
 import { UserService } from '../user/user.service';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
+import { SystemConfigRepository } from '../system-config/system-config.repository';
 import { MEMORY_CONFIG } from '../common/constants/api.constants';
 import {
   SessionResponseDto,
@@ -22,7 +23,8 @@ export class ChatService {
     private readonly memoryRepository: MemoryRepository,
     private readonly openaiService: OpenAIService,
     private readonly userService: UserService,
-    private readonly apiCredentialsService: ApiCredentialsService
+    private readonly apiCredentialsService: ApiCredentialsService,
+    private readonly systemConfigRepository: SystemConfigRepository
   ) {}
 
   async getSessions(
@@ -236,7 +238,58 @@ export class ChatService {
       }
     }
 
-    // Add behavior rules if present
+    // Add system-wide behavior rules FIRST (these cannot be overridden)
+    let systemBehaviorRules: string[] = [];
+    try {
+      const systemConfig = await this.systemConfigRepository.findByKey('behavior_rules');
+      if (systemConfig && systemConfig.configValue) {
+        systemBehaviorRules = this.parseBehaviorRules(systemConfig.configValue);
+      }
+    } catch (error) {
+      console.error('Error loading system behavior rules:', error);
+      // Continue without system rules if loading fails
+    }
+
+    if (systemBehaviorRules.length > 0) {
+      const systemBehaviorRulesText = systemBehaviorRules
+        .filter((rule) => rule.trim().length > 0)
+        .map((rule, index) => `${index + 1}. ${rule.trim()}`)
+        .join('\n');
+
+      if (systemBehaviorRulesText.length > 0) {
+        const systemBehaviorRulesMessage = `System Behavior Rules (Required):\n${systemBehaviorRulesText}`;
+
+        // Check if system behavior rules are already present
+        if (
+          !messagesForAPI.some(
+            (m) => m.role === 'system' && m.content === systemBehaviorRulesMessage
+          )
+        ) {
+          // Add system behavior rules after system prompt but before bot-specific rules
+          const systemPromptIndex = messagesForAPI.findIndex(
+            (m) =>
+              m.role === 'system' &&
+              m.content === String(botConfig.system_prompt || '')
+          );
+
+          if (systemPromptIndex >= 0) {
+            // Insert after system prompt
+            messagesForAPI.splice(systemPromptIndex + 1, 0, {
+              role: 'system',
+              content: systemBehaviorRulesMessage,
+            });
+          } else {
+            // No system prompt found, add at the beginning
+            messagesForAPI.unshift({
+              role: 'system',
+              content: systemBehaviorRulesMessage,
+            });
+          }
+        }
+      }
+    }
+
+    // Add bot-specific behavior rules (these are additional to system rules)
     if (botConfig.behavior_rules) {
       let behaviorRules: string[] = [];
 
@@ -446,5 +499,46 @@ export class ChatService {
 
     // Delete the session - Prisma will cascade delete all related data (messages, memory chunks)
     await this.sessionRepository.delete(sessionId, userId);
+  }
+
+  private parseBehaviorRules(behaviorRules: unknown): string[] {
+    if (!behaviorRules) return [];
+
+    try {
+      if (typeof behaviorRules === 'string') {
+        try {
+          const parsed = JSON.parse(behaviorRules);
+          if (Array.isArray(parsed)) {
+            return parsed.map((r) => String(r));
+          } else if (
+            typeof parsed === 'object' &&
+            parsed !== null &&
+            'rules' in parsed &&
+            Array.isArray((parsed as { rules: unknown }).rules)
+          ) {
+            return (parsed as { rules: unknown[] }).rules.map((r: unknown) => String(r));
+          } else {
+            return [String(parsed)];
+          }
+        } catch {
+          return [behaviorRules];
+        }
+      } else if (Array.isArray(behaviorRules)) {
+        return behaviorRules.map((r: unknown) => String(r));
+      } else if (
+        typeof behaviorRules === 'object' &&
+        behaviorRules !== null &&
+        'rules' in behaviorRules &&
+        Array.isArray((behaviorRules as { rules: unknown }).rules)
+      ) {
+        const rulesObj = behaviorRules as { rules: unknown[] };
+        return rulesObj.rules.map((r: unknown) => String(r));
+      } else {
+        return [String(behaviorRules)];
+      }
+    } catch (error) {
+      console.error('Error parsing behavior rules:', error);
+      return [];
+    }
   }
 }

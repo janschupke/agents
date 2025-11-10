@@ -8,9 +8,10 @@ import { MemoryRepository } from '../memory/memory.repository';
 import { OpenAIService } from '../openai/openai.service';
 import { UserModule } from '../user/user.module';
 import { ApiCredentialsModule } from '../api-credentials/api-credentials.module';
+import { SystemConfigModule } from '../system-config/system-config.module';
 
 @Module({
-  imports: [UserModule, ApiCredentialsModule],
+  imports: [UserModule, ApiCredentialsModule, SystemConfigModule],
   controllers: [ChatController],
   providers: [
     ChatService,

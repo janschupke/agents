@@ -110,3 +110,14 @@ model UserApiCredential {
   @@index([userId])
   @@map("user_api_credentials")
 }
+
+model SystemConfig {
+  id          Int      @id @default(autoincrement())
+  configKey   String   @map("config_key")
+  configValue Json     @map("config_value")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([configKey])
+  @@map("system_configs")
+}
