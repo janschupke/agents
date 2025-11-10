@@ -6,6 +6,10 @@ export class SessionResponseDto {
   createdAt: Date;
 }
 
+export class UpdateSessionDto {
+  session_name?: string;
+}
+
 export class MessageResponseDto {
   role: 'user' | 'assistant' | 'system';
   content: string;

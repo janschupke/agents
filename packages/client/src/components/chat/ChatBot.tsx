@@ -12,6 +12,7 @@ import { useConfirm } from '../../hooks/useConfirm';
 import { useToast } from '../../contexts/ToastContext';
 import { ChatService } from '../../services/chat.service.js';
 import SessionSidebar from '../session/SessionSidebar.js';
+import SessionNameModal from '../session/SessionNameModal.js';
 import PageContainer from '../ui/PageContainer.js';
 import JsonModal from '../ui/JsonModal.js';
 import ChatHeader from './ChatHeader';
@@ -45,6 +46,10 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
     title: string;
     data: unknown;
   }>({ isOpen: false, title: '', data: null });
+  const [sessionNameModal, setSessionNameModal] = useState<{
+    isOpen: boolean;
+    sessionId: number | null;
+  }>({ isOpen: false, sessionId: null });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<ChatInputRef>(null);
@@ -133,6 +138,29 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
     await handleSubmitMessage(message);
   };
 
+  const handleSessionEdit = (sessionId: number) => {
+    setSessionNameModal({ isOpen: true, sessionId });
+  };
+
+  const handleSessionNameSave = async (name: string) => {
+    if (!actualBotId || !sessionNameModal.sessionId) return;
+
+    try {
+      await ChatService.updateSession(
+        actualBotId,
+        sessionNameModal.sessionId,
+        name || undefined
+      );
+
+      // Update session in context
+      await refreshBotSessions(actualBotId);
+      showToast('Session name updated successfully', 'success');
+    } catch (error) {
+      console.error('Failed to update session name:', error);
+      throw error; // Let modal handle the error display
+    }
+  };
+
   const handleSessionDelete = async (sessionId: number) => {
     if (!actualBotId) return;
 
@@ -206,6 +234,7 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
           onSessionSelect={handleSessionSelect}
           onNewSession={handleNewSessionWithLoading}
           onSessionDelete={handleSessionDelete}
+          onSessionEdit={handleSessionEdit}
           loading={sessionsLoading}
         />
         <div className="flex flex-col flex-1 overflow-hidden">
@@ -240,6 +269,16 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
         onClose={() => setJsonModal({ isOpen: false, title: '', data: null })}
         title={jsonModal.title}
         data={jsonModal.data}
+      />
+      <SessionNameModal
+        isOpen={sessionNameModal.isOpen}
+        onClose={() => setSessionNameModal({ isOpen: false, sessionId: null })}
+        currentName={
+          sessionNameModal.sessionId
+            ? sessions.find((s) => s.id === sessionNameModal.sessionId)?.session_name || null
+            : null
+        }
+        onSave={handleSessionNameSave}
       />
       {ConfirmDialog}
     </PageContainer>

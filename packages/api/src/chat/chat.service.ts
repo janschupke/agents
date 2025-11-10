@@ -470,6 +470,48 @@ export class ChatService {
     };
   }
 
+  async updateSession(
+    botId: number,
+    sessionId: number,
+    userId: string,
+    sessionName?: string
+  ): Promise<SessionResponseDto> {
+    // Verify the bot belongs to the user
+    const bot = await this.botRepository.findByIdAndUserId(botId, userId);
+    if (!bot) {
+      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Verify the session belongs to the bot and user
+    const session = await this.sessionRepository.findByIdAndUserId(
+      sessionId,
+      userId
+    );
+    if (!session) {
+      throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (session.botId !== botId) {
+      throw new HttpException(
+        'Session does not belong to this bot',
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    // Update the session
+    const updated = await this.sessionRepository.update(
+      sessionId,
+      userId,
+      sessionName
+    );
+
+    return {
+      id: updated.id,
+      session_name: updated.sessionName,
+      createdAt: updated.createdAt,
+    };
+  }
+
   async deleteSession(
     botId: number,
     sessionId: number,

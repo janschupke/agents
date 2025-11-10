@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Delete,
   Param,
   Body,
@@ -16,6 +17,7 @@ import {
   SessionResponseDto,
   ChatHistoryResponseDto,
   SendMessageResponseDto,
+  UpdateSessionDto,
 } from '../common/dto/chat.dto';
 import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
@@ -118,6 +120,32 @@ export class ChatController {
           HttpStatus.UNAUTHORIZED
         );
       }
+      throw new HttpException(
+        err.message || 'Unknown error',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  @Put(':botId/sessions/:sessionId')
+  async updateSession(
+    @Param('botId', ParseIntPipe) botId: number,
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @Body() body: UpdateSessionDto,
+    @User() user: AuthenticatedUser
+  ): Promise<SessionResponseDto> {
+    try {
+      return await this.chatService.updateSession(
+        botId,
+        sessionId,
+        user.id,
+        body.session_name
+      );
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      const err = error as { message?: string };
       throw new HttpException(
         err.message || 'Unknown error',
         HttpStatus.INTERNAL_SERVER_ERROR

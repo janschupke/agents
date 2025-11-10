@@ -56,6 +56,25 @@ export class SessionRepository {
     });
   }
 
+  async update(
+    id: number,
+    userId: string,
+    sessionName?: string
+  ): Promise<ChatSession> {
+    // Verify the session belongs to the user before updating
+    const session = await this.findByIdAndUserId(id, userId);
+    if (!session) {
+      throw new Error('Session not found'); // Will be handled by service
+    }
+
+    return this.prisma.chatSession.update({
+      where: { id },
+      data: {
+        sessionName: sessionName || null,
+      },
+    });
+  }
+
   async delete(id: number, userId: string): Promise<void> {
     // Verify the session belongs to the user before deleting
     const session = await this.findByIdAndUserId(id, userId);

@@ -42,6 +42,19 @@ export class ChatService {
   }
 
   /**
+   * Update a session name
+   */
+  static async updateSession(
+    botId: number,
+    sessionId: number,
+    sessionName?: string
+  ): Promise<Session> {
+    return apiManager.put<Session>(API_ENDPOINTS.SESSION(botId, sessionId), {
+      session_name: sessionName,
+    });
+  }
+
+  /**
    * Delete a session (and all related messages and memory chunks)
    */
   static async deleteSession(botId: number, sessionId: number): Promise<void> {
