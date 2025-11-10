@@ -1,5 +1,6 @@
 import { Message } from '../../types/chat.types.js';
 import { IconSearch } from '../ui/Icons';
+import MarkdownContent from './MarkdownContent';
 
 interface MessageBubbleProps {
   message: Message;
@@ -19,7 +20,9 @@ export default function MessageBubble({ message, onShowJson }: MessageBubbleProp
             : 'bg-message-assistant text-message-assistant-text'
         }`}
       >
-        <div className="pr-6">{message.content}</div>
+        <div className="pr-6 markdown-wrapper">
+          <MarkdownContent content={message.content} />
+        </div>
         {hasRawData && (
           <button
             onClick={() => {
