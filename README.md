@@ -28,10 +28,32 @@ npm install -g pnpm
 pnpm install
 ```
 
-3. Set up environment variables:
+3. Set up local database with Docker (recommended for local development):
+
+```bash
+# Start PostgreSQL with pgvector extension
+docker-compose up -d
+
+# Wait for database to be ready (usually takes 10-20 seconds)
+# You can check status with: docker-compose ps
+```
+
+4. Set up environment variables:
 
 Create `.env` file in `packages/api/`:
 
+**For local development with Docker:**
+```
+# Local Docker PostgreSQL connection (port 5434 to avoid conflicts)
+DIRECT_URL=postgresql://postgres:postgres@localhost:5434/postgres
+DATABASE_URL=postgresql://postgres:postgres@localhost:5434/postgres
+
+OPENAI_API_KEY=your-openai-api-key
+CLERK_SECRET_KEY=your-clerk-secret-key
+PORT=3001
+```
+
+**For production/cloud database (e.g., Supabase):**
 ```
 # RECOMMENDED: Direct connection (port 5432) for best performance
 # This avoids transaction overhead and enables prepared statements
@@ -60,6 +82,22 @@ PORT=3001
 **Why two connections?**
 - **Direct connection** (`DIRECT_URL`): **RECOMMENDED** - Best performance, no transaction overhead, supports prepared statements. Used for both queries and migrations.
 - **Pooler connection** (`DATABASE_URL`): Fallback only - Use if you're hitting connection limits. Has transaction overhead (100-120ms per query) but handles more concurrent connections.
+
+5. Run database migrations:
+
+For a fresh database, use `prisma migrate deploy` (recommended for local Docker setup):
+```bash
+cd packages/api
+pnpm prisma:migrate
+```
+
+For development with shadow database (may fail if base tables don't exist):
+```bash
+cd packages/api
+pnpm prisma:migrate:dev
+```
+
+**Note:** If `prisma migrate dev` fails with "table does not exist" errors, use `pnpm prisma:migrate` instead. The baseline migration (`0_init_baseline`) creates all the base tables first.
 
 6. Generate Prisma client:
 
@@ -137,11 +175,55 @@ For Vercel, you may need to configure the API proxy in `vercel.json` to point to
 
 The API uses Prisma for database access. The Prisma schema is located at `packages/api/prisma/schema.prisma`.
 
+### Local Development with Docker
+
+The project includes a `docker-compose.yml` file that sets up PostgreSQL with the pgvector extension for local development.
+
+**Starting the database:**
+```bash
+# Start PostgreSQL container
+docker-compose up -d
+# or use the npm script: pnpm docker:up
+
+# Check status
+docker-compose ps
+# or use: pnpm docker:ps
+
+# View logs
+docker-compose logs -f postgres
+# or use: pnpm docker:logs
+```
+
+**Note:** The default port is `5434` to avoid conflicts with other PostgreSQL instances. If you need to use a different port, edit `docker-compose.yml` and update the port mapping (e.g., change `"5434:5432"` to `"YOUR_PORT:5432"`), then update your `.env` file accordingly.
+
+**Stopping the database:**
+```bash
+# Stop the container (data persists in Docker volume)
+docker-compose down
+
+# Stop and remove all data
+docker-compose down -v
+```
+
+**Database connection details (local):**
+- Host: `localhost`
+- Port: `5434` (mapped from container port 5432 to avoid conflicts with other PostgreSQL instances)
+- Database: `postgres`
+- Username: `postgres`
+- Password: `postgres`
+
 ### Setup
 
-1. Make sure your database is set up with the schema from the `sql/` directory
-2. Set the `DATABASE_URL` in your `.env` file
-3. Generate the Prisma client:
+1. Start the local database (see above) or configure connection to your cloud database
+2. Set the `DIRECT_URL` and `DATABASE_URL` in your `.env` file (see Setup section)
+3. Run migrations:
+
+```bash
+cd packages/api
+pnpm prisma:migrate:dev
+```
+
+4. Generate the Prisma client:
 
 ```bash
 cd packages/api
