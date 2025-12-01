@@ -7,7 +7,7 @@ import { Skeleton } from '../ui/Skeleton';
 import { IconRefresh } from '../ui/Icons';
 import { useBots } from '../../contexts/BotContext.js';
 import { useConfirm } from '../../hooks/useConfirm';
-import FileUpload from '../ui/FileUpload.js';
+import AvatarPicker from '../ui/AvatarPicker.js';
 import {
   NameField,
   DescriptionField,
@@ -344,9 +344,15 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
 
         {loadingConfig ? (
           <div className="space-y-5">
-            <div>
-              <Skeleton className="h-4 w-20 mb-1.5" />
-              <Skeleton className="h-8 w-full" />
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <Skeleton className="h-4 w-16 mb-1.5" />
+                <Skeleton className="h-24 w-24 rounded-md" />
+              </div>
+              <div className="flex-1">
+                <Skeleton className="h-4 w-20 mb-1.5" />
+                <Skeleton className="h-8 w-full" />
+              </div>
             </div>
             <div>
               <Skeleton className="h-4 w-24 mb-1.5" />
@@ -368,14 +374,17 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
           </div>
         ) : (
           <div className="space-y-5">
-            <NameField value={name} onChange={setName} autoFocus={bot.id < 0} botId={bot.id} />
+            {/* Avatar and Name row */}
+            <div className="flex items-start gap-4">
+              <AvatarPicker
+                value={avatarUrl}
+                onChange={setAvatarUrl}
+              />
+              <div className="flex-1">
+                <NameField value={name} onChange={setName} autoFocus={bot.id < 0} botId={bot.id} />
+              </div>
+            </div>
             <DescriptionField value={description} onChange={setDescription} />
-            <FileUpload
-              value={avatarUrl}
-              onChange={setAvatarUrl}
-              label="Agent Avatar"
-              description="Upload an image for the agent avatar (PNG, JPG, GIF up to 5MB)"
-            />
             <TemperatureField value={temperature} onChange={setTemperature} />
             <SystemPromptField value={systemPrompt} onChange={setSystemPrompt} />
             <BehaviorRulesField rules={behaviorRules} onChange={setBehaviorRules} />

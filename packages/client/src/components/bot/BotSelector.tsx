@@ -42,17 +42,17 @@ export default function BotSelector() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 h-8 px-2 rounded-md hover:bg-background-tertiary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+        className="flex items-center gap-3 h-10 px-2 rounded-md hover:bg-background-tertiary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
         aria-label="Select bot"
       >
         {currentBot?.avatarUrl ? (
           <img
             src={currentBot.avatarUrl}
             alt={currentBot.name}
-            className="w-6 h-6 rounded-full object-cover border border-border"
+            className="w-10 h-10 rounded-full object-cover border border-border"
           />
         ) : (
-          <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-text-inverse text-xs font-semibold border border-border">
+          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-text-inverse text-sm font-semibold border border-border">
             {displayName.charAt(0).toUpperCase()}
           </div>
         )}
