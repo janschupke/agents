@@ -79,12 +79,19 @@ export default function MessageBubble({
             : 'bg-message-assistant text-message-assistant-text'
         }`}
       >
-        <div className="pr-12 markdown-wrapper">
+        <div className="markdown-wrapper">
           <MarkdownContent content={message.content} />
         </div>
 
-        {/* Action buttons container - always clickable even when invisible */}
-        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ pointerEvents: 'auto' }}>
+        {/* Action buttons container - overlay text with background when visible */}
+        <div 
+          className={`absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${
+            message.role === 'user'
+              ? 'bg-message-user'
+              : 'bg-message-assistant'
+          } rounded px-1 py-0.5`}
+          style={{ pointerEvents: 'auto' }}
+        >
           {/* Translation button */}
           <button
             onClick={handleTranslate}
