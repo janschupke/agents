@@ -44,6 +44,13 @@ export default {
         md: 'var(--shadow-md)',
         lg: 'var(--shadow-lg)',
       },
+      transitionDuration: {
+        'fade-in': '200ms',
+        'fade-out': '150ms',
+      },
+      transitionTimingFunction: {
+        'fade': 'ease-in-out',
+      },
     },
   },
   plugins: [],

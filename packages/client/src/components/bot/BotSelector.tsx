@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { IconChevronDown } from '../ui/Icons';
 import { useBots } from '../../contexts/BotContext';
 import { useSelectedBot } from '../../contexts/AppContext';
+import DropdownTransition from '../ui/DropdownTransition.js';
 
 export default function BotSelector() {
   const { bots, loadingBots } = useBots();
@@ -62,7 +63,7 @@ export default function BotSelector() {
         />
       </button>
 
-      {isOpen && (
+      <DropdownTransition show={isOpen}>
         <div className="absolute left-0 mt-1 w-56 bg-background border border-border py-1 z-[100] max-h-64 overflow-y-auto">
           {bots.map((bot) => (
             <button
@@ -90,7 +91,7 @@ export default function BotSelector() {
             </button>
           ))}
         </div>
-      )}
+      </DropdownTransition>
     </div>
   );
 }

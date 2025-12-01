@@ -3,6 +3,7 @@ import { useUser, SignOutButton } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { IconUser, IconLogout, IconChevronDown } from '../ui/Icons';
 import { useUserInfo } from '../../contexts/UserContext';
+import DropdownTransition from '../ui/DropdownTransition.js';
 
 export default function UserDropdown() {
   const { userInfo } = useUserInfo();
@@ -52,7 +53,7 @@ export default function UserDropdown() {
         />
       </button>
 
-      {isOpen && (
+      <DropdownTransition show={isOpen}>
         <div className="absolute right-0 mt-1 w-56 bg-background border border-border py-1 z-50">
           <div className="px-3 py-2 border-b border-border">
             <p className="text-sm font-medium text-text-primary">{displayName}</p>
@@ -77,7 +78,7 @@ export default function UserDropdown() {
             </SignOutButton>
           </div>
         </div>
-      )}
+      </DropdownTransition>
     </div>
   );
 }

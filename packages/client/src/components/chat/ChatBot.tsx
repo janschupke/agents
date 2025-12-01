@@ -91,10 +91,31 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
     getBotSessions,
   });
 
+  const isInitialLoadRef = useRef(true);
+  const previousMessageCountRef = useRef(0);
+
   // Scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const messageCount = messages.length;
+    const isNewMessage = messageCount > previousMessageCountRef.current;
+    
+    if (isInitialLoadRef.current) {
+      // Initial load: scroll instantly without animation
+      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+      isInitialLoadRef.current = false;
+    } else if (isNewMessage) {
+      // New message added: scroll smoothly
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    previousMessageCountRef.current = messageCount;
   }, [messages]);
+  
+  // Reset initial load flag when session changes
+  useEffect(() => {
+    isInitialLoadRef.current = true;
+    previousMessageCountRef.current = 0;
+  }, [currentSessionId]);
 
   // Focus chat input when session changes or new session is created
   useEffect(() => {
@@ -245,9 +266,11 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
             ) : (
               <>
                 <ChatMessages
+                  key={currentSessionId || 'no-session'}
                   messages={messages}
                   loading={loading || (loadingMessages && messages.length === 0)}
                   onShowJson={(title, data) => setJsonModal({ isOpen: true, title, data })}
+                  sessionId={currentSessionId}
                 />
                 <div ref={messagesEndRef} />
               </>

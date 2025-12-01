@@ -2,15 +2,39 @@ import { Message } from '../../types/chat.types.js';
 import MessageBubble from './MessageBubble';
 import { Skeleton } from '../ui/Skeleton';
 import { IconChat } from '../ui/Icons';
+import FadeIn from '../ui/FadeIn.js';
+import { useRef, useEffect } from 'react';
 
 interface ChatMessagesProps {
   messages: Message[];
   loading?: boolean;
   onShowJson: (title: string, data: unknown) => void;
+  sessionId?: number | null;
 }
 
-export default function ChatMessages({ messages, loading, onShowJson }: ChatMessagesProps) {
+export default function ChatMessages({ messages, loading, onShowJson, sessionId }: ChatMessagesProps) {
   const filteredMessages = messages.filter((msg) => msg.role !== 'system');
+  const initialMessageCountRef = useRef<number | null>(null);
+  const lastSessionIdRef = useRef<number | null | undefined>(undefined);
+  
+  // Reset and track initial message count when session changes or on first render
+  useEffect(() => {
+    if (sessionId !== lastSessionIdRef.current) {
+      // Session changed, reset initial count
+      initialMessageCountRef.current = null;
+      lastSessionIdRef.current = sessionId;
+    }
+    
+    if (initialMessageCountRef.current === null && filteredMessages.length > 0) {
+      initialMessageCountRef.current = filteredMessages.length;
+    }
+  }, [filteredMessages.length, sessionId]);
+  
+  // Determine if a message is new (added after initial load)
+  const isNewMessage = (index: number) => {
+    if (initialMessageCountRef.current === null) return false;
+    return index >= initialMessageCountRef.current;
+  };
 
   // Show empty state with chat bubble icon if no messages
   if (filteredMessages.length === 0 && !loading) {
@@ -25,14 +49,30 @@ export default function ChatMessages({ messages, loading, onShowJson }: ChatMess
 
   return (
     <>
-      {filteredMessages.map((message, index) => (
-        <MessageBubble
-          key={index}
-          message={message}
-          messageId={message.id}
-          onShowJson={onShowJson}
-        />
-      ))}
+      {filteredMessages.map((message, index) => {
+        const isNew = isNewMessage(index);
+        const messageKey = message.id || index;
+        const positioningClasses = `flex flex-col max-w-[80%] ${message.role === 'user' ? 'self-end' : 'self-start'}`;
+        
+        // Only animate new messages
+        return isNew ? (
+          <FadeIn key={messageKey} className={positioningClasses}>
+            <MessageBubble
+              message={message}
+              messageId={message.id}
+              onShowJson={onShowJson}
+            />
+          </FadeIn>
+        ) : (
+          <div key={messageKey} className={positioningClasses}>
+            <MessageBubble
+              message={message}
+              messageId={message.id}
+              onShowJson={onShowJson}
+            />
+          </div>
+        );
+      })}
       {loading && (
         <div className="flex max-w-[80%] self-start">
           <div className="px-3 py-2 rounded-lg bg-message-assistant text-message-assistant-text text-sm">

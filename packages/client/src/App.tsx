@@ -8,6 +8,7 @@ import UserProfile from './components/auth/UserProfile';
 import Footer from './components/ui/Footer';
 import { IconChat, IconSettings } from './components/ui/Icons';
 import { Skeleton } from './components/ui/Skeleton';
+import PageTransition from './components/ui/PageTransition.js';
 import { AppProvider } from './contexts/AppContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { UserProvider, useApiKeyStatus } from './contexts/UserContext';
@@ -122,12 +123,14 @@ function AppContent() {
     <div className="flex flex-col min-h-screen h-screen overflow-hidden bg-background">
       <AppHeader />
       <main className="flex-1 overflow-hidden">
-        <Routes>
-          <Route path="/" element={<Navigate to="/chat" replace />} />
-          <Route path="/chat" element={<ChatBot />} />
-          <Route path="/config" element={<BotConfig />} />
-          <Route path="/profile" element={<UserProfile />} />
-        </Routes>
+        <PageTransition>
+          <Routes>
+            <Route path="/" element={<Navigate to="/chat" replace />} />
+            <Route path="/chat" element={<ChatBot />} />
+            <Route path="/config" element={<BotConfig />} />
+            <Route path="/profile" element={<UserProfile />} />
+          </Routes>
+        </PageTransition>
       </main>
       <AppFooter />
     </div>

@@ -3,6 +3,7 @@ import { IconSearch, IconTranslate } from '../ui/Icons';
 import MarkdownContent from './MarkdownContent';
 import { useState, useEffect } from 'react';
 import { TranslationService } from '../../services/translation.service.js';
+import FadeTransition from '../ui/FadeTransition.js';
 
 interface MessageBubbleProps {
   message: Message;
@@ -69,7 +70,7 @@ export default function MessageBubble({
   };
 
   return (
-    <div className={`flex flex-col max-w-[80%] ${message.role === 'user' ? 'self-end' : 'self-start'}`}>
+    <div className="flex flex-col">
       {/* Original message bubble */}
       <div
         className={`px-3 py-2 rounded-lg break-words text-sm relative group ${
@@ -143,15 +144,17 @@ export default function MessageBubble({
       </div>
 
       {/* Translation bubble - appears below original message */}
-      {showTranslation && translation && (
-        <div className="mt-2 px-3 py-2 rounded-lg break-words text-sm bg-background-secondary border border-border text-text-primary">
-          <div className="text-xs font-semibold mb-1 text-text-tertiary uppercase tracking-wide">
-            Translation
+      {translation && (
+        <FadeTransition show={showTranslation}>
+          <div className="mt-2 px-3 py-2 rounded-lg break-words text-sm bg-background-secondary border border-border text-text-primary">
+            <div className="text-xs font-semibold mb-1 text-text-tertiary uppercase tracking-wide">
+              Translation
+            </div>
+            <div className="markdown-wrapper">
+              <MarkdownContent content={translation} />
+            </div>
           </div>
-          <div className="markdown-wrapper">
-            <MarkdownContent content={translation} />
-          </div>
-        </div>
+        </FadeTransition>
       )}
     </div>
   );
