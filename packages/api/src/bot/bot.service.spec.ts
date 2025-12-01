@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { HttpException } from '@nestjs/common';
 import { BotService } from './bot.service';
 import { BotRepository } from './bot.repository';
-import { MemoryRepository } from '../memory/memory.repository';
 import { UserService } from '../user/user.service';
 
 describe('BotService', () => {
@@ -21,11 +20,6 @@ describe('BotService', () => {
     mergeBotConfig: jest.fn(),
   };
 
-  const mockMemoryRepository = {
-    findAllByBotIdAndUserId: jest.fn(),
-    deleteById: jest.fn(),
-  };
-
   const mockUserService = {
     findById: jest.fn(),
   };
@@ -37,10 +31,6 @@ describe('BotService', () => {
         {
           provide: BotRepository,
           useValue: mockBotRepository,
-        },
-        {
-          provide: MemoryRepository,
-          useValue: mockMemoryRepository,
         },
         {
           provide: UserService,
@@ -302,126 +292,6 @@ describe('BotService', () => {
       await expect(service.update(botId, userId, name)).rejects.toThrow(
         'Bot with this name already exists'
       );
-    });
-  });
-
-  describe('getEmbeddings', () => {
-    it('should return embeddings for a bot', async () => {
-      const botId = 1;
-      const userId = 'user-123';
-      const mockBot = { id: botId, name: 'Test Bot', userId };
-      const mockEmbeddings = [
-        {
-          id: 1,
-          sessionId: 1,
-          chunk: 'Test chunk',
-          createdAt: new Date(),
-        },
-      ];
-
-      mockBotRepository.findByIdAndUserId.mockResolvedValue(mockBot);
-      mockMemoryRepository.findAllByBotIdAndUserId.mockResolvedValue(
-        mockEmbeddings
-      );
-
-      const result = await service.getEmbeddings(botId, userId);
-
-      expect(result).toEqual([
-        {
-          id: mockEmbeddings[0].id,
-          sessionId: mockEmbeddings[0].sessionId,
-          chunk: mockEmbeddings[0].chunk,
-          createdAt: mockEmbeddings[0].createdAt,
-        },
-      ]);
-      expect(mockBotRepository.findByIdAndUserId).toHaveBeenCalledWith(
-        botId,
-        userId
-      );
-      expect(mockMemoryRepository.findAllByBotIdAndUserId).toHaveBeenCalledWith(
-        botId,
-        userId
-      );
-    });
-
-    it('should throw HttpException if bot not found', async () => {
-      const botId = 1;
-      const userId = 'user-123';
-
-      mockBotRepository.findByIdAndUserId.mockResolvedValue(null);
-
-      await expect(service.getEmbeddings(botId, userId)).rejects.toThrow(
-        HttpException
-      );
-      await expect(service.getEmbeddings(botId, userId)).rejects.toThrow(
-        'Bot not found'
-      );
-    });
-  });
-
-  describe('deleteEmbedding', () => {
-    it('should delete an embedding', async () => {
-      const botId = 1;
-      const embeddingId = 1;
-      const userId = 'user-123';
-      const mockBot = { id: botId, name: 'Test Bot', userId };
-      const mockEmbeddings = [
-        {
-          id: embeddingId,
-          sessionId: 1,
-          chunk: 'Test chunk',
-        },
-      ];
-
-      mockBotRepository.findByIdAndUserId.mockResolvedValue(mockBot);
-      mockMemoryRepository.findAllByBotIdAndUserId.mockResolvedValue(
-        mockEmbeddings
-      );
-
-      await service.deleteEmbedding(botId, embeddingId, userId);
-
-      expect(mockMemoryRepository.deleteById).toHaveBeenCalledWith(embeddingId);
-    });
-
-    it('should throw HttpException if bot not found', async () => {
-      const botId = 1;
-      const embeddingId = 1;
-      const userId = 'user-123';
-
-      mockBotRepository.findByIdAndUserId.mockResolvedValue(null);
-
-      await expect(
-        service.deleteEmbedding(botId, embeddingId, userId)
-      ).rejects.toThrow(HttpException);
-      await expect(
-        service.deleteEmbedding(botId, embeddingId, userId)
-      ).rejects.toThrow('Bot not found');
-    });
-
-    it('should throw HttpException if embedding not found', async () => {
-      const botId = 1;
-      const embeddingId = 999;
-      const userId = 'user-123';
-      const mockBot = { id: botId, name: 'Test Bot', userId };
-      const mockEmbeddings = [
-        {
-          id: 1,
-          sessionId: 1,
-          chunk: 'Test chunk',
-        },
-      ];
-
-      mockBotRepository.findByIdAndUserId.mockResolvedValue(mockBot);
-      mockMemoryRepository.findAllByBotIdAndUserId.mockResolvedValue(
-        mockEmbeddings
-      );
-
-      await expect(
-        service.deleteEmbedding(botId, embeddingId, userId)
-      ).rejects.toThrow(HttpException);
-      await expect(
-        service.deleteEmbedding(botId, embeddingId, userId)
-      ).rejects.toThrow('Embedding not found or does not belong to this bot');
     });
   });
 

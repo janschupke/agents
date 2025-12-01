@@ -1,6 +1,6 @@
 import { apiManager } from './api-manager.js';
 import { API_ENDPOINTS } from '../constants/api.constants.js';
-import { Bot, Embedding, CreateBotRequest, UpdateBotRequest } from '../types/chat.types.js';
+import { Bot, CreateBotRequest, UpdateBotRequest } from '../types/chat.types.js';
 
 export class BotService {
   /**
@@ -32,21 +32,7 @@ export class BotService {
   }
 
   /**
-   * Get all embeddings for a bot
-   */
-  static async getEmbeddings(botId: number): Promise<Embedding[]> {
-    return apiManager.get<Embedding[]>(API_ENDPOINTS.BOT_EMBEDDINGS(botId));
-  }
-
-  /**
-   * Delete an embedding
-   */
-  static async deleteEmbedding(botId: number, embeddingId: number): Promise<void> {
-    return apiManager.delete(API_ENDPOINTS.BOT_EMBEDDING(botId, embeddingId));
-  }
-
-  /**
-   * Delete a bot (and all related data: sessions, messages, configs)
+   * Delete a bot (and all related data: sessions, messages, configs, memories)
    */
   static async deleteBot(botId: number): Promise<void> {
     return apiManager.delete(API_ENDPOINTS.BOT(botId));

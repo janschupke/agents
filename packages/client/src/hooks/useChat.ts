@@ -240,12 +240,19 @@ export function useChat({ botId, onError }: UseChatOptions) {
     try {
       const data = await ChatService.sendMessage(botId, message, currentSessionId || undefined);
 
-      // Update the last user message with raw request data
+      // Update the last user message with raw request data and ID
       setMessages((prev) => {
         const updated = [...prev];
-        const lastUserMsg = updated[updated.length - 2];
-        if (lastUserMsg && lastUserMsg.role === 'user') {
-          lastUserMsg.rawRequest = data.rawRequest;
+        const lastUserMsgIndex = updated.length - 2;
+        if (lastUserMsgIndex >= 0) {
+          const lastUserMsg = updated[lastUserMsgIndex];
+          if (lastUserMsg && lastUserMsg.role === 'user') {
+            updated[lastUserMsgIndex] = {
+              ...lastUserMsg,
+              rawRequest: data.rawRequest,
+              id: data.userMessageId ?? lastUserMsg.id,
+            };
+          }
         }
         return updated;
       });
@@ -254,6 +261,7 @@ export function useChat({ botId, onError }: UseChatOptions) {
         role: 'assistant',
         content: data.response,
         rawResponse: data.rawResponse,
+        id: data.assistantMessageId,
       };
 
       // Get current messages state and update cache

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BotService } from './bot.service.js';
-import { Bot, Embedding, CreateBotRequest, UpdateBotRequest } from '../types/chat.types.js';
+import { Bot, CreateBotRequest, UpdateBotRequest } from '../types/chat.types.js';
 import { apiManager } from './api-manager.js';
 
 // Mock ApiManager
@@ -157,56 +157,4 @@ describe('BotService', () => {
     });
   });
 
-  describe('getEmbeddings', () => {
-    it('should fetch embeddings for a bot successfully', async () => {
-      const mockEmbeddings: Embedding[] = [
-        {
-          id: 1,
-          sessionId: 1,
-          chunk: 'Test chunk 1',
-          createdAt: '2024-01-01',
-        },
-        {
-          id: 2,
-          sessionId: 1,
-          chunk: 'Test chunk 2',
-          createdAt: '2024-01-02',
-        },
-      ];
-
-      vi.mocked(apiManager.get).mockResolvedValueOnce(mockEmbeddings);
-
-      const result = await BotService.getEmbeddings(1);
-
-      expect(result).toEqual(mockEmbeddings);
-      expect(apiManager.get).toHaveBeenCalledWith('/api/bots/1/embeddings');
-    });
-
-    it('should return empty array when no embeddings found', async () => {
-      vi.mocked(apiManager.get).mockResolvedValueOnce([]);
-
-      const result = await BotService.getEmbeddings(1);
-
-      expect(result).toEqual([]);
-    });
-  });
-
-  describe('deleteEmbedding', () => {
-    it('should delete an embedding successfully', async () => {
-      vi.mocked(apiManager.delete).mockResolvedValueOnce(undefined);
-
-      await BotService.deleteEmbedding(1, 1);
-
-      expect(apiManager.delete).toHaveBeenCalledWith('/api/bots/1/embeddings/1');
-    });
-
-    it('should throw error when deletion fails', async () => {
-      vi.mocked(apiManager.delete).mockRejectedValueOnce({
-        message: 'Not found',
-        status: 404,
-      });
-
-      await expect(BotService.deleteEmbedding(1, 999)).rejects.toThrow();
-    });
-  });
 });

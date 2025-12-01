@@ -4,7 +4,8 @@ import { ChatService } from './chat.service';
 import { BotRepository } from '../bot/bot.repository';
 import { SessionRepository } from '../session/session.repository';
 import { MessageRepository } from '../message/message.repository';
-import { MemoryRepository } from '../memory/memory.repository';
+import { AgentMemoryService } from '../memory/agent-memory.service';
+import { AgentMemoryRepository } from '../memory/agent-memory.repository';
 import { OpenAIService } from '../openai/openai.service';
 import { UserService } from '../user/user.service';
 
@@ -26,15 +27,20 @@ describe('ChatService', () => {
     create: jest.fn(),
   };
 
-  const mockMemoryRepository = {
-    findSimilarForBot: jest.fn(),
-    create: jest.fn(),
+  const mockAgentMemoryService = {
+    getMemoriesForContext: jest.fn(),
+    createMemory: jest.fn(),
+    shouldSummarize: jest.fn(),
+    summarizeMemories: jest.fn(),
+  };
+
+  const mockAgentMemoryRepository = {
+    incrementUpdateCount: jest.fn(),
   };
 
   const mockOpenAIService = {
     generateEmbedding: jest.fn(),
     getClient: jest.fn(),
-    createMemoryChunkFromMessages: jest.fn(),
   };
 
   const mockUserService = {
@@ -58,8 +64,12 @@ describe('ChatService', () => {
           useValue: mockMessageRepository,
         },
         {
-          provide: MemoryRepository,
-          useValue: mockMemoryRepository,
+          provide: AgentMemoryService,
+          useValue: mockAgentMemoryService,
+        },
+        {
+          provide: AgentMemoryRepository,
+          useValue: mockAgentMemoryRepository,
         },
         {
           provide: OpenAIService,

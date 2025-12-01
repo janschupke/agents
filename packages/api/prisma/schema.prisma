@@ -23,6 +23,7 @@ model User {
   bots         Bot[]
   chatSessions ChatSession[]
   apiCredentials UserApiCredential[]
+  memories     AgentMemory[]
 
   @@map("users")
 }
@@ -36,6 +37,7 @@ model Bot {
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   configs     BotConfig[]
   sessions    ChatSession[]
+  memories    AgentMemory[]
 
   @@index([userId])
   @@map("bots")
@@ -62,7 +64,6 @@ model ChatSession {
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   bot          Bot           @relation(fields: [botId], references: [id], onDelete: Cascade)
   messages     Message[]
-  memoryChunks MemoryChunk[]
 
   @@index([userId])
   @@index([botId])
@@ -85,17 +86,23 @@ model Message {
   @@map("messages")
 }
 
-model MemoryChunk {
+model AgentMemory {
   id              Int                          @id @default(autoincrement())
-  sessionId       Int                          @map("session_id")
-  chunk           String
-  vector          Unsupported("real[]")? // REAL[] array for compatibility
-  vectorEmbedding Unsupported("vector(1536)")? @map("vector_embedding") // pgvector type
+  botId           Int                          @map("bot_id")
+  userId          String                       @map("user_id")
+  keyPoint        String                       @map("key_point")
+  context         Json?
+  vectorEmbedding Unsupported("vector(1536)")? @map("vector_embedding")
   createdAt       DateTime                     @default(now()) @map("created_at")
-  session         ChatSession                  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  updatedAt       DateTime                     @updatedAt @map("updated_at")
+  updateCount     Int                          @default(0) @map("update_count")
+  
+  bot             Bot                          @relation(fields: [botId], references: [id], onDelete: Cascade)
+  user            User                         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([sessionId, createdAt(sort: Desc)])
-  @@map("memory_chunks")
+  @@index([botId, userId])
+  @@index([botId, userId, createdAt(sort: Desc)])
+  @@map("agent_memories")
 }
 
 model UserApiCredential {

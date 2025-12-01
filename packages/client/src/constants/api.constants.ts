@@ -9,9 +9,11 @@ export const API_ENDPOINTS = {
   SESSION: (botId: number, sessionId: number) => `/api/chat/${botId}/sessions/${sessionId}`,
   BOTS: '/api/bots',
   BOT: (botId: number) => `/api/bots/${botId}`,
-  BOT_EMBEDDINGS: (botId: number) => `/api/bots/${botId}/embeddings`,
-  BOT_EMBEDDING: (botId: number, embeddingId: number) =>
-    `/api/bots/${botId}/embeddings/${embeddingId}`,
+  BOT_MEMORIES: (botId: number) => `/api/bots/${botId}/memories`,
+  BOT_MEMORY: (botId: number, memoryId: number) =>
+    `/api/bots/${botId}/memories/${memoryId}`,
+  BOT_MEMORIES_SUMMARIZE: (botId: number) =>
+    `/api/bots/${botId}/memories/summarize`,
   USER_ME: '/api/user/me',
   API_CREDENTIALS_OPENAI: '/api/api-credentials/openai',
   API_CREDENTIALS_OPENAI_CHECK: '/api/api-credentials/openai/check',

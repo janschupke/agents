@@ -42,6 +42,8 @@ export interface SendMessageResponse {
   };
   rawRequest?: unknown; // Raw OpenAI request JSON
   rawResponse?: unknown; // Raw OpenAI response JSON
+  userMessageId?: number;
+  assistantMessageId?: number;
 }
 
 export interface Bot {
@@ -56,11 +58,18 @@ export interface Bot {
   };
 }
 
-export interface Embedding {
+export interface AgentMemory {
   id: number;
-  sessionId: number;
-  chunk: string;
+  botId: number;
+  userId: string;
+  keyPoint: string;
+  context?: {
+    sessionId?: number;
+    sessionName?: string | null;
+    messageCount?: number;
+  };
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateBotRequest {

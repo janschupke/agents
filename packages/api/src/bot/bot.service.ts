@@ -1,17 +1,12 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { BotRepository } from './bot.repository';
-import { MemoryRepository } from '../memory/memory.repository';
 import { UserService } from '../user/user.service';
-import {
-  BotResponse,
-  EmbeddingResponse,
-} from '../common/interfaces/bot.interface';
+import { BotResponse } from '../common/interfaces/bot.interface';
 
 @Injectable()
 export class BotService {
   constructor(
     private readonly botRepository: BotRepository,
-    private readonly memoryRepository: MemoryRepository,
     private readonly userService: UserService
   ) {}
 
@@ -110,70 +105,13 @@ export class BotService {
     return updated;
   }
 
-  async getEmbeddings(
-    botId: number,
-    userId: string
-  ): Promise<EmbeddingResponse[]> {
-    const bot = await this.botRepository.findByIdAndUserId(botId, userId);
-    if (!bot) {
-      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
-    }
-
-    const embeddings = await this.memoryRepository.findAllByBotIdAndUserId(
-      botId,
-      userId
-    );
-    return embeddings.map(
-      (embedding: {
-        id: number;
-        sessionId: number;
-        chunk: string;
-        createdAt: Date;
-      }) => ({
-        id: embedding.id,
-        sessionId: embedding.sessionId,
-        chunk: embedding.chunk,
-        createdAt: embedding.createdAt,
-      })
-    );
-  }
-
-  async deleteEmbedding(
-    botId: number,
-    embeddingId: number,
-    userId: string
-  ): Promise<void> {
-    const bot = await this.botRepository.findByIdAndUserId(botId, userId);
-    if (!bot) {
-      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
-    }
-
-    // Verify the embedding belongs to a session of this bot and user
-    const embeddings = await this.memoryRepository.findAllByBotIdAndUserId(
-      botId,
-      userId
-    );
-    const embedding = embeddings.find(
-      (e: { id: number }) => e.id === embeddingId
-    );
-
-    if (!embedding) {
-      throw new HttpException(
-        'Embedding not found or does not belong to this bot',
-        HttpStatus.NOT_FOUND
-      );
-    }
-
-    await this.memoryRepository.deleteById(embeddingId);
-  }
-
   async delete(id: number, userId: string): Promise<void> {
     const bot = await this.botRepository.findByIdAndUserId(id, userId);
     if (!bot) {
       throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
     }
 
-    // Delete the bot - Prisma will cascade delete all related data (sessions, messages, configs, embeddings)
+    // Delete the bot - Prisma will cascade delete all related data (sessions, messages, configs, memories)
     await this.botRepository.delete(id, userId);
   }
 }

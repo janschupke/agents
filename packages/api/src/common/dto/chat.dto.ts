@@ -40,6 +40,8 @@ export class SendMessageResponseDto {
   };
   rawRequest?: unknown;
   rawResponse?: unknown;
+  userMessageId?: number;
+  assistantMessageId?: number;
 }
 
 // Re-export SendMessageDto for convenience

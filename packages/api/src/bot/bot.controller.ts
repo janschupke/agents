@@ -15,10 +15,7 @@ import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
 import { CreateBotDto, UpdateBotDto } from '../common/dto/bot.dto';
 import { SuccessResponseDto } from '../common/dto/common.dto';
-import {
-  BotResponse,
-  EmbeddingResponse,
-} from '../common/interfaces/bot.interface';
+import { BotResponse } from '../common/interfaces/bot.interface';
 
 @Controller('api/bots')
 export class BotController {
@@ -119,46 +116,6 @@ export class BotController {
         body.description,
         configs
       );
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      const err = error as { message?: string };
-      throw new HttpException(
-        err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
-  }
-
-  @Get(':id/embeddings')
-  async getEmbeddings(
-    @Param('id', ParseIntPipe) id: number,
-    @User() user: AuthenticatedUser
-  ): Promise<EmbeddingResponse[]> {
-    try {
-      return await this.botService.getEmbeddings(id, user.id);
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      const err = error as { message?: string };
-      throw new HttpException(
-        err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
-  }
-
-  @Delete(':id/embeddings/:embeddingId')
-  async deleteEmbedding(
-    @Param('id', ParseIntPipe) id: number,
-    @Param('embeddingId', ParseIntPipe) embeddingId: number,
-    @User() user: AuthenticatedUser
-  ): Promise<SuccessResponseDto> {
-    try {
-      await this.botService.deleteEmbedding(id, embeddingId, user.id);
-      return { success: true };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;

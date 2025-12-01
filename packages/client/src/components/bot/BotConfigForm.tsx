@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Bot, Embedding } from '../../types/chat.types.js';
+import { Bot, AgentMemory } from '../../types/chat.types.js';
 import { BotService } from '../../services/bot.service.js';
+import { MemoryService } from '../../services/memory.service.js';
 import PageHeader from '../ui/PageHeader.js';
 import { Skeleton } from '../ui/Skeleton';
 import { IconRefresh } from '../ui/Icons';
@@ -13,7 +14,7 @@ import {
   SystemPromptField,
   BehaviorRulesField,
 } from './BotConfigFormFields';
-import EmbeddingsList from './EmbeddingsList';
+import MemoriesList from './MemoriesList';
 
 interface BotConfigFormProps {
   bot: Bot | null;
@@ -29,37 +30,38 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
   const [temperature, setTemperature] = useState(0.7);
   const [systemPrompt, setSystemPrompt] = useState('');
   const [behaviorRules, setBehaviorRules] = useState<string[]>([]);
-  const [embeddings, setEmbeddings] = useState<Embedding[]>([]);
-  const [loadingEmbeddings, setLoadingEmbeddings] = useState(false);
+  const [memories, setMemories] = useState<AgentMemory[]>([]);
+  const [loadingMemories, setLoadingMemories] = useState(false);
   const [loadingConfig, setLoadingConfig] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Track which bots are currently loading embeddings
+  // Track which bots are currently loading memories
   const loadingBots = useRef<Set<number>>(new Set());
 
-  // Load embeddings - always refresh, never cache
-  const loadEmbeddingsLazy = useCallback(async (botId: number) => {
+  // Load memories - always refresh, never cache
+  const loadMemoriesLazy = useCallback(async (botId: number) => {
     // Check if already loading for this bot
     if (loadingBots.current.has(botId)) {
       return;
     }
 
-    // Load embeddings (always fetch, no cache)
+    // Load memories (always fetch, no cache)
     loadingBots.current.add(botId);
-    setLoadingEmbeddings(true);
+    setLoadingMemories(true);
     setError(null);
     try {
-      const data = await BotService.getEmbeddings(botId);
-      setEmbeddings(data);
+      const data = await MemoryService.getMemories(botId);
+      setMemories(data);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load embeddings';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load memories';
       setError(errorMessage);
-      setEmbeddings([]);
+      setMemories([]);
     } finally {
       loadingBots.current.delete(botId);
-      setLoadingEmbeddings(false);
+      setLoadingMemories(false);
     }
   }, []);
 
@@ -106,7 +108,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
       setName(bot.name);
       setDescription(bot.description || '');
 
-      // Load config and embeddings for existing bots
+      // Load config and memories for existing bots
       if (bot.id > 0) {
         // Check cache first
         const cached = getCachedBotConfig(bot.id);
@@ -160,15 +162,15 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
             });
         }
 
-        // Always refresh embeddings (no cache)
-        loadEmbeddingsLazy(bot.id);
+        // Always refresh memories (no cache)
+        loadMemoriesLazy(bot.id);
       } else {
         // New bot, reset to defaults
         setLoadingConfig(false);
         setTemperature(0.7);
         setSystemPrompt('');
         setBehaviorRules([]);
-        setEmbeddings([]);
+        setMemories([]);
       }
     } else {
       // No bot selected, clear form
@@ -177,9 +179,9 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
       setTemperature(0.7);
       setSystemPrompt('');
       setBehaviorRules([]);
-      setEmbeddings([]);
+      setMemories([]);
     }
-  }, [bot, loadEmbeddingsLazy, getCachedBotConfig, setCachedBotConfig, parseBehaviorRules]);
+  }, [bot, loadMemoriesLazy, getCachedBotConfig, setCachedBotConfig, parseBehaviorRules]);
 
   const handleSave = async () => {
     if (!bot) return;
@@ -246,12 +248,12 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
     }
   };
 
-  const handleDeleteEmbedding = async (embeddingId: number) => {
-    if (!bot || bot.id < 0) return; // Can't delete embeddings from unsaved bots
+  const handleDeleteMemory = async (memoryId: number) => {
+    if (!bot || bot.id < 0) return; // Can't delete memories from unsaved bots
 
     const confirmed = await confirm({
-      title: 'Delete Embedding',
-      message: 'Are you sure you want to delete this embedding?',
+      title: 'Delete Memory',
+      message: 'Are you sure you want to delete this memory?',
       confirmText: 'Delete',
       cancelText: 'Cancel',
       confirmVariant: 'danger',
@@ -261,27 +263,47 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
       return;
     }
 
-    setDeletingId(embeddingId);
+    setDeletingId(memoryId);
     setError(null);
     try {
-      await BotService.deleteEmbedding(bot.id, embeddingId);
-      // Reload embeddings (always refresh)
-      const updated = embeddings.filter((e) => e.id !== embeddingId);
-      setEmbeddings(updated);
+      await MemoryService.deleteMemory(bot.id, memoryId);
+      // Reload memories (always refresh)
+      const updated = memories.filter((m) => m.id !== memoryId);
+      setMemories(updated);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete embedding';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete memory';
       setError(errorMessage);
     } finally {
       setDeletingId(null);
     }
   };
 
-  const handleRefreshEmbeddings = async () => {
+  const handleEditMemory = async (memoryId: number, newKeyPoint: string) => {
     if (!bot || bot.id < 0) return;
 
-    // Always reload embeddings (no cache)
+    setEditingId(memoryId);
+    setError(null);
+    try {
+      const updated = await MemoryService.updateMemory(bot.id, memoryId, newKeyPoint);
+      // Update memory in list
+      const updatedMemories = memories.map((m) =>
+        m.id === memoryId ? updated : m
+      );
+      setMemories(updatedMemories);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update memory';
+      setError(errorMessage);
+    } finally {
+      setEditingId(null);
+    }
+  };
+
+  const handleRefreshMemories = async () => {
+    if (!bot || bot.id < 0) return;
+
+    // Always reload memories (no cache)
     loadingBots.current.delete(bot.id);
-    await loadEmbeddingsLazy(bot.id);
+    await loadMemoriesLazy(bot.id);
   };
 
   if (!bot) {
@@ -347,24 +369,26 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
 
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-base font-semibold text-text-secondary">Embeddings</h3>
+                <h3 className="text-base font-semibold text-text-secondary">Memories</h3>
                 {bot.id > 0 && (
                   <button
-                    onClick={handleRefreshEmbeddings}
-                    disabled={loadingEmbeddings}
+                    onClick={handleRefreshMemories}
+                    disabled={loadingMemories}
                     className="h-6 w-6 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Refresh embeddings"
+                    title="Refresh memories"
                   >
-                    <IconRefresh className={`w-4 h-4 ${loadingEmbeddings ? 'animate-spin' : ''}`} />
+                    <IconRefresh className={`w-4 h-4 ${loadingMemories ? 'animate-spin' : ''}`} />
                   </button>
                 )}
               </div>
-              <EmbeddingsList
-                embeddings={embeddings}
-                loading={loadingEmbeddings}
+              <MemoriesList
+                memories={memories}
+                loading={loadingMemories}
+                editingId={editingId}
                 deletingId={deletingId}
-                onDelete={handleDeleteEmbedding}
-                onRefresh={handleRefreshEmbeddings}
+                onEdit={handleEditMemory}
+                onDelete={handleDeleteMemory}
+                onRefresh={handleRefreshMemories}
                 botId={bot.id}
               />
             </div>

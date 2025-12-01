@@ -4,7 +4,7 @@ import { ChatService } from './chat.service';
 import { BotRepository } from '../bot/bot.repository';
 import { SessionRepository } from '../session/session.repository';
 import { MessageRepository } from '../message/message.repository';
-import { MemoryRepository } from '../memory/memory.repository';
+import { AgentMemoryModule } from '../memory/agent-memory.module';
 import { OpenAIService } from '../openai/openai.service';
 import { UserModule } from '../user/user.module';
 import { ApiCredentialsModule } from '../api-credentials/api-credentials.module';
@@ -12,14 +12,19 @@ import { SystemConfigModule } from '../system-config/system-config.module';
 import { MessageTranslationModule } from '../message-translation/message-translation.module';
 
 @Module({
-  imports: [UserModule, ApiCredentialsModule, SystemConfigModule, MessageTranslationModule],
+  imports: [
+    UserModule,
+    ApiCredentialsModule,
+    SystemConfigModule,
+    MessageTranslationModule,
+    AgentMemoryModule,
+  ],
   controllers: [ChatController],
   providers: [
     ChatService,
     BotRepository,
     SessionRepository,
     MessageRepository,
-    MemoryRepository,
     OpenAIService,
   ],
 })

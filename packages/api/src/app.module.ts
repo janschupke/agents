@@ -10,6 +10,7 @@ import { WebhookModule } from './webhook/webhook.module';
 import { ApiCredentialsModule } from './api-credentials/api-credentials.module';
 import { SystemConfigModule } from './system-config/system-config.module';
 import { MessageTranslationModule } from './message-translation/message-translation.module';
+import { AgentMemoryModule } from './memory/agent-memory.module';
 import { ClerkGuard } from './auth/clerk.guard';
 
 @Module({
@@ -24,6 +25,7 @@ import { ClerkGuard } from './auth/clerk.guard';
     ApiCredentialsModule,
     SystemConfigModule,
     MessageTranslationModule,
+    AgentMemoryModule,
   ],
   providers: [
     {

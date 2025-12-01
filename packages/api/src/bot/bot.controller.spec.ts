@@ -13,8 +13,6 @@ describe('BotController', () => {
     findById: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
-    getEmbeddings: jest.fn(),
-    deleteEmbedding: jest.fn(),
     delete: jest.fn(),
   };
 
@@ -229,79 +227,6 @@ describe('BotController', () => {
       await expect(
         controller.updateBot(botId, updateDto, mockUser)
       ).rejects.toThrow('Bot not found');
-    });
-  });
-
-  describe('getEmbeddings', () => {
-    it('should return embeddings for a bot', async () => {
-      const botId = 1;
-      const mockEmbeddings = [
-        {
-          id: 1,
-          sessionId: 1,
-          chunk: 'Test chunk',
-          createdAt: new Date(),
-        },
-      ];
-
-      mockBotService.getEmbeddings.mockResolvedValue(mockEmbeddings);
-
-      const result = await controller.getEmbeddings(botId, mockUser);
-
-      expect(result).toEqual(mockEmbeddings);
-      expect(botService.getEmbeddings).toHaveBeenCalledWith(botId, mockUser.id);
-    });
-
-    it('should throw HttpException on service error', async () => {
-      const botId = 1;
-      const error = new HttpException('Bot not found', HttpStatus.NOT_FOUND);
-      mockBotService.getEmbeddings.mockRejectedValue(error);
-
-      await expect(controller.getEmbeddings(botId, mockUser)).rejects.toThrow(
-        HttpException
-      );
-      await expect(controller.getEmbeddings(botId, mockUser)).rejects.toThrow(
-        'Bot not found'
-      );
-    });
-  });
-
-  describe('deleteEmbedding', () => {
-    it('should delete an embedding', async () => {
-      const botId = 1;
-      const embeddingId = 1;
-
-      mockBotService.deleteEmbedding.mockResolvedValue(undefined);
-
-      const result = await controller.deleteEmbedding(
-        botId,
-        embeddingId,
-        mockUser
-      );
-
-      expect(result).toEqual({ success: true });
-      expect(botService.deleteEmbedding).toHaveBeenCalledWith(
-        botId,
-        embeddingId,
-        mockUser.id
-      );
-    });
-
-    it('should throw HttpException on service error', async () => {
-      const botId = 1;
-      const embeddingId = 1;
-      const error = new HttpException(
-        'Embedding not found',
-        HttpStatus.NOT_FOUND
-      );
-      mockBotService.deleteEmbedding.mockRejectedValue(error);
-
-      await expect(
-        controller.deleteEmbedding(botId, embeddingId, mockUser)
-      ).rejects.toThrow(HttpException);
-      await expect(
-        controller.deleteEmbedding(botId, embeddingId, mockUser)
-      ).rejects.toThrow('Embedding not found');
     });
   });
 

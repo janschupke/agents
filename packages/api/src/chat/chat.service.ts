@@ -2,7 +2,8 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { BotRepository } from '../bot/bot.repository';
 import { SessionRepository } from '../session/session.repository';
 import { MessageRepository } from '../message/message.repository';
-import { MemoryRepository } from '../memory/memory.repository';
+import { AgentMemoryService } from '../memory/agent-memory.service';
+import { AgentMemoryRepository } from '../memory/agent-memory.repository';
 import { OpenAIService } from '../openai/openai.service';
 import { UserService } from '../user/user.service';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
@@ -21,7 +22,8 @@ export class ChatService {
     private readonly botRepository: BotRepository,
     private readonly sessionRepository: SessionRepository,
     private readonly messageRepository: MessageRepository,
-    private readonly memoryRepository: MemoryRepository,
+    private readonly agentMemoryService: AgentMemoryService,
+    private readonly agentMemoryRepository: AgentMemoryRepository,
     private readonly openaiService: OpenAIService,
     private readonly userService: UserService,
     private readonly apiCredentialsService: ApiCredentialsService,
@@ -192,19 +194,13 @@ export class ChatService {
     // Retrieve relevant memories using vector similarity
     let relevantMemories: string[] = [];
     try {
-      const queryVector = await this.openaiService.generateEmbedding(
+      relevantMemories = await this.agentMemoryService.getMemoriesForContext(
+        botId,
+        userId,
         message,
         apiKey
       );
-      const similar = await this.memoryRepository.findSimilarForBot(
-        queryVector,
-        botId,
-        userId,
-        MEMORY_CONFIG.MAX_SIMILAR_MEMORIES,
-        MEMORY_CONFIG.SIMILARITY_THRESHOLD
-      );
-      if (similar.length > 0) {
-        relevantMemories = similar.map((m: { chunk: string }) => m.chunk);
+      if (relevantMemories.length > 0) {
         console.log(
           `Found ${relevantMemories.length} relevant memories for bot ${botId}`
         );
@@ -405,7 +401,7 @@ export class ChatService {
     };
 
     // Save user message to database with raw request
-    await this.messageRepository.create(
+    const userMessage = await this.messageRepository.create(
       session.id,
       'user',
       message,
@@ -427,7 +423,7 @@ export class ChatService {
     }
 
     // Save assistant message to database with raw response
-    await this.messageRepository.create(
+    const assistantMessage = await this.messageRepository.create(
       session.id,
       'assistant',
       response,
@@ -439,7 +435,7 @@ export class ChatService {
       completion
     );
 
-    // Save memory chunk periodically (every N messages, or on first message)
+    // Save memory periodically (every N messages, or on first message)
     const allMessages =
       await this.messageRepository.findAllBySessionIdForOpenAI(session.id);
     const shouldSaveMemory =
@@ -449,26 +445,32 @@ export class ChatService {
 
     if (shouldSaveMemory) {
       try {
-        const chunk =
-          this.openaiService.createMemoryChunkFromMessages(allMessages);
-        if (chunk && chunk.trim().length > 0) {
-          const embedding = await this.openaiService.generateEmbedding(
-            chunk,
-            apiKey
-          );
-          if (embedding && embedding.length > 0) {
-            await this.memoryRepository.create(session.id, chunk, embedding);
-            console.log(
-              `Saved memory chunk for session ${session.id} (${allMessages.length} messages)`
-            );
-          } else {
-            console.warn('Empty embedding generated, skipping memory save');
-          }
-        } else {
-          console.warn('Empty chunk generated, skipping memory save');
+        await this.agentMemoryService.createMemory(
+          botId,
+          userId,
+          session.id,
+          session.sessionName,
+          allMessages,
+          apiKey
+        );
+
+        // Check if summarization is needed
+        const shouldSummarize =
+          await this.agentMemoryService.shouldSummarize(botId, userId);
+        if (shouldSummarize) {
+          // Run summarization asynchronously (don't wait)
+          this.agentMemoryService
+            .summarizeMemories(botId, userId, apiKey)
+            .catch((error) => {
+              console.error('Error during memory summarization:', error);
+            });
         }
+
+        console.log(
+          `Saved memories for bot ${botId}, session ${session.id} (${allMessages.length} messages)`
+        );
       } catch (error) {
-        console.error('Error saving memory chunk:', error);
+        console.error('Error saving memories:', error);
         // Continue even if memory save fails
       }
     }
@@ -481,6 +483,8 @@ export class ChatService {
       },
       rawRequest: openaiRequest,
       rawResponse: completion,
+      userMessageId: userMessage.id,
+      assistantMessageId: assistantMessage.id,
     };
   }
 
