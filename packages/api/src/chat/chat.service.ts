@@ -7,6 +7,7 @@ import { OpenAIService } from '../openai/openai.service';
 import { UserService } from '../user/user.service';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
 import { SystemConfigRepository } from '../system-config/system-config.repository';
+import { MessageTranslationService } from '../message-translation/message-translation.service';
 import { MEMORY_CONFIG } from '../common/constants/api.constants';
 import {
   SessionResponseDto,
@@ -24,7 +25,8 @@ export class ChatService {
     private readonly openaiService: OpenAIService,
     private readonly userService: UserService,
     private readonly apiCredentialsService: ApiCredentialsService,
-    private readonly systemConfigRepository: SystemConfigRepository
+    private readonly systemConfigRepository: SystemConfigRepository,
+    private readonly messageTranslationService: MessageTranslationService
   ) {}
 
   async getSessions(
@@ -101,17 +103,29 @@ export class ChatService {
     const messageRecords =
       await this.messageRepository.findAllBySessionIdWithRawData(session.id);
 
+    // Get all message IDs
+    const messageIds = messageRecords.map((m) => m.id);
+
+    // Load translations for all messages
+    const translations =
+      await this.messageTranslationService.getTranslationsForMessages(
+        messageIds
+      );
+
     const messages = messageRecords.map(
       (msg: {
+        id: number;
         role: string;
         content: string;
         rawRequest?: unknown;
         rawResponse?: unknown;
       }) => ({
+        id: msg.id,
         role: msg.role as 'user' | 'assistant' | 'system',
         content: msg.content,
         rawRequest: msg.rawRequest,
         rawResponse: msg.rawResponse,
+        translation: translations.get(msg.id),
       })
     );
 

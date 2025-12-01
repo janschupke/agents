@@ -9,9 +9,10 @@ import { OpenAIService } from '../openai/openai.service';
 import { UserModule } from '../user/user.module';
 import { ApiCredentialsModule } from '../api-credentials/api-credentials.module';
 import { SystemConfigModule } from '../system-config/system-config.module';
+import { MessageTranslationModule } from '../message-translation/message-translation.module';
 
 @Module({
-  imports: [UserModule, ApiCredentialsModule, SystemConfigModule],
+  imports: [UserModule, ApiCredentialsModule, SystemConfigModule, MessageTranslationModule],
   controllers: [ChatController],
   providers: [
     ChatService,

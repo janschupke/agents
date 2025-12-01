@@ -26,7 +26,12 @@ export default function ChatMessages({ messages, loading, onShowJson }: ChatMess
   return (
     <>
       {filteredMessages.map((message, index) => (
-        <MessageBubble key={index} message={message} onShowJson={onShowJson} />
+        <MessageBubble
+          key={index}
+          message={message}
+          messageId={message.id}
+          onShowJson={onShowJson}
+        />
       ))}
       {loading && (
         <div className="flex max-w-[80%] self-start">

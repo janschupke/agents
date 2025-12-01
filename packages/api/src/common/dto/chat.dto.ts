@@ -11,10 +11,12 @@ export class UpdateSessionDto {
 }
 
 export class MessageResponseDto {
+  id?: number;
   role: 'user' | 'assistant' | 'system';
   content: string;
   rawRequest?: unknown;
   rawResponse?: unknown;
+  translation?: string;
 }
 
 export class ChatHistoryResponseDto {

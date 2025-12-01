@@ -79,6 +79,7 @@ model Message {
   rawResponse Json?       @map("raw_response") // Raw OpenAI response JSON for assistant messages
   createdAt   DateTime    @default(now()) @map("created_at")
   session     ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  translation MessageTranslation?
 
   @@index([sessionId, createdAt(sort: Desc)])
   @@map("messages")
@@ -109,6 +110,17 @@ model UserApiCredential {
   @@unique([userId, provider])
   @@index([userId])
   @@map("user_api_credentials")
+}
+
+model MessageTranslation {
+  id          Int      @id @default(autoincrement())
+  messageId   Int      @unique @map("message_id")
+  translation String
+  createdAt   DateTime @default(now()) @map("created_at")
+  message     Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@map("message_translations")
 }
 
 model SystemConfig {

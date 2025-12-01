@@ -9,6 +9,7 @@ import { UserModule } from './user/user.module';
 import { WebhookModule } from './webhook/webhook.module';
 import { ApiCredentialsModule } from './api-credentials/api-credentials.module';
 import { SystemConfigModule } from './system-config/system-config.module';
+import { MessageTranslationModule } from './message-translation/message-translation.module';
 import { ClerkGuard } from './auth/clerk.guard';
 
 @Module({
@@ -22,6 +23,7 @@ import { ClerkGuard } from './auth/clerk.guard';
     WebhookModule,
     ApiCredentialsModule,
     SystemConfigModule,
+    MessageTranslationModule,
   ],
   providers: [
     {

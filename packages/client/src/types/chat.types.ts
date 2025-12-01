@@ -1,8 +1,10 @@
 export interface Message {
+  id?: number;
   role: 'user' | 'assistant' | 'system';
   content: string;
   rawRequest?: unknown; // Raw OpenAI request JSON for user messages
   rawResponse?: unknown; // Raw OpenAI response JSON for assistant messages
+  translation?: string; // Translated text in English
 }
 
 export interface ChatBotProps {

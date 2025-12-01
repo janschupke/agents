@@ -84,4 +84,10 @@ export class MessageRepository {
       },
     });
   }
+
+  async findById(messageId: number): Promise<Message | null> {
+    return this.prisma.message.findUnique({
+      where: { id: messageId },
+    });
+  }
 }
