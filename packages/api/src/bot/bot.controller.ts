@@ -77,6 +77,7 @@ export class BotController {
         user.id,
         body.name,
         body.description,
+        body.avatarUrl,
         configs
       );
     } catch (error) {
@@ -114,6 +115,7 @@ export class BotController {
         user.id,
         body.name,
         body.description,
+        body.avatarUrl,
         configs
       );
     } catch (error) {

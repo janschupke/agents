@@ -25,6 +25,7 @@ export class BotRepository {
         userId: true,
         name: true,
         description: true,
+        avatarUrl: true,
         createdAt: true,
       },
     });
@@ -95,13 +96,15 @@ export class BotRepository {
   async create(
     userId: string,
     name: string,
-    description?: string
+    description?: string,
+    avatarUrl?: string
   ): Promise<Bot> {
     return this.prisma.bot.create({
       data: {
         userId,
         name,
         description: description || null,
+        avatarUrl: avatarUrl || null,
       },
     });
   }
@@ -110,7 +113,8 @@ export class BotRepository {
     id: number,
     userId: string,
     name: string,
-    description?: string
+    description?: string,
+    avatarUrl?: string
   ): Promise<Bot> {
     // First verify the bot belongs to the user
     const bot = await this.findByIdAndUserId(id, userId);
@@ -123,6 +127,7 @@ export class BotRepository {
       data: {
         name,
         description: description || null,
+        avatarUrl: avatarUrl !== undefined ? (avatarUrl || null) : undefined,
       },
     });
   }

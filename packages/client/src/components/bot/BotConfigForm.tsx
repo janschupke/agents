@@ -7,6 +7,7 @@ import { Skeleton } from '../ui/Skeleton';
 import { IconRefresh } from '../ui/Icons';
 import { useBots } from '../../contexts/BotContext.js';
 import { useConfirm } from '../../hooks/useConfirm';
+import FileUpload from '../ui/FileUpload.js';
 import {
   NameField,
   DescriptionField,
@@ -27,6 +28,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [temperature, setTemperature] = useState(0.7);
   const [systemPrompt, setSystemPrompt] = useState('');
   const [behaviorRules, setBehaviorRules] = useState<string[]>([]);
@@ -107,6 +109,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
     if (bot) {
       setName(bot.name);
       setDescription(bot.description || '');
+      setAvatarUrl(bot.avatarUrl || null);
 
       // Load config and memories for existing bots
       if (bot.id > 0) {
@@ -176,6 +179,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
       // No bot selected, clear form
       setName('');
       setDescription('');
+      setAvatarUrl(null);
       setTemperature(0.7);
       setSystemPrompt('');
       setBehaviorRules([]);
@@ -212,6 +216,7 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
         savedBot = await BotService.createBot({
           name: name.trim(),
           description: description.trim() || undefined,
+          avatarUrl: avatarUrl || undefined,
           configs,
         });
         // Clear cache for this new bot (it will be reloaded)
@@ -220,12 +225,14 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
         await BotService.updateBot(bot.id, {
           name: name.trim(),
           description: description.trim() || undefined,
+          avatarUrl: avatarUrl || undefined,
           configs,
         });
         savedBot = {
           ...bot,
           name: name.trim(),
           description: description.trim() || null,
+          avatarUrl: avatarUrl || null,
         };
       }
 
@@ -363,6 +370,12 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
           <div className="space-y-5">
             <NameField value={name} onChange={setName} autoFocus={bot.id < 0} botId={bot.id} />
             <DescriptionField value={description} onChange={setDescription} />
+            <FileUpload
+              value={avatarUrl}
+              onChange={setAvatarUrl}
+              label="Agent Avatar"
+              description="Upload an image for the agent avatar (PNG, JPG, GIF up to 5MB)"
+            />
             <TemperatureField value={temperature} onChange={setTemperature} />
             <SystemPromptField value={systemPrompt} onChange={setSystemPrompt} />
             <BehaviorRulesField rules={behaviorRules} onChange={setBehaviorRules} />

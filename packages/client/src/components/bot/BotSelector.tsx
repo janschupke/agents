@@ -45,6 +45,17 @@ export default function BotSelector() {
         className="flex items-center gap-2 h-8 px-2 rounded-md hover:bg-background-tertiary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
         aria-label="Select bot"
       >
+        {currentBot?.avatarUrl ? (
+          <img
+            src={currentBot.avatarUrl}
+            alt={currentBot.name}
+            className="w-6 h-6 rounded-full object-cover border border-border"
+          />
+        ) : (
+          <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-text-inverse text-xs font-semibold border border-border">
+            {displayName.charAt(0).toUpperCase()}
+          </div>
+        )}
         <h2 className="text-lg font-semibold text-text-secondary">{displayName}</h2>
         <IconChevronDown
           className={`w-4 h-4 text-text-tertiary transition-transform ${isOpen ? 'rotate-180' : ''}`}
@@ -63,6 +74,17 @@ export default function BotSelector() {
                   : 'text-text-primary hover:bg-background-tertiary'
               }`}
             >
+              {bot.avatarUrl ? (
+                <img
+                  src={bot.avatarUrl}
+                  alt={bot.name}
+                  className="w-5 h-5 rounded-full object-cover border border-border flex-shrink-0"
+                />
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-text-inverse text-xs font-semibold border border-border flex-shrink-0">
+                  {bot.name.charAt(0).toUpperCase()}
+                </div>
+              )}
               <span className="truncate">{bot.name}</span>
               {bot.id === selectedBotId && <span className="ml-auto text-xs">✓</span>}
             </button>

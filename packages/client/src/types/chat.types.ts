@@ -50,6 +50,7 @@ export interface Bot {
   id: number;
   name: string;
   description: string | null;
+  avatarUrl: string | null;
   createdAt: string;
   configs?: {
     temperature?: number;
@@ -75,6 +76,7 @@ export interface AgentMemory {
 export interface CreateBotRequest {
   name: string;
   description?: string;
+  avatarUrl?: string;
   configs?: {
     temperature?: number;
     system_prompt?: string;
@@ -85,6 +87,7 @@ export interface CreateBotRequest {
 export interface UpdateBotRequest {
   name: string;
   description?: string;
+  avatarUrl?: string;
   configs?: {
     temperature?: number;
     system_prompt?: string;

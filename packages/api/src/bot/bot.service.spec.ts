@@ -129,14 +129,15 @@ describe('BotService', () => {
       mockBotRepository.findByName.mockResolvedValue(null);
       mockBotRepository.create.mockResolvedValue(mockBot);
 
-      const result = await service.create(userId, name, description, configs);
+      const result = await service.create(userId, name, description, undefined, configs);
 
       expect(result).toEqual(mockBot);
       expect(mockBotRepository.findByName).toHaveBeenCalledWith(name, userId);
       expect(mockBotRepository.create).toHaveBeenCalledWith(
         userId,
         name,
-        description
+        description,
+        undefined
       );
       expect(mockBotRepository.updateConfigs).toHaveBeenCalledWith(
         mockBot.id,
@@ -225,6 +226,7 @@ describe('BotService', () => {
         userId,
         name,
         description,
+        undefined,
         configs
       );
 
@@ -237,7 +239,8 @@ describe('BotService', () => {
         botId,
         userId,
         name,
-        description
+        description,
+        undefined
       );
       expect(mockBotRepository.updateConfigs).toHaveBeenCalledWith(
         botId,

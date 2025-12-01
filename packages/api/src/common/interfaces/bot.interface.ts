@@ -2,6 +2,7 @@ export interface BotWithConfig {
   id: number;
   name: string;
   description: string | null;
+  avatarUrl: string | null;
   configs: Record<string, unknown>;
 }
 
@@ -18,6 +19,7 @@ export interface BotResponse {
   userId: string;
   name: string;
   description: string | null;
+  avatarUrl: string | null;
   createdAt: Date;
   configs?: Record<string, unknown>;
 }

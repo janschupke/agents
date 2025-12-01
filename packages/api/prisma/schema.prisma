@@ -33,6 +33,7 @@ model Bot {
   userId      String        @map("user_id")
   name        String
   description String?
+  avatarUrl   String?       @map("avatar_url")
   createdAt   DateTime      @default(now()) @map("created_at")
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   configs     BotConfig[]

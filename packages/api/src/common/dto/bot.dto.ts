@@ -9,11 +9,13 @@ export class BotConfigDto {
 export class CreateBotDto {
   name: string;
   description?: string;
+  avatarUrl?: string;
   configs?: BotConfigDto;
 }
 
 export class UpdateBotDto {
   name: string;
   description?: string;
+  avatarUrl?: string;
   configs?: BotConfigDto;
 }

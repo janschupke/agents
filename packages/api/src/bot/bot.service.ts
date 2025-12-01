@@ -34,6 +34,7 @@ export class BotService {
     userId: string,
     name: string,
     description?: string,
+    avatarUrl?: string,
     configs?: Record<string, unknown>
   ): Promise<BotResponse> {
     // User is automatically synced to DB by ClerkGuard
@@ -50,7 +51,7 @@ export class BotService {
       );
     }
 
-    const bot = await this.botRepository.create(userId, name, description);
+    const bot = await this.botRepository.create(userId, name, description, avatarUrl);
 
     // Set configs if provided
     if (configs) {
@@ -65,6 +66,7 @@ export class BotService {
     userId: string,
     name: string,
     description?: string,
+    avatarUrl?: string,
     configs?: Record<string, unknown>
   ): Promise<BotResponse> {
     const bot = await this.botRepository.findByIdAndUserId(id, userId);
@@ -91,7 +93,8 @@ export class BotService {
       id,
       userId,
       name,
-      description
+      description,
+      avatarUrl
     );
     if (!updated) {
       throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);

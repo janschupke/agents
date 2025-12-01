@@ -34,7 +34,8 @@ async function bootstrap() {
     }
   );
   // Handle JSON for all other endpoints
-  app.use(json());
+  // Increase limit to 10MB to support base64-encoded images (5MB image = ~6.67MB base64)
+  app.use(json({ limit: '10mb' }));
 
   // Global exception filter
   app.useGlobalFilters(new AllExceptionsFilter());
