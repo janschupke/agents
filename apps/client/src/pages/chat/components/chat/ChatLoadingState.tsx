@@ -1,9 +1,9 @@
-import { PageContainer } from '@openai/ui';
 import {
+  PageContainer,
   Skeleton,
   SkeletonList,
   SkeletonMessage,
-} from '../../../../components/ui/feedback';
+} from '@openai/ui';
 
 export default function ChatLoadingState() {
   return (

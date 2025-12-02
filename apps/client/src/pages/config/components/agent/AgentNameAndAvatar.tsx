@@ -1,5 +1,4 @@
-import { AvatarPicker } from '../../../../components/ui/file-upload';
-import { ValidatedInput } from '@openai/ui';
+import { AvatarPicker, ValidatedInput } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 interface AgentNameAndAvatarProps {

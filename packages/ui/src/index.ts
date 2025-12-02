@@ -15,3 +15,6 @@ export * from './components/layout';
 
 // Export modal components
 export * from './components/modal';
+
+// Export file-upload components
+export * from './components/file-upload';
