@@ -1,10 +1,10 @@
 import { memo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
 import { SignIn } from '@clerk/clerk-react';
-import ChatBot from './components/chat/ChatBot';
-import BotConfig from './components/bot/BotConfig';
+import { ChatBot } from './pages/chat';
+import { BotConfig } from './pages/config';
+import { UserProfile } from './pages/profile';
 import UserDropdown from './components/auth/UserDropdown';
-import UserProfile from './components/auth/UserProfile';
 import Footer from './components/ui/Footer';
 import { IconChat, IconSettings } from './components/ui/Icons';
 import { Skeleton } from './components/ui/Skeleton';

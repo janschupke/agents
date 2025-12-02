@@ -1,0 +1,86 @@
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useUpdateMemory, useDeleteMemory } from '../../../hooks/mutations/use-bot-mutations.js';
+import { queryKeys } from '../../../hooks/queries/query-keys.js';
+import { useConfirm } from '../../../hooks/useConfirm';
+
+interface UseBotMemoriesOptions {
+  botId: number | null;
+}
+
+interface UseBotMemoriesReturn {
+  editingId: number | null;
+  deletingId: number | null;
+  handleDeleteMemory: (memoryId: number) => Promise<void>;
+  handleEditMemory: (memoryId: number, newKeyPoint: string) => Promise<void>;
+  handleRefreshMemories: () => void;
+}
+
+/**
+ * Manages memory operations (edit, delete, refresh) for a bot
+ */
+export function useBotMemories({ botId }: UseBotMemoriesOptions): UseBotMemoriesReturn {
+  const { confirm } = useConfirm();
+  const queryClient = useQueryClient();
+  const updateMemoryMutation = useUpdateMemory();
+  const deleteMemoryMutation = useDeleteMemory();
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  const handleDeleteMemory = async (memoryId: number) => {
+    if (!botId || botId < 0) return;
+
+    const confirmed = await confirm({
+      title: 'Delete Memory',
+      message: 'Are you sure you want to delete this memory?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      confirmVariant: 'danger',
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingId(memoryId);
+    try {
+      await deleteMemoryMutation.mutateAsync({ botId, memoryId });
+    } catch (error) {
+      // Error is handled by mutation hook
+      console.error('Failed to delete memory:', error);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleEditMemory = async (memoryId: number, newKeyPoint: string) => {
+    if (!botId || botId < 0) return;
+
+    setEditingId(memoryId);
+    try {
+      await updateMemoryMutation.mutateAsync({
+        botId,
+        memoryId,
+        keyPoint: newKeyPoint,
+      });
+    } catch (error) {
+      // Error is handled by mutation hook
+      console.error('Failed to update memory:', error);
+    } finally {
+      setEditingId(null);
+    }
+  };
+
+  const handleRefreshMemories = () => {
+    if (!botId || botId < 0) return;
+    queryClient.invalidateQueries({ queryKey: queryKeys.bots.memories(botId) });
+  };
+
+  return {
+    editingId,
+    deletingId,
+    handleDeleteMemory,
+    handleEditMemory,
+    handleRefreshMemories,
+  };
+}
