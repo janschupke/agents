@@ -2,17 +2,17 @@ import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useUser, SignOutButton } from '@clerk/clerk-react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { User } from '../types/user.types';
+import { useCurrentUser } from '../hooks/queries/use-user';
 import { IconUsers, IconSettings } from './ui/Icons';
 
 interface LayoutProps {
   children: ReactNode;
-  userInfo: User | null;
 }
 
-export default function Layout({ children, userInfo }: LayoutProps) {
+export default function Layout({ children }: LayoutProps) {
   const { t } = useTranslation(I18nNamespace.ADMIN);
   const { user: clerkUser } = useUser();
+  const { data: userInfo } = useCurrentUser();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;

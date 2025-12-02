@@ -32,6 +32,12 @@ importers:
       '@openai/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@tanstack/react-query':
+        specifier: ^5.90.11
+        version: 5.90.11(react@18.3.1)
+      msw:
+        specifier: ^2.12.3
+        version: 2.12.3(@types/node@20.19.24)(typescript@5.9.3)
       react:
         specifier: ^18.2.0
         version: 18.3.1

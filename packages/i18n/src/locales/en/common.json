@@ -6,6 +6,7 @@
     "loading": "Loading...",
     "pleaseSignIn": "app.pleaseSignIn",
     "pleaseSignInToContinue": "app.pleaseSignInToContinue",
+    "saving": "Saving...",
     "signIn": "Sign in to continue",
     "signOut": "app.signOut",
     "title": "OpenAI Chat",

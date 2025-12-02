@@ -1,55 +1,55 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { systemConfigService } from '../services/system-config.service';
+import { useSystemRules, useUpdateSystemRules } from '../hooks/queries/use-system-rules';
 import { IconTrash, IconPlus } from './ui/Icons';
 
 export default function SystemBehaviorRules() {
   const { t: tAdmin } = useTranslation(I18nNamespace.ADMIN);
   const { t: tCommon } = useTranslation(I18nNamespace.COMMON);
+  const { data, isLoading: loading, error: queryError } = useSystemRules();
+  const updateMutation = useUpdateSystemRules();
   const [rules, setRules] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const loadRules = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await systemConfigService.getBehaviorRules();
-      setRules(data.rules || []);
-    } catch (err) {
-      const error = err as { message?: string; status?: number };
-      if (error?.status === 404) {
-        // No rules set yet, start with empty array
-        setRules([]);
-      } else {
-        setError(error?.message || tAdmin('systemRules.error'));
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [tAdmin]);
-
+  // Sync rules from query data
   useEffect(() => {
-    loadRules();
-  }, [loadRules]);
+    if (data) {
+      setRules(data.rules || []);
+    } else if (data === undefined && !loading) {
+      // No rules set yet (404 case)
+      setRules([]);
+    }
+  }, [data, loading]);
+
+  // Show success message after successful save
+  useEffect(() => {
+    if (updateMutation.isSuccess) {
+      setSuccess(true);
+      const timer = setTimeout(() => setSuccess(false), 3000);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [updateMutation.isSuccess]);
 
   const handleSave = async () => {
-    setSaving(true);
-    setError(null);
-    setSuccess(false);
-    try {
-      await systemConfigService.updateBehaviorRules(rules);
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
-    } catch (err) {
-      const error = err as { message?: string };
-      setError(error?.message || tAdmin('systemRules.error'));
-    } finally {
-      setSaving(false);
-    }
+    updateMutation.mutate(rules, {
+      onError: () => {
+        // Error is handled by mutation state
+      },
+    });
   };
+
+  const error =
+    queryError && typeof queryError === 'object' && 'status' in queryError
+      ? queryError.status === 404
+        ? null // 404 is expected when no rules are set
+        : ('message' in queryError && queryError.message) ||
+          tAdmin('systemRules.error')
+      : updateMutation.error && typeof updateMutation.error === 'object' && 'message' in updateMutation.error
+        ? (updateMutation.error.message as string)
+        : updateMutation.isError
+          ? tAdmin('systemRules.error')
+          : null;
 
   const handleAddRule = () => {
     setRules([...rules, '']);
@@ -137,10 +137,12 @@ export default function SystemBehaviorRules() {
       <div className="flex justify-end">
         <button
           onClick={handleSave}
-          disabled={saving}
+          disabled={updateMutation.isPending}
           className="px-4 py-2 bg-primary text-text-inverse rounded-md text-sm font-medium hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {saving ? tCommon('app.saving') : tAdmin('systemRules.save')}
+          {updateMutation.isPending
+            ? tCommon('app.saving')
+            : tAdmin('systemRules.save')}
         </button>
       </div>
     </div>

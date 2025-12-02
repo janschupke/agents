@@ -4,6 +4,7 @@ import { ClerkProvider } from '@clerk/clerk-react';
 import { initI18n } from '@openai/i18n';
 import App from './App';
 import ClerkTokenProvider from './components/ClerkTokenProvider';
+import { QueryProvider } from './providers/QueryProvider';
 import './index.css';
 
 // Initialize i18n
@@ -19,7 +20,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ClerkProvider publishableKey={clerkPubKey}>
       <ClerkTokenProvider>
-        <App />
+        <QueryProvider>
+          <App />
+        </QueryProvider>
       </ClerkTokenProvider>
     </ClerkProvider>
   </React.StrictMode>

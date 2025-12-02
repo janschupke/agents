@@ -1,9 +1,7 @@
-import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useUser, SignInButton, SignOutButton } from '@clerk/clerk-react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { UserService } from './services/user.service';
-import { User } from './types/user.types';
+import { useCurrentUser } from './hooks/queries/use-user';
 import Layout from './components/Layout';
 import UsersPage from './pages/UsersPage';
 import SystemRulesPage from './pages/SystemRulesPage';
@@ -11,50 +9,22 @@ import SystemRulesPage from './pages/SystemRulesPage';
 function App() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
   const { isSignedIn, isLoaded } = useUser();
-  const [userInfo, setUserInfo] = useState<User | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: userInfo,
+    isLoading: loading,
+    error: userError,
+  } = useCurrentUser();
 
-  useEffect(() => {
-    if (isSignedIn && isLoaded) {
-      // Wait a bit for token provider to be ready
-      const timer = setTimeout(() => {
-        checkAdminAccess();
-      }, 200);
-      return () => clearTimeout(timer);
-    }
-    setUserInfo(null);
-    return undefined;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSignedIn, isLoaded]);
-
-  const checkAdminAccess = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      // First check if user is authenticated and get their info
-      const currentUser = await UserService.getCurrentUser();
-      setUserInfo(currentUser);
-
-      // Check if user has admin role
-      if (!currentUser.roles.includes('admin')) {
-        setError(t('app.adminRoleRequired'));
-        setLoading(false);
-        return;
-      }
-    } catch (error: unknown) {
-      const err = error as { status?: number; message?: string };
-      if (err?.status === 403) {
-        setError(t('app.adminRoleRequired'));
-      } else if (err?.status === 401) {
-        setError(t('app.pleaseSignInToContinue'));
-      } else {
-        setError(err?.message || t('app.failedToLoadUserData'));
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Determine error message from query error
+  const error =
+    userError && typeof userError === 'object' && 'status' in userError
+      ? (userError.status === 403
+          ? t('app.adminRoleRequired')
+          : userError.status === 401
+            ? t('app.pleaseSignInToContinue')
+            : ('message' in userError && userError.message) ||
+              t('app.failedToLoadUserData'))
+      : null;
 
   if (!isLoaded) {
     return (
@@ -90,7 +60,11 @@ function App() {
     );
   }
 
-  if (error || !userInfo || !userInfo.roles.includes('admin')) {
+  // Check if user has admin role
+  const hasAdminAccess =
+    userInfo && userInfo.roles && userInfo.roles.includes('admin');
+
+  if (error || (userInfo && !hasAdminAccess)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-full max-w-md bg-background-secondary rounded-lg shadow-lg p-8">
@@ -110,9 +84,14 @@ function App() {
     );
   }
 
+  // Don't render routes until we have confirmed admin access
+  if (!userInfo || !hasAdminAccess) {
+    return null;
+  }
+
   return (
     <BrowserRouter>
-      <Layout userInfo={userInfo}>
+      <Layout>
         <Routes>
           <Route path="/" element={<Navigate to="/users" replace />} />
           <Route path="/users" element={<UsersPage />} />

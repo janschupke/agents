@@ -1,36 +1,17 @@
-import { useState, useEffect, useCallback } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { UserService } from '../services/user.service';
-import { User } from '../types/user.types';
+import { useUsers } from '../hooks/queries/use-user';
 import UserList from '../components/UserList';
 
 export default function UsersPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { data: users = [], isLoading: loading, error } = useUsers();
 
-  const loadUsers = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const allUsers = await UserService.getAllUsers();
-      setUsers(allUsers);
-    } catch (err) {
-      const error = err as { status?: number; message?: string };
-      if (error?.status === 403) {
-        setError(t('users.accessDenied'));
-      } else {
-        setError(error?.message || t('users.error'));
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
-
-  useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
+  const errorMessage =
+    error && typeof error === 'object' && 'status' in error
+      ? error.status === 403
+        ? t('users.accessDenied')
+        : ('message' in error && error.message) || t('users.error')
+      : null;
 
   if (loading) {
     return (
@@ -40,10 +21,10 @@ export default function UsersPage() {
     );
   }
 
-  if (error) {
+  if (errorMessage) {
     return (
       <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
-        {error}
+        {errorMessage}
       </div>
     );
   }
