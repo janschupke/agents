@@ -1,10 +1,10 @@
-import { Agent } from '../../../types/chat.types';
+import { Agent } from '../../../../types/chat.types';
 import { AgentFormValues } from './use-agent-form';
 import {
   useUpdateAgent,
   useCreateAgent,
-} from '../../../hooks/mutations/use-agent-mutations';
-import { useNewAgentForm } from './use-new-agent-form';
+} from '../../../../hooks/mutations/use-agent-mutations';
+import { useNewAgentForm } from '../form/use-new-agent-form';
 import { useAgentConfigNavigation } from './use-agent-config-navigation';
 import { NavigateFunction } from 'react-router-dom';
 

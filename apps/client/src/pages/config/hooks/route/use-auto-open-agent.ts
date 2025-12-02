@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Agent } from '../../../types/chat.types';
+import { Agent } from '../../../../types/chat.types';
 
 interface UseAutoOpenAgentOptions {
   agents: Agent[];

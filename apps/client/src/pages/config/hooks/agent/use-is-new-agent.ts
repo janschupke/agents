@@ -1,5 +1,5 @@
 import { useLocation, useParams } from 'react-router-dom';
-import { ROUTES } from '../../../constants/routes.constants';
+import { ROUTES } from '../../../../constants/routes.constants';
 
 /**
  * Hook to determine if we're creating a new agent

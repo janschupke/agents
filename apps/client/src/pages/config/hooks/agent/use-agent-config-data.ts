@@ -1,4 +1,4 @@
-import { useAgent } from '../../../hooks/queries/use-agents';
+import { useAgent } from '../../../../hooks/queries/use-agents';
 
 interface UseAgentConfigDataOptions {
   propAgentId?: number;

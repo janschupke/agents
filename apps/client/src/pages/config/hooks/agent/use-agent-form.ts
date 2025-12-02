@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { Agent } from '../../../types/chat.types';
+import { Agent } from '../../../../types/chat.types';
 import { useFormValidation, validationRules } from '@openai/utils';
-import { parseBehaviorRules } from '../utils/agent.utils';
+import { parseBehaviorRules } from '../../utils/agent.utils';
 
 export interface AgentFormValues extends Record<string, unknown> {
   name: string;

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useAgentForm } from './use-agent-form';
-import { Agent } from '../../../types/chat.types';
+import { Agent } from '../../../../types/chat.types';
 
 // Mock useFormValidation
 const mockSetValue = vi.fn();

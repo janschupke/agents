@@ -1,8 +1,8 @@
 import { Agent } from '../../../../types/chat.types';
 import { useAgent } from '../../../../hooks/queries/use-agents';
 import { useAgentMemories as useAgentMemoriesQuery } from '../../../../hooks/queries/use-agents';
-import { useAgentForm } from '../../hooks/use-agent-form';
-import { useAgentMemories } from '../../hooks/use-agent-memories';
+import { useAgentForm } from '../../hooks/agent/use-agent-form';
+import { useAgentMemories } from '../../hooks/agent/use-agent-memories';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { FormContainer } from '@openai/ui';
 import {

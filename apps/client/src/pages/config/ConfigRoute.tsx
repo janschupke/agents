@@ -1,7 +1,7 @@
 import { useParams, Navigate, useLocation } from 'react-router-dom';
 import { ROUTES } from '../../constants/routes.constants';
 import AgentConfig from './components/agent/AgentConfig';
-import { useConfigRoute } from './hooks/use-config-route';
+import { useConfigRoute } from './hooks/route/use-config-route';
 import AgentConfigErrorState from './components/agent/AgentConfigErrorState';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import {

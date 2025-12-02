@@ -3,9 +3,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   useUpdateMemory,
   useDeleteMemory,
-} from '../../../hooks/mutations/use-agent-mutations';
-import { queryKeys } from '../../../hooks/queries/query-keys';
-import { useConfirm } from '../../../hooks/useConfirm';
+} from '../../../../hooks/mutations/use-agent-mutations';
+import { queryKeys } from '../../../../hooks/queries/query-keys';
+import { useConfirm } from '../../../../hooks/useConfirm';
 
 interface UseAgentMemoriesOptions {
   agentId: number | null;

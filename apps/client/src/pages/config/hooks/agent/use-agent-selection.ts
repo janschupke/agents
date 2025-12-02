@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Agent } from '../../../types/chat.types';
-import { LocalStorageManager } from '../../../utils/localStorage';
+import { Agent } from '../../../../types/chat.types';
+import { LocalStorageManager } from '../../../../utils/localStorage';
 
 interface UseAgentSelectionOptions {
   contextAgents: Agent[];

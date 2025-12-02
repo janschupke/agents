@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { NavigateFunction } from 'react-router-dom';
-import { ROUTES } from '../../../constants/routes.constants';
-import { LocalStorageManager } from '../../../utils/localStorage';
+import { ROUTES } from '../../../../constants/routes.constants';
+import { LocalStorageManager } from '../../../../utils/localStorage';
 
 interface UseAgentConfigNavigationOptions {
   navigate: NavigateFunction;

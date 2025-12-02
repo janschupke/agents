@@ -1,12 +1,12 @@
-import { Agent } from '../../../types/chat.types';
+import { Agent } from '../../../../types/chat.types';
 import {
   useCreateAgent,
   useUpdateAgent,
   useDeleteAgent,
-} from '../../../hooks/mutations/use-agent-mutations';
+} from '../../../../hooks/mutations/use-agent-mutations';
 import { useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '../../../hooks/queries/query-keys';
-import { useConfirm } from '../../../hooks/useConfirm';
+import { queryKeys } from '../../../../hooks/queries/query-keys';
+import { useConfirm } from '../../../../hooks/useConfirm';
 import { AgentFormValues } from './use-agent-form';
 
 // Temporary agent ID for new agents (negative to indicate not saved)

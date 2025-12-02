@@ -1,5 +1,5 @@
-import { useAgent } from '../../../hooks/queries/use-agents';
-import { LocalStorageManager } from '../../../utils/localStorage';
+import { useAgent } from '../../../../hooks/queries/use-agents';
+import { LocalStorageManager } from '../../../../utils/localStorage';
 
 /**
  * Hook to handle config route logic

@@ -1,10 +1,10 @@
 import { NavigateFunction } from 'react-router-dom';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { ROUTES } from '../../../constants/routes.constants';
-import { useCreateAgent } from '../../../hooks/mutations/use-agent-mutations';
-import { useToast } from '../../../contexts/ToastContext';
-import { Agent } from '../../../types/chat.types';
-import { CreateAgentRequest } from '../../../types/chat.types';
+import { ROUTES } from '../../../../constants/routes.constants';
+import { useCreateAgent } from '../../../../hooks/mutations/use-agent-mutations';
+import { useToast } from '../../../../contexts/ToastContext';
+import { Agent } from '../../../../types/chat.types';
+import { CreateAgentRequest } from '../../../../types/chat.types';
 
 interface ConfirmOptions {
   title?: string;

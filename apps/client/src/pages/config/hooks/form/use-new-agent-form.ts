@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Agent } from '../../../types/chat.types';
+import { Agent } from '../../../../types/chat.types';
 
 /**
  * Hook to manage new agent form state

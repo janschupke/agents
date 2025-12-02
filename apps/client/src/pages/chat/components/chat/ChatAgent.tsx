@@ -151,8 +151,8 @@ function ChatAgentContent({
       </Sidebar>
       <Container>
         <PageHeader leftContent={<AgentSelector />} />
-        <PageContent 
-          animateOnChange={currentSessionId} 
+        <PageContent
+          animateOnChange={currentSessionId}
           enableAnimation={true}
           disableScroll={true}
         >

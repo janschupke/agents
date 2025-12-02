@@ -8,7 +8,7 @@ import {
 } from '@openai/ui';
 import { useAgents } from '../../../../hooks/queries/use-agents';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { useClickOutside } from '../../hooks/use-click-outside';
+import { useClickOutside } from '../../hooks/ui/use-click-outside';
 import { LocalStorageManager } from '../../../../utils/localStorage';
 
 export default function AgentSelector() {

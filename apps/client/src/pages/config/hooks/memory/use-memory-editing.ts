@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AgentMemory } from '../../../types/chat.types';
+import { AgentMemory } from '../../../../types/chat.types';
 
 interface UseMemoryEditingReturn {
   editingMemoryId: number | null;

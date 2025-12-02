@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { TestQueryProvider } from '../../../test/utils/test-query-provider';
+import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
 import { useAgentConfigOperations } from './use-agent-config-operations';
-import { Agent } from '../../../types/chat.types';
+import { Agent } from '../../../../types/chat.types';
 import { AgentFormValues } from './use-agent-form';
 
 // Mock useConfirm
 const mockConfirm = vi.fn();
-vi.mock('../../../hooks/useConfirm', () => ({
+vi.mock('../../../../hooks/useConfirm', () => ({
   useConfirm: () => ({
     confirm: mockConfirm,
     ConfirmDialog: null,
@@ -34,7 +34,7 @@ const mockUseDeleteAgent = vi.fn(() => ({
   isPending: false,
 }));
 
-vi.mock('../../../hooks/mutations/use-agent-mutations', () => ({
+vi.mock('../../../../hooks/mutations/use-agent-mutations', () => ({
   useCreateAgent: () => mockUseCreateAgent(),
   useUpdateAgent: () => mockUseUpdateAgent(),
   useDeleteAgent: () => mockUseDeleteAgent(),

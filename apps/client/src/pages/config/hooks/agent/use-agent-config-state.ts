@@ -1,5 +1,5 @@
-import { Agent } from '../../../types/chat.types';
-import { useNewAgentForm } from './use-new-agent-form';
+import { Agent } from '../../../../types/chat.types';
+import { useNewAgentForm } from '../form/use-new-agent-form';
 
 interface UseAgentConfigStateOptions {
   isNewAgent: boolean;
