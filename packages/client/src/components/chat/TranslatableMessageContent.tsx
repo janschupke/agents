@@ -38,7 +38,7 @@ export default function TranslatableMessageContent({
         
         if (translation && word.trim()) {
           return (
-            <WordTooltip key={index} word={word} translation={translation}>
+            <WordTooltip key={index} translation={translation}>
               {word}
             </WordTooltip>
           );

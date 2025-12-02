@@ -83,12 +83,14 @@ describe('BotConfig', () => {
       id: 1,
       name: 'Existing Bot 1',
       description: 'First bot',
+      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00Z',
     },
     {
       id: 2,
       name: 'Existing Bot 2',
       description: 'Second bot',
+      avatarUrl: null,
       createdAt: '2024-01-02T00:00:00Z',
     },
   ];
@@ -142,6 +144,7 @@ describe('BotConfig', () => {
       id: 3,
       name: 'Newly Created Bot',
       description: 'Just created',
+      avatarUrl: null,
       createdAt: '2024-01-03T00:00:00Z',
     };
 

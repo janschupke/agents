@@ -25,12 +25,14 @@ describe('BotService', () => {
           id: 1,
           name: 'Test Bot 1',
           description: 'Description 1',
+          avatarUrl: null,
           createdAt: '2024-01-01',
         },
         {
           id: 2,
           name: 'Test Bot 2',
           description: 'Description 2',
+          avatarUrl: null,
           createdAt: '2024-01-02',
         },
       ];
@@ -59,6 +61,7 @@ describe('BotService', () => {
         id: 1,
         name: 'Test Bot',
         description: 'Test Description',
+        avatarUrl: null,
         createdAt: '2024-01-01',
       };
 
@@ -96,6 +99,7 @@ describe('BotService', () => {
         id: 1,
         name: 'New Bot',
         description: 'New Description',
+        avatarUrl: null,
         createdAt: '2024-01-01',
       };
 
@@ -132,6 +136,7 @@ describe('BotService', () => {
         id: 1,
         name: 'Updated Bot',
         description: 'Updated Description',
+        avatarUrl: null,
         createdAt: '2024-01-01',
       };
 

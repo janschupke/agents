@@ -3,6 +3,7 @@ import { ChatService } from '../services/chat.service.js';
 import { Message, MessageRole, Session } from '../types/chat.types.js';
 import { useChatContext } from '../contexts/ChatContext.js';
 import { NUMERIC_CONSTANTS } from '../constants/numeric.constants.js';
+import { WordTranslationService } from '../services/word-translation.service.js';
 
 interface UseChatOptions {
   botId?: number;
@@ -303,7 +304,8 @@ export function useChat({ botId, onError }: UseChatOptions) {
       });
 
       // Poll for translations if they're not ready yet (for assistant messages)
-      if (data.assistantMessageId && (!data.translation || !data.wordTranslations || data.wordTranslations.length === 0)) {
+      // Note: SendMessageResponse doesn't include translations, so we always poll
+      if (data.assistantMessageId) {
         // Poll for translations with exponential backoff
         let pollCount = 0;
         const maxPolls = 10;

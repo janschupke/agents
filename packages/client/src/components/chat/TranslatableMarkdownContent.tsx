@@ -29,6 +29,7 @@ export default function TranslatableMarkdownContent({
 
   // Custom text component that processes text nodes
   // ReactMarkdown v8+ uses 'value' prop for text nodes
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const textComponent = (props: any) => {
     const value = props.value;
     if (typeof value === 'string' && value.trim().length > 0) {

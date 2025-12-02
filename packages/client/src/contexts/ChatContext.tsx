@@ -7,7 +7,7 @@ import {
   useCallback,
   ReactNode,
 } from 'react';
-import { Message, ChatHistoryResponse } from '../types/chat.types';
+import { Message, ChatHistoryResponse, MessageRole } from '../types/chat.types';
 import { ChatService } from '../services/chat.service';
 import { useAuth } from './AuthContext';
 import { LocalStorageManager } from '../utils/localStorage';
@@ -219,7 +219,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
       // Prepare user message
       const userMessage: Message = {
-        role: 'user',
+        role: MessageRole.USER,
         content: message,
       };
 
@@ -251,7 +251,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         });
 
         const assistantMessage: Message = {
-          role: 'assistant',
+          role: MessageRole.ASSISTANT,
           content: data.response,
           rawResponse: data.rawResponse,
           id: data.assistantMessageId,
@@ -305,7 +305,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         const err = error instanceof Error ? error : new Error('Unknown error');
         console.error('Error sending message:', err);
         const errorMessage: Message = {
-          role: 'assistant',
+          role: MessageRole.ASSISTANT,
           content: `Error: ${err.message}`,
         };
         setMessages((prev) => [...prev, errorMessage]);

@@ -10,6 +10,8 @@ import { AppProvider } from '../../contexts/AppContext';
 import { UserProvider } from '../../contexts/UserContext';
 import { BotProvider } from '../../contexts/BotContext';
 import { ChatProvider } from '../../contexts/ChatContext';
+import { ToastProvider } from '../../contexts/ToastContext';
+import { MessageRole } from '../../types/chat.types';
 
 // Mock Clerk
 vi.mock('@clerk/clerk-react', () => ({
@@ -64,7 +66,9 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
       <AppProvider>
         <UserProvider>
           <BotProvider>
-            <ChatProvider>{children}</ChatProvider>
+            <ChatProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </ChatProvider>
           </BotProvider>
         </UserProvider>
       </AppProvider>
@@ -116,8 +120,8 @@ describe('ChatBot', () => {
       },
       session: mockSession,
       messages: [
-        { role: 'user', content: 'Hello' },
-        { role: 'assistant', content: 'Hi there!' },
+        { role: MessageRole.USER, content: 'Hello' },
+        { role: MessageRole.ASSISTANT, content: 'Hi there!' },
       ],
     });
 
@@ -219,9 +223,9 @@ describe('ChatBot', () => {
       },
       session: mockSession,
       messages: [
-        { role: 'system', content: 'System message' },
-        { role: 'user', content: 'User message' },
-        { role: 'assistant', content: 'Assistant message' },
+        { role: MessageRole.SYSTEM, content: 'System message' },
+        { role: MessageRole.USER, content: 'User message' },
+        { role: MessageRole.ASSISTANT, content: 'Assistant message' },
       ],
     });
 

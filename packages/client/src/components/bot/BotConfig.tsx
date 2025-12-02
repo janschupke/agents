@@ -105,6 +105,7 @@ export default function BotConfig() {
       id: tempId,
       name: '',
       description: null,
+      avatarUrl: null,
       createdAt: new Date().toISOString(),
     };
 

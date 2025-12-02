@@ -48,8 +48,14 @@ describe('SessionSidebar', () => {
     );
 
     // Session 2 should be selected (highlighted)
-    const session2 = screen.getByText('Session 2').closest('button');
-    expect(session2).toHaveClass('bg-primary');
+    // The bg-primary class is on the outer div container with class "group"
+    // Structure: outer div.group (with bg-primary) > button > inner div (with text)
+    const session2Text = screen.getByText('Session 2');
+    // Use closest to find the container div with "group" class
+    const session2Container = session2Text.closest('.group');
+    expect(session2Container).toBeTruthy();
+    expect(session2Container).toHaveClass('bg-primary');
+    expect(session2Container).toHaveClass('text-text-inverse');
   });
 
   it('should call onSessionSelect when session is clicked', async () => {

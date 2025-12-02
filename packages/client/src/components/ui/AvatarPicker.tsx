@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback } from 'react';
-import { IconImage, IconUpload } from './Icons';
+import { IconUpload } from './Icons';
 
 interface AvatarPickerProps {
   value: string | null; // Base64 data URL or null

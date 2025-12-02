@@ -73,7 +73,7 @@ export default function WordPresenter({
         }
 
         return (
-          <WordTooltip key={index} word={part.text} translation={part.translation}>
+          <WordTooltip key={index} translation={part.translation}>
             {part.text}
           </WordTooltip>
         );

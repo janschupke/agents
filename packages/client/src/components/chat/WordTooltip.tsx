@@ -2,13 +2,11 @@ import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 interface WordTooltipProps {
-  word: string;
   translation?: string;
   children: React.ReactNode;
 }
 
 export default function WordTooltip({
-  word,
   translation,
   children,
 }: WordTooltipProps) {

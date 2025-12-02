@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ChatService } from './chat.service.js';
-import { ChatHistoryResponse, SendMessageResponse } from '../types/chat.types.js';
+import { ChatHistoryResponse, SendMessageResponse, MessageRole } from '../types/chat.types.js';
 import { apiManager } from './api-manager.js';
 
 // Mock ApiManager
@@ -29,8 +29,8 @@ describe('ChatService', () => {
           session_name: 'Session 1',
         },
         messages: [
-          { role: 'user', content: 'Hello' },
-          { role: 'assistant', content: 'Hi there!' },
+          { role: MessageRole.USER, content: 'Hello' },
+          { role: MessageRole.ASSISTANT, content: 'Hi there!' },
         ],
       };
 
