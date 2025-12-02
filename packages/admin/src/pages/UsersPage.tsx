@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { UserService } from '../services/user.service';
 import { User } from '../types/user.types';
 import UserList from '../components/UserList';
 
 export default function UsersPage() {
+  const { t } = useTranslation(I18nNamespace.ADMIN);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,9 +23,9 @@ export default function UsersPage() {
     } catch (err) {
       const error = err as { status?: number; message?: string };
       if (error?.status === 403) {
-        setError('Access denied. Admin role required.');
+        setError(t('users.accessDenied'));
       } else {
-        setError(error?.message || 'Failed to load users');
+        setError(error?.message || t('users.error'));
       }
     } finally {
       setLoading(false);
@@ -33,7 +35,7 @@ export default function UsersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="text-text-secondary">Loading users...</div>
+        <div className="text-text-secondary">{t('users.loading')}</div>
       </div>
     );
   }
@@ -50,10 +52,10 @@ export default function UsersPage() {
     <div>
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-text-secondary mb-2">
-          All Users
+          {t('users.title')}
         </h2>
         <p className="text-text-tertiary text-sm">
-          Total: {users.length} user{users.length !== 1 ? 's' : ''}
+          {t('users.total', { count: users.length })}
         </p>
       </div>
       <UserList users={users} loading={false} />

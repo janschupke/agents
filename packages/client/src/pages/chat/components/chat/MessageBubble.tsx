@@ -1,5 +1,6 @@
 import { Message, MessageRole } from '../../../../types/chat.types';
 import { IconSearch, IconTranslate } from '../../../../components/ui/Icons';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 import TranslatableMarkdownContent from '../markdown/TranslatableMarkdownContent';
 import MarkdownContent from '../markdown/MarkdownContent';
 import { FadeTransition } from '../../../../components/ui/animation';
@@ -16,6 +17,7 @@ export default function MessageBubble({
   onShowJson,
   messageId,
 }: MessageBubbleProps) {
+  const { t } = useTranslation(I18nNamespace.CLIENT);
   const {
     isTranslating,
     showTranslation,
@@ -70,12 +72,12 @@ export default function MessageBubble({
             className="p-1 rounded hover:bg-black hover:bg-opacity-10 disabled:opacity-50 disabled:cursor-not-allowed"
             title={
               isTranslating
-                ? 'Translating...'
+                ? t('chat.translation.translating')
                 : hasTranslation
                   ? showTranslation
-                    ? 'Hide translation'
-                    : 'Show translation'
-                  : 'Click to translate'
+                    ? t('chat.translation.hideTranslation')
+                    : t('chat.translation.showTranslation')
+                  : t('chat.translation.clickToTranslate')
             }
           >
             {isTranslating ? (
@@ -105,8 +107,8 @@ export default function MessageBubble({
               className="p-1 rounded hover:bg-black hover:bg-opacity-10"
               title={
                 message.role === MessageRole.USER
-                  ? 'View request JSON'
-                  : 'View response JSON'
+                  ? t('chat.message.viewRequestJson')
+                  : t('chat.message.viewResponseJson')
               }
             >
               <IconSearch
@@ -126,7 +128,7 @@ export default function MessageBubble({
         <FadeTransition show={showTranslation}>
           <div className="mt-2 px-3 py-2 rounded-lg break-words text-sm bg-background-secondary border border-border text-text-primary">
             <div className="text-xs font-semibold mb-1 text-text-tertiary uppercase tracking-wide">
-              Translation
+              {t('chat.translation.title')}
             </div>
             <div className="markdown-wrapper">
               <MarkdownContent content={translation} />

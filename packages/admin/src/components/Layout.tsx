@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useUser, SignOutButton } from '@clerk/clerk-react';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { User } from '../types/user.types';
 import { IconUsers, IconSettings } from './ui/Icons';
 
@@ -10,6 +11,7 @@ interface LayoutProps {
 }
 
 export default function Layout({ children, userInfo }: LayoutProps) {
+  const { t } = useTranslation(I18nNamespace.ADMIN);
   const { user: clerkUser } = useUser();
   const location = useLocation();
 
@@ -20,7 +22,7 @@ export default function Layout({ children, userInfo }: LayoutProps) {
       <header className="bg-background-secondary px-8 py-4 shadow-md">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold text-text-secondary">
-            Admin Portal
+            {t('app.title')}
           </h1>
           <div className="flex items-center gap-4">
             {userInfo && (
@@ -41,7 +43,7 @@ export default function Layout({ children, userInfo }: LayoutProps) {
             )}
             <SignOutButton>
               <button className="px-4 py-2 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-secondary transition-colors">
-                Sign Out
+                {t('app.signOut')}
               </button>
             </SignOutButton>
           </div>
@@ -59,7 +61,7 @@ export default function Layout({ children, userInfo }: LayoutProps) {
             }`}
           >
             <IconUsers className="w-4 h-4" />
-            Users
+            {t('navigation.users')}
           </Link>
           <Link
             to="/system-rules"
@@ -70,7 +72,7 @@ export default function Layout({ children, userInfo }: LayoutProps) {
             }`}
           >
             <IconSettings className="w-4 h-4" />
-            System Rules
+            {t('navigation.systemRules')}
           </Link>
         </div>
       </nav>

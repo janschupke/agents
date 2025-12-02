@@ -1,0 +1,41 @@
+{
+  "app": {
+    "title": "Admin Portal",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "loading": "Loading...",
+    "checkingAccess": "Checking access...",
+    "accessDenied": "Access Denied",
+    "adminRoleRequired": "Admin role required.",
+    "pleaseSignIn": "Please sign in with an admin account to continue.",
+    "pleaseSignInToContinue": "Please sign in to continue."
+  },
+  "navigation": {
+    "users": "Users",
+    "systemRules": "System Rules"
+  },
+  "users": {
+    "title": "All Users",
+    "total": "Total: {{count}} user",
+    "total_plural": "Total: {{count}} users",
+    "loading": "Loading users...",
+    "error": "Failed to load users",
+    "accessDenied": "Access denied. Admin role required.",
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "roles": "Roles",
+      "createdAt": "Created At"
+    }
+  },
+  "systemRules": {
+    "title": "System Behavior Rules",
+    "description": "These rules apply to all agents and cannot be overridden by agent-specific rules. System rules are always included first in the conversation context.",
+    "label": "Behavior Rules",
+    "placeholder": "Rules will be saved as a JSON array and applied to all bots",
+    "addRule": "Add Rule",
+    "save": "Save Rules",
+    "saved": "Behavior rules saved successfully!",
+    "error": "Failed to save behavior rules"
+  }
+}

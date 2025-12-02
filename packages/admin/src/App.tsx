@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useUser, SignInButton, SignOutButton } from '@clerk/clerk-react';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { UserService } from './services/user.service';
 import { User } from './types/user.types';
 import Layout from './components/Layout';
@@ -8,6 +9,7 @@ import UsersPage from './pages/UsersPage';
 import SystemRulesPage from './pages/SystemRulesPage';
 
 function App() {
+  const { t } = useTranslation(I18nNamespace.ADMIN);
   const { isSignedIn, isLoaded } = useUser();
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
@@ -36,16 +38,16 @@ function App() {
 
       // Check if user has admin role
       if (!currentUser.roles.includes('admin')) {
-        setError('Access denied. Admin role required.');
+        setError(t('app.adminRoleRequired'));
         setLoading(false);
         return;
       }
     } catch (error: unknown) {
       const err = error as { status?: number; message?: string };
       if (err?.status === 403) {
-        setError('Access denied. Admin role required.');
+        setError(t('app.adminRoleRequired'));
       } else if (err?.status === 401) {
-        setError('Please sign in to continue.');
+        setError(t('app.pleaseSignInToContinue'));
       } else {
         setError(err?.message || 'Failed to load user data');
       }
@@ -57,7 +59,7 @@ function App() {
   if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-text-secondary">Loading...</div>
+        <div className="text-text-secondary">{t('app.loading')}</div>
       </div>
     );
   }
@@ -67,14 +69,14 @@ function App() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-full max-w-md bg-background-secondary rounded-lg shadow-lg p-8">
           <h1 className="text-2xl font-semibold text-text-secondary mb-2">
-            Admin Portal
+            {t('app.title')}
           </h1>
           <p className="text-text-tertiary mb-6">
-            Please sign in with an admin account to continue.
+            {t('app.pleaseSignIn')}
           </p>
           <SignInButton mode="modal">
             <button className="w-full px-4 py-2 bg-primary text-text-inverse rounded-md text-sm font-medium hover:bg-primary-hover transition-colors">
-              Sign In
+              {t('app.signIn')}
             </button>
           </SignInButton>
         </div>
@@ -85,7 +87,7 @@ function App() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-text-secondary">Checking access...</div>
+        <div className="text-text-secondary">{t('app.checkingAccess')}</div>
       </div>
     );
   }
@@ -95,14 +97,14 @@ function App() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-full max-w-md bg-background-secondary rounded-lg shadow-lg p-8">
           <h1 className="text-2xl font-semibold text-text-secondary mb-2">
-            Access Denied
+            {t('app.accessDenied')}
           </h1>
           <p className="text-text-tertiary mb-6">
-            {error || 'Admin role required.'}
+            {error || t('app.adminRoleRequired')}
           </p>
           <SignOutButton>
             <button className="px-4 py-2 bg-primary text-text-inverse rounded-md text-sm font-medium hover:bg-primary-hover transition-colors">
-              Sign Out
+              {t('app.signOut')}
             </button>
           </SignOutButton>
         </div>

@@ -1,0 +1,15 @@
+{
+  "errors": {
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "notFound": "Not found",
+    "badRequest": "Bad request",
+    "internalServerError": "Internal server error",
+    "validationError": "Validation error"
+  },
+  "messages": {
+    "translationFailed": "Translation failed",
+    "translationSuccess": "Translation completed"
+  }
+}
+

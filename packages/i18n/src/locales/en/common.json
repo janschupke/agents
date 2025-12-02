@@ -1,0 +1,39 @@
+{
+  "app": {
+    "accessDenied": "app.accessDenied",
+    "adminRoleRequired": "app.adminRoleRequired",
+    "checkingAccess": "app.checkingAccess",
+    "loading": "Loading...",
+    "pleaseSignIn": "app.pleaseSignIn",
+    "pleaseSignInToContinue": "app.pleaseSignInToContinue",
+    "signIn": "Sign in to continue",
+    "signOut": "app.signOut",
+    "title": "OpenAI Chat",
+    "welcome": "Welcome"
+  },
+  "chat": {
+    "message": {
+      "viewRequestJson": "chat.message.viewRequestJson",
+      "viewResponseJson": "chat.message.viewResponseJson"
+    },
+    "translation": {
+      "clickToTranslate": "chat.translation.clickToTranslate",
+      "hideTranslation": "chat.translation.hideTranslation",
+      "showTranslation": "chat.translation.showTranslation",
+      "title": "chat.translation.title",
+      "translating": "chat.translation.translating"
+    }
+  },
+  "navigation": {
+    "systemRules": "navigation.systemRules",
+    "users": "navigation.users"
+  },
+  "users": {
+    "accessDenied": "users.accessDenied",
+    "error": "users.error",
+    "loading": "users.loading",
+    "title": "users.title",
+    "total_one": "users.total",
+    "total_other": "users.total"
+  }
+}

@@ -1,9 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ClerkProvider } from '@clerk/clerk-react';
+import { initI18n } from '@openai/i18n';
 import App from './App';
 import ClerkTokenProvider from './components/ClerkTokenProvider';
 import './index.css';
+
+// Initialize i18n
+initI18n();
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || '';
 

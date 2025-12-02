@@ -8,6 +8,7 @@ import {
   Link,
 } from 'react-router-dom';
 import { SignIn } from '@clerk/clerk-react';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { ChatAgent } from './pages/chat';
 import { AgentConfig } from './pages/config';
 import { UserProfile } from './pages/profile';
@@ -24,12 +25,16 @@ import { useApiKeyStatus } from './hooks/queries/use-user';
 
 // Memoized Header component to prevent re-renders
 const AppHeader = memo(function AppHeader() {
+  const { t: tCommon } = useTranslation(I18nNamespace.COMMON);
+  const { t: tClient } = useTranslation(I18nNamespace.CLIENT);
   const location = useLocation();
   const isActiveRoute = (path: string) => location.pathname === path;
 
   return (
     <header className="bg-background px-6 py-3 border-b border-border flex items-center justify-between">
-      <h1 className="text-xl font-semibold text-text-primary">OpenAI Chat</h1>
+      <h1 className="text-xl font-semibold text-text-primary">
+        {tCommon('app.title')}
+      </h1>
       <div className="flex items-center gap-2">
         <div className="flex gap-1">
           <Link
@@ -39,10 +44,12 @@ const AppHeader = memo(function AppHeader() {
                 ? 'bg-primary text-text-inverse'
                 : 'bg-background text-text-primary hover:bg-background-secondary'
             }`}
-            title="Chat"
+            title={tClient('navigation.chat')}
           >
             <IconChat className="w-4 h-4" />
-            <span className="hidden sm:inline">Chat</span>
+            <span className="hidden sm:inline">
+              {tClient('navigation.chat')}
+            </span>
           </Link>
           <Link
             to="/config"
@@ -51,10 +58,12 @@ const AppHeader = memo(function AppHeader() {
                 ? 'bg-primary text-text-inverse'
                 : 'bg-background text-text-primary hover:bg-background-secondary'
             }`}
-            title="Agent Configuration"
+            title={tClient('navigation.agentConfiguration')}
           >
             <IconSettings className="w-4 h-4" />
-            <span className="hidden sm:inline">Config</span>
+            <span className="hidden sm:inline">
+              {tClient('navigation.config')}
+            </span>
           </Link>
         </div>
         <UserDropdown />
@@ -67,12 +76,17 @@ const AppHeader = memo(function AppHeader() {
 const AppFooter = memo(Footer);
 
 function SignInPage() {
+  const { t } = useTranslation(I18nNamespace.COMMON);
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-text-primary mb-2">Welcome</h1>
-          <p className="text-text-secondary">Sign in to continue</p>
+          <h1 className="text-3xl font-bold text-text-primary mb-2">
+            {t('app.welcome')}
+          </h1>
+          <p className="text-text-secondary">
+            {t('app.signIn')}
+          </p>
         </div>
         <div className="bg-background border border-border p-6">
           <SignIn />

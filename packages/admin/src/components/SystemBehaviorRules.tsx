@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { systemConfigService } from '../services/system-config.service';
 import { IconTrash, IconPlus } from './ui/Icons';
 
 export default function SystemBehaviorRules() {
+  const { t: tAdmin } = useTranslation(I18nNamespace.ADMIN);
+  const { t: tCommon } = useTranslation(I18nNamespace.COMMON);
   const [rules, setRules] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -25,7 +28,7 @@ export default function SystemBehaviorRules() {
         // No rules set yet, start with empty array
         setRules([]);
       } else {
-        setError(error?.message || 'Failed to load behavior rules');
+        setError(error?.message || tAdmin('systemRules.error'));
       }
     } finally {
       setLoading(false);
@@ -42,7 +45,7 @@ export default function SystemBehaviorRules() {
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       const error = err as { message?: string };
-      setError(error?.message || 'Failed to save behavior rules');
+      setError(error?.message || tAdmin('systemRules.error'));
     } finally {
       setSaving(false);
     }
@@ -65,7 +68,7 @@ export default function SystemBehaviorRules() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="text-text-secondary">Loading behavior rules...</div>
+        <div className="text-text-secondary">{tAdmin('app.loading')}</div>
       </div>
     );
   }
@@ -74,12 +77,10 @@ export default function SystemBehaviorRules() {
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-text-secondary mb-2">
-          System Behavior Rules
+          {tAdmin('systemRules.title')}
         </h2>
         <p className="text-text-tertiary text-sm">
-          These rules apply to all agents and cannot be overridden by
-          agent-specific rules. System rules are always included first in the
-          conversation context.
+          {tAdmin('systemRules.description')}
         </p>
       </div>
 
@@ -91,13 +92,13 @@ export default function SystemBehaviorRules() {
 
       {success && (
         <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-md text-sm">
-          Behavior rules saved successfully!
+          {tAdmin('systemRules.saved')}
         </div>
       )}
 
       <div>
         <label className="block text-sm font-medium text-text-secondary mb-1.5">
-          Behavior Rules
+          {tAdmin('systemRules.label')}
         </label>
         <div className="space-y-2">
           {rules.map((rule, index) => (
@@ -125,11 +126,11 @@ export default function SystemBehaviorRules() {
             className="w-full h-8 px-3 bg-background border border-border rounded-md text-sm text-text-primary hover:bg-background-tertiary transition-colors flex items-center justify-center gap-1.5"
           >
             <IconPlus className="w-4 h-4" />
-            <span>Add Rule</span>
+            <span>{tAdmin('systemRules.addRule')}</span>
           </button>
         </div>
         <p className="text-xs text-text-tertiary mt-2">
-          Rules will be saved as a JSON array and applied to all bots
+          {tAdmin('systemRules.placeholder')}
         </p>
       </div>
 
@@ -139,7 +140,7 @@ export default function SystemBehaviorRules() {
           disabled={saving}
           className="px-4 py-2 bg-primary text-text-inverse rounded-md text-sm font-medium hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {saving ? 'Saving...' : 'Save Rules'}
+          {saving ? tCommon('app.saving') : tAdmin('systemRules.save')}
         </button>
       </div>
     </div>
