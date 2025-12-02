@@ -30,14 +30,14 @@ export default function Layout({ children, userInfo }: LayoutProps) {
                 {userInfo.imageUrl || clerkUser?.imageUrl ? (
                   <img
                     src={userInfo.imageUrl || clerkUser?.imageUrl || ''}
-                    alt="Admin"
+                    alt={t('users.admin')}
                     className="w-8 h-8 rounded-full"
                   />
                 ) : null}
                 <span>
                   {userInfo.firstName || userInfo.lastName
                     ? `${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim()
-                    : userInfo.email || 'Admin'}
+                    : userInfo.email || t('users.admin')}
                 </span>
               </div>
             )}

@@ -1,5 +1,6 @@
 import { User } from '../types/user.types';
 import { formatDate } from '@openai/utils';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 interface UserListProps {
   users: User[];
@@ -7,10 +8,12 @@ interface UserListProps {
 }
 
 export default function UserList({ users, loading }: UserListProps) {
+  const { t } = useTranslation(I18nNamespace.ADMIN);
+  
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-text-secondary">Loading users...</div>
+        <div className="text-text-secondary">{t('users.loading')}</div>
       </div>
     );
   }
@@ -18,7 +21,7 @@ export default function UserList({ users, loading }: UserListProps) {
   if (users.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-text-secondary">No users found</div>
+        <div className="text-text-secondary">{t('users.noUsersFound')}</div>
       </div>
     );
   }
@@ -30,16 +33,16 @@ export default function UserList({ users, loading }: UserListProps) {
           <thead className="bg-background-tertiary">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
-                User
+                {t('users.columns.user')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
-                Email
+                {t('users.columns.email')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
-                Roles
+                {t('users.columns.roles')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
-                Created
+                {t('users.columns.created')}
               </th>
             </tr>
           </thead>
@@ -54,12 +57,12 @@ export default function UserList({ users, loading }: UserListProps) {
                     {user.imageUrl ? (
                       <img
                         src={user.imageUrl}
-                        alt={user.firstName || user.email || 'User'}
+                        alt={user.firstName || user.email || t('users.columns.user')}
                         className="w-10 h-10 rounded-full"
                       />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-text-inverse font-semibold">
-                        {(user.firstName || user.email || 'U')
+                        {(user.firstName || user.email || t('users.columns.user'))
                           .charAt(0)
                           .toUpperCase()}
                       </div>
@@ -68,7 +71,7 @@ export default function UserList({ users, loading }: UserListProps) {
                       <div className="text-sm font-medium text-text-primary">
                         {user.firstName || user.lastName
                           ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
-                          : 'User'}
+                          : t('users.columns.user')}
                       </div>
                       <div className="text-xs text-text-tertiary font-mono">
                         {user.id.substring(0, 8)}...
@@ -98,7 +101,7 @@ export default function UserList({ users, loading }: UserListProps) {
                       ))
                     ) : (
                       <span className="text-xs text-text-tertiary">
-                        No roles
+                        {t('users.noRoles')}
                       </span>
                     )}
                   </div>

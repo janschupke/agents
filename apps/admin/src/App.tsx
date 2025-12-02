@@ -49,7 +49,7 @@ function App() {
       } else if (err?.status === 401) {
         setError(t('app.pleaseSignInToContinue'));
       } else {
-        setError(err?.message || 'Failed to load user data');
+        setError(err?.message || t('app.failedToLoadUserData'));
       }
     } finally {
       setLoading(false);

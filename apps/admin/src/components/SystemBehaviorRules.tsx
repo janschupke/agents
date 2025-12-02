@@ -108,13 +108,13 @@ export default function SystemBehaviorRules() {
                 value={rule}
                 onChange={(e) => handleRuleChange(index, e.target.value)}
                 className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus"
-                placeholder={`Rule ${index + 1}`}
+                placeholder={tAdmin('systemRules.rulePlaceholder', { index: (index + 1).toString() })}
               />
               <button
                 type="button"
                 onClick={() => handleRemoveRule(index)}
                 className="h-8 w-8 flex items-center justify-center text-text-tertiary hover:text-red-600 hover:bg-background-tertiary rounded transition-colors flex-shrink-0"
-                title="Remove rule"
+                title={tAdmin('systemRules.removeRule')}
               >
                 <IconTrash className="w-4 h-4" />
               </button>

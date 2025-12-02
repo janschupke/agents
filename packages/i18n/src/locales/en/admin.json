@@ -8,7 +8,8 @@
     "accessDenied": "Access Denied",
     "adminRoleRequired": "Admin role required.",
     "pleaseSignIn": "Please sign in with an admin account to continue.",
-    "pleaseSignInToContinue": "Please sign in to continue."
+    "pleaseSignInToContinue": "Please sign in to continue.",
+    "failedToLoadUserData": "Failed to load user data"
   },
   "navigation": {
     "users": "Users",
@@ -21,12 +22,17 @@
     "loading": "Loading users...",
     "error": "Failed to load users",
     "accessDenied": "Access denied. Admin role required.",
+    "noUsersFound": "No users found",
     "columns": {
       "name": "Name",
       "email": "Email",
       "roles": "Roles",
-      "createdAt": "Created At"
-    }
+      "createdAt": "Created At",
+      "user": "User",
+      "created": "Created"
+    },
+    "noRoles": "No roles",
+    "admin": "Admin"
   },
   "systemRules": {
     "title": "System Behavior Rules",
@@ -34,6 +40,8 @@
     "label": "Behavior Rules",
     "placeholder": "Rules will be saved as a JSON array and applied to all bots",
     "addRule": "Add Rule",
+    "removeRule": "Remove rule",
+    "rulePlaceholder": "Rule {{index}}",
     "save": "Save Rules",
     "saved": "Behavior rules saved successfully!",
     "error": "Failed to save behavior rules"
