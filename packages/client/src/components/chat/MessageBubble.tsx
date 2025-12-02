@@ -1,6 +1,6 @@
 import { Message, MessageRole } from '../../types/chat.types.js';
 import { IconSearch, IconTranslate } from '../ui/Icons';
-import TranslatableMessageContent from './TranslatableMessageContent';
+import TranslatableMarkdownContent from './TranslatableMarkdownContent';
 import MarkdownContent from './MarkdownContent';
 import { useState, useEffect } from 'react';
 import { TranslationService } from '../../services/translation.service.js';
@@ -23,22 +23,28 @@ export default function MessageBubble({
   const [translation, setTranslation] = useState<string | undefined>(
     message.translation
   );
+  const [wordTranslations, setWordTranslations] = useState(message.wordTranslations);
 
   // Sync translation state when message prop changes
   useEffect(() => {
     if (message.translation) {
       setTranslation(message.translation);
     }
-  }, [message.translation]);
+    if (message.wordTranslations) {
+      setWordTranslations(message.wordTranslations);
+    }
+  }, [message.translation, message.wordTranslations]);
 
   // Load translations on mount if available (for assistant messages)
   useEffect(() => {
-    if (messageId && message.role === MessageRole.ASSISTANT && !message.translation && !message.wordTranslations) {
+    if (messageId && message.role === MessageRole.ASSISTANT && !translation && !wordTranslations) {
       // Check if translations exist in the database
       WordTranslationService.getMessageTranslations(messageId)
         .then((result) => {
           if (result.translation && result.wordTranslations.length > 0) {
             setTranslation(result.translation);
+            setWordTranslations(result.wordTranslations);
+            // Update message object for parent state sync
             message.translation = result.translation;
             message.wordTranslations = result.wordTranslations;
           }
@@ -81,6 +87,7 @@ export default function MessageBubble({
         setShowTranslation(true);
         
         // Update message with translations
+        setWordTranslations(result.wordTranslations);
         message.translation = result.translation;
         message.wordTranslations = result.wordTranslations;
       } else {
@@ -111,11 +118,14 @@ export default function MessageBubble({
         }`}
       >
         <div className="markdown-wrapper">
-          <TranslatableMessageContent
-            content={message.content}
-            wordTranslations={message.wordTranslations}
-            role={message.role}
-          />
+          {message.role === MessageRole.ASSISTANT && wordTranslations && wordTranslations.length > 0 ? (
+            <TranslatableMarkdownContent
+              content={message.content}
+              wordTranslations={wordTranslations}
+            />
+          ) : (
+            <MarkdownContent content={message.content} />
+          )}
         </div>
 
         {/* Action buttons container - overlay text with background when visible */}

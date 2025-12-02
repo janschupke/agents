@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface WordTooltipProps {
   word: string;
@@ -29,36 +30,39 @@ export default function WordTooltip({
     return <>{children}</>;
   }
 
+  // Render tooltip in a portal to avoid DOM nesting issues (div inside p)
+  const tooltipElement = showTooltip ? (
+    <div
+      className="fixed z-50 px-2 py-1 text-xs bg-gray-900 text-white rounded shadow-lg pointer-events-none"
+      style={{
+        left: `${tooltipPosition.x}px`,
+        top: `${tooltipPosition.y}px`,
+        transform: 'translate(-50%, -100%)',
+      }}
+    >
+      {translation}
+      <div
+        className="absolute top-full left-1/2 transform -translate-x-1/2"
+        style={{
+          borderLeft: '4px solid transparent',
+          borderRight: '4px solid transparent',
+          borderTop: '4px solid rgb(17, 24, 39)',
+        }}
+      />
+    </div>
+  ) : null;
+
   return (
     <>
       <span
         ref={wordRef}
-        className="cursor-help transition-colors duration-150 hover:bg-yellow-200 hover:bg-opacity-50 dark:hover:bg-yellow-800 dark:hover:bg-opacity-30 rounded px-0.5"
+        className="cursor-help transition-colors duration-150 hover:bg-yellow-200 hover:bg-opacity-50 dark:hover:bg-yellow-800 dark:hover:bg-opacity-30 inline"
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
       >
         {children}
       </span>
-      {showTooltip && (
-        <div
-          className="fixed z-50 px-2 py-1 text-xs bg-gray-900 text-white rounded shadow-lg pointer-events-none"
-          style={{
-            left: `${tooltipPosition.x}px`,
-            top: `${tooltipPosition.y}px`,
-            transform: 'translate(-50%, -100%)',
-          }}
-        >
-          {translation}
-          <div
-            className="absolute top-full left-1/2 transform -translate-x-1/2"
-            style={{
-              borderLeft: '4px solid transparent',
-              borderRight: '4px solid transparent',
-              borderTop: '4px solid rgb(17, 24, 39)',
-            }}
-          />
-        </div>
-      )}
+      {tooltipElement && typeof document !== 'undefined' && createPortal(tooltipElement, document.body)}
     </>
   );
 }
