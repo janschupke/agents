@@ -4,7 +4,6 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import AgentConfig from './AgentConfig';
-import NewAgentConfig from './NewAgentConfig';
 import { AppProvider } from '../../../../contexts/AppContext';
 import { AuthProvider } from '../../../../contexts/AuthContext';
 import { ToastProvider } from '../../../../contexts/ToastContext';
@@ -122,7 +121,10 @@ const TestWrapper = ({
             <ToastProvider>
               <Routes>
                 <Route path={ROUTES.CONFIG} element={children} />
-                <Route path={ROUTES.CONFIG_NEW} element={<NewAgentConfig />} />
+                <Route
+                  path={ROUTES.CONFIG_NEW}
+                  element={<AgentConfig isNewAgent={true} />}
+                />
               </Routes>
             </ToastProvider>
           </AppProvider>

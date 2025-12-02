@@ -1,7 +1,6 @@
 import { useParams, Navigate, useLocation } from 'react-router-dom';
 import { ROUTES } from '../../constants/routes.constants';
 import AgentConfig from './components/agent/AgentConfig';
-import NewAgentConfig from './components/agent/NewAgentConfig';
 import { useConfigRoute } from './hooks/use-config-route';
 import AgentConfigErrorState from './components/agent/AgentConfigErrorState';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
@@ -48,7 +47,7 @@ export default function ConfigRoute() {
 
   // Handle new agent route - check pathname since /config/new doesn't have a param
   if (location.pathname === ROUTES.CONFIG_NEW || agentId === 'new') {
-    return <NewAgentConfig />;
+    return <AgentConfig isNewAgent={true} />;
   }
 
   // If no agentId, redirect to last selected or show empty state

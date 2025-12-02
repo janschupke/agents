@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import { Agent } from '../../../../types/chat.types';
 import AgentSidebar from './AgentSidebar';
@@ -17,15 +17,22 @@ import {
 import { useAgents } from '../../../../hooks/queries/use-agents';
 import { useAgentConfigData } from '../../hooks/use-agent-config-data';
 import { useAgentConfigNavigation } from '../../hooks/use-agent-config-navigation';
-import { useUpdateAgent } from '../../../../hooks/mutations/use-agent-mutations';
+import {
+  useUpdateAgent,
+  useCreateAgent,
+} from '../../../../hooks/mutations/use-agent-mutations';
 import { useConfirm } from '../../../../hooks/useConfirm';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { AgentFormValues } from '../../hooks/use-agent-form';
+import { ROUTES } from '../../../../constants/routes.constants';
+import { useNewAgentForm } from '../../hooks/use-new-agent-form';
+import { useUnsavedChangesWarning } from '../../../../hooks/use-unsaved-changes-warning';
 
 interface AgentConfigProps {
   agentId?: number;
   loading?: boolean;
   error?: string;
+  isNewAgent?: boolean;
 }
 
 function AgentConfigLoadingState() {
@@ -54,16 +61,28 @@ export default function AgentConfig({
   agentId: propAgentId,
   loading: propLoading,
   error: propError,
+  isNewAgent: propIsNewAgent,
 }: AgentConfigProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
   const navigate = useNavigate();
+  const location = useLocation();
   const { agentId: urlAgentId } = useParams<{ agentId?: string }>();
   const { ConfirmDialog, confirm } = useConfirm();
 
-  // Business logic moved to hooks
+  // Determine if this is a new agent
+  const isNewAgent =
+    propIsNewAgent ||
+    location.pathname === ROUTES.CONFIG_NEW ||
+    urlAgentId === 'new';
+
+  // For new agents, use form state management
+  const { formData, setFormData, hasUnsavedChanges } = useNewAgentForm();
+  useUnsavedChangesWarning(isNewAgent ? hasUnsavedChanges : false);
+
+  // Business logic moved to hooks (only for existing agents)
   const { agentId, agent, loading, error } = useAgentConfigData({
-    propAgentId,
-    urlAgentId,
+    propAgentId: isNewAgent ? undefined : propAgentId,
+    urlAgentId: isNewAgent ? undefined : urlAgentId,
   });
 
   const {
@@ -76,8 +95,25 @@ export default function AgentConfig({
 
   const { data: agents = [], isLoading: loadingAgents } = useAgents();
   const updateAgentMutation = useUpdateAgent();
+  const createAgentMutation = useCreateAgent();
   const formRef = useRef<AgentConfigFormRef>(null);
   const [canSave, setCanSave] = useState(false);
+
+  // Create temp agent for new agent form
+  const tempAgent: Agent | null = isNewAgent
+    ? {
+        id: -1,
+        name: formData.name || '',
+        description: formData.description || null,
+        avatarUrl: formData.avatarUrl || null,
+        createdAt: new Date().toISOString(),
+        configs: formData.configs || {
+          temperature: 1,
+          system_prompt: '',
+          behavior_rules: [],
+        },
+      }
+    : null;
 
   const handleSaveClick = async () => {
     if (formRef.current) {
@@ -86,12 +122,24 @@ export default function AgentConfig({
   };
 
   const handleSave = async (agent: Agent, values: AgentFormValues) => {
-    if (!agent || agent.id < 0) return;
+    if (!agent) return;
 
     try {
-      await updateAgentMutation.mutateAsync({
-        agentId: agent.id,
-        data: {
+      if (isNewAgent || agent.id < 0) {
+        // Update formData for new agents (for unsaved changes tracking)
+        setFormData({
+          name: values.name,
+          description: values.description || null,
+          avatarUrl: values.avatarUrl || null,
+          configs: {
+            temperature: values.temperature,
+            system_prompt: values.systemPrompt,
+            behavior_rules: values.behaviorRules,
+          },
+        });
+
+        // Create new agent
+        const agentData = {
           name: values.name.trim(),
           description: values.description.trim() || undefined,
           avatarUrl: values.avatarUrl || undefined,
@@ -103,14 +151,39 @@ export default function AgentConfig({
                 ? values.behaviorRules.filter((r) => r.trim())
                 : undefined,
           },
-        },
-      });
-      await handleSaveNavigation(agent, agent.id);
+        };
+        const savedAgent = await createAgentMutation.mutateAsync(agentData);
+        await handleSaveNavigation(savedAgent, savedAgent.id);
+      } else {
+        // Update existing agent
+        await updateAgentMutation.mutateAsync({
+          agentId: agent.id,
+          data: {
+            name: values.name.trim(),
+            description: values.description.trim() || undefined,
+            avatarUrl: values.avatarUrl || undefined,
+            configs: {
+              temperature: values.temperature,
+              system_prompt: values.systemPrompt.trim() || undefined,
+              behavior_rules:
+                values.behaviorRules.filter((r) => r.trim()).length > 0
+                  ? values.behaviorRules.filter((r) => r.trim())
+                  : undefined,
+            },
+          },
+        });
+        await handleSaveNavigation(agent, agent.id);
+      }
     } catch (error) {
       // Error is handled by mutation hook (toast notification)
       console.error('Failed to save agent:', error);
       throw error;
     }
+  };
+
+  // Handle form value changes
+  const handleFormStateChange = (canSaveValue: boolean) => {
+    setCanSave(canSaveValue);
   };
 
   const handleDelete = async (agentId: number) => {
@@ -132,22 +205,27 @@ export default function AgentConfig({
   };
 
   // Loading state
-  if (propLoading || loading || loadingAgents) {
+  if ((propLoading || loading || loadingAgents) && !isNewAgent) {
     return <AgentConfigLoadingState />;
   }
 
-  const currentAgent = agent || null;
+  const currentAgent = isNewAgent ? tempAgent : agent || null;
+  const isSaving =
+    isNewAgent || currentAgent?.id === -1
+      ? createAgentMutation.isPending
+      : updateAgentMutation.isPending;
 
   return (
     <>
       <Sidebar>
         <AgentSidebar
           agents={agents}
-          currentAgentId={agentId}
+          currentAgentId={isNewAgent ? null : agentId}
           onAgentSelect={handleAgentSelect}
           onNewAgent={handleNewAgent}
           onAgentDelete={handleDelete}
           loading={loadingAgents}
+          isNewAgentRoute={isNewAgent}
         />
       </Sidebar>
       <Container>
@@ -165,31 +243,34 @@ export default function AgentConfig({
                   <FormButton
                     type={ButtonType.BUTTON}
                     onClick={handleSaveClick}
-                    loading={updateAgentMutation.isPending}
+                    loading={isSaving}
                     disabled={!canSave}
                     variant={ButtonVariant.PRIMARY}
                     tooltip={
-                      updateAgentMutation.isPending
+                      isSaving
                         ? t('config.saving')
-                        : currentAgent.id < 0
+                        : isNewAgent || currentAgent.id < 0
                           ? t('config.createAgent')
                           : t('config.saveButton')
                     }
                   >
-                    {currentAgent.id < 0
+                    {isNewAgent || currentAgent.id < 0
                       ? t('config.createAgent')
                       : t('config.saveButton')}
                   </FormButton>
                 ) : undefined
               }
             />
-            <PageContent animateOnChange={agentId} enableAnimation={true}>
+            <PageContent
+              animateOnChange={isNewAgent ? 'new' : agentId}
+              enableAnimation={true}
+            >
               <AgentConfigForm
                 ref={formRef}
                 agent={currentAgent}
-                saving={updateAgentMutation.isPending}
+                saving={isSaving}
                 onSaveClick={handleSave}
-                onFormStateChange={setCanSave}
+                onFormStateChange={handleFormStateChange}
               />
             </PageContent>
           </>
