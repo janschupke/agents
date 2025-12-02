@@ -30,7 +30,7 @@ export class WordTranslationService {
     const sentences = this.splitIntoSentences(messageContent);
     
     // Let OpenAI handle word/token splitting and translation
-    const wordTranslations = await this.translateWordsWithOpenAI(
+    const { wordTranslations, fullTranslation } = await this.translateWordsWithOpenAI(
       messageContent,
       sentences,
       apiKey
@@ -50,8 +50,17 @@ export class WordTranslationService {
       wordToSentenceMap
     );
 
-    // Derive and save full message translation from word translations
-    await this.createFullTranslationFromWords(messageId, wordTranslations);
+    // Save full message translation from OpenAI (not derived from words)
+    if (fullTranslation) {
+      // Check if translation already exists
+      const existing = await this.translationRepository.findByMessageId(messageId);
+      if (!existing) {
+        await this.translationRepository.create(messageId, fullTranslation);
+      }
+    } else {
+      // Fallback: derive from words if OpenAI didn't provide full translation
+      await this.createFullTranslationFromWords(messageId, wordTranslations);
+    }
   }
 
   /**
@@ -116,12 +125,13 @@ export class WordTranslationService {
 
   /**
    * Translate words using OpenAI - let OpenAI handle word/token splitting
+   * Returns both word translations and full sentence translation
    */
   private async translateWordsWithOpenAI(
     messageContent: string,
     sentences: string[],
     apiKey: string
-  ): Promise<WordTranslation[]> {
+  ): Promise<{ wordTranslations: WordTranslation[]; fullTranslation: string | null }> {
     const openai = this.openaiService.getClient(apiKey);
 
     const prompt = `You are a professional translator. Analyze the following text and translate each word/token to English, considering the sentence context.
@@ -133,12 +143,17 @@ For each word or token (handle languages without spaces like Chinese, Japanese, 
 1. The original word/token as it appears in the text
 2. Its English translation considering the sentence context
 
-Return a JSON object with a "words" array where each element has:
-- "originalWord": string (the word/token as it appears in the text)
-- "translation": string (English translation of the word in context)
+Also provide the full sentence translation in natural, fluent English.
+
+Return a JSON object with:
+- "fullTranslation": string (the complete message translated into natural, fluent English)
+- "words": array where each element has:
+  - "originalWord": string (the word/token as it appears in the text)
+  - "translation": string (English translation of the word in context)
 
 Example format:
 {
+  "fullTranslation": "Thank you! I'm also very happy that you're in a good mood. What are your plans for today? Or would you like to talk about something special? 🌟",
   "words": [
     {
       "originalWord": "Hola",
@@ -180,7 +195,7 @@ Return ONLY the JSON object, no additional text.`;
       }
 
       // Parse JSON response
-      let parsed: { words?: WordTranslation[] };
+      let parsed: { words?: WordTranslation[]; fullTranslation?: string };
       try {
         parsed = JSON.parse(response);
       } catch (e) {
@@ -191,14 +206,20 @@ Return ONLY the JSON object, no additional text.`;
       }
 
       const translations = parsed.words || [];
+      const fullTranslation = parsed.fullTranslation;
 
       // Validate and map to our format
-      return translations
+      const wordTranslations = translations
         .filter((wt: any) => wt.originalWord && wt.translation)
         .map((wt: any) => ({
           originalWord: wt.originalWord,
           translation: wt.translation,
         }));
+
+      return {
+        wordTranslations,
+        fullTranslation: fullTranslation || null,
+      };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
