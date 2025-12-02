@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react';
-import { IconSend } from '@openai/ui';
+import { IconSend, Input, Button, ButtonType, ButtonVariant } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 interface ChatInputProps {
@@ -29,23 +29,25 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
         className="flex p-3 border-t border-border gap-2"
         onSubmit={onSubmit}
       >
-        <input
+        <Input
           ref={inputRef}
           type="text"
           value={input}
-          onChange={(e) => onInputChange(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onInputChange(e.target.value)}
           placeholder={t('chat.placeholder')}
           disabled={disabled}
-          className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus disabled:bg-disabled-bg disabled:cursor-not-allowed"
+          className="flex-1"
         />
-        <button
-          type="submit"
+        <Button
+          type={ButtonType.SUBMIT}
           disabled={disabled || !input.trim()}
-          className="h-8 w-8 flex items-center justify-center bg-primary text-text-inverse border-none rounded-md cursor-pointer transition-colors hover:bg-primary-hover disabled:bg-disabled disabled:cursor-not-allowed"
-          title={t('chat.send')}
+          variant={ButtonVariant.PRIMARY}
+          size="sm"
+          className="w-8 p-0"
+          tooltip={t('chat.send')}
         >
           <IconSend className="w-4 h-4" />
-        </button>
+        </Button>
       </form>
     );
   }

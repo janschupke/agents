@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { IconClose } from '@openai/ui';
+import { IconClose, Input, Button, Card } from '@openai/ui';
 import { NUMERIC_CONSTANTS } from '../../../../constants/numeric.constants';
 import { useUpdateSession } from '../../../../hooks/mutations/use-agent-mutations';
 import { useFormValidation } from '@openai/utils';
@@ -7,6 +7,7 @@ import { useTranslation, I18nNamespace } from '@openai/i18n';
 import {
   FormButton,
   FormContainer,
+  FormField,
   ButtonType,
   ButtonVariant,
 } from '@openai/ui';
@@ -96,32 +97,35 @@ export default function SessionNameModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
       onClick={onClose}
     >
-      <div
-        className="bg-background border border-border w-full max-w-md m-4 rounded-lg shadow-lg"
+      <Card
+        variant="elevated"
+        className="w-full max-w-md m-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <h2 className="text-lg font-semibold text-text-secondary">
             {t('chat.editSessionName')}
           </h2>
-          <button
+          <Button
             onClick={onClose}
-            className="text-text-tertiary hover:text-text-primary transition-colors"
-            aria-label={t('common.close')}
+            variant={ButtonVariant.SECONDARY}
+            size="sm"
+            className="p-0"
+            tooltip={t('common.close')}
           >
             <IconClose className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
         <div className="px-6 py-4">
           <FormContainer saving={saving} error={errorMessage}>
-            <div className="mb-4">
-              <label
-                htmlFor="session-name"
-                className="block text-sm font-medium text-text-secondary mb-1.5"
-              >
-                {t('chat.sessionName')}
-              </label>
-              <input
+            <FormField
+              label={t('chat.sessionName')}
+              labelFor="session-name"
+              error={errors.name}
+              touched={touched.name}
+              hint={t('chat.defaultSessionName')}
+            >
+              <Input
                 ref={inputRef}
                 id="session-name"
                 type="text"
@@ -130,16 +134,10 @@ export default function SessionNameModal({
                 onBlur={() => setTouched('name')}
                 onKeyDown={handleKeyDown}
                 disabled={saving}
-                className="w-full h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full"
                 placeholder={t('chat.enterSessionName')}
               />
-              {touched.name && errors.name && (
-                <p className="text-xs text-red-600 mt-1">{errors.name}</p>
-              )}
-              <p className="text-xs text-text-tertiary mt-1">
-                {t('chat.defaultSessionName')}
-              </p>
-            </div>
+            </FormField>
           </FormContainer>
         </div>
         <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
@@ -162,7 +160,7 @@ export default function SessionNameModal({
             {t('common.save')}
           </FormButton>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

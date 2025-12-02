@@ -1,6 +1,14 @@
 import { useState } from 'react';
 import { AgentMemory } from '../../../../types/chat.types';
-import { IconClose, IconEdit, SkeletonList } from '@openai/ui';
+import {
+  IconClose,
+  IconEdit,
+  SkeletonList,
+  Card,
+  Button,
+  Textarea,
+  ButtonVariant,
+} from '@openai/ui';
 import { formatRelativeDate } from '@openai/utils';
 
 interface MemoriesListProps {
@@ -72,10 +80,7 @@ export default function MemoriesList({
   return (
     <div className="space-y-2">
       {memories.map((memory) => (
-        <div
-          key={memory.id}
-          className="p-3 bg-background border border-border rounded-md"
-        >
+        <Card key={memory.id} padding="sm" variant="outlined">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <div className="text-xs text-text-tertiary mb-1">
@@ -89,28 +94,31 @@ export default function MemoriesList({
               </div>
               {editingMemoryId === memory.id ? (
                 <div className="space-y-2">
-                  <textarea
+                  <Textarea
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
-                    className="w-full p-2 text-sm text-text-primary bg-background-secondary border border-border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="bg-background-secondary border-border focus:ring-2 focus:ring-primary"
                     rows={2}
                     autoFocus
                   />
                   <div className="flex gap-2">
-                    <button
+                    <Button
                       onClick={() => handleSaveEdit(memory.id)}
                       disabled={!editValue.trim() || editingId === memory.id}
-                      className="h-7 px-2.5 text-xs bg-primary text-white border-none rounded-md hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      variant={ButtonVariant.PRIMARY}
+                      size="sm"
+                      loading={editingId === memory.id}
                     >
-                      {editingId === memory.id ? 'Saving...' : 'Save'}
-                    </button>
-                    <button
+                      Save
+                    </Button>
+                    <Button
                       onClick={handleCancelEdit}
                       disabled={editingId === memory.id}
-                      className="h-7 px-2.5 text-xs bg-background-tertiary text-text-secondary border border-border rounded-md hover:bg-background-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      variant={ButtonVariant.SECONDARY}
+                      size="sm"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : (
@@ -121,26 +129,30 @@ export default function MemoriesList({
             </div>
             {editingMemoryId !== memory.id && (
               <div className="flex gap-1 flex-shrink-0">
-                <button
+                <Button
                   onClick={() => handleStartEdit(memory)}
                   disabled={editingId === memory.id || deletingId === memory.id}
-                  className="h-7 w-7 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Edit"
+                  variant={ButtonVariant.SECONDARY}
+                  size="sm"
+                  className="w-7 p-0"
+                  tooltip="Edit"
                 >
                   <IconEdit className="w-4 h-4" />
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => onDelete(memory.id)}
                   disabled={deletingId === memory.id || editingId === memory.id}
-                  className="h-7 w-7 flex items-center justify-center text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Delete"
+                  variant={ButtonVariant.DANGER}
+                  size="sm"
+                  className="w-7 p-0"
+                  tooltip="Delete"
                 >
                   <IconClose className="w-3 h-3" />
-                </button>
+                </Button>
               </div>
             )}
           </div>
-        </div>
+        </Card>
       ))}
     </div>
   );

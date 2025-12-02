@@ -3,11 +3,13 @@ import {
   IconTrash,
   IconClose,
   IconCheck,
-} from '@openai/ui';
-import {
   FormButton,
   FormContainer,
   ValidatedInput,
+  FormField,
+  Button,
+  Input,
+  Card,
   ButtonType,
   ButtonVariant,
 } from '@openai/ui';
@@ -38,13 +40,18 @@ export default function ApiKeySection() {
   return (
     <div className="pt-4 border-t border-border">
       <FormContainer saving={saving} error={errorMessage}>
-        <div className="mb-4">
-          <label className="text-sm font-medium text-text-secondary block mb-2">
-            {t('profile.apiKey.title')}{' '}
-            {!hasApiKey && <span className="text-red-600">*</span>}
-          </label>
+        <FormField
+          label={t('profile.apiKey.title')}
+          required={!hasApiKey}
+          error={errors.apiKey}
+          touched={touched.apiKey}
+        >
           {!hasApiKey && (
-            <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+            <Card
+              padding="sm"
+              variant="outlined"
+              className="mb-3 bg-yellow-50 border-yellow-200"
+            >
               <p className="text-sm text-yellow-800">
                 <strong>{t('profile.apiKey.requiredLabel')}</strong>{' '}
                 {t('profile.apiKey.requiredMessage')}{' '}
@@ -57,36 +64,40 @@ export default function ApiKeySection() {
                   {t('profile.apiKey.openaiPlatform')}
                 </a>
               </p>
-            </div>
+            </Card>
           )}
           <p className="text-xs text-text-tertiary mb-3">
             {t('profile.apiKey.securityNote')}
           </p>
           {!showApiKeyInput && hasApiKey ? (
             <div className="flex items-center gap-2">
-              <input
+              <Input
                 type="password"
                 value="••••••••••••••••••••••••••••••••"
                 disabled
-                className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-tertiary bg-background-tertiary font-mono cursor-not-allowed"
+                className="flex-1 font-mono bg-background-tertiary text-text-tertiary cursor-not-allowed"
                 placeholder={t('profile.apiKey.apiKeySet')}
               />
-              <button
+              <Button
                 onClick={handleEditApiKey}
                 disabled={saving}
-                className="h-8 w-8 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title={t('profile.apiKey.editApiKey')}
+                variant={ButtonVariant.SECONDARY}
+                size="sm"
+                className="w-8 p-0"
+                tooltip={t('profile.apiKey.editApiKey')}
               >
                 <IconPencil className="w-4 h-4" />
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleDeleteApiKey}
                 disabled={saving}
-                className="h-8 w-8 flex items-center justify-center text-text-tertiary hover:text-red-600 hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title={t('profile.apiKey.deleteApiKey')}
+                variant={ButtonVariant.DANGER}
+                size="sm"
+                className="w-8 p-0"
+                tooltip={t('profile.apiKey.deleteApiKey')}
               >
                 <IconTrash className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="space-y-2">
@@ -131,7 +142,7 @@ export default function ApiKeySection() {
               </div>
             </div>
           )}
-        </div>
+        </FormField>
       </FormContainer>
     </div>
   );

@@ -1,4 +1,12 @@
-import { IconTrash, IconPlus } from '@openai/ui';
+import {
+  IconTrash,
+  IconPlus,
+  FormField,
+  Button,
+  Input,
+  Textarea,
+  ButtonVariant,
+} from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 interface DescriptionFieldProps {
@@ -10,22 +18,15 @@ export function DescriptionField({ value, onChange }: DescriptionFieldProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return (
-    <div>
-      <label
-        htmlFor="agent-description"
-        className="block text-sm font-medium text-text-secondary mb-1.5"
-      >
-        {t('config.description')}
-      </label>
-      <textarea
+    <FormField label={t('config.description')} labelFor="agent-description">
+      <Textarea
         id="agent-description"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
-        className="w-full px-3 py-2 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus resize-none"
         placeholder={t('config.enterDescription')}
       />
-    </div>
+    </FormField>
   );
 }
 
@@ -38,14 +39,15 @@ export function TemperatureField({ value, onChange }: TemperatureFieldProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return (
-    <div>
-      <label
-        htmlFor="agent-temperature"
-        className="block text-sm font-medium text-text-secondary mb-1.5"
-      >
-        {t('config.temperature')}:{' '}
-        <span className="font-mono">{value.toFixed(2)}</span>
-      </label>
+    <FormField
+      label={
+        <>
+          {t('config.temperature')}:{' '}
+          <span className="font-mono">{value.toFixed(2)}</span>
+        </>
+      }
+      labelFor="agent-temperature"
+    >
       <div className="relative">
         <input
           id="agent-temperature"
@@ -66,7 +68,7 @@ export function TemperatureField({ value, onChange }: TemperatureFieldProps) {
         <span>{t('config.temperatureBalanced')}</span>
         <span>{t('config.temperatureCreative')}</span>
       </div>
-    </div>
+    </FormField>
   );
 }
 
@@ -79,25 +81,20 @@ export function SystemPromptField({ value, onChange }: SystemPromptFieldProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return (
-    <div>
-      <label
-        htmlFor="agent-system-prompt"
-        className="block text-sm font-medium text-text-secondary mb-1.5"
-      >
-        {t('config.systemPrompt')}
-      </label>
-      <textarea
+    <FormField
+      label={t('config.systemPrompt')}
+      labelFor="agent-system-prompt"
+      hint={t('config.systemPromptDescription')}
+    >
+      <Textarea
         id="agent-system-prompt"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={4}
-        className="w-full px-3 py-2 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus resize-none font-mono"
+        className="font-mono"
         placeholder={t('config.enterSystemPrompt')}
       />
-      <p className="text-xs text-text-tertiary mt-1">
-        {t('config.systemPromptDescription')}
-      </p>
-    </div>
+    </FormField>
   );
 }
 
@@ -113,14 +110,14 @@ export function BehaviorRulesField({
   const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return (
-    <div>
-      <label className="block text-sm font-medium text-text-secondary mb-1.5">
-        {t('config.behaviorRules')}
-      </label>
+    <FormField
+      label={t('config.behaviorRules')}
+      hint={t('config.rulesDescription')}
+    >
       <div className="space-y-2">
         {rules.map((rule, index) => (
           <div key={index} className="flex items-center gap-2">
-            <input
+            <Input
               type="text"
               value={rule}
               onChange={(e) => {
@@ -128,36 +125,37 @@ export function BehaviorRulesField({
                 newRules[index] = e.target.value;
                 onChange(newRules);
               }}
-              className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus"
+              className="flex-1"
               placeholder={t('config.rulePlaceholder', {
                 index: (index + 1).toString(),
               })}
             />
-            <button
+            <Button
               type="button"
               onClick={() => {
                 const newRules = rules.filter((_, i) => i !== index);
                 onChange(newRules);
               }}
-              className="h-8 w-8 flex items-center justify-center text-text-tertiary hover:text-red-600 hover:bg-background-tertiary rounded transition-colors flex-shrink-0"
-              title={t('config.removeRule')}
+              variant={ButtonVariant.SECONDARY}
+              size="sm"
+              className="w-8 p-0"
+              tooltip={t('config.removeRule')}
             >
               <IconTrash className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         ))}
-        <button
+        <Button
           type="button"
           onClick={() => onChange([...rules, ''])}
-          className="w-full h-8 px-3 bg-background border border-border rounded-md text-sm text-text-primary hover:bg-background-tertiary transition-colors flex items-center justify-center gap-1.5"
+          variant={ButtonVariant.SECONDARY}
+          size="sm"
+          className="w-full"
         >
           <IconPlus className="w-4 h-4" />
           <span>{t('config.addRule')}</span>
-        </button>
+        </Button>
       </div>
-      <p className="text-xs text-text-tertiary mt-2">
-        {t('config.rulesDescription')}
-      </p>
-    </div>
+    </FormField>
   );
 }

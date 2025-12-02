@@ -1,4 +1,8 @@
-import { AvatarPicker, ValidatedInput } from '@openai/ui';
+import {
+  AvatarPicker,
+  ValidatedInput,
+  FormField,
+} from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 interface AgentNameAndAvatarProps {
@@ -33,13 +37,12 @@ export default function AgentNameAndAvatar({
     <div className="flex items-start gap-4">
       <AvatarPicker value={avatarUrl} onChange={onAvatarChange} />
       <div className="flex-1">
-        <div>
-          <label
-            htmlFor="agent-name"
-            className="block text-sm font-medium text-text-secondary mb-1.5"
-          >
-            {t('config.agentName')}
-          </label>
+        <FormField
+          label={t('config.agentName')}
+          labelFor="agent-name"
+          error={nameError}
+          touched={nameTouched}
+        >
           <ValidatedInput
             id="agent-name"
             type="text"
@@ -53,7 +56,7 @@ export default function AgentNameAndAvatar({
             placeholder={t('config.enterAgentName')}
             autoFocus={autoFocus}
           />
-        </div>
+        </FormField>
       </div>
     </div>
   );
