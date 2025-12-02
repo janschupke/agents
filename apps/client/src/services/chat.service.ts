@@ -74,4 +74,16 @@ export class ChatService {
   ): Promise<void> {
     return apiManager.delete(API_ENDPOINTS.CHAT.SESSION(agentId, sessionId));
   }
+
+  /**
+   * Get session with agent ID (for routing)
+   * Returns both session and agentId
+   */
+  static async getSessionWithAgent(
+    sessionId: number
+  ): Promise<{ session: Session; agentId: number }> {
+    return apiManager.get<{ session: Session; agentId: number }>(
+      `/api/sessions/${sessionId}`
+    );
+  }
 }

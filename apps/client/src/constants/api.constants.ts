@@ -36,4 +36,7 @@ export const API_ENDPOINTS = {
     OPENAI: '/api/api-credentials/openai',
     OPENAI_CHECK: '/api/api-credentials/openai/check',
   },
+  SESSIONS: {
+    BY_ID: (sessionId: number) => `/api/sessions/${sessionId}`,
+  },
 } as const;

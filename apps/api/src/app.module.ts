@@ -11,6 +11,7 @@ import { ApiCredentialsModule } from './api-credentials/api-credentials.module';
 import { SystemConfigModule } from './system-config/system-config.module';
 import { MessageTranslationModule } from './message-translation/message-translation.module';
 import { AgentMemoryModule } from './memory/agent-memory.module';
+import { SessionModule } from './session/session.module';
 import { ClerkGuard } from './auth/clerk.guard';
 
 @Module({
@@ -26,6 +27,7 @@ import { ClerkGuard } from './auth/clerk.guard';
     SystemConfigModule,
     MessageTranslationModule,
     AgentMemoryModule,
+    SessionModule,
   ],
   providers: [
     {

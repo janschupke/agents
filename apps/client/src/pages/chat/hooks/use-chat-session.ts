@@ -11,6 +11,7 @@ import { ChatService } from '../../../services/chat.service';
 
 interface UseChatSessionOptions {
   agentId: number | null;
+  initialSessionId?: number | null;
 }
 
 interface UseChatSessionReturn {
@@ -34,19 +35,30 @@ interface UseChatSessionReturn {
  */
 export function useChatSession({
   agentId,
+  initialSessionId,
 }: UseChatSessionOptions): UseChatSessionReturn {
   const queryClient = useQueryClient();
   const { data: sessions = [], isLoading: sessionsLoading } =
     useAgentSessions(agentId);
-  const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
+  const [currentSessionId, setCurrentSessionId] = useState<number | null>(
+    initialSessionId ?? null
+  );
   const createSessionMutation = useCreateSession();
   const deleteSessionMutation = useDeleteSession();
   const sessionsInitializedRef = useRef(false);
   const pendingNewSessionIdRef = useRef<number | null>(null);
 
-  // Auto-select most recent session when sessions first load or when agent changes
+  // Update sessionId when initialSessionId changes (from URL)
   useEffect(() => {
-    if (!agentId || sessionsLoading) {
+    if (initialSessionId !== undefined) {
+      setCurrentSessionId(initialSessionId);
+    }
+  }, [initialSessionId]);
+
+  // Auto-select most recent session when sessions first load or when agent changes
+  // Only if no initialSessionId is provided
+  useEffect(() => {
+    if (!agentId || sessionsLoading || initialSessionId !== undefined) {
       return;
     }
 
@@ -85,7 +97,7 @@ export function useChatSession({
       setCurrentSessionId(null);
       sessionsInitializedRef.current = true;
     }
-  }, [agentId, sessionsLoading, sessions, currentSessionId]);
+  }, [agentId, sessionsLoading, sessions, currentSessionId, initialSessionId]);
 
   // Reset initialization flag and pending session when agent changes
   useEffect(() => {

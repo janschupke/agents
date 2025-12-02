@@ -30,6 +30,10 @@
     "deleteSessionTooltip": "Delete session",
     "openaiRequest": "OpenAI Request",
     "openaiResponse": "OpenAI Response",
+    "errors": {
+      "sessionNotFound": "Session not found",
+      "fetchSessionFailed": "Failed to fetch session"
+    },
     "translation": {
       "title": "Translation",
       "translating": "Translating...",
@@ -67,7 +71,18 @@
     "addRule": "Add Rule",
     "removeRule": "Remove rule",
     "rulePlaceholder": "Rule {{index}}",
-    "rulesDescription": "Rules will be saved as a JSON array"
+    "rulesDescription": "Rules will be saved as a JSON array",
+    "errors": {
+      "agentNotFound": "Agent not found",
+      "createFailed": "Failed to create agent"
+    },
+    "messages": {
+      "agentCreated": "Agent created successfully"
+    },
+    "confirm": {
+      "unsavedChangesTitle": "Unsaved Changes",
+      "unsavedChangesMessage": "You have unsaved changes. Are you sure you want to leave?"
+    }
   },
   "profile": {
     "title": "Profile",

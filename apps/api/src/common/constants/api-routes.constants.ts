@@ -13,6 +13,11 @@ export const API_ROUTES = {
       `api/chat/${agentId}/sessions/${sessionId}`,
   },
 
+  SESSIONS: {
+    BASE: 'api/sessions',
+    BY_ID: (sessionId: number) => `api/sessions/${sessionId}`,
+  },
+
   AGENTS: {
     BASE: 'api/agents',
     BY_ID: (agentId: number) => `api/agents/${agentId}`,

@@ -7,6 +7,11 @@ export class SessionResponseDto {
   createdAt!: Date;
 }
 
+export class SessionWithAgentResponseDto {
+  session!: SessionResponseDto;
+  agentId!: number;
+}
+
 import { IsOptional, IsString } from 'class-validator';
 
 export class UpdateSessionDto {

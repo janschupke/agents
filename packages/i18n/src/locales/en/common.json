@@ -29,6 +29,7 @@
     "systemRules": "navigation.systemRules",
     "users": "navigation.users"
   },
+  "leave": "Leave",
   "users": {
     "accessDenied": "users.accessDenied",
     "error": "users.error",

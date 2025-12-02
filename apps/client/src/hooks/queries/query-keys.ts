@@ -44,4 +44,9 @@ export const queryKeys = {
     all: [QueryKey.CONFIG] as const,
     system: () => [...queryKeys.config.all, QueryKey.SYSTEM] as const,
   },
+  sessions: {
+    all: [QueryKey.SESSIONS] as const,
+    withAgent: (sessionId: number) =>
+      [...queryKeys.sessions.all, 'with-agent', sessionId] as const,
+  },
 } as const;

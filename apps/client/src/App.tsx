@@ -9,9 +9,10 @@ import {
 } from 'react-router-dom';
 import { SignIn } from '@clerk/clerk-react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { ChatAgent } from './pages/chat';
-import { AgentConfig } from './pages/config';
+import ChatRoute from './pages/chat/ChatRoute';
+import ConfigRoute from './pages/config/ConfigRoute';
 import { UserProfile } from './pages/profile';
+import { ROUTES } from './constants/routes.constants';
 import UserDropdown from './components/auth/UserDropdown';
 import {
   Footer,
@@ -41,9 +42,9 @@ const AppHeader = memo(function AppHeader() {
       <div className="flex items-center gap-2">
         <div className="flex gap-1">
           <Link
-            to="/chat"
+            to={ROUTES.CHAT}
             className={`h-8 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
-              isActiveRoute('/chat')
+              isActiveRoute(ROUTES.CHAT) || location.pathname.startsWith('/chat/')
                 ? 'bg-primary text-text-inverse'
                 : 'bg-background text-text-primary hover:bg-background-secondary'
             }`}
@@ -55,9 +56,9 @@ const AppHeader = memo(function AppHeader() {
             </span>
           </Link>
           <Link
-            to="/config"
+            to={ROUTES.CONFIG}
             className={`h-8 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
-              isActiveRoute('/config')
+              isActiveRoute(ROUTES.CONFIG) || location.pathname.startsWith('/config/')
                 ? 'bg-primary text-text-inverse'
                 : 'bg-background text-text-primary hover:bg-background-secondary'
             }`}
@@ -120,7 +121,7 @@ function AppContent() {
   }
 
   // Show loading while checking API key
-  if (loadingApiKey && location.pathname !== '/profile') {
+  if (loadingApiKey && location.pathname !== ROUTES.PROFILE) {
     return (
       <div className="flex flex-col min-h-screen h-screen overflow-hidden">
         <AppHeader />
@@ -138,10 +139,10 @@ function AppContent() {
   // Redirect to profile if no API key (except if already on profile page)
   if (
     hasApiKey === false &&
-    location.pathname !== '/profile' &&
-    location.pathname !== '/'
+    location.pathname !== ROUTES.PROFILE &&
+    location.pathname !== ROUTES.ROOT
   ) {
-    return <Navigate to="/profile" replace />;
+    return <Navigate to={ROUTES.PROFILE} replace />;
   }
 
   // Authenticated layout with header, content, and footer
@@ -151,10 +152,13 @@ function AppContent() {
       <main className="flex-1 overflow-hidden">
         <PageTransition>
           <Routes>
-            <Route path="/" element={<Navigate to="/chat" replace />} />
-            <Route path="/chat" element={<ChatAgent />} />
-            <Route path="/config" element={<AgentConfig />} />
-            <Route path="/profile" element={<UserProfile />} />
+            <Route path={ROUTES.ROOT} element={<Navigate to={ROUTES.CHAT} replace />} />
+            <Route path={ROUTES.CHAT} element={<ChatRoute />} />
+            <Route path="/chat/:sessionId" element={<ChatRoute />} />
+            <Route path={ROUTES.CONFIG} element={<ConfigRoute />} />
+            <Route path={ROUTES.CONFIG_NEW} element={<ConfigRoute />} />
+            <Route path="/config/:agentId" element={<ConfigRoute />} />
+            <Route path={ROUTES.PROFILE} element={<UserProfile />} />
           </Routes>
         </PageTransition>
       </main>

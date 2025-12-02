@@ -87,46 +87,20 @@ describe('LocalStorageManager', () => {
     });
   });
 
-  describe('getSelectedSessionId and setSelectedSessionId', () => {
-    it('should get and set selected session ID', () => {
-      expect(LocalStorageManager.getSelectedSessionId()).toBeNull();
-
-      LocalStorageManager.setSelectedSessionId(10);
-      expect(LocalStorageManager.getSelectedSessionId()).toBe(10);
-
-      LocalStorageManager.setSelectedSessionId(20);
-      expect(LocalStorageManager.getSelectedSessionId()).toBe(20);
-    });
-
-    it('should return null when session ID is cleared', () => {
-      LocalStorageManager.setSelectedSessionId(10);
-      expect(LocalStorageManager.getSelectedSessionId()).toBe(10);
-
-      LocalStorageManager.setSelectedSessionId(null);
-      expect(LocalStorageManager.getSelectedSessionId()).toBeNull();
-    });
-
-    it('should handle invalid stored values', () => {
-      localStorage.setItem('selectedSessionId', 'xyz');
-      expect(LocalStorageManager.getSelectedSessionId()).toBeNull();
-    });
-  });
+  // getSelectedSessionId and setSelectedSessionId removed - session ID now comes from URL
 
   describe('clearAll', () => {
     it('should clear all stored values', () => {
       LocalStorageManager.setSelectedAgentIdChat(1);
       LocalStorageManager.setSelectedAgentIdConfig(2);
-      LocalStorageManager.setSelectedSessionId(10);
 
       expect(LocalStorageManager.getSelectedAgentIdChat()).toBe(1);
       expect(LocalStorageManager.getSelectedAgentIdConfig()).toBe(2);
-      expect(LocalStorageManager.getSelectedSessionId()).toBe(10);
 
       LocalStorageManager.clearAll();
 
       expect(LocalStorageManager.getSelectedAgentIdChat()).toBeNull();
       expect(LocalStorageManager.getSelectedAgentIdConfig()).toBeNull();
-      expect(LocalStorageManager.getSelectedSessionId()).toBeNull();
     });
   });
 

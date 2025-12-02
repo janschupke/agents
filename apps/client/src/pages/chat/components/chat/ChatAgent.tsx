@@ -1,6 +1,7 @@
-import { ChatAgentProps } from '../../../../types/chat.types';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useConfirm } from '../../../../hooks/useConfirm';
-import { useChatAgent } from '../../hooks/use-chat-agent';
+import { useChatAgentData } from '../../hooks/use-chat-agent-data';
+import { useChatAgentNavigation } from '../../hooks/use-chat-agent-navigation';
 import { useChatModals } from '../../hooks/use-chat-modals';
 import { useChatHandlers } from '../../hooks/use-chat-handlers';
 import { useChatInput } from '../../hooks/use-chat-input';
@@ -14,22 +15,46 @@ import ChatHeader from './ChatHeader';
 import ChatContent from './ChatContent';
 import ChatLoadingState from './ChatLoadingState';
 import ChatEmptyState from './ChatEmptyState';
+import ChatErrorState from './ChatErrorState';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 
-function ChatAgentContent({ agentId: propAgentId }: ChatAgentProps) {
+interface ChatAgentContentProps {
+  sessionId?: number;
+  agentId?: number;
+  loading?: boolean;
+  error?: string;
+}
+
+function ChatAgentContent({
+  sessionId: propSessionId,
+  agentId: propAgentId,
+  loading: propLoading,
+  error: propError,
+}: ChatAgentContentProps) {
+  const { t } = useTranslation(I18nNamespace.CLIENT);
   const { ConfirmDialog } = useConfirm();
+  const navigate = useNavigate();
+  const { sessionId: urlSessionId } = useParams<{ sessionId?: string }>();
 
-  // Agent initialization
-  const { actualAgentId, loadingAgents } = useChatAgent({ propAgentId });
+  // Business logic moved to hooks
+  const { sessionId, agentId, loading, error } = useChatAgentData({
+    propSessionId,
+    urlSessionId,
+    propAgentId,
+  });
 
-  // Session and message management
+  const { handleSessionSelect, handleNewSession } = useChatAgentNavigation({
+    agentId,
+    navigate,
+  });
+
+  // Session and message management - use sessionId from URL/params
   const {
     currentSessionId,
     sessions,
     sessionsLoading,
-    handleSessionSelect,
-    handleNewSession,
     handleSessionDelete,
-  } = useChatSession({ agentId: actualAgentId });
+  } = useChatSession({ agentId, initialSessionId: sessionId });
 
   const {
     messages,
@@ -37,7 +62,7 @@ function ChatAgentContent({ agentId: propAgentId }: ChatAgentProps) {
     sendMessage,
     setMessages,
   } = useChatMessages({
-    agentId: actualAgentId,
+    agentId,
     sessionId: currentSessionId,
   });
 
@@ -57,23 +82,29 @@ function ChatAgentContent({ agentId: propAgentId }: ChatAgentProps) {
   } = useChatModals();
 
   // Session handlers with confirmations and message clearing
+  // Use navigation handlers instead of internal ones
   const {
     handleSessionSelectWrapper,
     handleNewSessionWrapper,
     handleSessionDeleteWrapper,
     handleSessionNameSave,
   } = useChatHandlers({
-    agentId: actualAgentId,
+    agentId,
     sessions,
-    handleSessionSelect,
-    handleNewSession,
+    handleSessionSelect: async (sessionId: number) => {
+      handleSessionSelect(sessionId);
+      return undefined;
+    },
+    handleNewSession: async () => {
+      await handleNewSession();
+      return undefined;
+    },
     handleSessionDelete,
     setMessages,
   });
 
   // Chat input management
-  const showChatPlaceholder =
-    actualAgentId !== null && currentSessionId === null;
+  const showChatPlaceholder = agentId !== null && currentSessionId === null;
   const { input, setInput, chatInputRef, handleSubmit } = useChatInput({
     currentSessionId,
     messagesLoading,
@@ -81,13 +112,27 @@ function ChatAgentContent({ agentId: propAgentId }: ChatAgentProps) {
     sendMessage,
   });
 
-  const loading = messagesLoading;
-
-  if (loadingAgents) {
+  // Loading state
+  if (propLoading || messagesLoading || sessionsLoading) {
     return <ChatLoadingState />;
   }
 
-  if (!actualAgentId) {
+  // Error state - show in page content
+  if (propError || error) {
+    return (
+      <ChatErrorState
+        message={propError || error || t('chat.errors.sessionNotFound')}
+      />
+    );
+  }
+
+  if (sessionId && !agentId) {
+    return (
+      <ChatErrorState message={t('chat.errors.sessionNotFound')} />
+    );
+  }
+
+  if (!agentId) {
     return <ChatEmptyState />;
   }
 
@@ -125,7 +170,7 @@ function ChatAgentContent({ agentId: propAgentId }: ChatAgentProps) {
         title={jsonModal.title}
         data={jsonModal.data}
       />
-      {sessionNameModal.sessionId && actualAgentId && (
+      {sessionNameModal.sessionId && agentId && (
         <SessionNameModal
           isOpen={sessionNameModal.isOpen}
           onClose={closeSessionNameModal}
@@ -134,7 +179,7 @@ function ChatAgentContent({ agentId: propAgentId }: ChatAgentProps) {
               ?.session_name || null
           }
           onSave={handleSessionNameSave}
-          agentId={actualAgentId}
+          agentId={agentId}
           sessionId={sessionNameModal.sessionId}
         />
       )}
@@ -143,6 +188,18 @@ function ChatAgentContent({ agentId: propAgentId }: ChatAgentProps) {
   );
 }
 
-export default function ChatAgent({ agentId: propAgentId }: ChatAgentProps) {
-  return <ChatAgentContent agentId={propAgentId} />;
+export default function ChatAgent({
+  sessionId,
+  agentId,
+  loading,
+  error,
+}: ChatAgentContentProps) {
+  return (
+    <ChatAgentContent
+      sessionId={sessionId}
+      agentId={agentId}
+      loading={loading}
+      error={error}
+    />
+  );
 }

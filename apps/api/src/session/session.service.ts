@@ -1,7 +1,10 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { AgentRepository } from '../agent/agent.repository';
 import { SessionRepository } from './session.repository';
-import { SessionResponseDto } from '../common/dto/chat.dto';
+import {
+  SessionResponseDto,
+  SessionWithAgentResponseDto,
+} from '../common/dto/chat.dto';
 import { ERROR_MESSAGES } from '../common/constants/error-messages.constants.js';
 
 @Injectable()
@@ -151,5 +154,31 @@ export class SessionService {
 
     // Delete the session - Prisma will cascade delete all related data (messages, memory chunks)
     await this.sessionRepository.delete(sessionId, userId);
+  }
+
+  async getSessionWithAgent(
+    sessionId: number,
+    userId: string
+  ): Promise<SessionWithAgentResponseDto> {
+    // Get session and verify it belongs to the user
+    const session = await this.sessionRepository.findByIdAndUserId(
+      sessionId,
+      userId
+    );
+    if (!session) {
+      throw new HttpException(
+        ERROR_MESSAGES.SESSION_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
+    }
+
+    return {
+      session: {
+        id: session.id,
+        session_name: session.sessionName,
+        createdAt: session.createdAt,
+      },
+      agentId: session.agentId,
+    };
   }
 }

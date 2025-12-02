@@ -1,56 +1,19 @@
 import {
   createContext,
   useContext,
-  useState,
-  useEffect,
   ReactNode,
 } from 'react';
-import { LocalStorageManager } from '../utils/localStorage';
 
 interface AppContextValue {
-  // Selected agent persistence (for chat view)
-  selectedAgentId: number | null;
-  setSelectedAgentId: (agentId: number | null) => void;
-
-  // Selected session ID (for navigation/state tracking)
-  selectedSessionId: number | null;
-  setSelectedSessionId: (sessionId: number | null) => void;
+  // AppContext simplified - agent and session IDs now come from URL
+  // Keep structure for future app-wide state if needed
 }
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  // Load initial values from localStorage
-  const [selectedAgentId, setSelectedAgentIdState] = useState<number | null>(
-    () => LocalStorageManager.getSelectedAgentIdChat()
-  );
-  const [selectedSessionId, setSelectedSessionIdState] = useState<
-    number | null
-  >(() => LocalStorageManager.getSelectedSessionId());
-
-  // Save to localStorage whenever values change
-  useEffect(() => {
-    LocalStorageManager.setSelectedAgentIdChat(selectedAgentId);
-  }, [selectedAgentId]);
-
-  useEffect(() => {
-    LocalStorageManager.setSelectedSessionId(selectedSessionId);
-  }, [selectedSessionId]);
-
-  // Wrapper functions to update state (localStorage is saved via useEffect above)
-  const setSelectedAgentId = (agentId: number | null) => {
-    setSelectedAgentIdState(agentId);
-  };
-
-  const setSelectedSessionId = (sessionId: number | null) => {
-    setSelectedSessionIdState(sessionId);
-  };
-
   const value: AppContextValue = {
-    selectedAgentId,
-    setSelectedAgentId,
-    selectedSessionId,
-    setSelectedSessionId,
+    // Future app-wide state can be added here
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
@@ -64,8 +27,5 @@ function useAppContext() {
   return context;
 }
 
-// Convenience hooks
-export function useSelectedAgent() {
-  const { selectedAgentId, setSelectedAgentId } = useAppContext();
-  return { selectedAgentId, setSelectedAgentId };
-}
+// Note: useSelectedAgent and useSelectedSession removed
+// Agent and session IDs now come from URL parameters
