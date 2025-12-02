@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ChatService } from '../services/chat.service.js';
-import { Message, Session } from '../types/chat.types.js';
+import { Message, MessageRole, Session } from '../types/chat.types.js';
 import { useChatContext } from '../contexts/ChatContext.js';
 
 interface UseChatOptions {
@@ -229,7 +229,7 @@ export function useChat({ botId, onError }: UseChatOptions) {
 
     // Prepare user message with raw request data
     const userMessage: Message = {
-      role: 'user',
+      role: MessageRole.USER,
       content: message,
       // We'll update this with the actual request after the API call
     };
@@ -246,7 +246,7 @@ export function useChat({ botId, onError }: UseChatOptions) {
         const lastUserMsgIndex = updated.length - 2;
         if (lastUserMsgIndex >= 0) {
           const lastUserMsg = updated[lastUserMsgIndex];
-          if (lastUserMsg && lastUserMsg.role === 'user') {
+          if (lastUserMsg && lastUserMsg.role === MessageRole.USER) {
             updated[lastUserMsgIndex] = {
               ...lastUserMsg,
               rawRequest: data.rawRequest,
@@ -258,10 +258,11 @@ export function useChat({ botId, onError }: UseChatOptions) {
       });
 
       const assistantMessage: Message = {
-        role: 'assistant',
+        role: MessageRole.ASSISTANT,
         content: data.response,
         rawResponse: data.rawResponse,
         id: data.assistantMessageId,
+        // Translations are on-demand only - not included in initial response
       };
 
       // Get current messages state and update cache
@@ -299,11 +300,53 @@ export function useChat({ botId, onError }: UseChatOptions) {
 
         return updated;
       });
+
+      // Poll for translations if they're not ready yet (for assistant messages)
+      if (data.assistantMessageId && (!data.translation || !data.wordTranslations || data.wordTranslations.length === 0)) {
+        // Poll for translations with exponential backoff
+        let pollCount = 0;
+        const maxPolls = 10;
+        const pollInterval = 1000; // Start with 1 second
+
+        const pollForTranslations = async () => {
+          if (pollCount >= maxPolls) return;
+
+          try {
+            const translations = await WordTranslationService.getMessageTranslations(data.assistantMessageId!);
+            
+            if (translations.translation && translations.wordTranslations.length > 0) {
+              // Update the message with translations
+              setMessages((prevMessages) => {
+                return prevMessages.map((msg) => {
+                  if (msg.id === data.assistantMessageId) {
+                    return {
+                      ...msg,
+                      translation: translations.translation,
+                      wordTranslations: translations.wordTranslations,
+                    };
+                  }
+                  return msg;
+                });
+              });
+            } else {
+              // Continue polling
+              pollCount++;
+              setTimeout(pollForTranslations, pollInterval * Math.min(pollCount, 3));
+            }
+          } catch (error) {
+            // Silently fail - translations are optional
+            console.debug('Failed to fetch translations:', error);
+          }
+        };
+
+        // Start polling after a short delay
+        setTimeout(pollForTranslations, pollInterval);
+      }
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Unknown error');
       console.error('Error sending message:', err);
       const errorMessage: Message = {
-        role: 'assistant',
+        role: MessageRole.ASSISTANT,
         content: `Error: ${err.message}`,
       };
       setMessages((prev) => [...prev, errorMessage]);

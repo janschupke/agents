@@ -9,6 +9,8 @@ import { UserService } from '../user/user.service';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
 import { SystemConfigRepository } from '../system-config/system-config.repository';
 import { MessageTranslationService } from '../message-translation/message-translation.service';
+import { WordTranslationService } from '../message-translation/word-translation.service';
+import { MessageRole } from '../common/enums/message-role.enum';
 import { MEMORY_CONFIG } from '../common/constants/api.constants';
 import {
   SessionResponseDto,
@@ -28,7 +30,8 @@ export class ChatService {
     private readonly userService: UserService,
     private readonly apiCredentialsService: ApiCredentialsService,
     private readonly systemConfigRepository: SystemConfigRepository,
-    private readonly messageTranslationService: MessageTranslationService
+    private readonly messageTranslationService: MessageTranslationService,
+    private readonly wordTranslationService: WordTranslationService
   ) {}
 
   async getSessions(
@@ -114,6 +117,16 @@ export class ChatService {
         messageIds
       );
 
+    // Get word translations for assistant messages
+    const assistantMessageIds = messageRecords
+      .filter((m) => m.role === MessageRole.ASSISTANT)
+      .map((m) => m.id);
+
+    const wordTranslations =
+      await this.wordTranslationService.getWordTranslationsForMessages(
+        assistantMessageIds
+      );
+
     const messages = messageRecords.map(
       (msg: {
         id: number;
@@ -121,14 +134,26 @@ export class ChatService {
         content: string;
         rawRequest?: unknown;
         rawResponse?: unknown;
-      }) => ({
-        id: msg.id,
-        role: msg.role as 'user' | 'assistant' | 'system',
-        content: msg.content,
-        rawRequest: msg.rawRequest,
-        rawResponse: msg.rawResponse,
-        translation: translations.get(msg.id),
-      })
+      }) => {
+        const baseMessage = {
+          id: msg.id,
+          role: msg.role as MessageRole,
+          content: msg.content,
+          rawRequest: msg.rawRequest,
+          rawResponse: msg.rawResponse,
+          translation: translations.get(msg.id),
+        };
+
+        // Add word translations for assistant messages
+        if (msg.role === MessageRole.ASSISTANT) {
+          return {
+            ...baseMessage,
+            wordTranslations: wordTranslations.get(msg.id) || [],
+          };
+        }
+
+        return baseMessage;
+      }
     );
 
     return {
@@ -434,6 +459,8 @@ export class ChatService {
       undefined,
       completion
     );
+
+    // Translations are now on-demand only - no automatic background translation
 
     // Save memory periodically (every N messages, or on first message)
     const allMessages =

@@ -1,10 +1,23 @@
+export enum MessageRole {
+  USER = 'user',
+  ASSISTANT = 'assistant',
+  SYSTEM = 'system',
+}
+
+export interface WordTranslation {
+  originalWord: string;
+  translation: string;
+  sentenceContext?: string;
+}
+
 export interface Message {
   id?: number;
-  role: 'user' | 'assistant' | 'system';
+  role: MessageRole;
   content: string;
   rawRequest?: unknown; // Raw OpenAI request JSON for user messages
   rawResponse?: unknown; // Raw OpenAI response JSON for assistant messages
   translation?: string; // Translated text in English
+  wordTranslations?: WordTranslation[]; // Word-level translations (assistant only)
 }
 
 export interface ChatBotProps {

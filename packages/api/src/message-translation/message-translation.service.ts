@@ -4,6 +4,7 @@ import { MessageRepository } from '../message/message.repository';
 import { SessionRepository } from '../session/session.repository';
 import { OpenAIService } from '../openai/openai.service';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
+import { WordTranslationService } from './word-translation.service';
 
 @Injectable()
 export class MessageTranslationService {
@@ -12,7 +13,8 @@ export class MessageTranslationService {
     private readonly messageRepository: MessageRepository,
     private readonly sessionRepository: SessionRepository,
     private readonly openaiService: OpenAIService,
-    private readonly apiCredentialsService: ApiCredentialsService
+    private readonly apiCredentialsService: ApiCredentialsService,
+    private readonly wordTranslationService: WordTranslationService
   ) {}
 
   /**
@@ -180,5 +182,82 @@ Translation:`;
     });
 
     return translationMap;
+  }
+
+  /**
+   * Translate message with word-level translations (on-demand)
+   * Creates both word translations and full message translation
+   */
+  async translateMessageWithWords(
+    messageId: number,
+    userId: string
+  ): Promise<{
+    translation: string;
+    wordTranslations: Array<{
+      originalWord: string;
+      translation: string;
+      sentenceContext?: string;
+    }>;
+  }> {
+    // Get the message
+    const message = await this.messageRepository.findById(messageId);
+    if (!message) {
+      throw new HttpException('Message not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Verify user has access to this message's session
+    const session = await this.sessionRepository.findByIdAndUserId(
+      message.sessionId,
+      userId
+    );
+    if (!session) {
+      throw new HttpException(
+        'Access denied: Session not found',
+        HttpStatus.FORBIDDEN
+      );
+    }
+
+    // Check if translations already exist
+    const existingTranslation = await this.translationRepository.findByMessageId(messageId);
+    const existingWordTranslations = await this.wordTranslationService.getWordTranslationsForMessage(messageId);
+    
+    if (existingTranslation && existingWordTranslations.length > 0) {
+      return {
+        translation: existingTranslation.translation,
+        wordTranslations: existingWordTranslations,
+      };
+    }
+
+    // Get user's API key
+    const apiKey = await this.apiCredentialsService.getApiKey(userId, 'openai');
+    if (!apiKey) {
+      throw new HttpException(
+        'OpenAI API key is required. Please set your API key in your profile.',
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    // Translate words (this will also create full translation)
+    await this.wordTranslationService.translateWordsInMessage(
+      messageId,
+      message.content,
+      apiKey
+    );
+
+    // Get the created translations
+    const translation = await this.translationRepository.findByMessageId(messageId);
+    const wordTranslations = await this.wordTranslationService.getWordTranslationsForMessage(messageId);
+
+    if (!translation || wordTranslations.length === 0) {
+      throw new HttpException(
+        'Translation failed',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+
+    return {
+      translation: translation.translation,
+      wordTranslations,
+    };
   }
 }

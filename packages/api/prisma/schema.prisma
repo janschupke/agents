@@ -82,6 +82,7 @@ model Message {
   createdAt   DateTime    @default(now()) @map("created_at")
   session     ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   translation MessageTranslation?
+  wordTranslations MessageWordTranslation[]
 
   @@index([sessionId, createdAt(sort: Desc)])
   @@map("messages")
@@ -129,6 +130,19 @@ model MessageTranslation {
 
   @@index([messageId])
   @@map("message_translations")
+}
+
+model MessageWordTranslation {
+  id          Int      @id @default(autoincrement())
+  messageId   Int      @map("message_id")
+  originalWord String  @map("original_word") // The word/token as it appears in the message
+  translation  String  // The English translation of the word in context
+  sentenceContext String? @map("sentence_context") // The sentence the word appears in (populated from message)
+  createdAt   DateTime @default(now()) @map("created_at")
+  message     Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@map("message_word_translations")
 }
 
 model SystemConfig {

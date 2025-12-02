@@ -1,9 +1,11 @@
-import { Message } from '../../types/chat.types.js';
+import { Message, MessageRole } from '../../types/chat.types.js';
 import { IconSearch, IconTranslate } from '../ui/Icons';
+import TranslatableMessageContent from './TranslatableMessageContent';
 import MarkdownContent from './MarkdownContent';
 import { useState, useEffect } from 'react';
 import { TranslationService } from '../../services/translation.service.js';
 import FadeTransition from '../ui/FadeTransition.js';
+import { WordTranslationService } from '../../services/word-translation.service.js';
 
 interface MessageBubbleProps {
   message: Message;
@@ -29,8 +31,27 @@ export default function MessageBubble({
     }
   }, [message.translation]);
 
+  // Load translations on mount if available (for assistant messages)
+  useEffect(() => {
+    if (messageId && message.role === MessageRole.ASSISTANT && !message.translation && !message.wordTranslations) {
+      // Check if translations exist in the database
+      WordTranslationService.getMessageTranslations(messageId)
+        .then((result) => {
+          if (result.translation && result.wordTranslations.length > 0) {
+            setTranslation(result.translation);
+            message.translation = result.translation;
+            message.wordTranslations = result.wordTranslations;
+          }
+        })
+        .catch(() => {
+          // Silently fail - translations are on-demand
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messageId]);
+
   const hasRawData =
-    message.role === 'user'
+    message.role === MessageRole.USER
       ? message.rawRequest !== undefined
       : message.rawResponse !== undefined;
 
@@ -50,17 +71,27 @@ export default function MessageBubble({
       return;
     }
 
-    // Otherwise, fetch translation
+    // Request translation (on-demand)
     setIsTranslating(true);
     try {
-      const translatedText = await TranslationService.translateMessage(
-        messageId
-      );
-      setTranslation(translatedText);
-      setShowTranslation(true);
-      
-      // Update message in parent (optional, for state sync)
-      message.translation = translatedText;
+      if (message.role === MessageRole.ASSISTANT) {
+        // For assistant messages, request word translations + full translation
+        const result = await TranslationService.translateMessageWithWords(messageId);
+        setTranslation(result.translation);
+        setShowTranslation(true);
+        
+        // Update message with translations
+        message.translation = result.translation;
+        message.wordTranslations = result.wordTranslations;
+      } else {
+        // For user messages, request full translation only
+        const translatedText = await TranslationService.translateMessage(messageId);
+        setTranslation(translatedText);
+        setShowTranslation(true);
+        
+        // Update message in parent
+        message.translation = translatedText;
+      }
     } catch (error) {
       console.error('Translation failed:', error);
       // Show error to user (could use a toast notification)
@@ -74,19 +105,23 @@ export default function MessageBubble({
       {/* Original message bubble */}
       <div
         className={`px-3 py-2 rounded-lg break-words text-sm relative group ${
-          message.role === 'user'
+          message.role === MessageRole.USER
             ? 'bg-message-user text-message-user-text'
             : 'bg-message-assistant text-message-assistant-text'
         }`}
       >
         <div className="markdown-wrapper">
-          <MarkdownContent content={message.content} />
+          <TranslatableMessageContent
+            content={message.content}
+            wordTranslations={message.wordTranslations}
+            role={message.role}
+          />
         </div>
 
         {/* Action buttons container - overlay text with background when visible */}
         <div 
           className={`absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${
-            message.role === 'user'
+            message.role === MessageRole.USER
               ? 'bg-message-user'
               : 'bg-message-assistant'
           } rounded px-1 py-0.5`}
@@ -112,7 +147,7 @@ export default function MessageBubble({
             ) : (
               <IconTranslate
                 className={`w-3.5 h-3.5 ${
-                  message.role === 'user'
+                  message.role === MessageRole.USER
                     ? 'text-message-user-text'
                     : 'text-message-assistant-text'
                 }`}
@@ -125,7 +160,7 @@ export default function MessageBubble({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                if (message.role === 'user') {
+                if (message.role === MessageRole.USER) {
                   onShowJson('OpenAI Request', message.rawRequest);
                 } else {
                   onShowJson('OpenAI Response', message.rawResponse);
@@ -133,14 +168,14 @@ export default function MessageBubble({
               }}
               className="p-1 rounded hover:bg-black hover:bg-opacity-10"
               title={
-                message.role === 'user'
+                message.role === MessageRole.USER
                   ? 'View request JSON'
                   : 'View response JSON'
               }
             >
               <IconSearch
                 className={`w-3.5 h-3.5 ${
-                  message.role === 'user'
+                  message.role === MessageRole.USER
                     ? 'text-message-user-text'
                     : 'text-message-assistant-text'
                 }`}

@@ -17,6 +17,11 @@ export class MessageResponseDto {
   rawRequest?: unknown;
   rawResponse?: unknown;
   translation?: string;
+  wordTranslations?: Array<{
+    originalWord: string;
+    translation: string;
+    sentenceContext?: string;
+  }>;
 }
 
 export class ChatHistoryResponseDto {
@@ -42,6 +47,12 @@ export class SendMessageResponseDto {
   rawResponse?: unknown;
   userMessageId?: number;
   assistantMessageId?: number;
+  translation?: string; // Full translation (derived from word translations for assistant messages)
+  wordTranslations?: Array<{
+    originalWord: string;
+    translation: string;
+    sentenceContext?: string;
+  }>; // Word translations (for assistant messages)
 }
 
 // Re-export SendMessageDto for convenience

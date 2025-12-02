@@ -1,4 +1,5 @@
 import { apiManager } from './api-manager.js';
+import { WordTranslation } from '../types/chat.types.js';
 
 export class TranslationService {
   /**
@@ -10,6 +11,18 @@ export class TranslationService {
       {}
     );
     return response.translation;
+  }
+
+  /**
+   * Translate a message with word-level translations (for assistant messages)
+   */
+  static async translateMessageWithWords(
+    messageId: number
+  ): Promise<{ translation: string; wordTranslations: WordTranslation[] }> {
+    return apiManager.post<{
+      translation: string;
+      wordTranslations: WordTranslation[];
+    }>(`/api/messages/${messageId}/translate-with-words`, {});
   }
 
   /**

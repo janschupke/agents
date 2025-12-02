@@ -1,4 +1,4 @@
-import { Message } from '../../types/chat.types.js';
+import { Message, MessageRole } from '../../types/chat.types.js';
 import MessageBubble from './MessageBubble';
 import { Skeleton } from '../ui/Skeleton';
 import { IconChat } from '../ui/Icons';
@@ -13,7 +13,7 @@ interface ChatMessagesProps {
 }
 
 export default function ChatMessages({ messages, loading, onShowJson, sessionId }: ChatMessagesProps) {
-  const filteredMessages = messages.filter((msg) => msg.role !== 'system');
+  const filteredMessages = messages.filter((msg) => msg.role !== MessageRole.SYSTEM);
   const initialMessageCountRef = useRef<number | null>(null);
   const lastSessionIdRef = useRef<number | null | undefined>(undefined);
   
@@ -52,7 +52,7 @@ export default function ChatMessages({ messages, loading, onShowJson, sessionId 
       {filteredMessages.map((message, index) => {
         const isNew = isNewMessage(index);
         const messageKey = message.id || index;
-        const positioningClasses = `flex flex-col max-w-[80%] ${message.role === 'user' ? 'self-end' : 'self-start'}`;
+        const positioningClasses = `flex flex-col max-w-[80%] ${message.role === MessageRole.USER ? 'self-end' : 'self-start'}`;
         
         // Only animate new messages
         return isNew ? (
