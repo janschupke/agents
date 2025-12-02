@@ -4,7 +4,7 @@ import {
   validateField,
   validateAll,
   ValidationResult,
-} from '../utils/validation';
+} from '../validation';
 
 export interface UseFormValidationReturn<T extends Record<string, unknown>> {
   values: T;

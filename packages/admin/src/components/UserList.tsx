@@ -1,4 +1,5 @@
 import { User } from '../types/user.types';
+import { formatDate } from '@openai/utils';
 
 interface UserListProps {
   users: User[];
@@ -103,7 +104,7 @@ export default function UserList({ users, loading }: UserListProps) {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
-                  {new Date(user.createdAt).toLocaleDateString()}
+                  {formatDate(user.createdAt)}
                 </td>
               </tr>
             ))}

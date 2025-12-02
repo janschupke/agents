@@ -1,5 +1,6 @@
 import { Session } from '../../../../types/chat.types';
 import { IconTrash, IconPencil } from '../../../../components/ui/Icons';
+import { formatDate, formatTime } from '@openai/utils';
 
 interface SessionItemProps {
   session: Session;
@@ -20,11 +21,7 @@ export default function SessionItem({
     if (session.session_name) {
       return session.session_name;
     }
-    const date = new Date(session.createdAt);
-    return `Session ${date.toLocaleDateString()} ${date.toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    })}`;
+    return `Session ${formatDate(session.createdAt)} ${formatTime(session.createdAt)}`;
   };
 
   return (
@@ -49,7 +46,7 @@ export default function SessionItem({
             isSelected ? 'text-text-inverse opacity-80' : 'text-text-tertiary'
           }`}
         >
-          {new Date(session.createdAt).toLocaleDateString()}
+          {formatDate(session.createdAt)}
         </div>
       </button>
       <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">

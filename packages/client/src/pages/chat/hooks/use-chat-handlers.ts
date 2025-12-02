@@ -6,6 +6,7 @@ import {
   Message,
   ChatHistoryResponse,
 } from '../../../types/chat.types';
+import { formatDate } from '@openai/utils';
 
 interface UseChatHandlersOptions {
   agentId: number | null;
@@ -57,7 +58,7 @@ export function useChatHandlers({
     const sessionToDelete = sessions.find((s) => s.id === sessionId);
     const sessionName =
       sessionToDelete?.session_name ||
-      `Session ${new Date(sessionToDelete?.createdAt || Date.now()).toLocaleDateString()}`;
+      `Session ${formatDate(sessionToDelete?.createdAt || new Date())}`;
 
     const confirmed = await confirm({
       title: 'Delete Session',

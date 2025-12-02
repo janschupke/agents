@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AgentMemory } from '../../../../types/chat.types';
 import { IconClose, IconEdit } from '../../../../components/ui/Icons';
 import { SkeletonList } from '../../../../components/ui/feedback';
-import { formatRelativeDate } from '../../../../utils/date.utils';
+import { formatRelativeDate } from '@openai/utils';
 
 interface MemoriesListProps {
   memories: AgentMemory[];
