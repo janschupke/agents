@@ -72,6 +72,10 @@
     "removeRule": "Remove rule",
     "rulePlaceholder": "Rule {{index}}",
     "rulesDescription": "Rules will be saved as a JSON array",
+    "viewForm": "Form",
+    "viewJson": "JSON",
+    "jsonPlaceholder": "[\"Rule 1\", \"Rule 2\", \"Rule 3\"]",
+    "jsonInvalidError": "Invalid JSON format",
     "errors": {
       "agentNotFound": "Agent not found",
       "createFailed": "Failed to create agent"

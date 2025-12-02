@@ -1,14 +1,9 @@
 import {
-  IconTrash,
-  IconPlus,
   FormField,
-  Button,
-  Input,
   Textarea,
-  ButtonVariant,
-  ButtonType,
 } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
+import { BehaviorRulesField } from './BehaviorRulesField';
 
 interface DescriptionFieldProps {
   value: string;
@@ -99,64 +94,5 @@ export function SystemPromptField({ value, onChange }: SystemPromptFieldProps) {
   );
 }
 
-interface BehaviorRulesFieldProps {
-  rules: string[];
-  onChange: (rules: string[]) => void;
-}
-
-export function BehaviorRulesField({
-  rules,
-  onChange,
-}: BehaviorRulesFieldProps) {
-  const { t } = useTranslation(I18nNamespace.CLIENT);
-
-  return (
-    <FormField
-      label={t('config.behaviorRules')}
-      hint={t('config.rulesDescription')}
-    >
-      <div className="space-y-2">
-        {rules.map((rule, index) => (
-          <div key={index} className="flex items-center gap-2">
-            <Input
-              type="text"
-              value={rule}
-              onChange={(e) => {
-                const newRules = [...rules];
-                newRules[index] = e.target.value;
-                onChange(newRules);
-              }}
-              className="flex-1"
-              placeholder={t('config.rulePlaceholder', {
-                index: (index + 1).toString(),
-              })}
-            />
-            <Button
-              type={ButtonType.BUTTON}
-              onClick={() => {
-                const newRules = rules.filter((_, i) => i !== index);
-                onChange(newRules);
-              }}
-              variant={ButtonVariant.ICON}
-              size="sm"
-              className="w-8 p-0"
-              tooltip={t('config.removeRule')}
-            >
-              <IconTrash className="w-4 h-4" />
-            </Button>
-          </div>
-        ))}
-        <Button
-          type={ButtonType.BUTTON}
-          onClick={() => onChange([...rules, ''])}
-          variant={ButtonVariant.SECONDARY}
-          size="sm"
-          className="w-full"
-        >
-          <IconPlus className="w-4 h-4" />
-          <span>{t('config.addRule')}</span>
-        </Button>
-      </div>
-    </FormField>
-  );
-}
+// BehaviorRulesField is exported from its own file
+export { BehaviorRulesField };
