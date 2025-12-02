@@ -3,7 +3,7 @@ import { IconSearch, IconTranslate } from '../../../../components/ui/Icons';
 import TranslatableMarkdownContent from '../markdown/TranslatableMarkdownContent';
 import MarkdownContent from '../markdown/MarkdownContent';
 import { FadeTransition } from '../../../../components/ui/animation';
-import { useMessageTranslation } from '../../hooks/useMessageTranslation';
+import { useMessageTranslation } from '../../hooks/use-message-translation';
 
 interface MessageBubbleProps {
   message: Message;
