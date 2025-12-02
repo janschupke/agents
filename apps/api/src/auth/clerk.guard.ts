@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
   Inject,
   forwardRef,
+  Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { createClerkClient, verifyToken } from '@clerk/backend';
@@ -34,6 +35,7 @@ interface CachedToken {
 
 @Injectable()
 export class ClerkGuard implements CanActivate {
+  private readonly logger = new Logger(ClerkGuard.name);
   private clerk: ReturnType<typeof createClerkClient> | null = null;
   // Cache user data for 5 minutes to avoid repeated Clerk API calls
   private userCache = new Map<string, CachedUser>();

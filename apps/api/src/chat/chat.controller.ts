@@ -7,8 +7,6 @@ import {
   Param,
   Body,
   ParseIntPipe,
-  HttpException,
-  HttpStatus,
   Query,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
@@ -23,7 +21,7 @@ import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
 import { SuccessResponseDto } from '../common/dto/common.dto';
 import { API_ROUTES } from '../common/constants/api-routes.constants.js';
-import { ERROR_MESSAGES, MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
+import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
 
 @Controller(API_ROUTES.CHAT.BASE)
 export class ChatController {

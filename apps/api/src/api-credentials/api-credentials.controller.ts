@@ -4,8 +4,6 @@ import {
   Post,
   Delete,
   Body,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
 import { ApiCredentialsService } from './api-credentials.service';
 import { User } from '../auth/decorators/user.decorator';
@@ -17,7 +15,7 @@ import {
 } from '../common/dto/api-credentials.dto';
 import { SuccessResponseDto } from '../common/dto/common.dto';
 import { API_ROUTES } from '../common/constants/api-routes.constants.js';
-import { ERROR_MESSAGES, MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
+import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
 
 @Controller(API_ROUTES.API_CREDENTIALS.BASE)
 export class ApiCredentialsController {

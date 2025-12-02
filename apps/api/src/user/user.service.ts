@@ -1,7 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { User } from '@prisma/client';
-import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
 
 @Injectable()
 export class UserService {

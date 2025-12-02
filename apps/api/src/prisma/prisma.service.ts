@@ -73,7 +73,8 @@ export class PrismaService
       return urlObj.toString();
     } catch (error) {
       // If URL parsing fails, return original
-      this.logger.warn('Failed to optimize connection string:', error);
+      // Note: Can't use logger in static method, use console.warn instead
+      console.warn('Failed to optimize connection string:', error);
       return url;
     }
   }
