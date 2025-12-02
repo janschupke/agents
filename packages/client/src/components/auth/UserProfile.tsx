@@ -1,78 +1,85 @@
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/clerk-react';
-import { ApiCredentialsService } from '../../services/api-credentials.service';
 import PageContainer from '../ui/PageContainer';
 import PageHeader from '../ui/PageHeader';
 import { IconPencil, IconTrash, IconClose, IconCheck } from '../ui/Icons';
-import { useApiKeyStatus, useUserInfo } from '../../contexts/UserContext';
 import { useConfirm } from '../../hooks/useConfirm';
-import { useToast } from '../../contexts/ToastContext';
+import { useUser as useUserQuery } from '../../hooks/queries/use-user.js';
+import { useUpdateApiKey, useDeleteApiKey } from '../../hooks/mutations/use-user-mutations.js';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../../hooks/queries/query-keys.js';
+import { useFormValidation } from '../../hooks/use-form-validation.js';
+import { validationRules } from '../../utils/validation.js';
+import FormButton from '../ui/FormButton.js';
+import FormContainer from '../ui/FormContainer.js';
+import ValidatedInput from '../ui/ValidatedInput.js';
+import { ButtonType, ButtonVariant } from '../ui/form-types.js';
+import LoadingWrapper from '../ui/LoadingWrapper.js';
+
+interface ApiKeyFormValues {
+  apiKey: string;
+}
 
 export default function UserProfile() {
   const { user: clerkUser } = useUser();
-  const { hasApiKey: cachedHasApiKey, loadingApiKey, refreshApiKey } = useApiKeyStatus();
-  const { userInfo: cachedUserInfo, loadingUser } = useUserInfo();
+  const { data: userInfo, isLoading: loadingUser } = useUserQuery();
   const { confirm, ConfirmDialog } = useConfirm();
-  const { showToast } = useToast();
-  const [apiKey, setApiKey] = useState('');
-  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
-  const [apiKeySaving, setApiKeySaving] = useState(false);
+  const queryClient = useQueryClient();
+  const updateApiKeyMutation = useUpdateApiKey();
+  const deleteApiKeyMutation = useDeleteApiKey();
+
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+  const [hasApiKey, setHasApiKey] = useState(false);
 
-  // Use cached API key status
-  const hasApiKey = cachedHasApiKey ?? false;
-  const apiKeyLoading = loadingApiKey;
-
-  // Use cached user info
-  const userInfo = cachedUserInfo;
-  // Only show loading if we don't have user info yet and it's actually loading
-  // If user info is cached, don't show loading state
-  const loading = loadingUser && !cachedUserInfo;
-
+  // Check API key status
   useEffect(() => {
-    // User info and API key status are loaded from cache in AppContext
-    // Just update UI state based on cached values
-    if (hasApiKey) {
-      setApiKey('••••••••••••••••••••••••••••••••');
-      setShowApiKeyInput(false);
-    } else {
-      setShowApiKeyInput(true);
-    }
-  }, [hasApiKey]);
+    const checkApiKey = async () => {
+      try {
+        const { ApiCredentialsService } = await import('../../services/api-credentials.service.js');
+        const hasKey = await ApiCredentialsService.hasOpenAIKey();
+        setHasApiKey(hasKey);
+        if (hasKey) {
+          setShowApiKeyInput(false);
+        } else {
+          setShowApiKeyInput(true);
+        }
+      } catch {
+        setHasApiKey(false);
+        setShowApiKeyInput(true);
+      }
+    };
+    checkApiKey();
+  }, []);
 
-  // Update UI when cached API key status changes
-  useEffect(() => {
-    if (hasApiKey) {
-      setApiKey('••••••••••••••••••••••••••••••••');
-      setShowApiKeyInput(false);
-    } else {
-      setShowApiKeyInput(true);
-    }
-  }, [hasApiKey]);
+  const validationSchema = {
+    apiKey: [validationRules.required('API key is required')],
+  };
+
+  const {
+    values,
+    errors,
+    touched,
+    setValue,
+    setTouched,
+    validateAll,
+    reset,
+  } = useFormValidation<ApiKeyFormValues>(validationSchema, { apiKey: '' });
 
   const handleSaveApiKey = async () => {
-    if (!apiKey.trim()) {
-      setApiKeyError('API key cannot be empty');
+    const validation = validateAll();
+    if (!validation.isValid) {
       return;
     }
 
-    setApiKeySaving(true);
-    setApiKeyError(null);
     try {
-      await ApiCredentialsService.setOpenAIKey(apiKey);
-      // Refresh cached API key status
-      await refreshApiKey();
-      setApiKey('••••••••••••••••••••••••••••••••');
+      await updateApiKeyMutation.mutateAsync(values.apiKey);
+      setHasApiKey(true);
       setShowApiKeyInput(false);
-      // Dispatch custom event to notify other components
-      window.dispatchEvent(new CustomEvent('apiKeySaved'));
-      showToast('API key updated successfully', 'success');
-    } catch (error: unknown) {
-      const err = error as { message?: string };
-      setApiKeyError(err.message || 'Failed to save API key');
-      showToast(`Failed to update API key: ${err.message || 'Unknown error'}`, 'error');
-    } finally {
-      setApiKeySaving(false);
+      reset();
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.apiKey() });
+    } catch (error) {
+      // Error is handled by mutation hook
+      console.error('Failed to save API key:', error);
     }
   };
 
@@ -89,45 +96,33 @@ export default function UserProfile() {
       return;
     }
 
-    setApiKeySaving(true);
-    setApiKeyError(null);
     try {
-      await ApiCredentialsService.deleteOpenAIKey();
-      // Refresh cached API key status
-      await refreshApiKey();
-      setApiKey('');
+      await deleteApiKeyMutation.mutateAsync();
+      setHasApiKey(false);
       setShowApiKeyInput(true);
-      // Dispatch custom event to notify other components
-      window.dispatchEvent(new CustomEvent('apiKeySaved'));
-      showToast('API key removed successfully', 'success');
-    } catch (error: unknown) {
-      const err = error as { message?: string };
-      setApiKeyError(err.message || 'Failed to delete API key');
-      showToast(`Failed to remove API key: ${err.message || 'Unknown error'}`, 'error');
-    } finally {
-      setApiKeySaving(false);
+      reset();
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.apiKey() });
+    } catch (error) {
+      // Error is handled by mutation hook
+      console.error('Failed to delete API key:', error);
     }
-  };
-
-  const handleApiKeyInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setApiKey(e.target.value);
-    setApiKeyError(null);
   };
 
   const handleEditApiKey = () => {
     setShowApiKeyInput(true);
-    setApiKey('');
+    reset();
   };
 
-  if (loading) {
-    return (
-      <PageContainer>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-text-secondary">Loading...</div>
-        </div>
-      </PageContainer>
-    );
-  }
+  const handleCancelEdit = () => {
+    setShowApiKeyInput(false);
+    reset();
+  };
+
+  const saving = updateApiKeyMutation.isPending || deleteApiKeyMutation.isPending;
+  const formError = updateApiKeyMutation.error || deleteApiKeyMutation.error;
+  const errorMessage = formError && typeof formError === 'object' && 'message' in formError
+    ? (formError as { message: string }).message
+    : null;
 
   const displayUser = userInfo || {
     id: clerkUser?.id || '',
@@ -143,130 +138,129 @@ export default function UserProfile() {
       <div className="flex flex-col h-full overflow-hidden">
         <PageHeader title="User Profile" />
         <div className="flex-1 overflow-y-auto p-8">
-          <div className="space-y-6">
-            {/* Profile Image */}
-            <div className="flex items-center gap-6">
-              {displayUser.imageUrl ? (
-                <img
-                  src={displayUser.imageUrl}
-                  alt="Profile"
-                  className="w-24 h-24 rounded-full border-4 border-border"
-                />
-              ) : (
-                <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center text-text-inverse text-3xl font-semibold border-4 border-border">
-                  {(displayUser.firstName || displayUser.email || 'U').charAt(0).toUpperCase()}
-                </div>
-              )}
-              <div>
-                <h3 className="text-xl font-semibold text-text-primary">
-                  {displayUser.firstName || displayUser.lastName
-                    ? `${displayUser.firstName || ''} ${displayUser.lastName || ''}`.trim()
-                    : 'User'}
-                </h3>
-                {displayUser.email && (
-                  <p className="text-text-secondary mt-1">{displayUser.email}</p>
+          <LoadingWrapper isLoading={loadingUser && !userInfo} loadingText="Loading user info...">
+            <div className="space-y-6">
+              {/* Profile Image */}
+              <div className="flex items-center gap-6">
+                {displayUser.imageUrl ? (
+                  <img
+                    src={displayUser.imageUrl}
+                    alt="Profile"
+                    className="w-24 h-24 rounded-full border-4 border-border"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center text-text-inverse text-3xl font-semibold border-4 border-border">
+                    {(displayUser.firstName || displayUser.email || 'U').charAt(0).toUpperCase()}
+                  </div>
                 )}
-              </div>
-            </div>
-
-            {/* User Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="text-sm font-medium text-text-secondary">User ID</label>
-                <p className="mt-1 text-text-primary font-mono text-sm break-all">
-                  {displayUser.id}
-                </p>
-              </div>
-
-              {displayUser.firstName && (
                 <div>
-                  <label className="text-sm font-medium text-text-secondary">First Name</label>
-                  <p className="mt-1 text-text-primary">{displayUser.firstName}</p>
-                </div>
-              )}
-
-              {displayUser.lastName && (
-                <div>
-                  <label className="text-sm font-medium text-text-secondary">Last Name</label>
-                  <p className="mt-1 text-text-primary">{displayUser.lastName}</p>
-                </div>
-              )}
-
-              {displayUser.email && (
-                <div>
-                  <label className="text-sm font-medium text-text-secondary">Email</label>
-                  <p className="mt-1 text-text-primary">{displayUser.email}</p>
-                </div>
-              )}
-
-              <div>
-                <label className="text-sm font-medium text-text-secondary">Roles</label>
-                <div className="mt-1 flex flex-wrap gap-2">
-                  {displayUser.roles && displayUser.roles.length > 0 ? (
-                    displayUser.roles.map((role, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-primary text-text-inverse text-xs font-medium rounded-full"
-                      >
-                        {role}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-text-secondary text-sm">No roles assigned</span>
+                  <h3 className="text-xl font-semibold text-text-primary">
+                    {displayUser.firstName || displayUser.lastName
+                      ? `${displayUser.firstName || ''} ${displayUser.lastName || ''}`.trim()
+                      : 'User'}
+                  </h3>
+                  {displayUser.email && (
+                    <p className="text-text-secondary mt-1">{displayUser.email}</p>
                   )}
                 </div>
               </div>
-            </div>
 
-            {/* API Key Section */}
-            <div className="pt-4 border-t border-border">
-              <div className="mb-4">
-                <label className="text-sm font-medium text-text-secondary block mb-2">
-                  OpenAI API Key {!hasApiKey && <span className="text-red-600">*</span>}
-                </label>
-                {!hasApiKey && (
-                  <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                    <p className="text-sm text-yellow-800">
-                      <strong>Required:</strong> You must set your OpenAI API key to use the chat
-                      feature. Get your API key from{' '}
-                      <a
-                        href="https://platform.openai.com/api-keys"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline hover:text-yellow-900"
-                      >
-                        OpenAI Platform
-                      </a>
-                    </p>
+              {/* User Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-sm font-medium text-text-secondary">User ID</label>
+                  <p className="mt-1 text-text-primary font-mono text-sm break-all">
+                    {displayUser.id}
+                  </p>
+                </div>
+
+                {displayUser.firstName && (
+                  <div>
+                    <label className="text-sm font-medium text-text-secondary">First Name</label>
+                    <p className="mt-1 text-text-primary">{displayUser.firstName}</p>
                   </div>
                 )}
-                <p className="text-xs text-text-tertiary mb-3">
-                  Your API key is encrypted and stored securely. It will never be sent back to the
-                  frontend in plaintext.
-                </p>
-                {apiKeyLoading ? (
-                  <div className="text-text-secondary text-sm">Loading...</div>
-                ) : (
-                  <div className="space-y-3">
-                    {!showApiKeyInput && hasApiKey && apiKey ? (
+
+                {displayUser.lastName && (
+                  <div>
+                    <label className="text-sm font-medium text-text-secondary">Last Name</label>
+                    <p className="mt-1 text-text-primary">{displayUser.lastName}</p>
+                  </div>
+                )}
+
+                {displayUser.email && (
+                  <div>
+                    <label className="text-sm font-medium text-text-secondary">Email</label>
+                    <p className="mt-1 text-text-primary">{displayUser.email}</p>
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-sm font-medium text-text-secondary">Roles</label>
+                  <div className="mt-1 flex flex-wrap gap-2">
+                    {displayUser.roles && displayUser.roles.length > 0 ? (
+                      displayUser.roles.map((role, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-primary text-text-inverse text-xs font-medium rounded-full"
+                        >
+                          {role}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-text-secondary text-sm">No roles assigned</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* API Key Section */}
+              <div className="pt-4 border-t border-border">
+                <FormContainer saving={saving} error={errorMessage}>
+                  <div className="mb-4">
+                    <label className="text-sm font-medium text-text-secondary block mb-2">
+                      OpenAI API Key {!hasApiKey && <span className="text-red-600">*</span>}
+                    </label>
+                    {!hasApiKey && (
+                      <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                        <p className="text-sm text-yellow-800">
+                          <strong>Required:</strong> You must set your OpenAI API key to use the chat
+                          feature. Get your API key from{' '}
+                          <a
+                            href="https://platform.openai.com/api-keys"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline hover:text-yellow-900"
+                          >
+                            OpenAI Platform
+                          </a>
+                        </p>
+                      </div>
+                    )}
+                    <p className="text-xs text-text-tertiary mb-3">
+                      Your API key is encrypted and stored securely. It will never be sent back to the
+                      frontend in plaintext.
+                    </p>
+                    {!showApiKeyInput && hasApiKey ? (
                       <div className="flex items-center gap-2">
                         <input
                           type="password"
-                          value={apiKey}
+                          value="••••••••••••••••••••••••••••••••"
                           disabled
                           className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-tertiary bg-background-tertiary font-mono cursor-not-allowed"
                           placeholder="API key is set"
                         />
                         <button
                           onClick={handleEditApiKey}
-                          className="h-8 w-8 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-background-tertiary rounded transition-colors"
+                          disabled={saving}
+                          className="h-8 w-8 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Edit API key"
                         >
                           <IconPencil className="w-4 h-4" />
                         </button>
                         <button
                           onClick={handleDeleteApiKey}
-                          disabled={apiKeySaving}
+                          disabled={saving}
                           className="h-8 w-8 flex items-center justify-center text-text-tertiary hover:text-red-600 hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Delete API key"
                         >
@@ -276,45 +270,45 @@ export default function UserProfile() {
                     ) : (
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <input
+                          <ValidatedInput
                             type="password"
-                            value={apiKey}
-                            onChange={handleApiKeyInputChange}
+                            value={values.apiKey}
+                            onChange={(e) => setValue('apiKey', e.target.value)}
+                            onBlur={() => setTouched('apiKey')}
+                            disabled={saving}
+                            error={errors.apiKey}
+                            touched={touched.apiKey}
+                            className="flex-1 font-mono"
                             placeholder="Enter your OpenAI API key"
-                            disabled={apiKeySaving}
-                            className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus disabled:bg-disabled-bg disabled:cursor-not-allowed font-mono"
                           />
                           {hasApiKey && (
-                            <button
-                              onClick={() => {
-                                setShowApiKeyInput(false);
-                                setApiKey('••••••••••••••••••••••••••••••••');
-                                setApiKeyError(null);
-                              }}
-                              disabled={apiKeySaving}
-                              className="h-8 w-8 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                              title="Cancel"
+                            <FormButton
+                              type={ButtonType.BUTTON}
+                              onClick={handleCancelEdit}
+                              disabled={saving}
+                              variant={ButtonVariant.SECONDARY}
                             >
                               <IconClose className="w-4 h-4" />
-                            </button>
+                            </FormButton>
                           )}
-                          <button
+                          <FormButton
+                            type={ButtonType.BUTTON}
                             onClick={handleSaveApiKey}
-                            disabled={apiKeySaving || !apiKey.trim()}
-                            className="h-8 w-8 flex items-center justify-center bg-primary text-text-inverse rounded transition-colors hover:bg-primary-hover disabled:bg-disabled disabled:cursor-not-allowed"
-                            title="Save API key"
+                            loading={saving}
+                            disabled={saving || !values.apiKey.trim()}
+                            variant={ButtonVariant.PRIMARY}
+                            tooltip={saving ? 'Saving...' : 'Save API key'}
                           >
                             <IconCheck className="w-4 h-4" />
-                          </button>
+                          </FormButton>
                         </div>
-                        {apiKeyError && <p className="text-xs text-red-600">{apiKeyError}</p>}
                       </div>
                     )}
                   </div>
-                )}
+                </FormContainer>
               </div>
             </div>
-          </div>
+          </LoadingWrapper>
         </div>
       </div>
       {ConfirmDialog}

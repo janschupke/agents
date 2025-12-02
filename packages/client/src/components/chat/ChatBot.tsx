@@ -1,17 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-
-import { ChatBotProps } from '../../types/chat.types.js';
-import { useBots } from '../../contexts/BotContext';
+import { ChatBotProps, Message, MessageRole } from '../../types/chat.types.js';
 import { useSelectedBot } from '../../contexts/AppContext';
-import { useChatContext } from '../../contexts/ChatContext';
-import { useBotInitialization } from '../../hooks/useBotInitialization.js';
-import { useSessionValidation } from '../../hooks/useSessionValidation.js';
-import { useChatAutoLoad } from '../../hooks/useChatAutoLoad.js';
-import { useChatHandlers } from '../../hooks/useChatHandlers.js';
 import { NUMERIC_CONSTANTS } from '../../constants/numeric.constants.js';
 import { useConfirm } from '../../hooks/useConfirm';
-import { useToast } from '../../contexts/ToastContext';
-import { ChatService } from '../../services/chat.service.js';
+import { useBots } from '../../hooks/queries/use-bots.js';
+import { useBotSessions } from '../../hooks/queries/use-bots.js';
+import { useChatHistory } from '../../hooks/queries/use-chat.ts';
+import { useSendMessage } from '../../hooks/mutations/use-chat-mutations.js';
+import { useCreateSession, useDeleteSession } from '../../hooks/mutations/use-bot-mutations.js';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../../hooks/queries/query-keys.js';
 import SessionSidebar from '../session/SessionSidebar.js';
 import SessionNameModal from '../session/SessionNameModal.js';
 import PageContainer from '../ui/PageContainer.js';
@@ -22,26 +20,28 @@ import ChatInput, { ChatInputRef } from './ChatInput';
 import ChatPlaceholder from './ChatPlaceholder';
 import ChatLoadingState from './ChatLoadingState';
 import ChatEmptyState from './ChatEmptyState';
+import LoadingWrapper from '../ui/LoadingWrapper.js';
 
 function ChatBotContent({ botId: propBotId }: ChatBotProps) {
-  const { bots, loadingBots, getBotSessions, refreshBotSessions, addSessionToBot, removeSessionFromBot } = useBots();
   const { selectedBotId, setSelectedBotId } = useSelectedBot();
   const { confirm, ConfirmDialog } = useConfirm();
-  const { showToast } = useToast();
-  const {
-    messages,
-    setMessages,
-    currentBotId,
-    currentSessionId,
-    setCurrentSessionId,
-    loadingMessages,
-    loadingSession,
-    loadChatHistory,
-    sendMessage: sendMessageToContext,
-  } = useChatContext();
+  const queryClient = useQueryClient();
+  
+  const { data: bots = [], isLoading: loadingBots } = useBots();
+  const actualBotId = propBotId || selectedBotId || (bots.length > 0 ? bots[0].id : null);
+  const { data: sessions = [], isLoading: sessionsLoading } = useBotSessions(actualBotId);
+  const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
+  const { data: chatHistory, isLoading: loadingChatHistory } = useChatHistory(
+    actualBotId,
+    currentSessionId
+  );
+  
+  const sendMessageMutation = useSendMessage();
+  const createSessionMutation = useCreateSession();
+  const deleteSessionMutation = useDeleteSession();
 
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [creatingSession, setCreatingSession] = useState(false);
   const [jsonModal, setJsonModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -54,46 +54,51 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<ChatInputRef>(null);
-  const actualBotId = propBotId || selectedBotId || (bots.length > 0 ? bots[0].id : null);
-  // Get sessions for the current bot - these are already filtered by botId in BotContext
-  const sessions = actualBotId ? getBotSessions(actualBotId) || [] : [];
-  const sessionsLoading = loadingBots;
-
-  // Show placeholder if bot changed or no session selected for current bot
-  const botMismatch =
-    actualBotId !== null && (currentBotId === null || currentBotId !== actualBotId);
-  const noSessionForCurrentBot =
-    actualBotId !== null &&
-    currentBotId === actualBotId &&
-    currentSessionId === null &&
-    messages.length === 0;
-  const showChatPlaceholder = botMismatch || noSessionForCurrentBot;
-
-  // Use custom hooks for complex logic
-  useBotInitialization({
-    propBotId,
-    bots,
-    loadingBots,
-    selectedBotId,
-    setSelectedBotId,
-  });
-
-  useSessionValidation({
-    selectedBotId,
-    currentSessionId,
-    setCurrentSessionId,
-    getBotSessions,
-    loadingBots,
-  });
-
-  useChatAutoLoad({
-    actualBotId,
-    loadingBots,
-    getBotSessions,
-  });
-
   const isInitialLoadRef = useRef(true);
   const previousMessageCountRef = useRef(0);
+
+  // Initialize bot selection
+  useEffect(() => {
+    if (propBotId) {
+      setSelectedBotId(propBotId);
+      return;
+    }
+
+    if (!loadingBots && bots.length > 0 && !selectedBotId) {
+      setSelectedBotId(bots[0].id);
+    }
+  }, [propBotId, loadingBots, bots, selectedBotId, setSelectedBotId]);
+
+  // Auto-select first session when bot changes
+  useEffect(() => {
+    if (actualBotId && !sessionsLoading && sessions.length > 0 && !currentSessionId) {
+      setCurrentSessionId(sessions[0].id);
+    } else if (actualBotId && !sessionsLoading && sessions.length === 0) {
+      setCurrentSessionId(null);
+      setMessages([]);
+    }
+  }, [actualBotId, sessionsLoading, sessions, currentSessionId]);
+
+  // Load chat history when session changes
+  useEffect(() => {
+    if (actualBotId && currentSessionId && currentSessionId > 0) {
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.chat.history(actualBotId, currentSessionId),
+      });
+    }
+  }, [actualBotId, currentSessionId, queryClient]);
+
+  // Update messages from chat history
+  useEffect(() => {
+    if (chatHistory && actualBotId && currentSessionId) {
+      const historySessionId = chatHistory.session?.id;
+      if (historySessionId === currentSessionId && chatHistory.messages) {
+        setMessages(chatHistory.messages);
+      }
+    } else if (!currentSessionId) {
+      setMessages([]);
+    }
+  }, [chatHistory, actualBotId, currentSessionId]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -101,11 +106,9 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
     const isNewMessage = messageCount > previousMessageCountRef.current;
     
     if (isInitialLoadRef.current) {
-      // Initial load: scroll instantly without animation
       messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
       isInitialLoadRef.current = false;
     } else if (isNewMessage) {
-      // New message added: scroll smoothly
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
     
@@ -118,38 +121,58 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
     previousMessageCountRef.current = 0;
   }, [currentSessionId]);
 
-  // Focus chat input when session changes or new session is created
+  // Show placeholder if bot changed or no session selected for current bot
+  const botMismatch = actualBotId !== null && currentSessionId === null;
+  const noSessionForCurrentBot = actualBotId !== null && currentSessionId === null && messages.length === 0;
+  const showChatPlaceholder = botMismatch || noSessionForCurrentBot;
+
+  // Focus chat input when session changes
   useEffect(() => {
-    if (currentSessionId && !loadingMessages && !loadingSession && !showChatPlaceholder) {
-      // Small delay to ensure the input is rendered and visible
+    if (currentSessionId && !loadingChatHistory && !showChatPlaceholder) {
       const timer = setTimeout(() => {
         chatInputRef.current?.focus();
       }, NUMERIC_CONSTANTS.UI_DEBOUNCE_DELAY);
       return () => clearTimeout(timer);
     }
-  }, [currentSessionId, loadingMessages, loadingSession, showChatPlaceholder]);
+  }, [currentSessionId, loadingChatHistory, showChatPlaceholder]);
 
-  const { handleSessionSelect, handleNewSession, handleSubmit: handleSubmitMessage } =
-    useChatHandlers({
-      actualBotId,
-      currentSessionId,
-      setCurrentSessionId,
-      setMessages,
-      loadChatHistory,
-      sendMessageToContext,
-      addSessionToBot,
-      refreshBotSessions,
-    });
+  const handleSessionSelect = useCallback(
+    async (sessionId: number) => {
+      if (sessionId === currentSessionId || !actualBotId) {
+        return;
+      }
 
-  // Wrap handleNewSession to track loading state
-  const handleNewSessionWithLoading = useCallback(async () => {
-    setCreatingSession(true);
+      // Optimistically update session ID immediately
+      setCurrentSessionId(sessionId);
+      setMessages([]);
+
+      // Load chat history
+      const history = await queryClient.fetchQuery({
+        queryKey: queryKeys.chat.history(actualBotId, sessionId),
+        queryFn: async () => {
+          const { ChatService } = await import('../../services/chat.service.js');
+          return ChatService.getChatHistory(actualBotId, sessionId);
+        },
+      });
+      if (history && 'messages' in history) {
+        setMessages(history.messages || []);
+      }
+    },
+    [actualBotId, currentSessionId, queryClient]
+  );
+
+  const handleNewSession = useCallback(async () => {
+    if (!actualBotId) return;
+    
     try {
-      await handleNewSession();
-    } finally {
-      setCreatingSession(false);
+      const newSession = await createSessionMutation.mutateAsync(actualBotId);
+      // Select the new session
+      setCurrentSessionId(newSession.id);
+      setMessages([]);
+    } catch (error) {
+      console.error('Error creating session:', error);
     }
-  }, [handleNewSession]);
+  }, [actualBotId, createSessionMutation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,40 +180,72 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
 
     const message = input;
     setInput('');
-    await handleSubmitMessage(message);
+
+    // Optimistically add user message
+    const userMessage: Message = {
+      role: MessageRole.USER,
+      content: message,
+    };
+    setMessages((prev) => [...prev, userMessage]);
+
+    try {
+      const result = await sendMessageMutation.mutateAsync({
+        botId: actualBotId,
+        message,
+        sessionId: currentSessionId || undefined,
+      });
+
+      // Update messages with assistant response
+      const assistantMessage: Message = {
+        role: MessageRole.ASSISTANT,
+        content: result.response,
+        rawResponse: result.rawResponse,
+        id: result.assistantMessageId,
+      };
+
+      setMessages((prev) => {
+        // Update last user message with ID if available
+        const updated = [...prev];
+        const lastUserIndex = updated.length - 2;
+        if (lastUserIndex >= 0 && updated[lastUserIndex]?.role === MessageRole.USER) {
+          updated[lastUserIndex] = {
+            ...updated[lastUserIndex],
+            id: result.userMessageId ?? updated[lastUserIndex].id,
+            rawRequest: result.rawRequest,
+          };
+        }
+        return [...updated, assistantMessage];
+      });
+
+      // If new session was created, update session ID
+      if (result.session?.id && result.session.id !== currentSessionId) {
+        setCurrentSessionId(result.session.id);
+      }
+    } catch (error) {
+      // Remove optimistic user message on error
+      setMessages((prev) => prev.slice(0, -1));
+      console.error('Failed to send message:', error);
+    }
   };
 
   const handleSessionEdit = (sessionId: number) => {
     setSessionNameModal({ isOpen: true, sessionId });
   };
 
-  const handleSessionNameSave = async (name: string) => {
-    if (!actualBotId || !sessionNameModal.sessionId) return;
-
-    try {
-      await ChatService.updateSession(
-        actualBotId,
-        sessionNameModal.sessionId,
-        name || undefined
-      );
-
-      // Update session in context
-      await refreshBotSessions(actualBotId);
-      showToast('Session name updated successfully', 'success');
-    } catch (error) {
-      console.error('Failed to update session name:', error);
-      throw error; // Let modal handle the error display
+  const handleSessionNameSave = async (_name: string) => {
+    // Session name is updated by the mutation hook in SessionNameModal
+    // Just refresh sessions
+    if (actualBotId) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bots.sessions(actualBotId) });
     }
   };
 
   const handleSessionDelete = async (sessionId: number) => {
     if (!actualBotId) return;
 
-    // Find the session to get its name for confirmation
     const sessionToDelete = sessions.find((s) => s.id === sessionId);
     const sessionName = sessionToDelete?.session_name || `Session ${new Date(sessionToDelete?.createdAt || Date.now()).toLocaleDateString()}`;
 
-    // Confirm deletion
     const confirmed = await confirm({
       title: 'Delete Session',
       message: `Are you sure you want to delete "${sessionName}"? This will permanently delete the session and all its messages.`,
@@ -203,41 +258,28 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
       return;
     }
 
-    // Optimistically remove from UI immediately
     const wasCurrentSession = currentSessionId === sessionId;
-    const remainingSessions = sessions.filter((s) => s.id !== sessionId);
 
-    // Optimistically remove session from context immediately
-    removeSessionFromBot(actualBotId, sessionId);
-
-    // Select first session in list if we deleted the current one
-    if (wasCurrentSession) {
-      if (remainingSessions.length > 0) {
-        // Select the first remaining session
-        await handleSessionSelect(remainingSessions[0].id);
-      } else {
-        // No sessions left, clear selection
-        setCurrentSessionId(null);
-        setMessages([]);
-      }
-    }
-
-    // Delete from API in background
     try {
-      await ChatService.deleteSession(actualBotId, sessionId);
-      // Refresh sessions to ensure UI is in sync with server
-      await refreshBotSessions(actualBotId);
-      showToast('Session deleted successfully', 'success');
+      await deleteSessionMutation.mutateAsync({ botId: actualBotId, sessionId });
+
+      // Select first session if we deleted the current one
+      if (wasCurrentSession) {
+        const remainingSessions = sessions.filter((s) => s.id !== sessionId);
+        if (remainingSessions.length > 0) {
+          await handleSessionSelect(remainingSessions[0].id);
+        } else {
+          setCurrentSessionId(null);
+          setMessages([]);
+        }
+      }
     } catch (error) {
       console.error('Failed to delete session:', error);
-      // Revert optimistic update on error
-      await refreshBotSessions(actualBotId);
-      showToast(`Failed to delete session: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
     }
   };
 
-  // Show loading state if creating session or loading messages/session
-  const loading = loadingMessages || loadingSession || creatingSession;
+  // Show loading state
+  const loading = loadingChatHistory || sendMessageMutation.isPending || createSessionMutation.isPending;
 
   if (loadingBots) {
     return <ChatLoadingState />;
@@ -250,26 +292,28 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
   return (
     <PageContainer>
       <div className="flex h-full">
-        <SessionSidebar
-          sessions={sessions}
-          currentSessionId={currentSessionId}
-          onSessionSelect={handleSessionSelect}
-          onNewSession={handleNewSessionWithLoading}
-          onSessionDelete={handleSessionDelete}
-          onSessionEdit={handleSessionEdit}
-          loading={sessionsLoading}
-        />
+        <LoadingWrapper isLoading={sessionsLoading} loadingText="Loading sessions...">
+          <SessionSidebar
+            sessions={sessions}
+            currentSessionId={currentSessionId}
+            onSessionSelect={handleSessionSelect}
+            onNewSession={handleNewSession}
+            onSessionDelete={handleSessionDelete}
+            onSessionEdit={handleSessionEdit}
+            loading={sessionsLoading}
+          />
+        </LoadingWrapper>
         <div className="flex flex-col flex-1 overflow-hidden">
           <ChatHeader />
           <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 relative">
-            {showChatPlaceholder && !loadingMessages && !loadingSession ? (
+            {showChatPlaceholder && !loadingChatHistory ? (
               <ChatPlaceholder />
             ) : (
               <>
                 <ChatMessages
                   key={currentSessionId || 'no-session'}
                   messages={messages}
-                  loading={loading || (loadingMessages && messages.length === 0)}
+                  loading={loading || (loadingChatHistory && messages.length === 0)}
                   onShowJson={(title, data) => setJsonModal({ isOpen: true, title, data })}
                   sessionId={currentSessionId}
                 />
@@ -294,16 +338,18 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
         title={jsonModal.title}
         data={jsonModal.data}
       />
-      <SessionNameModal
-        isOpen={sessionNameModal.isOpen}
-        onClose={() => setSessionNameModal({ isOpen: false, sessionId: null })}
-        currentName={
-          sessionNameModal.sessionId
-            ? sessions.find((s) => s.id === sessionNameModal.sessionId)?.session_name || null
-            : null
-        }
-        onSave={handleSessionNameSave}
-      />
+      {sessionNameModal.sessionId && actualBotId && (
+        <SessionNameModal
+          isOpen={sessionNameModal.isOpen}
+          onClose={() => setSessionNameModal({ isOpen: false, sessionId: null })}
+          currentName={
+            sessions.find((s) => s.id === sessionNameModal.sessionId)?.session_name || null
+          }
+          onSave={handleSessionNameSave}
+          botId={actualBotId}
+          sessionId={sessionNameModal.sessionId}
+        />
+      )}
       {ConfirmDialog}
     </PageContainer>
   );

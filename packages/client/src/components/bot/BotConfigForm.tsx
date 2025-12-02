@@ -1,262 +1,226 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Bot, AgentMemory } from '../../types/chat.types.js';
-import { BotService } from '../../services/bot.service.js';
-import { MemoryService } from '../../services/memory.service.js';
+import { useEffect, useMemo, useState } from 'react';
+import { Bot } from '../../types/chat.types.js';
 import PageHeader from '../ui/PageHeader.js';
 import { Skeleton } from '../ui/Skeleton';
 import { IconRefresh } from '../ui/Icons';
-import { useBots } from '../../contexts/BotContext.js';
 import { useConfirm } from '../../hooks/useConfirm';
 import AvatarPicker from '../ui/AvatarPicker.js';
 import {
-  NameField,
   DescriptionField,
   TemperatureField,
   SystemPromptField,
   BehaviorRulesField,
 } from './BotConfigFormFields';
 import MemoriesList from './MemoriesList';
+import { useBot } from '../../hooks/queries/use-bots.js';
+import { useBotMemories } from '../../hooks/queries/use-bots.js';
+import { useCreateBot, useUpdateBot } from '../../hooks/mutations/use-bot-mutations.js';
+import { useUpdateMemory, useDeleteMemory } from '../../hooks/mutations/use-bot-mutations.js';
+import { useFormValidation } from '../../hooks/use-form-validation.js';
+import { validationRules } from '../../utils/validation.js';
+import FormButton from '../ui/FormButton.js';
+import FormContainer from '../ui/FormContainer.js';
+import ValidatedInput from '../ui/ValidatedInput.js';
+import { ButtonType, ButtonVariant } from '../ui/form-types.js';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../../hooks/queries/query-keys.js';
 
 interface BotConfigFormProps {
   bot: Bot | null;
   onSave: (savedBot: Bot) => void;
 }
 
-export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
-  const { getCachedBotConfig, setCachedBotConfig } = useBots();
-  const { confirm, ConfirmDialog } = useConfirm();
+interface BotFormValues {
+  name: string;
+  description: string;
+  avatarUrl: string | null;
+  temperature: number;
+  systemPrompt: string;
+  behaviorRules: string[];
+}
 
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [temperature, setTemperature] = useState(0.7);
-  const [systemPrompt, setSystemPrompt] = useState('');
-  const [behaviorRules, setBehaviorRules] = useState<string[]>([]);
-  const [memories, setMemories] = useState<AgentMemory[]>([]);
-  const [loadingMemories, setLoadingMemories] = useState(false);
-  const [loadingConfig, setLoadingConfig] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
+// Helper to parse behavior rules
+const parseBehaviorRules = (behavior_rules: unknown): string[] => {
+  if (!behavior_rules) return [];
 
-  // Track which bots are currently loading memories
-  const loadingBots = useRef<Set<number>>(new Set());
-
-  // Load memories - always refresh, never cache
-  const loadMemoriesLazy = useCallback(async (botId: number) => {
-    // Check if already loading for this bot
-    if (loadingBots.current.has(botId)) {
-      return;
-    }
-
-    // Load memories (always fetch, no cache)
-    loadingBots.current.add(botId);
-    setLoadingMemories(true);
-    setError(null);
+  if (typeof behavior_rules === 'string') {
     try {
-      const data = await MemoryService.getMemories(botId);
-      setMemories(data);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load memories';
-      setError(errorMessage);
-      setMemories([]);
-    } finally {
-      loadingBots.current.delete(botId);
-      setLoadingMemories(false);
-    }
-  }, []);
-
-  // Helper to parse behavior rules
-  const parseBehaviorRules = useCallback((behavior_rules: unknown): string[] => {
-    if (!behavior_rules) return [];
-
-    if (typeof behavior_rules === 'string') {
-      try {
-        const parsed = JSON.parse(behavior_rules);
-        if (Array.isArray(parsed)) {
-          return parsed.map((r) => String(r));
-        } else if (
-          typeof parsed === 'object' &&
-          parsed !== null &&
-          'rules' in parsed &&
-          Array.isArray((parsed as { rules: unknown }).rules)
-        ) {
-          return (parsed as { rules: unknown[] }).rules.map((r: unknown) => String(r));
-        } else {
-          return [String(parsed)];
-        }
-      } catch {
-        return [behavior_rules];
-      }
-    } else if (Array.isArray(behavior_rules)) {
-      return behavior_rules.map((r: unknown) => String(r));
-    } else if (
-      typeof behavior_rules === 'object' &&
-      behavior_rules !== null &&
-      'rules' in behavior_rules &&
-      Array.isArray((behavior_rules as { rules: unknown }).rules)
-    ) {
-      const rulesObj = behavior_rules as { rules: unknown[] };
-      return rulesObj.rules.map((r: unknown) => String(r));
-    } else {
-      return [String(behavior_rules)];
-    }
-  }, []);
-
-  // Update form fields when bot changes
-  useEffect(() => {
-    if (bot) {
-      setName(bot.name);
-      setDescription(bot.description || '');
-      setAvatarUrl(bot.avatarUrl || null);
-
-      // Load config and memories for existing bots
-      if (bot.id > 0) {
-        // Check cache first
-        const cached = getCachedBotConfig(bot.id);
-        if (cached) {
-          // Use cached config - no loading needed
-          setTemperature(cached.temperature);
-          setSystemPrompt(cached.system_prompt);
-          setBehaviorRules(cached.behavior_rules);
-          setLoadingConfig(false);
-        } else {
-          // Load bot with config from API
-          setLoadingConfig(true);
-          BotService.getBot(bot.id)
-            .then((botData: Bot) => {
-              // Extract config from bot data if available
-              if (botData.configs) {
-                const config = botData.configs;
-                const temp = typeof config.temperature === 'number' ? config.temperature : 0.7;
-                const prompt = typeof config.system_prompt === 'string' ? config.system_prompt : '';
-                const rules = parseBehaviorRules(config.behavior_rules);
-
-                setTemperature(temp);
-                setSystemPrompt(prompt);
-                setBehaviorRules(rules);
-
-                // Cache the config
-                setCachedBotConfig(bot.id, {
-                  temperature: temp,
-                  system_prompt: prompt,
-                  behavior_rules: rules,
-                });
-              } else {
-                // Reset to defaults
-                const defaults = { temperature: 0.7, system_prompt: '', behavior_rules: [] };
-                setTemperature(defaults.temperature);
-                setSystemPrompt(defaults.system_prompt);
-                setBehaviorRules(defaults.behavior_rules);
-                setCachedBotConfig(bot.id, defaults);
-              }
-            })
-            .catch((err) => {
-              console.error('Failed to load bot config:', err);
-              // Reset to defaults on error
-              const defaults = { temperature: 0.7, system_prompt: '', behavior_rules: [] };
-              setTemperature(defaults.temperature);
-              setSystemPrompt(defaults.system_prompt);
-              setBehaviorRules(defaults.behavior_rules);
-            })
-            .finally(() => {
-              setLoadingConfig(false);
-            });
-        }
-
-        // Always refresh memories (no cache)
-        loadMemoriesLazy(bot.id);
+      const parsed = JSON.parse(behavior_rules);
+      if (Array.isArray(parsed)) {
+        return parsed.map((r) => String(r));
+      } else if (
+        typeof parsed === 'object' &&
+        parsed !== null &&
+        'rules' in parsed &&
+        Array.isArray((parsed as { rules: unknown }).rules)
+      ) {
+        return (parsed as { rules: unknown[] }).rules.map((r: unknown) => String(r));
       } else {
-        // New bot, reset to defaults
-        setLoadingConfig(false);
-        setTemperature(0.7);
-        setSystemPrompt('');
-        setBehaviorRules([]);
-        setMemories([]);
+        return [String(parsed)];
       }
-    } else {
-      // No bot selected, clear form
-      setName('');
-      setDescription('');
-      setAvatarUrl(null);
-      setTemperature(0.7);
-      setSystemPrompt('');
-      setBehaviorRules([]);
-      setMemories([]);
+    } catch {
+      return [behavior_rules];
     }
-  }, [bot, loadMemoriesLazy, getCachedBotConfig, setCachedBotConfig, parseBehaviorRules]);
+  } else if (Array.isArray(behavior_rules)) {
+    return behavior_rules.map((r: unknown) => String(r));
+  } else if (
+    typeof behavior_rules === 'object' &&
+    behavior_rules !== null &&
+    'rules' in behavior_rules &&
+    Array.isArray((behavior_rules as { rules: unknown }).rules)
+  ) {
+    const rulesObj = behavior_rules as { rules: unknown[] };
+    return rulesObj.rules.map((r: unknown) => String(r));
+  } else {
+    return [String(behavior_rules)];
+  }
+};
+
+export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
+  const { confirm, ConfirmDialog } = useConfirm();
+  const queryClient = useQueryClient();
+
+  // React Query hooks
+  const { data: botData, isLoading: loadingBot } = useBot(bot?.id || null);
+  const { data: memories = [], isLoading: loadingMemories } = useBotMemories(bot?.id || null);
+  const createBotMutation = useCreateBot();
+  const updateBotMutation = useUpdateBot();
+  const updateMemoryMutation = useUpdateMemory();
+  const deleteMemoryMutation = useDeleteMemory();
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  // Initial form values
+  const initialValues = useMemo<BotFormValues>(() => {
+    if (bot && botData) {
+      const config = botData.configs || {};
+      return {
+        name: bot.name,
+        description: bot.description || '',
+        avatarUrl: bot.avatarUrl || null,
+        temperature: typeof config.temperature === 'number' ? config.temperature : 0.7,
+        systemPrompt: typeof config.system_prompt === 'string' ? config.system_prompt : '',
+        behaviorRules: parseBehaviorRules(config.behavior_rules),
+      };
+    } else if (bot && bot.id < 0) {
+      // New bot
+      return {
+        name: bot.name || '',
+        description: bot.description || '',
+        avatarUrl: bot.avatarUrl || null,
+        temperature: 0.7,
+        systemPrompt: '',
+        behaviorRules: [],
+      };
+    }
+    return {
+      name: '',
+      description: '',
+      avatarUrl: null,
+      temperature: 0.7,
+      systemPrompt: '',
+      behaviorRules: [],
+    };
+  }, [bot, botData]);
+
+  // Form validation
+  const validationSchema = {
+    name: [validationRules.required('Bot name is required')],
+  };
+
+  const {
+    values,
+    errors,
+    touched,
+    setValue,
+    setTouched,
+    validateAll,
+    reset,
+  } = useFormValidation<BotFormValues>(validationSchema, initialValues);
+
+  // Update form when bot or botData changes
+  useEffect(() => {
+    if (bot && botData) {
+      const config = botData.configs || {};
+      setValue('name', bot.name);
+      setValue('description', bot.description || '');
+      setValue('avatarUrl', bot.avatarUrl || null);
+      setValue('temperature', typeof config.temperature === 'number' ? config.temperature : 0.7);
+      setValue('systemPrompt', typeof config.system_prompt === 'string' ? config.system_prompt : '');
+      setValue('behaviorRules', parseBehaviorRules(config.behavior_rules));
+    } else if (bot && bot.id < 0) {
+      setValue('name', bot.name || '');
+      setValue('description', bot.description || '');
+      setValue('avatarUrl', bot.avatarUrl || null);
+      setValue('temperature', 0.7);
+      setValue('systemPrompt', '');
+      setValue('behaviorRules', []);
+    } else {
+      reset();
+    }
+  }, [bot, botData, setValue, reset]);
+
+  const saving = createBotMutation.isPending || updateBotMutation.isPending;
+  const loadingConfig = loadingBot && bot !== null && bot.id > 0;
 
   const handleSave = async () => {
     if (!bot) return;
 
-    if (!name.trim()) {
-      setError('Bot name is required');
+    // Validate form
+    const validation = validateAll();
+    if (!validation.isValid) {
       return;
     }
 
-    // Convert behavior rules array to JSON
-    // Filter out empty rules and create JSON array
-    const validRules = behaviorRules.filter((rule) => rule.trim().length > 0);
-    const parsedBehaviorRules = validRules.length > 0 ? validRules : undefined;
+    const validRules = values.behaviorRules.filter((rule) => rule.trim().length > 0);
+    const configs = {
+      temperature: values.temperature,
+      system_prompt: values.systemPrompt.trim() || undefined,
+      behavior_rules: validRules.length > 0 ? validRules : undefined,
+    };
 
-    setSaving(true);
-    setError(null);
     try {
-      let savedBot: Bot;
-
-      const configs = {
-        temperature,
-        system_prompt: systemPrompt.trim() || undefined,
-        behavior_rules: parsedBehaviorRules || undefined,
-      };
-
       if (bot.id < 0) {
         // Creating a new bot
-        savedBot = await BotService.createBot({
-          name: name.trim(),
-          description: description.trim() || undefined,
-          avatarUrl: avatarUrl || undefined,
+        const result = await createBotMutation.mutateAsync({
+          name: values.name.trim(),
+          description: values.description.trim() || undefined,
+          avatarUrl: values.avatarUrl || undefined,
           configs,
         });
-        // Clear cache for this new bot (it will be reloaded)
+        onSave(result);
       } else {
         // Updating an existing bot
-        await BotService.updateBot(bot.id, {
-          name: name.trim(),
-          description: description.trim() || undefined,
-          avatarUrl: avatarUrl || undefined,
-          configs,
+        await updateBotMutation.mutateAsync({
+          botId: bot.id,
+          data: {
+            name: values.name.trim(),
+            description: values.description.trim() || undefined,
+            avatarUrl: values.avatarUrl || undefined,
+            configs,
+          },
         });
-        savedBot = {
-          ...bot,
-          name: name.trim(),
-          description: description.trim() || null,
-          avatarUrl: avatarUrl || null,
-        };
+        // Get updated bot from cache
+        const updatedBot = queryClient.getQueryData<Bot>(queryKeys.bots.detail(bot.id));
+        if (updatedBot) {
+          onSave(updatedBot);
+        } else {
+          onSave({
+            ...bot,
+            name: values.name.trim(),
+            description: values.description.trim() || null,
+            avatarUrl: values.avatarUrl || null,
+          });
+        }
       }
-
-      // Update bot config cache (lastUpdated is added automatically)
-      if (savedBot.id > 0) {
-        const validRules = behaviorRules.filter((rule) => rule.trim().length > 0);
-        setCachedBotConfig(savedBot.id, {
-          temperature,
-          system_prompt: systemPrompt.trim(),
-          behavior_rules: validRules,
-        });
-      }
-
-      onSave(savedBot);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to save bot';
-      setError(errorMessage);
-    } finally {
-      setSaving(false);
+    } catch (error) {
+      // Error is handled by mutation hook (toast notification)
+      console.error('Failed to save bot:', error);
     }
   };
 
   const handleDeleteMemory = async (memoryId: number) => {
-    if (!bot || bot.id < 0) return; // Can't delete memories from unsaved bots
+    if (!bot || bot.id < 0) return;
 
     const confirmed = await confirm({
       title: 'Delete Memory',
@@ -271,15 +235,11 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
     }
 
     setDeletingId(memoryId);
-    setError(null);
     try {
-      await MemoryService.deleteMemory(bot.id, memoryId);
-      // Reload memories (always refresh)
-      const updated = memories.filter((m) => m.id !== memoryId);
-      setMemories(updated);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete memory';
-      setError(errorMessage);
+      await deleteMemoryMutation.mutateAsync({ botId: bot.id, memoryId });
+    } catch (error) {
+      // Error is handled by mutation hook
+      console.error('Failed to delete memory:', error);
     } finally {
       setDeletingId(null);
     }
@@ -289,28 +249,23 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
     if (!bot || bot.id < 0) return;
 
     setEditingId(memoryId);
-    setError(null);
     try {
-      const updated = await MemoryService.updateMemory(bot.id, memoryId, newKeyPoint);
-      // Update memory in list
-      const updatedMemories = memories.map((m) =>
-        m.id === memoryId ? updated : m
-      );
-      setMemories(updatedMemories);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update memory';
-      setError(errorMessage);
+      await updateMemoryMutation.mutateAsync({
+        botId: bot.id,
+        memoryId,
+        keyPoint: newKeyPoint,
+      });
+    } catch (error) {
+      // Error is handled by mutation hook
+      console.error('Failed to update memory:', error);
     } finally {
       setEditingId(null);
     }
   };
 
-  const handleRefreshMemories = async () => {
+  const handleRefreshMemories = () => {
     if (!bot || bot.id < 0) return;
-
-    // Always reload memories (no cache)
-    loadingBots.current.delete(bot.id);
-    await loadMemoriesLazy(bot.id);
+    queryClient.invalidateQueries({ queryKey: queryKeys.bots.memories(bot.id) });
   };
 
   if (!bot) {
@@ -321,101 +276,122 @@ export default function BotConfigForm({ bot, onSave }: BotConfigFormProps) {
     );
   }
 
+  const formError = createBotMutation.error || updateBotMutation.error;
+  const errorMessage = formError && typeof formError === 'object' && 'message' in formError
+    ? (formError as { message: string }).message
+    : null;
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <PageHeader
         title="Bot Configuration"
         actions={
-          <button
+          <FormButton
+            type={ButtonType.BUTTON}
             onClick={handleSave}
-            disabled={saving || !name.trim()}
-            className="h-8 px-4 bg-primary text-text-inverse border-none rounded-md text-sm font-medium cursor-pointer transition-colors hover:bg-primary-hover disabled:bg-disabled disabled:cursor-not-allowed"
+            loading={saving}
+            disabled={!values.name.trim()}
+            variant={ButtonVariant.PRIMARY}
+            tooltip={saving ? 'Saving...' : bot.id < 0 ? 'Create Bot' : 'Save'}
           >
-            {saving ? 'Saving...' : bot.id < 0 ? 'Create Bot' : 'Save'}
-          </button>
+            {bot.id < 0 ? 'Create Bot' : 'Save'}
+          </FormButton>
         }
       />
       <div className="flex-1 overflow-y-auto p-5">
-        {error && (
-          <div className="mb-4 p-2.5 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
-            {error}
-          </div>
-        )}
-
-        {loadingConfig ? (
-          <div className="space-y-5">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <Skeleton className="h-4 w-16 mb-1.5" />
-                <Skeleton className="h-24 w-24 rounded-md" />
+        <FormContainer saving={saving} error={errorMessage}>
+          {loadingConfig ? (
+            <div className="space-y-5">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <Skeleton className="h-4 w-16 mb-1.5" />
+                  <Skeleton className="h-24 w-24 rounded-md" />
+                </div>
+                <div className="flex-1">
+                  <Skeleton className="h-4 w-20 mb-1.5" />
+                  <Skeleton className="h-8 w-full" />
+                </div>
               </div>
-              <div className="flex-1">
-                <Skeleton className="h-4 w-20 mb-1.5" />
+              <div>
+                <Skeleton className="h-4 w-24 mb-1.5" />
+                <Skeleton className="h-20 w-full" />
+              </div>
+              <div>
+                <Skeleton className="h-4 w-32 mb-1.5" />
+                <Skeleton className="h-2 w-full" />
+              </div>
+              <div>
+                <Skeleton className="h-4 w-28 mb-1.5" />
+                <Skeleton className="h-24 w-full" />
+              </div>
+              <div>
+                <Skeleton className="h-4 w-32 mb-1.5" />
+                <Skeleton className="h-10 w-full mb-2" />
                 <Skeleton className="h-8 w-full" />
               </div>
             </div>
-            <div>
-              <Skeleton className="h-4 w-24 mb-1.5" />
-              <Skeleton className="h-20 w-full" />
-            </div>
-            <div>
-              <Skeleton className="h-4 w-32 mb-1.5" />
-              <Skeleton className="h-2 w-full" />
-            </div>
-            <div>
-              <Skeleton className="h-4 w-28 mb-1.5" />
-              <Skeleton className="h-24 w-full" />
-            </div>
-            <div>
-              <Skeleton className="h-4 w-32 mb-1.5" />
-              <Skeleton className="h-10 w-full mb-2" />
-              <Skeleton className="h-8 w-full" />
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-5">
-            {/* Avatar and Name row */}
-            <div className="flex items-start gap-4">
-              <AvatarPicker
-                value={avatarUrl}
-                onChange={setAvatarUrl}
-              />
-              <div className="flex-1">
-                <NameField value={name} onChange={setName} autoFocus={bot.id < 0} botId={bot.id} />
+          ) : (
+            <div className="space-y-5">
+              {/* Avatar and Name row */}
+              <div className="flex items-start gap-4">
+                <AvatarPicker
+                  value={values.avatarUrl}
+                  onChange={(url) => setValue('avatarUrl', url)}
+                />
+                <div className="flex-1">
+                  <div>
+                    <label htmlFor="bot-name" className="block text-sm font-medium text-text-secondary mb-1.5">
+                      Bot Name
+                    </label>
+                    <ValidatedInput
+                      id="bot-name"
+                      type="text"
+                      value={values.name}
+                      onChange={(e) => setValue('name', e.target.value)}
+                      onBlur={() => setTouched('name')}
+                      error={errors.name}
+                      touched={touched.name}
+                      disabled={saving}
+                      className="w-full"
+                      placeholder="Enter bot name"
+                      autoFocus={bot.id < 0}
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-            <DescriptionField value={description} onChange={setDescription} />
-            <TemperatureField value={temperature} onChange={setTemperature} />
-            <SystemPromptField value={systemPrompt} onChange={setSystemPrompt} />
-            <BehaviorRulesField rules={behaviorRules} onChange={setBehaviorRules} />
+              <DescriptionField value={values.description} onChange={(val) => setValue('description', val)} />
+              <TemperatureField value={values.temperature} onChange={(val) => setValue('temperature', val)} />
+              <SystemPromptField value={values.systemPrompt} onChange={(val) => setValue('systemPrompt', val)} />
+              <BehaviorRulesField rules={values.behaviorRules} onChange={(rules) => setValue('behaviorRules', rules)} />
 
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-base font-semibold text-text-secondary">Memories</h3>
-                {bot.id > 0 && (
-                  <button
-                    onClick={handleRefreshMemories}
-                    disabled={loadingMemories}
-                    className="h-6 w-6 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Refresh memories"
-                  >
-                    <IconRefresh className={`w-4 h-4 ${loadingMemories ? 'animate-spin' : ''}`} />
-                  </button>
-                )}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-base font-semibold text-text-secondary">Memories</h3>
+                  {bot.id > 0 && (
+                    <button
+                      onClick={handleRefreshMemories}
+                      disabled={loadingMemories}
+                      className="h-6 w-6 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Refresh memories"
+                    >
+                      <IconRefresh className={`w-4 h-4 ${loadingMemories ? 'animate-spin' : ''}`} />
+                    </button>
+                  )}
+                </div>
+                <MemoriesList
+                  memories={memories}
+                  loading={loadingMemories}
+                  editingId={editingId}
+                  deletingId={deletingId}
+                  onEdit={handleEditMemory}
+                  onDelete={handleDeleteMemory}
+                  onRefresh={handleRefreshMemories}
+                  botId={bot.id}
+                />
               </div>
-              <MemoriesList
-                memories={memories}
-                loading={loadingMemories}
-                editingId={editingId}
-                deletingId={deletingId}
-                onEdit={handleEditMemory}
-                onDelete={handleDeleteMemory}
-                onRefresh={handleRefreshMemories}
-                botId={bot.id}
-              />
             </div>
-          </div>
-        )}
+          )}
+        </FormContainer>
       </div>
       {ConfirmDialog}
     </div>

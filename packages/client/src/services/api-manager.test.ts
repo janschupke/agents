@@ -1,63 +1,55 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ApiManager } from './api-manager.js';
+import { apiManager } from './api-manager.js';
+import axiosInstance from './axios-instance.js';
 
-// Mock fetch globally
-global.fetch = vi.fn();
-
-// Mock tokenProvider
-vi.mock('./token-provider.js', () => ({
-  tokenProvider: {
-    getToken: vi.fn().mockResolvedValue(null),
-  },
-}));
+// Mock axios
+vi.mock('./axios-instance.js', () => {
+  const mockAxiosInstance = {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+    defaults: {
+      baseURL: 'http://localhost:3001',
+    },
+  };
+  return {
+    default: mockAxiosInstance,
+  };
+});
 
 describe('ApiManager', () => {
-  let apiManager: ApiManager;
-
   beforeEach(() => {
     vi.clearAllMocks();
-    apiManager = new ApiManager('http://localhost:3001');
   });
 
   describe('GET requests', () => {
     it('should make GET request successfully', async () => {
       const mockResponse = { data: 'test' };
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-        headers: new Headers({ 'content-type': 'application/json' }),
-      } as Response);
+      vi.mocked(axiosInstance.get).mockResolvedValueOnce({
+        data: mockResponse,
+      });
 
       const result = await apiManager.get('/api/test');
 
       expect(result).toEqual(mockResponse);
-      expect(fetch).toHaveBeenCalledWith(
-        'http://localhost:3001/api/test',
-        expect.objectContaining({
-          method: 'GET',
-          headers: expect.objectContaining({
-            'Content-Type': 'application/json',
-          }),
-        })
-      );
+      expect(axiosInstance.get).toHaveBeenCalledWith('/api/test', undefined);
     });
 
     it('should handle query parameters', async () => {
       const mockResponse = { data: 'test' };
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-        headers: new Headers({ 'content-type': 'application/json' }),
-      } as Response);
+      vi.mocked(axiosInstance.get).mockResolvedValueOnce({
+        data: mockResponse,
+      });
 
       await apiManager.get('/api/test', {
         params: { page: 1, limit: 10 },
       });
 
-      expect(fetch).toHaveBeenCalledWith(
-        'http://localhost:3001/api/test?page=1&limit=10',
-        expect.any(Object)
-      );
+      expect(axiosInstance.get).toHaveBeenCalledWith('/api/test', {
+        params: { page: 1, limit: 10 },
+      });
     });
   });
 
@@ -66,36 +58,25 @@ describe('ApiManager', () => {
       const mockResponse = { success: true };
       const requestData = { name: 'Test' };
 
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-        headers: new Headers({ 'content-type': 'application/json' }),
-      } as Response);
+      vi.mocked(axiosInstance.post).mockResolvedValueOnce({
+        data: mockResponse,
+      });
 
       const result = await apiManager.post('/api/test', requestData);
 
       expect(result).toEqual(mockResponse);
-      expect(fetch).toHaveBeenCalledWith(
-        'http://localhost:3001/api/test',
-        expect.objectContaining({
-          method: 'POST',
-          body: JSON.stringify(requestData),
-          headers: expect.objectContaining({
-            'Content-Type': 'application/json',
-          }),
-        })
-      );
+      expect(axiosInstance.post).toHaveBeenCalledWith('/api/test', requestData, undefined);
     });
   });
 
   describe('Error handling', () => {
     it('should throw ApiError on HTTP error', async () => {
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: false,
+      const error = {
+        message: 'Not found',
         status: 404,
-        json: async () => ({ message: 'Not found' }),
-        headers: new Headers({ 'content-type': 'application/json' }),
-      } as Response);
+        data: { message: 'Not found' },
+      };
+      vi.mocked(axiosInstance.get).mockRejectedValueOnce(error);
 
       await expect(apiManager.get('/api/test')).rejects.toMatchObject({
         message: 'Not found',
@@ -104,7 +85,10 @@ describe('ApiManager', () => {
     });
 
     it('should handle network errors', async () => {
-      vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
+      const error = {
+        message: 'Network error',
+      };
+      vi.mocked(axiosInstance.get).mockRejectedValueOnce(error);
 
       await expect(apiManager.get('/api/test')).rejects.toMatchObject({
         message: 'Network error',
@@ -116,29 +100,6 @@ describe('ApiManager', () => {
     it('should set and get base URL', () => {
       apiManager.setBaseURL('http://example.com');
       expect(apiManager.getBaseURL()).toBe('http://example.com');
-    });
-
-    it('should set default headers', async () => {
-      apiManager.setDefaultHeaders({ Authorization: 'Bearer token' });
-
-      const mockResponse = { data: 'test' };
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-        headers: new Headers({ 'content-type': 'application/json' }),
-      } as Response);
-
-      await apiManager.get('/api/test');
-
-      expect(fetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer token',
-          }),
-        })
-      );
     });
   });
 });

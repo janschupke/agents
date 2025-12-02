@@ -1,27 +1,15 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  ReactNode,
-} from 'react';
-import { Bot, Session } from '../types/chat.types';
-import { BotService } from '../services/bot.service';
-import { ChatService } from '../services/chat.service';
-import { useAuth } from './AuthContext';
-
-interface BotWithSessions extends Bot {
-  sessions?: Session[];
-}
+import { createContext, useContext, ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useBots as useBotsQuery } from '../hooks/queries/use-bots.js';
+import { queryKeys } from '../hooks/queries/query-keys.js';
+import { Bot, Session } from '../types/chat.types.js';
 
 interface BotContextValue {
   // Bots data
-  bots: BotWithSessions[];
+  bots: Bot[];
   loadingBots: boolean;
   refreshBots: () => Promise<void>;
-  getBot: (id: number) => BotWithSessions | undefined;
+  getBot: (id: number) => Bot | undefined;
   updateBot: (bot: Bot) => void;
   addBot: (bot: Bot) => void;
   removeBot: (id: number) => void;
@@ -32,7 +20,7 @@ interface BotContextValue {
   addSessionToBot: (botId: number, session: Session) => void;
   removeSessionFromBot: (botId: number, sessionId: number) => void;
 
-  // Bot config cache (not embeddings)
+  // Bot config cache (deprecated - use React Query cache instead)
   getCachedBotConfig: (botId: number) => {
     temperature: number;
     system_prompt: string;
@@ -52,205 +40,80 @@ interface BotContextValue {
 const BotContext = createContext<BotContextValue | undefined>(undefined);
 
 export function BotProvider({ children }: { children: ReactNode }) {
-  const { isSignedIn, isLoaded } = useAuth();
-  const [bots, setBots] = useState<BotWithSessions[]>([]);
-  const [loadingBots, setLoadingBots] = useState(false);
+  const { data: bots = [], isLoading: loadingBots, refetch: refetchBots } = useBotsQuery();
+  const queryClient = useQueryClient();
 
-  // Bot config cache using ref
-  const botConfigCacheRef = useRef<
-    Map<
-      number,
-      {
-        temperature: number;
-        system_prompt: string;
-        behavior_rules: string[];
-        lastUpdated: number;
-      }
-    >
-  >(new Map());
+  const refreshBots = async () => {
+    await refetchBots();
+  };
 
-  const loadBots = useCallback(async () => {
-    if (!isSignedIn || !isLoaded) {
-      setBots([]);
-      return;
-    }
+  const getBot = (id: number): Bot | undefined => {
+    return bots.find((bot) => bot.id === id);
+  };
 
-    setLoadingBots(true);
-    try {
-      const data = await BotService.getAllBots();
-      const botsWithSessions: BotWithSessions[] = data.map((bot) => ({
-        ...bot,
-        sessions: undefined, // Will be loaded separately
-      }));
-      
-      // Update bots while preserving existing sessions temporarily
-      // This ensures newly saved bots stay visible during refresh
-      setBots((prev) => {
-        // Create a map of existing bots with their sessions
-        const existingBotsMap = new Map(prev.map((b) => [b.id, b]));
-        
-        // Merge server data with existing sessions, preserving order from server (newest first)
-        return botsWithSessions.map((bot) => {
-          const existing = existingBotsMap.get(bot.id);
-          return {
-            ...bot,
-            sessions: existing?.sessions, // Preserve existing sessions until refreshed
-          };
-        });
-      });
+  const updateBot = (bot: Bot) => {
+    // Optimistic update - React Query will refetch and update
+    queryClient.setQueryData(queryKeys.bots.detail(bot.id), bot);
+    queryClient.invalidateQueries({ queryKey: queryKeys.bots.all });
+  };
 
-      // Load sessions for all bots in parallel
-      const sessionPromises = botsWithSessions.map(async (bot) => {
-        try {
-          const sessions = await ChatService.getSessions(bot.id);
-          return { botId: bot.id, sessions };
-        } catch (error) {
-          console.error(`Failed to load sessions for bot ${bot.id}:`, error);
-          return { botId: bot.id, sessions: [] };
-        }
-      });
+  const addBot = (bot: Bot) => {
+    // Optimistic update
+    queryClient.setQueryData(queryKeys.bots.detail(bot.id), bot);
+    queryClient.invalidateQueries({ queryKey: queryKeys.bots.all });
+  };
 
-      const sessionResults = await Promise.all(sessionPromises);
-      setBots((prev) =>
-        prev.map((bot) => {
-          const sessionResult = sessionResults.find((r) => r.botId === bot.id);
-          return {
-            ...bot,
-            sessions: sessionResult?.sessions || [],
-          };
-        })
-      );
-    } catch (error) {
-      console.error('Failed to load bots:', error);
-      setBots([]);
-    } finally {
-      setLoadingBots(false);
-    }
-  }, [isSignedIn, isLoaded]);
+  const removeBot = (id: number) => {
+    queryClient.removeQueries({ queryKey: queryKeys.bots.detail(id) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.bots.all });
+  };
 
-  const refreshBots = useCallback(async () => {
-    await loadBots();
-  }, [loadBots]);
+  const getBotSessions = (botId: number): Session[] | undefined => {
+    return queryClient.getQueryData<Session[]>(queryKeys.bots.sessions(botId));
+  };
 
-  const getBot = useCallback(
-    (id: number): BotWithSessions | undefined => {
-      return bots.find((bot) => bot.id === id);
-    },
-    [bots]
-  );
+  const refreshBotSessions = async (botId: number) => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.bots.sessions(botId) });
+  };
 
-  const updateBot = useCallback((bot: Bot) => {
-    setBots((prev) => prev.map((b) => (b.id === bot.id ? { ...b, ...bot } : b)));
-  }, []);
+  const addSessionToBot = (botId: number, session: Session) => {
+    const currentSessions = queryClient.getQueryData<Session[]>(queryKeys.bots.sessions(botId)) || [];
+    queryClient.setQueryData(queryKeys.bots.sessions(botId), [session, ...currentSessions]);
+  };
 
-  const addBot = useCallback((bot: Bot) => {
-    setBots((prev) => {
-      // Don't add if already exists
-      if (prev.some((b) => b.id === bot.id)) {
-        return prev.map((b) => (b.id === bot.id ? { ...b, ...bot } : b));
-      }
-      // Add to top of list (newest first)
-      return [{ ...bot, sessions: [] }, ...prev];
-    });
-  }, []);
-
-  const removeBot = useCallback((id: number) => {
-    setBots((prev) => prev.filter((b) => b.id !== id));
-    // Also invalidate related caches
-    botConfigCacheRef.current.delete(id);
-  }, []);
-
-  const getBotSessions = useCallback(
-    (botId: number): Session[] | undefined => {
-      const bot = bots.find((b) => b.id === botId);
-      const sessions = bot?.sessions;
-      // Verify sessions belong to this bot (defensive check)
-      // Note: Sessions don't have botId in the Session type, but they're stored per bot
-      // so this should be safe. If there's a mismatch, return empty array.
-      return sessions;
-    },
-    [bots]
-  );
-
-  const refreshBotSessions = useCallback(
-    async (botId: number) => {
-      if (!isSignedIn || !isLoaded) return;
-
-      try {
-        const sessions = await ChatService.getSessions(botId);
-        setBots((prev) => prev.map((bot) => (bot.id === botId ? { ...bot, sessions } : bot)));
-      } catch (error) {
-        console.error(`Failed to refresh sessions for bot ${botId}:`, error);
-      }
-    },
-    [isSignedIn, isLoaded]
-  );
-
-  const addSessionToBot = useCallback((botId: number, session: Session) => {
-    setBots((prev) =>
-      prev.map((bot) =>
-        bot.id === botId
-          ? {
-              ...bot,
-              sessions: [session, ...(bot.sessions || [])],
-            }
-          : bot
-      )
+  const removeSessionFromBot = (botId: number, sessionId: number) => {
+    const currentSessions = queryClient.getQueryData<Session[]>(queryKeys.bots.sessions(botId)) || [];
+    queryClient.setQueryData(
+      queryKeys.bots.sessions(botId),
+      currentSessions.filter((s) => s.id !== sessionId)
     );
-  }, []);
+  };
 
-  const removeSessionFromBot = useCallback((botId: number, sessionId: number) => {
-    setBots((prev) =>
-      prev.map((bot) =>
-        bot.id === botId
-          ? {
-              ...bot,
-              sessions: (bot.sessions || []).filter((s) => s.id !== sessionId),
-            }
-          : bot
-      )
-    );
-  }, []);
-
-  const getCachedBotConfig = useCallback((botId: number) => {
-    const cached = botConfigCacheRef.current.get(botId);
-    if (!cached) return null;
-    return {
-      temperature: cached.temperature,
-      system_prompt: cached.system_prompt,
-      behavior_rules: cached.behavior_rules,
-    };
-  }, []);
-
-  const setCachedBotConfig = useCallback(
-    (
-      botId: number,
-      config: {
-        temperature: number;
-        system_prompt: string;
-        behavior_rules: string[];
-      }
-    ) => {
-      botConfigCacheRef.current.set(botId, { ...config, lastUpdated: Date.now() });
-    },
-    []
-  );
-
-  const invalidateBotConfigCache = useCallback((botId: number) => {
-    botConfigCacheRef.current.delete(botId);
-  }, []);
-
-  // Load bots when signed in
-  useEffect(() => {
-    if (isSignedIn && isLoaded) {
-      const timer = setTimeout(() => {
-        loadBots();
-      }, 100);
-      return () => clearTimeout(timer);
-    } else {
-      setBots([]);
+  // Deprecated: Bot config cache - use React Query cache instead
+  const getCachedBotConfig = (botId: number) => {
+    const bot = queryClient.getQueryData<Bot>(queryKeys.bots.detail(botId));
+    if (bot?.configs) {
+      const config = bot.configs;
+      return {
+        temperature: typeof config.temperature === 'number' ? config.temperature : 0.7,
+        system_prompt: typeof config.system_prompt === 'string' ? config.system_prompt : '',
+        behavior_rules: Array.isArray(config.behavior_rules)
+          ? config.behavior_rules.map(String)
+          : typeof config.behavior_rules === 'string'
+          ? JSON.parse(config.behavior_rules).map(String)
+          : [],
+      };
     }
-  }, [isSignedIn, isLoaded, loadBots]);
+    return null;
+  };
+
+  const setCachedBotConfig = () => {
+    // Deprecated - config is now part of bot data in React Query cache
+  };
+
+  const invalidateBotConfigCache = (botId: number) => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.bots.detail(botId) });
+  };
 
   const value: BotContextValue = {
     bots,
@@ -282,36 +145,5 @@ export function useBotContext() {
 
 // Convenience hooks
 export function useBots() {
-  const {
-    bots,
-    loadingBots,
-    refreshBots,
-    getBot,
-    updateBot,
-    addBot,
-    removeBot,
-    getBotSessions,
-    refreshBotSessions,
-    addSessionToBot,
-    removeSessionFromBot,
-    getCachedBotConfig,
-    setCachedBotConfig,
-    invalidateBotConfigCache,
-  } = useBotContext();
-  return {
-    bots,
-    loadingBots,
-    refreshBots,
-    getBot,
-    updateBot,
-    addBot,
-    removeBot,
-    getBotSessions,
-    refreshBotSessions,
-    addSessionToBot,
-    removeSessionFromBot,
-    getCachedBotConfig,
-    setCachedBotConfig,
-    invalidateBotConfigCache,
-  };
+  return useBotContext();
 }

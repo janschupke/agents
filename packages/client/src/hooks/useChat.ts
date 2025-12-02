@@ -60,9 +60,9 @@ export function useChat({ botId, onError }: UseChatOptions) {
 
       if (!forceRefresh && !botChanged && !sessionChanged && sessionId) {
         const cached = getCachedSession(botId, sessionId);
-        if (cached) {
-          setMessages(cached.messages);
-          setBotName(cached.botName);
+        if (cached && typeof cached === 'object' && 'messages' in cached && 'botName' in cached) {
+          setMessages((cached as { messages: Message[]; botName: string }).messages);
+          setBotName((cached as { messages: Message[]; botName: string }).botName);
           setCurrentSessionId(sessionId);
           lastBotIdRef.current = botId;
           lastSessionIdRef.current = sessionId;

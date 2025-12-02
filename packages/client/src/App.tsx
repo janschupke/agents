@@ -15,6 +15,7 @@ import { UserProvider, useApiKeyStatus } from './contexts/UserContext';
 import { BotProvider } from './contexts/BotContext';
 import { ChatProvider } from './contexts/ChatContext';
 import { ToastProvider } from './contexts/ToastContext';
+import { QueryProvider } from './providers/QueryProvider';
 
 // Memoized Header component to prevent re-renders
 const AppHeader = memo(function AppHeader() {
@@ -141,17 +142,19 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppProvider>
-          <UserProvider>
-            <BotProvider>
-              <ChatProvider>
-                <ToastProvider>
-                  <AppContent />
-                </ToastProvider>
-              </ChatProvider>
-            </BotProvider>
-          </UserProvider>
-        </AppProvider>
+        <QueryProvider>
+          <AppProvider>
+            <UserProvider>
+              <BotProvider>
+                <ChatProvider>
+                  <ToastProvider>
+                    <AppContent />
+                  </ToastProvider>
+                </ChatProvider>
+              </BotProvider>
+            </UserProvider>
+          </AppProvider>
+        </QueryProvider>
       </AuthProvider>
     </BrowserRouter>
   );

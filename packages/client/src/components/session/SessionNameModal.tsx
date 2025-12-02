@@ -1,12 +1,23 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { IconClose } from '../ui/Icons';
 import { NUMERIC_CONSTANTS } from '../../constants/numeric.constants.js';
+import { useUpdateSession } from '../../hooks/mutations/use-bot-mutations.js';
+import { useFormValidation } from '../../hooks/use-form-validation.js';
+import FormButton from '../ui/FormButton.js';
+import FormContainer from '../ui/FormContainer.js';
+import { ButtonType, ButtonVariant } from '../ui/form-types.js';
 
 interface SessionNameModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentName: string | null;
-  onSave: (name: string) => Promise<void>;
+  onSave?: (name: string) => Promise<void>;
+  botId: number;
+  sessionId: number;
+}
+
+interface SessionFormValues {
+  name: string;
 }
 
 export default function SessionNameModal({
@@ -14,47 +25,60 @@ export default function SessionNameModal({
   onClose,
   currentName,
   onSave,
+  botId,
+  sessionId,
 }: SessionNameModalProps) {
-  const [name, setName] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const updateSessionMutation = useUpdateSession();
+
+  const {
+    values,
+    errors,
+    touched,
+    setValue,
+    setTouched,
+  } = useFormValidation<SessionFormValues>(
+    {},
+    { name: currentName || '' }
+  );
 
   useEffect(() => {
     if (isOpen) {
-      setName(currentName || '');
-      setError(null);
+      setValue('name', currentName || '');
       // Focus input after modal opens
       setTimeout(() => {
         inputRef.current?.focus();
         inputRef.current?.select();
       }, NUMERIC_CONSTANTS.UI_DEBOUNCE_DELAY);
     }
-  }, [isOpen, currentName]);
+  }, [isOpen, currentName, setValue]);
 
   const handleSave = async () => {
-    setError(null);
-    const trimmedName = name.trim();
+    const trimmedName = values.name.trim();
 
     if (trimmedName === (currentName || '')) {
       onClose();
       return;
     }
 
-    setSaving(true);
     try {
-      await onSave(trimmedName || '');
+      await updateSessionMutation.mutateAsync({
+        botId,
+        sessionId,
+        sessionName: trimmedName || undefined,
+      });
+      if (onSave) {
+        await onSave(trimmedName || '');
+      }
       onClose();
-    } catch (err) {
-      const error = err as { message?: string };
-      setError(error?.message || 'Failed to update session name');
-    } finally {
-      setSaving(false);
+    } catch (error) {
+      // Error is handled by mutation hook (toast notification)
+      console.error('Failed to update session name:', error);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !saving) {
+    if (e.key === 'Enter' && !updateSessionMutation.isPending) {
       handleSave();
     } else if (e.key === 'Escape') {
       onClose();
@@ -62,6 +86,12 @@ export default function SessionNameModal({
   };
 
   if (!isOpen) return null;
+
+  const saving = updateSessionMutation.isPending;
+  const formError = updateSessionMutation.error;
+  const errorMessage = formError && typeof formError === 'object' && 'message' in formError
+    ? (formError as { message: string }).message
+    : null;
 
   return (
     <div
@@ -83,49 +113,54 @@ export default function SessionNameModal({
           </button>
         </div>
         <div className="px-6 py-4">
-          <div className="mb-4">
-            <label
-              htmlFor="session-name"
-              className="block text-sm font-medium text-text-secondary mb-1.5"
-            >
-              Session Name
-            </label>
-            <input
-              ref={inputRef}
-              id="session-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={saving}
-              className="w-full h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus disabled:opacity-50 disabled:cursor-not-allowed"
-              placeholder="Enter session name (optional)"
-            />
-            <p className="text-xs text-text-tertiary mt-1">
-              Leave empty to use default name based on creation date
-            </p>
-          </div>
-          {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-800 px-3 py-2 rounded-md text-sm">
-              {error}
+          <FormContainer saving={saving} error={errorMessage}>
+            <div className="mb-4">
+              <label
+                htmlFor="session-name"
+                className="block text-sm font-medium text-text-secondary mb-1.5"
+              >
+                Session Name
+              </label>
+              <input
+                ref={inputRef}
+                id="session-name"
+                type="text"
+                value={values.name}
+                onChange={(e) => setValue('name', e.target.value)}
+                onBlur={() => setTouched('name')}
+                onKeyDown={handleKeyDown}
+                disabled={saving}
+                className="w-full h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder="Enter session name (optional)"
+              />
+              {touched.name && errors.name && (
+                <p className="text-xs text-red-600 mt-1">{errors.name}</p>
+              )}
+              <p className="text-xs text-text-tertiary mt-1">
+                Leave empty to use default name based on creation date
+              </p>
             </div>
-          )}
+          </FormContainer>
         </div>
         <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
-          <button
+          <FormButton
+            type={ButtonType.BUTTON}
             onClick={onClose}
             disabled={saving}
-            className="h-8 px-4 bg-background text-text-primary border border-border rounded-md text-sm font-medium cursor-pointer transition-colors hover:bg-background-tertiary disabled:opacity-50 disabled:cursor-not-allowed"
+            variant={ButtonVariant.SECONDARY}
           >
             Cancel
-          </button>
-          <button
+          </FormButton>
+          <FormButton
+            type={ButtonType.BUTTON}
             onClick={handleSave}
+            loading={saving}
             disabled={saving}
-            className="h-8 px-4 bg-primary text-text-inverse border-none rounded-md text-sm font-medium cursor-pointer transition-colors hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
+            variant={ButtonVariant.PRIMARY}
+            tooltip={saving ? 'Saving...' : 'Save'}
           >
-            {saving ? 'Saving...' : 'Save'}
-          </button>
+            Save
+          </FormButton>
         </div>
       </div>
     </div>

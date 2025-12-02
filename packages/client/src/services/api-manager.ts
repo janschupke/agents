@@ -1,213 +1,106 @@
-import { API_BASE_URL } from '../constants/api.constants.js';
-import { tokenProvider } from './token-provider.js';
+import { AxiosRequestConfig } from 'axios';
+import axiosInstance, { ApiError } from './axios-instance.js';
 
-export interface ApiRequestOptions extends RequestInit {
-  params?: Record<string, string | number>;
+export interface ApiRequestOptions extends Omit<AxiosRequestConfig, 'url' | 'method'> {
   skipErrorHandling?: boolean;
 }
 
-// Function to get Clerk session token
-async function getClerkToken(): Promise<string | null> {
-  return tokenProvider.getToken();
-}
-
-export interface ApiError {
-  message: string;
-  status?: number;
-  data?: unknown;
-  expected?: boolean; // Set to true for expected errors (e.g., 401 when not authenticated)
-}
+// Re-export ApiError for backward compatibility
+export type { ApiError };
 
 export class ApiManager {
-  private baseURL: string;
-  private defaultHeaders: HeadersInit;
-
-  constructor(baseURL: string = API_BASE_URL) {
-    this.baseURL = baseURL;
-    this.defaultHeaders = {
-      'Content-Type': 'application/json',
-    };
-  }
-
-  /**
-   * Build URL with query parameters
-   */
-  private buildURL(endpoint: string, params?: Record<string, string | number>): string {
-    const url = new URL(endpoint, this.baseURL);
-
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        url.searchParams.append(key, String(value));
-      });
-    }
-
-    return url.toString();
-  }
-
-  /**
-   * Handle API response
-   */
-  private async handleResponse<T>(response: Response): Promise<T> {
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({
-        message: `HTTP error! status: ${response.status}`,
-      }));
-
-      const error: ApiError = {
-        message: errorData.message || `HTTP error! status: ${response.status}`,
-        status: response.status,
-        data: errorData,
-      };
-
-      // Don't throw for 401 if no token was available (user might not be signed in yet)
-      if (response.status === 401) {
-        const token = await getClerkToken();
-        if (!token) {
-          // No token available, this is expected - return a more user-friendly error
-          // This happens when components mount before Clerk is ready
-          throw {
-            ...error,
-            message: 'Authentication required',
-            expected: true,
-          } as ApiError & { expected: boolean };
-        }
-        // Token exists but request failed - might be expired or invalid
-        // Still mark as expected since we handle auth errors gracefully
-        error.expected = true;
-      }
-
-      throw error;
-    }
-
-    // Handle empty responses
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      return response.json();
-    }
-
-    return response.text() as unknown as T;
-  }
-
-  /**
-   * Make API request
-   */
-  private async request<T>(endpoint: string, options: ApiRequestOptions = {}): Promise<T> {
-    const { params, skipErrorHandling, ...fetchOptions } = options;
-
-    const url = this.buildURL(endpoint, params);
-
-    // Get Clerk token if available
-    const token = await getClerkToken();
-
-    const headers = {
-      ...this.defaultHeaders,
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...fetchOptions.headers,
-    };
-
-    try {
-      const response = await fetch(url, {
-        ...fetchOptions,
-        headers,
-      });
-
-      const result = await this.handleResponse<T>(response);
-      return result;
-    } catch (error) {
-      console.error('ApiManager request error:', error);
-
-      if (skipErrorHandling) {
-        throw error;
-      }
-
-      // If error is already an ApiError (from handleResponse), re-throw it
-      if (error && typeof error === 'object' && 'message' in error && 'status' in error) {
-        throw error;
-      }
-
-      const apiError: ApiError = {
-        message: error instanceof Error ? error.message : 'An unexpected error occurred',
-      };
-
-      throw apiError;
-    }
-  }
-
   /**
    * GET request
    */
   async get<T>(endpoint: string, options?: ApiRequestOptions): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: 'GET',
-    });
+    const { skipErrorHandling, ...axiosConfig } = options || {};
+    try {
+      const response = await axiosInstance.get<T>(endpoint, axiosConfig);
+      return response.data;
+    } catch (error) {
+      if (skipErrorHandling) {
+        throw error;
+      }
+      throw error;
+    }
   }
 
   /**
    * POST request
    */
   async post<T>(endpoint: string, data?: unknown, options?: ApiRequestOptions): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+    const { skipErrorHandling, ...axiosConfig } = options || {};
+    try {
+      const response = await axiosInstance.post<T>(endpoint, data, axiosConfig);
+      return response.data;
+    } catch (error) {
+      if (skipErrorHandling) {
+        throw error;
+      }
+      throw error;
+    }
   }
 
   /**
    * PUT request
    */
   async put<T>(endpoint: string, data?: unknown, options?: ApiRequestOptions): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: 'PUT',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+    const { skipErrorHandling, ...axiosConfig } = options || {};
+    try {
+      const response = await axiosInstance.put<T>(endpoint, data, axiosConfig);
+      return response.data;
+    } catch (error) {
+      if (skipErrorHandling) {
+        throw error;
+      }
+      throw error;
+    }
   }
 
   /**
    * PATCH request
    */
   async patch<T>(endpoint: string, data?: unknown, options?: ApiRequestOptions): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: 'PATCH',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+    const { skipErrorHandling, ...axiosConfig } = options || {};
+    try {
+      const response = await axiosInstance.patch<T>(endpoint, data, axiosConfig);
+      return response.data;
+    } catch (error) {
+      if (skipErrorHandling) {
+        throw error;
+      }
+      throw error;
+    }
   }
 
   /**
    * DELETE request
    */
   async delete<T>(endpoint: string, options?: ApiRequestOptions): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: 'DELETE',
-    });
-  }
-
-  /**
-   * Set default headers
-   */
-  setDefaultHeaders(headers: HeadersInit): void {
-    this.defaultHeaders = {
-      ...this.defaultHeaders,
-      ...headers,
-    };
+    const { skipErrorHandling, ...axiosConfig } = options || {};
+    try {
+      const response = await axiosInstance.delete<T>(endpoint, axiosConfig);
+      return response.data;
+    } catch (error) {
+      if (skipErrorHandling) {
+        throw error;
+      }
+      throw error;
+    }
   }
 
   /**
    * Get base URL
    */
   getBaseURL(): string {
-    return this.baseURL;
+    return axiosInstance.defaults.baseURL || '';
   }
 
   /**
    * Set base URL
    */
   setBaseURL(baseURL: string): void {
-    this.baseURL = baseURL;
+    axiosInstance.defaults.baseURL = baseURL;
   }
 }
 

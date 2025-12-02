@@ -1,29 +1,9 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  ReactNode,
-} from 'react';
-import { Message, ChatHistoryResponse, MessageRole } from '../types/chat.types';
-import { ChatService } from '../services/chat.service';
-import { useAuth } from './AuthContext';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { Message } from '../types/chat.types';
 import { LocalStorageManager } from '../utils/localStorage';
 
-interface CachedSessionData {
-  messages: Message[];
-  botName: string;
-  session: ChatHistoryResponse['session'];
-  bot: ChatHistoryResponse['bot'];
-  lastUpdated: number;
-}
-
-type SessionCacheKey = `${number}-${number}`; // botId-sessionId
-
 interface ChatContextValue {
-  // Current session messages
+  // Current session messages (deprecated - use React Query hooks)
   messages: Message[];
   setMessages: (messages: Message[]) => void;
   addMessage: (message: Message) => void;
@@ -35,11 +15,11 @@ interface ChatContextValue {
   setCurrentSessionId: (sessionId: number | null) => void;
   botName: string;
 
-  // Loading states
+  // Loading states (deprecated - use React Query hooks)
   loadingMessages: boolean;
   loadingSession: boolean;
 
-  // Actions
+  // Actions (deprecated - use React Query hooks)
   loadChatHistory: (botId: number, sessionId?: number, forceRefresh?: boolean) => Promise<void>;
   sendMessage: (
     botId: number,
@@ -47,288 +27,32 @@ interface ChatContextValue {
     sessionId?: number
   ) => Promise<{ sessionId: number | null; isNewSession: boolean }>;
 
-  // Cache management
-  getCachedSession: (botId: number, sessionId: number) => CachedSessionData | null;
-  setCachedSession: (botId: number, sessionId: number, data: CachedSessionData) => void;
+  // Cache management (deprecated - React Query handles caching)
+  getCachedSession: (botId: number, sessionId: number) => unknown;
+  setCachedSession: (botId: number, sessionId: number, data: unknown) => void;
   invalidateSessionCache: (botId: number, sessionId?: number) => void;
 }
 
 const ChatContext = createContext<ChatContextValue | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: ReactNode }) {
-  const { isSignedIn, isLoaded } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [currentBotId, setCurrentBotId] = useState<number | null>(null);
-  // Load initial session ID from localStorage (will be validated when bot loads)
+  const [currentBotId] = useState<number | null>(null);
   const [currentSessionId, setCurrentSessionIdState] = useState<number | null>(() =>
     LocalStorageManager.getSelectedSessionId()
   );
-  const [botName, setBotName] = useState<string>('');
-  const [loadingMessages, setLoadingMessages] = useState(false);
-  const [loadingSession, setLoadingSession] = useState(false);
+  const [botName] = useState<string>('');
+  const [loadingMessages] = useState(false);
+  const [loadingSession] = useState(false);
 
   // Save to localStorage whenever currentSessionId changes
   useEffect(() => {
     LocalStorageManager.setSelectedSessionId(currentSessionId);
   }, [currentSessionId]);
 
-  // Wrapper to update state (localStorage is saved via useEffect above)
   const setCurrentSessionId = useCallback((sessionId: number | null) => {
     setCurrentSessionIdState(sessionId);
   }, []);
-
-  // Session cache using ref
-  const sessionCacheRef = useRef<Map<SessionCacheKey, CachedSessionData>>(new Map());
-
-  // Track current bot/session to detect changes
-  const lastBotIdRef = useRef<number | null>(null);
-  const lastSessionIdRef = useRef<number | null>(null);
-
-  const getCachedSession = useCallback(
-    (botId: number, sessionId: number): CachedSessionData | null => {
-      const key: SessionCacheKey = `${botId}-${sessionId}`;
-      return sessionCacheRef.current.get(key) || null;
-    },
-    []
-  );
-
-  const setCachedSession = useCallback(
-    (botId: number, sessionId: number, data: CachedSessionData) => {
-      const key: SessionCacheKey = `${botId}-${sessionId}`;
-      sessionCacheRef.current.set(key, { ...data, lastUpdated: Date.now() });
-    },
-    []
-  );
-
-  const invalidateSessionCache = useCallback((botId: number, sessionId?: number) => {
-    if (sessionId !== undefined) {
-      const key: SessionCacheKey = `${botId}-${sessionId}`;
-      sessionCacheRef.current.delete(key);
-    } else {
-      // Invalidate all sessions for this bot
-      const keysToDelete: SessionCacheKey[] = [];
-      sessionCacheRef.current.forEach((_, key) => {
-        if (key.startsWith(`${botId}-`)) {
-          keysToDelete.push(key as SessionCacheKey);
-        }
-      });
-      keysToDelete.forEach((key) => sessionCacheRef.current.delete(key));
-    }
-  }, []);
-
-  const loadChatHistory = useCallback(
-    async (botId: number, sessionId?: number, forceRefresh = false) => {
-      if (!isSignedIn || !isLoaded) {
-        return;
-      }
-
-      // Don't try to load history for temporary sessions (negative IDs)
-      // These are created optimistically and don't exist on the server yet
-      if (sessionId !== undefined && sessionId < 0) {
-        return;
-      }
-
-      // Check if we already have the correct bot/session loaded (no need to reload)
-      // Use refs to avoid stale closure issues - refs are updated when we load
-      if (
-        !forceRefresh &&
-        lastBotIdRef.current === botId &&
-        lastSessionIdRef.current === (sessionId || null)
-      ) {
-        return;
-      }
-
-      // Check cache first (unless force refresh or bot/session changed)
-      const botChanged = lastBotIdRef.current !== botId;
-      const sessionChanged = lastSessionIdRef.current !== sessionId;
-
-      if (!forceRefresh && !botChanged && !sessionChanged && sessionId) {
-        const cached = getCachedSession(botId, sessionId);
-        if (cached) {
-          setMessages(cached.messages);
-          setBotName(cached.botName);
-          setCurrentBotId(botId);
-          setCurrentSessionId(sessionId);
-          lastBotIdRef.current = botId;
-          lastSessionIdRef.current = sessionId;
-          return;
-        }
-      }
-
-      setLoadingMessages(true);
-
-      try {
-        const data = await ChatService.getChatHistory(botId, sessionId);
-        const messagesData = data.messages || [];
-        const botNameData = data.bot?.name || 'Chat Bot';
-        const finalSessionId = data.session?.id || sessionId || null;
-
-        setMessages(messagesData);
-        setBotName(botNameData);
-        setCurrentBotId(botId);
-        setCurrentSessionId(finalSessionId);
-
-        if (finalSessionId) {
-          lastSessionIdRef.current = finalSessionId;
-
-          // Cache the session data
-          setCachedSession(botId, finalSessionId, {
-            messages: messagesData,
-            botName: botNameData,
-            session: data.session || { id: finalSessionId, session_name: null },
-            bot: data.bot || { id: botId, name: botNameData, description: null },
-            lastUpdated: Date.now(),
-          });
-        }
-
-        lastBotIdRef.current = botId;
-      } catch (error) {
-        const err = error instanceof Error ? error : new Error('Unknown error');
-        console.error('Error loading chat history:', err);
-        // Clear messages on error to show invalid state
-        setMessages([]);
-        setCurrentBotId(null);
-        setCurrentSessionId(null);
-        throw err;
-      } finally {
-        setLoadingMessages(false);
-      }
-    },
-    [
-      isSignedIn,
-      isLoaded,
-      getCachedSession,
-      setCachedSession,
-      setCurrentSessionId,
-      setCurrentBotId,
-      setMessages,
-      setBotName,
-      setLoadingMessages,
-    ]
-  );
-
-  const sendMessage = useCallback(
-    async (
-      botId: number,
-      message: string,
-      sessionId?: number
-    ): Promise<{ sessionId: number | null; isNewSession: boolean }> => {
-      if (!isSignedIn || !isLoaded) {
-        return { sessionId: currentSessionId, isNewSession: false };
-      }
-
-      // Prepare user message
-      const userMessage: Message = {
-        role: MessageRole.USER,
-        content: message,
-      };
-
-      setMessages((prev) => [...prev, userMessage]);
-      setLoadingSession(true);
-
-      try {
-        const data = await ChatService.sendMessage(
-          botId,
-          message,
-          sessionId || currentSessionId || undefined
-        );
-
-        // Update the last user message with raw request data and ID
-        setMessages((prev) => {
-          const updated = [...prev];
-          const lastUserMsgIndex = updated.length - 2;
-          if (lastUserMsgIndex >= 0) {
-            const lastUserMsg = updated[lastUserMsgIndex];
-            if (lastUserMsg && lastUserMsg.role === 'user') {
-              updated[lastUserMsgIndex] = {
-                ...lastUserMsg,
-                rawRequest: data.rawRequest,
-                id: data.userMessageId ?? lastUserMsg.id,
-              };
-            }
-          }
-          return updated;
-        });
-
-        const assistantMessage: Message = {
-          role: MessageRole.ASSISTANT,
-          content: data.response,
-          rawResponse: data.rawResponse,
-          id: data.assistantMessageId,
-        };
-
-        // Update messages and session ID if changed
-        const finalSessionId = data.session?.id || currentSessionId;
-        const isNewSession = finalSessionId !== null && finalSessionId !== currentSessionId;
-
-        setMessages((prev) => {
-          const updated = [...prev, assistantMessage];
-
-          if (finalSessionId && finalSessionId !== currentSessionId) {
-            setCurrentSessionId(finalSessionId);
-            lastSessionIdRef.current = finalSessionId;
-          }
-
-          // Update cache with new messages
-          if (botId && finalSessionId) {
-            const cached = getCachedSession(botId, finalSessionId);
-            const currentBotName = botName || 'Chat Bot';
-            if (cached) {
-              setCachedSession(botId, finalSessionId, {
-                ...cached,
-                messages: updated,
-              });
-            } else {
-              // If not cached, cache it now
-              setCachedSession(botId, finalSessionId, {
-                messages: updated,
-                botName: currentBotName,
-                session: data.session || { id: finalSessionId, session_name: null },
-                bot: { id: botId, name: currentBotName, description: null },
-                lastUpdated: Date.now(),
-              });
-            }
-          }
-
-          return updated;
-        });
-
-        // Ensure current bot ID is set
-        if (currentBotId !== botId) {
-          setCurrentBotId(botId);
-          lastBotIdRef.current = botId;
-        }
-
-        // Return session info for syncing with BotContext
-        return { sessionId: finalSessionId, isNewSession };
-      } catch (error) {
-        const err = error instanceof Error ? error : new Error('Unknown error');
-        console.error('Error sending message:', err);
-        const errorMessage: Message = {
-          role: MessageRole.ASSISTANT,
-          content: `Error: ${err.message}`,
-        };
-        setMessages((prev) => [...prev, errorMessage]);
-        // Return error state instead of throwing to match return type
-        return { sessionId: currentSessionId, isNewSession: false };
-      } finally {
-        setLoadingSession(false);
-      }
-    },
-    [
-      isSignedIn,
-      isLoaded,
-      currentSessionId,
-      currentBotId,
-      botName,
-      getCachedSession,
-      setCachedSession,
-      setCurrentSessionId,
-      setCurrentBotId,
-      setMessages,
-      setLoadingSession,
-    ]
-  );
 
   const addMessage = useCallback((message: Message) => {
     setMessages((prev) => [...prev, message]);
@@ -347,24 +71,30 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  // Reset state when bot changes - clear messages and session only when bot actually changes
-  useEffect(() => {
-    // If bot changed completely, clear caches and state
-    if (
-      currentBotId !== null &&
-      currentBotId !== lastBotIdRef.current &&
-      lastBotIdRef.current !== null
-    ) {
-      // Clear all session caches for the old bot when switching away
-      invalidateSessionCache(lastBotIdRef.current);
-      // Clear session and messages when bot changes (but preserve if navigating back to same bot)
-      // Only clear if we're actually switching to a different bot
-      setCurrentSessionId(null);
-      setMessages([]);
-      lastSessionIdRef.current = null;
-    }
-    lastBotIdRef.current = currentBotId;
-  }, [currentBotId, invalidateSessionCache, setCurrentSessionId, setMessages]);
+  // Deprecated methods - kept for backward compatibility
+  const loadChatHistory = useCallback(async () => {
+    // Deprecated - use useChatHistory hook instead
+    console.warn('loadChatHistory is deprecated, use useChatHistory hook instead');
+  }, []);
+
+  const sendMessage = useCallback(async () => {
+    // Deprecated - use useSendMessage hook instead
+    console.warn('sendMessage is deprecated, use useSendMessage hook instead');
+    return { sessionId: null, isNewSession: false };
+  }, []);
+
+  const getCachedSession = useCallback(() => {
+    // Deprecated - React Query handles caching
+    return null;
+  }, []);
+
+  const setCachedSession = useCallback(() => {
+    // Deprecated - React Query handles caching
+  }, []);
+
+  const invalidateSessionCache = useCallback(() => {
+    // Deprecated - use queryClient.invalidateQueries instead
+  }, []);
 
   const value: ChatContextValue = {
     messages,
