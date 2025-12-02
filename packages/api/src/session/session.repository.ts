@@ -8,13 +8,13 @@ export class SessionRepository {
 
   async create(
     userId: string,
-    botId: number,
+    agentId: number,
     sessionName?: string
   ): Promise<ChatSession> {
     return this.prisma.chatSession.create({
       data: {
         userId,
-        botId,
+        agentId,
         sessionName: sessionName || null,
       },
     });
@@ -39,19 +39,19 @@ export class SessionRepository {
     });
   }
 
-  async findLatestByBotId(
-    botId: number,
+  async findLatestByAgentId(
+    agentId: number,
     userId: string
   ): Promise<ChatSession | null> {
     return this.prisma.chatSession.findFirst({
-      where: { botId, userId },
+      where: { agentId, userId },
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  async findAllByBotId(botId: number, userId: string): Promise<ChatSession[]> {
+  async findAllByAgentId(agentId: number, userId: string): Promise<ChatSession[]> {
     return this.prisma.chatSession.findMany({
-      where: { botId, userId },
+      where: { agentId, userId },
       orderBy: { createdAt: 'desc' },
     });
   }

@@ -2,9 +2,9 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { LocalStorageManager } from '../utils/localStorage';
 
 interface AppContextValue {
-  // Selected bot persistence (for chat view)
-  selectedBotId: number | null;
-  setSelectedBotId: (botId: number | null) => void;
+  // Selected agent persistence (for chat view)
+  selectedAgentId: number | null;
+  setSelectedAgentId: (agentId: number | null) => void;
 
   // Selected session ID (for navigation/state tracking)
   selectedSessionId: number | null;
@@ -15,8 +15,8 @@ const AppContext = createContext<AppContextValue | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   // Load initial values from localStorage
-  const [selectedBotId, setSelectedBotIdState] = useState<number | null>(() =>
-    LocalStorageManager.getSelectedBotIdChat()
+  const [selectedAgentId, setSelectedAgentIdState] = useState<number | null>(() =>
+    LocalStorageManager.getSelectedAgentIdChat()
   );
   const [selectedSessionId, setSelectedSessionIdState] = useState<number | null>(() =>
     LocalStorageManager.getSelectedSessionId()
@@ -24,16 +24,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Save to localStorage whenever values change
   useEffect(() => {
-    LocalStorageManager.setSelectedBotIdChat(selectedBotId);
-  }, [selectedBotId]);
+    LocalStorageManager.setSelectedAgentIdChat(selectedAgentId);
+  }, [selectedAgentId]);
 
   useEffect(() => {
     LocalStorageManager.setSelectedSessionId(selectedSessionId);
   }, [selectedSessionId]);
 
   // Wrapper functions to update state (localStorage is saved via useEffect above)
-  const setSelectedBotId = (botId: number | null) => {
-    setSelectedBotIdState(botId);
+  const setSelectedAgentId = (agentId: number | null) => {
+    setSelectedAgentIdState(agentId);
   };
 
   const setSelectedSessionId = (sessionId: number | null) => {
@@ -41,8 +41,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const value: AppContextValue = {
-    selectedBotId,
-    setSelectedBotId,
+    selectedAgentId,
+    setSelectedAgentId,
     selectedSessionId,
     setSelectedSessionId,
   };
@@ -59,9 +59,9 @@ export function useAppContext() {
 }
 
 // Convenience hooks
-export function useSelectedBot() {
-  const { selectedBotId, setSelectedBotId } = useAppContext();
-  return { selectedBotId, setSelectedBotId };
+export function useSelectedAgent() {
+  const { selectedAgentId, setSelectedAgentId } = useAppContext();
+  return { selectedAgentId, setSelectedAgentId };
 }
 
 export function useSelectedSession() {

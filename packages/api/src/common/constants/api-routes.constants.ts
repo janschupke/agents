@@ -7,17 +7,17 @@ export const API_ROUTES = {
   
   CHAT: {
     BASE: 'api/chat',
-    BY_BOT: (botId: number) => `api/chat/${botId}`,
-    SESSIONS: (botId: number) => `api/chat/${botId}/sessions`,
-    SESSION: (botId: number, sessionId: number) => `api/chat/${botId}/sessions/${sessionId}`,
+    BY_AGENT: (agentId: number) => `api/chat/${agentId}`,
+    SESSIONS: (agentId: number) => `api/chat/${agentId}/sessions`,
+    SESSION: (agentId: number, sessionId: number) => `api/chat/${agentId}/sessions/${sessionId}`,
   },
 
-  BOTS: {
-    BASE: 'api/bots',
-    BY_ID: (botId: number) => `api/bots/${botId}`,
-    MEMORIES: (botId: number) => `api/bots/${botId}/memories`,
-    MEMORY: (botId: number, memoryId: number) => `api/bots/${botId}/memories/${memoryId}`,
-    MEMORIES_SUMMARIZE: (botId: number) => `api/bots/${botId}/memories/summarize`,
+  AGENTS: {
+    BASE: 'api/agents',
+    BY_ID: (agentId: number) => `api/agents/${agentId}`,
+    MEMORIES: (agentId: number) => `api/agents/${agentId}/memories`,
+    MEMORY: (agentId: number, memoryId: number) => `api/agents/${agentId}/memories/${memoryId}`,
+    MEMORIES_SUMMARIZE: (agentId: number) => `api/agents/${agentId}/memories/summarize`,
   },
 
   MESSAGES: {
@@ -54,5 +54,3 @@ export const API_ROUTES = {
     BASE: 'api/healthcheck',
   },
 } as const;
-
-

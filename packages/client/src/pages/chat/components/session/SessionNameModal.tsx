@@ -10,7 +10,7 @@ interface SessionNameModalProps {
   onClose: () => void;
   currentName: string | null;
   onSave?: (name: string) => Promise<void>;
-  botId: number;
+  agentId: number;
   sessionId: number;
 }
 
@@ -23,7 +23,7 @@ export default function SessionNameModal({
   onClose,
   currentName,
   onSave,
-  botId,
+  agentId,
   sessionId,
 }: SessionNameModalProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -61,7 +61,7 @@ export default function SessionNameModal({
 
     try {
       await updateSessionMutation.mutateAsync({
-        botId,
+        agentId,
         sessionId,
         sessionName: trimmedName || undefined,
       });

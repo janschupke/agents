@@ -2,19 +2,19 @@ export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:30
 
 export const API_ENDPOINTS = {
   CHAT: {
-    BY_BOT: (botId: number, sessionId?: number) => {
-      const base = `/api/chat/${botId}`;
+    BY_AGENT: (agentId: number, sessionId?: number) => {
+      const base = `/api/chat/${agentId}`;
       return sessionId ? `${base}?sessionId=${sessionId}` : base;
     },
-    SESSIONS: (botId: number) => `/api/chat/${botId}/sessions`,
-    SESSION: (botId: number, sessionId: number) => `/api/chat/${botId}/sessions/${sessionId}`,
+    SESSIONS: (agentId: number) => `/api/chat/${agentId}/sessions`,
+    SESSION: (agentId: number, sessionId: number) => `/api/chat/${agentId}/sessions/${sessionId}`,
   },
-  BOTS: {
-    BASE: '/api/bots',
-    BY_ID: (botId: number) => `/api/bots/${botId}`,
-    MEMORIES: (botId: number) => `/api/bots/${botId}/memories`,
-    MEMORY: (botId: number, memoryId: number) => `/api/bots/${botId}/memories/${memoryId}`,
-    MEMORIES_SUMMARIZE: (botId: number) => `/api/bots/${botId}/memories/summarize`,
+  AGENTS: {
+    BASE: '/api/agents',
+    BY_ID: (agentId: number) => `/api/agents/${agentId}`,
+    MEMORIES: (agentId: number) => `/api/agents/${agentId}/memories`,
+    MEMORY: (agentId: number, memoryId: number) => `/api/agents/${agentId}/memories/${memoryId}`,
+    MEMORIES_SUMMARIZE: (agentId: number) => `/api/agents/${agentId}/memories/summarize`,
   },
   MESSAGES: {
     TRANSLATE: (messageId: number) => `/api/messages/${messageId}/translate`,

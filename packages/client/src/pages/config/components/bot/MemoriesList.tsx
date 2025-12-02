@@ -12,7 +12,7 @@ interface MemoriesListProps {
   onEdit: (memoryId: number, newKeyPoint: string) => void;
   onDelete: (memoryId: number) => void;
   onRefresh: () => void;
-  botId: number;
+  agentId: number;
 }
 
 export default function MemoriesList({
@@ -23,15 +23,15 @@ export default function MemoriesList({
   onEdit,
   onDelete,
   onRefresh: _onRefresh, // eslint-disable-line @typescript-eslint/no-unused-vars
-  botId,
+  agentId,
 }: MemoriesListProps) {
   const [editingMemoryId, setEditingMemoryId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState<string>('');
 
-  if (botId < 0) {
+  if (agentId < 0) {
     return (
       <div className="text-text-tertiary text-center py-6 text-sm">
-        Save the bot to see memories
+        Save the agent to see memories
       </div>
     );
   }
@@ -47,7 +47,7 @@ export default function MemoriesList({
   if (memories.length === 0) {
     return (
       <div className="text-text-tertiary text-center py-6 text-sm">
-        No memories found for this bot
+        No memories found for this agent
       </div>
     );
   }

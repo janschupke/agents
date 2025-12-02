@@ -67,12 +67,10 @@ export class BehaviorRulesUtil {
   }
 
   /**
-   * Format bot behavior rules message
+   * Format agent behavior rules message
    */
-  static formatBotRules(rules: string[]): string {
+  static formatAgentRules(rules: string[]): string {
     const formatted = this.format(rules);
     return formatted.length > 0 ? `Behavior Rules:\n${formatted}` : '';
   }
 }
-
-

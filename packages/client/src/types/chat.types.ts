@@ -20,8 +20,8 @@ export interface Message {
   wordTranslations?: WordTranslation[]; // Word-level translations (assistant only)
 }
 
-export interface ChatBotProps {
-  botId?: number;
+export interface ChatAgentProps {
+  agentId?: number;
 }
 
 export interface Session {
@@ -31,7 +31,7 @@ export interface Session {
 }
 
 export interface ChatHistoryResponse {
-  bot: {
+  agent: {
     id: number;
     name: string;
     description: string | null;
@@ -59,7 +59,7 @@ export interface SendMessageResponse {
   assistantMessageId?: number;
 }
 
-export interface Bot {
+export interface Agent {
   id: number;
   name: string;
   description: string | null;
@@ -74,7 +74,7 @@ export interface Bot {
 
 export interface AgentMemory {
   id: number;
-  botId: number;
+  agentId: number;
   userId: string;
   keyPoint: string;
   context?: {
@@ -86,7 +86,7 @@ export interface AgentMemory {
   updatedAt: string;
 }
 
-export interface CreateBotRequest {
+export interface CreateAgentRequest {
   name: string;
   description?: string;
   avatarUrl?: string;
@@ -97,7 +97,7 @@ export interface CreateBotRequest {
   };
 }
 
-export interface UpdateBotRequest {
+export interface UpdateAgentRequest {
   name: string;
   description?: string;
   avatarUrl?: string;

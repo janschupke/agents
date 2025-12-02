@@ -20,7 +20,7 @@ model User {
   roles        Json                @default("[]") // Array of role strings: ["user", "admin"]
   createdAt    DateTime            @default(now()) @map("created_at")
   updatedAt    DateTime            @updatedAt @map("updated_at")
-  bots         Bot[]
+  agents      Agent[]
   chatSessions ChatSession[]
   apiCredentials UserApiCredential[]
   memories     AgentMemory[]
@@ -28,7 +28,7 @@ model User {
   @@map("users")
 }
 
-model Bot {
+model Agent {
   id          Int           @id @default(autoincrement())
   userId      String        @map("user_id")
   name        String
@@ -36,38 +36,38 @@ model Bot {
   avatarUrl   String?       @map("avatar_url")
   createdAt   DateTime      @default(now()) @map("created_at")
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  configs     BotConfig[]
+  configs     AgentConfig[]
   sessions    ChatSession[]
   memories    AgentMemory[]
 
   @@index([userId])
-  @@map("bots")
+  @@map("agents")
 }
 
-model BotConfig {
+model AgentConfig {
   id          Int      @id @default(autoincrement())
-  botId       Int      @map("bot_id")
+  agentId     Int      @map("agent_id")
   configKey   String   @map("config_key")
   configValue Json     @map("config_value")
   createdAt   DateTime @default(now()) @map("created_at")
-  bot         Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
-  @@unique([botId, configKey])
-  @@map("bot_configs")
+  @@unique([agentId, configKey])
+  @@map("agent_configs")
 }
 
 model ChatSession {
   id           Int           @id @default(autoincrement())
   userId       String        @map("user_id")
-  botId        Int           @map("bot_id")
+  agentId      Int           @map("agent_id")
   sessionName  String?       @map("session_name")
   createdAt    DateTime      @default(now()) @map("created_at")
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bot          Bot           @relation(fields: [botId], references: [id], onDelete: Cascade)
+  agent        Agent         @relation(fields: [agentId], references: [id], onDelete: Cascade)
   messages     Message[]
 
   @@index([userId])
-  @@index([botId])
+  @@index([agentId])
   @@map("chat_sessions")
 }
 
@@ -90,7 +90,7 @@ model Message {
 
 model AgentMemory {
   id              Int                          @id @default(autoincrement())
-  botId           Int                          @map("bot_id")
+  agentId         Int                          @map("agent_id")
   userId          String                       @map("user_id")
   keyPoint        String                       @map("key_point")
   context         Json?
@@ -99,11 +99,11 @@ model AgentMemory {
   updatedAt       DateTime                     @updatedAt @map("updated_at")
   updateCount     Int                          @default(0) @map("update_count")
   
-  bot             Bot                          @relation(fields: [botId], references: [id], onDelete: Cascade)
+  agent           Agent                        @relation(fields: [agentId], references: [id], onDelete: Cascade)
   user            User                         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([botId, userId])
-  @@index([botId, userId, createdAt(sort: Desc)])
+  @@index([agentId, userId])
+  @@index([agentId, userId, createdAt(sort: Desc)])
   @@map("agent_memories")
 }
 

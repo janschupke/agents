@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
-import { Bot } from '../../../../types/chat.types';
+import { Agent } from '../../../../types/chat.types';
 import { PageHeader } from '../../../../components/ui/layout';
-import { useBot } from '../../../../hooks/queries/use-bots';
-import { useBotMemories as useBotMemoriesQuery } from '../../../../hooks/queries/use-bots';
-import { useBotForm } from '../../hooks/use-bot-form';
-import { useBotMemories } from '../../hooks/use-bot-memories';
+import { useAgent } from '../../../../hooks/queries/use-bots';
+import { useAgentMemories as useAgentMemoriesQuery } from '../../../../hooks/queries/use-bots';
+import { useAgentForm } from '../../hooks/use-bot-form';
+import { useAgentMemories } from '../../hooks/use-bot-memories';
 import { FormButton, FormContainer, ButtonType, ButtonVariant } from '../../../../components/ui/form';
 import { FadeIn } from '../../../../components/ui/animation';
 import {
@@ -14,34 +14,34 @@ import {
   BehaviorRulesField,
 } from './BotConfigFormFields';
 import BotConfigFormSkeleton from './BotConfigFormSkeleton';
-import BotNameAndAvatar from './BotNameAndAvatar';
+import AgentNameAndAvatar from './BotNameAndAvatar';
 import MemoriesSection from './MemoriesSection';
 
-interface BotConfigFormProps {
-  bot: Bot | null;
+interface AgentConfigFormProps {
+  agent: Agent | null;
   saving?: boolean;
-  onSaveClick: (bot: Bot, values: ReturnType<typeof useBotForm>['values']) => Promise<void>;
+  onSaveClick: (agent: Agent, values: ReturnType<typeof useAgentForm>['values']) => Promise<void>;
 }
 
-export default function BotConfigForm({ bot, saving = false, onSaveClick }: BotConfigFormProps) {
-  // Track bot ID changes to trigger fade-in animation
+export default function AgentConfigForm({ agent, saving = false, onSaveClick }: AgentConfigFormProps) {
+  // Track agent ID changes to trigger fade-in animation
   const [fadeKey, setFadeKey] = useState(0);
-  const previousBotIdRef = useRef<number | null>(null);
+  const previousAgentIdRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const currentBotId = bot?.id ?? null;
-    // Trigger fade-in whenever bot ID changes (including when switching back to a previous bot)
-    if (currentBotId !== previousBotIdRef.current) {
-      if (currentBotId !== null) {
+    const currentAgentId = agent?.id ?? null;
+    // Trigger fade-in whenever agent ID changes (including when switching back to a previous agent)
+    if (currentAgentId !== previousAgentIdRef.current) {
+      if (currentAgentId !== null) {
         setFadeKey((prev) => prev + 1);
       }
-      previousBotIdRef.current = currentBotId;
+      previousAgentIdRef.current = currentAgentId;
     }
-  }, [bot?.id]);
+  }, [agent?.id]);
 
   // React Query hooks
-  const { data: botData, isLoading: loadingBot } = useBot(bot?.id || null);
-  const { data: memories = [], isLoading: loadingMemories } = useBotMemoriesQuery(bot?.id || null);
+  const { data: agentData, isLoading: loadingAgent } = useAgent(agent?.id || null);
+  const { data: memories = [], isLoading: loadingMemories } = useAgentMemoriesQuery(agent?.id || null);
 
   // Form management hook
   const {
@@ -51,7 +51,7 @@ export default function BotConfigForm({ bot, saving = false, onSaveClick }: BotC
     setValue,
     setTouched,
     validateAll,
-  } = useBotForm({ bot, botData: botData || null });
+  } = useAgentForm({ agent, agentData: agentData || null });
 
   // Memory operations hook
   const {
@@ -60,12 +60,12 @@ export default function BotConfigForm({ bot, saving = false, onSaveClick }: BotC
     handleDeleteMemory,
     handleEditMemory,
     handleRefreshMemories,
-  } = useBotMemories({ botId: bot?.id || null });
+  } = useAgentMemories({ agentId: agent?.id || null });
 
-  const loadingConfig = loadingBot && bot !== null && bot.id > 0;
+  const loadingConfig = loadingAgent && agent !== null && agent.id > 0;
 
   const handleSave = async () => {
-    if (!bot) return;
+    if (!agent) return;
 
     // Validate form
     const validation = validateAll();
@@ -73,13 +73,13 @@ export default function BotConfigForm({ bot, saving = false, onSaveClick }: BotC
       return;
     }
 
-    await onSaveClick(bot, values);
+    await onSaveClick(agent, values);
   };
 
-  if (!bot) {
+  if (!agent) {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
-        <div className="text-text-tertiary text-center text-sm">Select a bot to configure</div>
+        <div className="text-text-tertiary text-center text-sm">Select an agent to configure</div>
       </div>
     );
   }
@@ -87,7 +87,7 @@ export default function BotConfigForm({ bot, saving = false, onSaveClick }: BotC
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <PageHeader
-        title="Bot Configuration"
+        title="Agent Configuration"
         actions={
           <FormButton
             type={ButtonType.BUTTON}
@@ -95,9 +95,9 @@ export default function BotConfigForm({ bot, saving = false, onSaveClick }: BotC
             loading={saving}
             disabled={!values.name.trim()}
             variant={ButtonVariant.PRIMARY}
-            tooltip={saving ? 'Saving...' : bot.id < 0 ? 'Create Bot' : 'Save'}
+            tooltip={saving ? 'Saving...' : agent.id < 0 ? 'Create Agent' : 'Save'}
           >
-            {bot.id < 0 ? 'Create Bot' : 'Save'}
+            {agent.id < 0 ? 'Create Agent' : 'Save'}
           </FormButton>
         }
       />
@@ -108,13 +108,13 @@ export default function BotConfigForm({ bot, saving = false, onSaveClick }: BotC
           ) : (
             <FadeIn key={fadeKey}>
               <div className="space-y-5">
-                <BotNameAndAvatar
+                <AgentNameAndAvatar
                   avatarUrl={values.avatarUrl}
                   name={values.name}
                   nameError={errors.name ?? undefined}
                   nameTouched={touched.name}
                   saving={saving}
-                  autoFocus={bot.id < 0}
+                  autoFocus={agent.id < 0}
                   onAvatarChange={(url) => setValue('avatarUrl', url)}
                   onNameChange={(value) => setValue('name', value)}
                   onNameBlur={() => setTouched('name')}
@@ -125,7 +125,7 @@ export default function BotConfigForm({ bot, saving = false, onSaveClick }: BotC
                 <BehaviorRulesField rules={values.behaviorRules} onChange={(rules) => setValue('behaviorRules', rules)} />
 
                 <MemoriesSection
-                  botId={bot.id}
+                  agentId={agent.id}
                   memories={memories}
                   loading={loadingMemories}
                   editingId={editingId}

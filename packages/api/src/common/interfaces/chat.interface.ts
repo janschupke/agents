@@ -12,7 +12,7 @@ export interface ChatSession {
 }
 
 export interface ChatHistory {
-  bot: {
+  agent: {
     id: number;
     name: string;
     description: string | null;

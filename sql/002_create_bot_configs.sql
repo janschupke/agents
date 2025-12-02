@@ -1,8 +1,8 @@
-CREATE TABLE bot_configs (
+CREATE TABLE agent_configs (
     id SERIAL PRIMARY KEY,
-    bot_id INT NOT NULL REFERENCES bots(id) ON DELETE CASCADE,
+    agent_id INT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
     config_key TEXT NOT NULL,
     config_value JSONB NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
-    UNIQUE (bot_id, config_key)
+    UNIQUE (agent_id, config_key)
 );

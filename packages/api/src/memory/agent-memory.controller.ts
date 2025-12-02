@@ -20,7 +20,7 @@ import { API_ROUTES } from '../common/constants/api-routes.constants.js';
 
 export interface AgentMemoryResponse {
   id: number;
-  botId: number;
+  agentId: number;
   userId: string;
   keyPoint: string;
   context?: {
@@ -36,7 +36,7 @@ export interface UpdateMemoryDto {
   keyPoint: string;
 }
 
-@Controller('api/bots/:botId/memories')
+@Controller('api/agents/:agentId/memories')
 export class AgentMemoryController {
   constructor(
     private readonly memoryService: AgentMemoryService,
@@ -46,21 +46,21 @@ export class AgentMemoryController {
 
   @Get()
   async getMemories(
-    @Param('botId', ParseIntPipe) botId: number,
+    @Param('agentId', ParseIntPipe) agentId: number,
     @User() user: AuthenticatedUser,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string
   ): Promise<AgentMemoryResponse[]> {
     try {
-      const memories = await this.memoryRepository.findAllByBotId(
-        botId,
+      const memories = await this.memoryRepository.findAllByAgentId(
+        agentId,
         user.id,
         limit ? parseInt(limit, 10) : undefined
       );
 
       return memories.map((memory) => ({
         id: memory.id,
-        botId: memory.botId,
+        agentId: memory.agentId,
         userId: memory.userId,
         keyPoint: memory.keyPoint,
         context: memory.context as {
@@ -85,13 +85,13 @@ export class AgentMemoryController {
 
   @Get(':memoryId')
   async getMemory(
-    @Param('botId', ParseIntPipe) botId: number,
+    @Param('agentId', ParseIntPipe) agentId: number,
     @Param('memoryId', ParseIntPipe) memoryId: number,
     @User() user: AuthenticatedUser
   ): Promise<AgentMemoryResponse> {
     try {
-      const memories = await this.memoryRepository.findAllByBotId(
-        botId,
+      const memories = await this.memoryRepository.findAllByAgentId(
+        agentId,
         user.id
       );
       const memory = memories.find((m) => m.id === memoryId);
@@ -102,7 +102,7 @@ export class AgentMemoryController {
 
       return {
         id: memory.id,
-        botId: memory.botId,
+        agentId: memory.agentId,
         userId: memory.userId,
         keyPoint: memory.keyPoint,
         context: memory.context as {
@@ -127,15 +127,15 @@ export class AgentMemoryController {
 
   @Put(':memoryId')
   async updateMemory(
-    @Param('botId', ParseIntPipe) botId: number,
+    @Param('agentId', ParseIntPipe) agentId: number,
     @Param('memoryId', ParseIntPipe) memoryId: number,
     @Body() body: UpdateMemoryDto,
     @User() user: AuthenticatedUser
   ): Promise<AgentMemoryResponse> {
     try {
-      // Verify memory belongs to bot and user
-      const memories = await this.memoryRepository.findAllByBotId(
-        botId,
+      // Verify memory belongs to agent and user
+      const memories = await this.memoryRepository.findAllByAgentId(
+        agentId,
         user.id
       );
       const memory = memories.find((m) => m.id === memoryId);
@@ -151,7 +151,7 @@ export class AgentMemoryController {
 
       return {
         id: updated.id,
-        botId: updated.botId,
+        agentId: updated.agentId,
         userId: updated.userId,
         keyPoint: updated.keyPoint,
         context: updated.context as {
@@ -176,14 +176,14 @@ export class AgentMemoryController {
 
   @Delete(':memoryId')
   async deleteMemory(
-    @Param('botId', ParseIntPipe) botId: number,
+    @Param('agentId', ParseIntPipe) agentId: number,
     @Param('memoryId', ParseIntPipe) memoryId: number,
     @User() user: AuthenticatedUser
   ): Promise<void> {
     try {
-      // Verify memory belongs to bot and user
-      const memories = await this.memoryRepository.findAllByBotId(
-        botId,
+      // Verify memory belongs to agent and user
+      const memories = await this.memoryRepository.findAllByAgentId(
+        agentId,
         user.id
       );
       const memory = memories.find((m) => m.id === memoryId);
@@ -207,7 +207,7 @@ export class AgentMemoryController {
 
   @Post('summarize')
   async summarizeMemories(
-    @Param('botId', ParseIntPipe) botId: number,
+    @Param('agentId', ParseIntPipe) agentId: number,
     @User() user: AuthenticatedUser
   ): Promise<{ message: string }> {
     try {
@@ -222,7 +222,7 @@ export class AgentMemoryController {
         );
       }
 
-      await this.memoryService.summarizeMemories(botId, user.id, apiKey);
+      await this.memoryService.summarizeMemories(agentId, user.id, apiKey);
 
       return { message: 'Memories summarized successfully' };
     } catch (error) {

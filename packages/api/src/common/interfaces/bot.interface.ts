@@ -1,4 +1,4 @@
-export interface BotWithConfig {
+export interface AgentWithConfig {
   id: number;
   name: string;
   description: string | null;
@@ -6,7 +6,7 @@ export interface BotWithConfig {
   configs: Record<string, unknown>;
 }
 
-export interface BotConfig {
+export interface AgentConfig {
   temperature?: number;
   system_prompt?: string;
   behavior_rules?: string | string[] | { rules: string[] };
@@ -14,7 +14,7 @@ export interface BotConfig {
   max_tokens?: number;
 }
 
-export interface BotResponse {
+export interface AgentResponse {
   id: number;
   userId: string;
   name: string;

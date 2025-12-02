@@ -25,7 +25,7 @@ export class MessageResponseDto {
 }
 
 export class ChatHistoryResponseDto {
-  bot: {
+  agent: {
     id: number;
     name: string;
     description: string | null;

@@ -28,13 +28,13 @@ import { API_ROUTES } from '../common/constants/api-routes.constants.js';
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
-  @Get(':botId/sessions')
+  @Get(':agentId/sessions')
   async getSessions(
-    @Param('botId', ParseIntPipe) botId: number,
+    @Param('agentId', ParseIntPipe) agentId: number,
     @User() user: AuthenticatedUser
   ): Promise<SessionResponseDto[]> {
     try {
-      return await this.chatService.getSessions(botId, user.id);
+      return await this.chatService.getSessions(agentId, user.id);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -47,13 +47,13 @@ export class ChatController {
     }
   }
 
-  @Post(':botId/sessions')
+  @Post(':agentId/sessions')
   async createSession(
-    @Param('botId', ParseIntPipe) botId: number,
+    @Param('agentId', ParseIntPipe) agentId: number,
     @User() user: AuthenticatedUser
   ): Promise<SessionResponseDto> {
     try {
-      return await this.chatService.createSession(botId, user.id);
+      return await this.chatService.createSession(agentId, user.id);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -66,16 +66,16 @@ export class ChatController {
     }
   }
 
-  @Get(':botId')
+  @Get(':agentId')
   async getChatHistory(
-    @Param('botId', ParseIntPipe) botId: number,
+    @Param('agentId', ParseIntPipe) agentId: number,
     @User() user: AuthenticatedUser,
     @Query('sessionId') sessionId?: string
   ): Promise<ChatHistoryResponseDto> {
     try {
       const parsedSessionId = sessionId ? parseInt(sessionId, 10) : undefined;
       return await this.chatService.getChatHistory(
-        botId,
+        agentId,
         user.id,
         parsedSessionId
       );
@@ -91,9 +91,9 @@ export class ChatController {
     }
   }
 
-  @Post(':botId')
+  @Post(':agentId')
   async sendMessage(
-    @Param('botId', ParseIntPipe) botId: number,
+    @Param('agentId', ParseIntPipe) agentId: number,
     @Body() body: SendMessageDto,
     @User() user: AuthenticatedUser,
     @Query('sessionId') sessionId?: string
@@ -105,7 +105,7 @@ export class ChatController {
     try {
       const parsedSessionId = sessionId ? parseInt(sessionId, 10) : undefined;
       return await this.chatService.sendMessage(
-        botId,
+        agentId,
         user.id,
         body.message,
         parsedSessionId
@@ -128,16 +128,16 @@ export class ChatController {
     }
   }
 
-  @Put(':botId/sessions/:sessionId')
+  @Put(':agentId/sessions/:sessionId')
   async updateSession(
-    @Param('botId', ParseIntPipe) botId: number,
+    @Param('agentId', ParseIntPipe) agentId: number,
     @Param('sessionId', ParseIntPipe) sessionId: number,
     @Body() body: UpdateSessionDto,
     @User() user: AuthenticatedUser
   ): Promise<SessionResponseDto> {
     try {
       return await this.chatService.updateSession(
-        botId,
+        agentId,
         sessionId,
         user.id,
         body.session_name
@@ -154,14 +154,14 @@ export class ChatController {
     }
   }
 
-  @Delete(':botId/sessions/:sessionId')
+  @Delete(':agentId/sessions/:sessionId')
   async deleteSession(
-    @Param('botId', ParseIntPipe) botId: number,
+    @Param('agentId', ParseIntPipe) agentId: number,
     @Param('sessionId', ParseIntPipe) sessionId: number,
     @User() user: AuthenticatedUser
   ): Promise<SuccessResponseDto> {
     try {
-      await this.chatService.deleteSession(botId, sessionId, user.id);
+      await this.chatService.deleteSession(agentId, sessionId, user.id);
       return { success: true };
     } catch (error) {
       if (error instanceof HttpException) {

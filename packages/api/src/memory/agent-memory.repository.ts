@@ -4,7 +4,7 @@ import { AgentMemory } from '@prisma/client';
 
 export interface AgentMemoryWithVector {
   id: number;
-  botId: number;
+  agentId: number;
   userId: string;
   keyPoint: string;
   context: unknown;
@@ -19,7 +19,7 @@ export class AgentMemoryRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(
-    botId: number,
+    agentId: number,
     userId: string,
     keyPoint: string,
     context: unknown,
@@ -39,13 +39,13 @@ export class AgentMemoryRepository {
 
     try {
       // Get current max update count and increment for new memory
-      const currentCount = await this.getUpdateCount(botId, userId);
+      const currentCount = await this.getUpdateCount(agentId, userId);
       const newUpdateCount = currentCount + 1;
 
       const result = await this.prisma.$queryRawUnsafe<
         Array<{
           id: number;
-          bot_id: number;
+          agent_id: number;
           user_id: string;
           key_point: string;
           context: unknown;
@@ -55,10 +55,10 @@ export class AgentMemoryRepository {
           update_count: number;
         }>
       >(
-        `INSERT INTO agent_memories (bot_id, user_id, key_point, context, vector_embedding, update_count)
+        `INSERT INTO agent_memories (agent_id, user_id, key_point, context, vector_embedding, update_count)
          VALUES ($1, $2, $3, $4::jsonb, $5::vector(1536), $6)
-         RETURNING id, bot_id, user_id, key_point, context, vector_embedding, created_at, updated_at, update_count`,
-        botId,
+         RETURNING id, agent_id, user_id, key_point, context, vector_embedding, created_at, updated_at, update_count`,
+        agentId,
         userId,
         keyPoint,
         JSON.stringify(context),
@@ -72,12 +72,12 @@ export class AgentMemoryRepository {
 
       const created = result[0];
       console.log(
-        `Successfully created agent memory ${created.id} for bot ${botId}, user ${userId}`
+        `Successfully created agent memory ${created.id} for agent ${agentId}, user ${userId}`
       );
 
       return {
         id: created.id,
-        botId: created.bot_id,
+        agentId: created.agent_id,
         userId: created.user_id,
         keyPoint: created.key_point,
         context: created.context,
@@ -92,15 +92,15 @@ export class AgentMemoryRepository {
     }
   }
 
-  async findAllByBotId(
-    botId: number,
+  async findAllByAgentId(
+    agentId: number,
     userId: string,
     limit?: number
   ): Promise<AgentMemoryWithVector[]> {
     const chunks = await this.prisma.$queryRawUnsafe<
       Array<{
         id: number;
-        bot_id: number;
+        agent_id: number;
         user_id: string;
         key_point: string;
         context: unknown;
@@ -110,18 +110,18 @@ export class AgentMemoryRepository {
         update_count: number;
       }>
     >(
-      `SELECT id, bot_id, user_id, key_point, context, vector_embedding, created_at, updated_at, update_count
+      `SELECT id, agent_id, user_id, key_point, context, vector_embedding, created_at, updated_at, update_count
        FROM agent_memories
-       WHERE bot_id = $1 AND user_id = $2
+       WHERE agent_id = $1 AND user_id = $2
        ORDER BY created_at DESC
        ${limit ? `LIMIT ${limit}` : ''}`,
-      botId,
+      agentId,
       userId
     );
 
     return chunks.map((chunk) => ({
       id: chunk.id,
-      botId: chunk.bot_id,
+      agentId: chunk.agent_id,
       userId: chunk.user_id,
       keyPoint: chunk.key_point,
       context: chunk.context,
@@ -134,7 +134,7 @@ export class AgentMemoryRepository {
 
   async findSimilar(
     queryVector: number[],
-    botId: number,
+    agentId: number,
     userId: string,
     topK: number = 5,
     threshold: number = 0.5
@@ -145,7 +145,7 @@ export class AgentMemoryRepository {
       const results = await this.prisma.$queryRawUnsafe<
         Array<{
           id: number;
-          bot_id: number;
+          agent_id: number;
           user_id: string;
           key_point: string;
           context: unknown;
@@ -155,17 +155,17 @@ export class AgentMemoryRepository {
           update_count: number;
         }>
       >(
-        `SELECT id, bot_id, user_id, key_point, context,
+        `SELECT id, agent_id, user_id, key_point, context,
          1 - (vector_embedding <=> $1::vector(1536)) as similarity,
          created_at, updated_at, update_count
          FROM agent_memories
-         WHERE bot_id = $2 AND user_id = $3
+         WHERE agent_id = $2 AND user_id = $3
          AND vector_embedding IS NOT NULL
          AND 1 - (vector_embedding <=> $1::vector(1536)) >= $4
          ORDER BY vector_embedding <=> $1::vector(1536)
          LIMIT $5`,
         vectorString,
-        botId,
+        agentId,
         userId,
         threshold,
         topK
@@ -173,11 +173,11 @@ export class AgentMemoryRepository {
 
       if (results && results.length > 0) {
         console.log(
-          `Found ${results.length} similar memories for bot ${botId}, user ${userId}`
+          `Found ${results.length} similar memories for agent ${agentId}, user ${userId}`
         );
         return results.map((r) => ({
           id: r.id,
-          botId: r.bot_id,
+          agentId: r.agent_id,
           userId: r.user_id,
           keyPoint: r.key_point,
           context: r.context,
@@ -208,51 +208,51 @@ export class AgentMemoryRepository {
     });
   }
 
-  async countByBotId(botId: number, userId: string): Promise<number> {
+  async countByAgentId(agentId: number, userId: string): Promise<number> {
     return this.prisma.agentMemory.count({
       where: {
-        botId,
+        agentId,
         userId,
       },
     });
   }
 
   async findForSummarization(
-    botId: number,
+    agentId: number,
     userId: string,
     limit: number = 100
   ): Promise<AgentMemoryWithVector[]> {
-    return this.findAllByBotId(botId, userId, limit);
+    return this.findAllByAgentId(agentId, userId, limit);
   }
 
-  async incrementUpdateCount(botId: number, userId: string): Promise<void> {
+  async incrementUpdateCount(agentId: number, userId: string): Promise<void> {
     await this.prisma.$executeRawUnsafe(
       `UPDATE agent_memories 
        SET update_count = update_count + 1
-       WHERE bot_id = $1 AND user_id = $2`,
-      botId,
+       WHERE agent_id = $1 AND user_id = $2`,
+      agentId,
       userId
     );
   }
 
-  async resetUpdateCount(botId: number, userId: string): Promise<void> {
+  async resetUpdateCount(agentId: number, userId: string): Promise<void> {
     await this.prisma.$executeRawUnsafe(
       `UPDATE agent_memories 
        SET update_count = 0
-       WHERE bot_id = $1 AND user_id = $2`,
-      botId,
+       WHERE agent_id = $1 AND user_id = $2`,
+      agentId,
       userId
     );
   }
 
-  async getUpdateCount(botId: number, userId: string): Promise<number> {
+  async getUpdateCount(agentId: number, userId: string): Promise<number> {
     const result = await this.prisma.$queryRawUnsafe<
       Array<{ update_count: number }>
     >(
       `SELECT MAX(update_count) as update_count
        FROM agent_memories
-       WHERE bot_id = $1 AND user_id = $2`,
-      botId,
+       WHERE agent_id = $1 AND user_id = $2`,
+      agentId,
       userId
     );
 

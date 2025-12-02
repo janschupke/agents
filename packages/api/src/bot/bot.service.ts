@@ -1,32 +1,32 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { BotRepository } from './bot.repository';
+import { AgentRepository } from './bot.repository';
 import { UserService } from '../user/user.service';
-import { BotResponse } from '../common/interfaces/bot.interface';
+import { AgentResponse } from '../common/interfaces/bot.interface';
 
 @Injectable()
-export class BotService {
+export class AgentService {
   constructor(
-    private readonly botRepository: BotRepository,
+    private readonly agentRepository: AgentRepository,
     private readonly userService: UserService
   ) {}
 
-  async findAll(userId: string): Promise<BotResponse[]> {
-    return this.botRepository.findAll(userId);
+  async findAll(userId: string): Promise<AgentResponse[]> {
+    return this.agentRepository.findAll(userId);
   }
 
-  async findById(id: number, userId: string): Promise<BotResponse> {
-    const bot = await this.botRepository.findByIdWithConfig(id, userId);
-    if (!bot) {
-      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+  async findById(id: number, userId: string): Promise<AgentResponse> {
+    const agent = await this.agentRepository.findByIdWithConfig(id, userId);
+    if (!agent) {
+      throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
     }
-    // Convert BotWithConfig to BotResponse
-    const botResponse = await this.botRepository.findById(id);
-    if (!botResponse) {
-      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+    // Convert AgentWithConfig to AgentResponse
+    const agentResponse = await this.agentRepository.findById(id);
+    if (!agentResponse) {
+      throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
     }
     return {
-      ...botResponse,
-      configs: bot.configs,
+      ...agentResponse,
+      configs: agent.configs,
     };
   }
 
@@ -36,29 +36,29 @@ export class BotService {
     description?: string,
     avatarUrl?: string,
     configs?: Record<string, unknown>
-  ): Promise<BotResponse> {
+  ): Promise<AgentResponse> {
     // User is automatically synced to DB by ClerkGuard
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      throw new HttpException('Bot name is required', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Agent name is required', HttpStatus.BAD_REQUEST);
     }
 
-    const existingBot = await this.botRepository.findByName(name, userId);
-    if (existingBot) {
+    const existingAgent = await this.agentRepository.findByName(name, userId);
+    if (existingAgent) {
       throw new HttpException(
-        'Bot with this name already exists',
+        'Agent with this name already exists',
         HttpStatus.CONFLICT
       );
     }
 
-    const bot = await this.botRepository.create(userId, name, description, avatarUrl);
+    const agent = await this.agentRepository.create(userId, name, description, avatarUrl);
 
     // Set configs if provided
     if (configs) {
-      await this.botRepository.updateConfigs(bot.id, configs);
+      await this.agentRepository.updateConfigs(agent.id, configs);
     }
 
-    return bot;
+    return agent;
   }
 
   async update(
@@ -68,28 +68,28 @@ export class BotService {
     description?: string,
     avatarUrl?: string,
     configs?: Record<string, unknown>
-  ): Promise<BotResponse> {
-    const bot = await this.botRepository.findByIdAndUserId(id, userId);
-    if (!bot) {
-      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+  ): Promise<AgentResponse> {
+    const agent = await this.agentRepository.findByIdAndUserId(id, userId);
+    if (!agent) {
+      throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
     }
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      throw new HttpException('Bot name is required', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Agent name is required', HttpStatus.BAD_REQUEST);
     }
 
-    // Check if name is being changed and if it conflicts with another bot
-    if (name !== bot.name) {
-      const existingBot = await this.botRepository.findByName(name, userId);
-      if (existingBot && existingBot.id !== id) {
+    // Check if name is being changed and if it conflicts with another agent
+    if (name !== agent.name) {
+      const existingAgent = await this.agentRepository.findByName(name, userId);
+      if (existingAgent && existingAgent.id !== id) {
         throw new HttpException(
-          'Bot with this name already exists',
+          'Agent with this name already exists',
           HttpStatus.CONFLICT
         );
       }
     }
 
-    const updated = await this.botRepository.update(
+    const updated = await this.agentRepository.update(
       id,
       userId,
       name,
@@ -97,24 +97,24 @@ export class BotService {
       avatarUrl
     );
     if (!updated) {
-      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
     }
 
     // Update configs if provided
     if (configs) {
-      await this.botRepository.updateConfigs(id, configs);
+      await this.agentRepository.updateConfigs(id, configs);
     }
 
     return updated;
   }
 
   async delete(id: number, userId: string): Promise<void> {
-    const bot = await this.botRepository.findByIdAndUserId(id, userId);
-    if (!bot) {
-      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+    const agent = await this.agentRepository.findByIdAndUserId(id, userId);
+    if (!agent) {
+      throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
     }
 
-    // Delete the bot - Prisma will cascade delete all related data (sessions, messages, configs, memories)
-    await this.botRepository.delete(id, userId);
+    // Delete the agent - Prisma will cascade delete all related data (sessions, messages, configs, memories)
+    await this.agentRepository.delete(id, userId);
   }
 }

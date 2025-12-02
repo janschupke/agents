@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { BotController } from './bot.controller';
-import { BotService } from './bot.service';
+import { AgentController } from './bot.controller';
+import { AgentService } from './bot.service';
 import { AuthenticatedUser } from '../common/types/auth.types';
 
-describe('BotController', () => {
-  let controller: BotController;
-  let botService: BotService;
+describe('AgentController', () => {
+  let controller: AgentController;
+  let agentService: AgentService;
 
-  const mockBotService = {
+  const mockAgentService = {
     findAll: jest.fn(),
     findById: jest.fn(),
     create: jest.fn(),
@@ -27,17 +27,17 @@ describe('BotController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [BotController],
+      controllers: [AgentController],
       providers: [
         {
-          provide: BotService,
-          useValue: mockBotService,
+          provide: AgentService,
+          useValue: mockAgentService,
         },
       ],
     }).compile();
 
-    controller = module.get<BotController>(BotController);
-    botService = module.get<BotService>(BotService);
+    controller = module.get<AgentController>(AgentController);
+    agentService = module.get<AgentService>(AgentService);
   });
 
   afterEach(() => {

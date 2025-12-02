@@ -1,5 +1,5 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { BotRepository } from '../bot/bot.repository';
+import { AgentRepository } from '../bot/bot.repository';
 import { SessionRepository } from '../session/session.repository';
 import { MessageRepository } from '../message/message.repository';
 import { AgentMemoryService } from '../memory/agent-memory.service';
@@ -24,7 +24,7 @@ import {
 @Injectable()
 export class ChatService {
   constructor(
-    private readonly botRepository: BotRepository,
+    private readonly agentRepository: AgentRepository,
     private readonly sessionRepository: SessionRepository,
     private readonly messageRepository: MessageRepository,
     private readonly agentMemoryService: AgentMemoryService,
@@ -38,17 +38,17 @@ export class ChatService {
   ) {}
 
   async getSessions(
-    botId: number,
+    agentId: number,
     userId: string
   ): Promise<SessionResponseDto[]> {
-    // Load bot with config
-    const bot = await this.botRepository.findByIdWithConfig(botId, userId);
-    if (!bot) {
-      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+    // Load agent with config
+    const agent = await this.agentRepository.findByIdWithConfig(agentId, userId);
+    if (!agent) {
+      throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
     }
 
-    // Get all sessions for this bot and user
-    const sessions = await this.sessionRepository.findAllByBotId(botId, userId);
+    // Get all sessions for this agent and user
+    const sessions = await this.sessionRepository.findAllByAgentId(agentId, userId);
 
     return sessions.map((session) => ({
       id: session.id,
@@ -58,19 +58,19 @@ export class ChatService {
   }
 
   async createSession(
-    botId: number,
+    agentId: number,
     userId: string
   ): Promise<SessionResponseDto> {
     // User is automatically synced to DB by ClerkGuard
 
-    // Load bot with config
-    const bot = await this.botRepository.findByIdWithConfig(botId, userId);
-    if (!bot) {
-      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+    // Load agent with config
+    const agent = await this.agentRepository.findByIdWithConfig(agentId, userId);
+    if (!agent) {
+      throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
     }
 
     // Create new session
-    const session = await this.sessionRepository.create(userId, botId);
+    const session = await this.sessionRepository.create(userId, agentId);
 
     return {
       id: session.id,
@@ -80,14 +80,14 @@ export class ChatService {
   }
 
   async getChatHistory(
-    botId: number,
+    agentId: number,
     userId: string,
     sessionId?: number
   ): Promise<ChatHistoryResponseDto> {
-    // Load bot with config
-    const bot = await this.botRepository.findByIdWithConfig(botId, userId);
-    if (!bot) {
-      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+    // Load agent with config
+    const agent = await this.agentRepository.findByIdWithConfig(agentId, userId);
+    if (!agent) {
+      throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
     }
 
     // Get or create session
@@ -97,13 +97,13 @@ export class ChatService {
         sessionId,
         userId
       );
-      if (!session || session.botId !== botId) {
+      if (!session || session.agentId !== agentId) {
         throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
       }
     } else {
-      session = await this.sessionRepository.findLatestByBotId(botId, userId);
+      session = await this.sessionRepository.findLatestByAgentId(agentId, userId);
       if (!session) {
-        session = await this.sessionRepository.create(userId, botId);
+        session = await this.sessionRepository.create(userId, agentId);
       }
     }
 
@@ -160,10 +160,10 @@ export class ChatService {
     );
 
     return {
-      bot: {
-        id: bot.id,
-        name: bot.name,
-        description: bot.description,
+      agent: {
+        id: agent.id,
+        name: agent.name,
+        description: agent.description,
       },
       session: {
         id: session.id,
@@ -174,7 +174,7 @@ export class ChatService {
   }
 
   async sendMessage(
-    botId: number,
+    agentId: number,
     userId: string,
     message: string,
     sessionId?: number
@@ -190,13 +190,13 @@ export class ChatService {
       );
     }
 
-    // Load bot with config
-    const bot = await this.botRepository.findByIdWithConfig(botId, userId);
-    if (!bot) {
-      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+    // Load agent with config
+    const agent = await this.agentRepository.findByIdWithConfig(agentId, userId);
+    if (!agent) {
+      throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
     }
 
-    const botConfig = this.botRepository.mergeBotConfig(bot.configs);
+    const agentConfig = this.agentRepository.mergeAgentConfig(agent.configs);
 
     // Get or create session
     let session;
@@ -205,13 +205,13 @@ export class ChatService {
         sessionId,
         userId
       );
-      if (!session || session.botId !== botId) {
+      if (!session || session.agentId !== agentId) {
         throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
       }
     } else {
-      session = await this.sessionRepository.findLatestByBotId(botId, userId);
+      session = await this.sessionRepository.findLatestByAgentId(agentId, userId);
       if (!session) {
-        session = await this.sessionRepository.create(userId, botId);
+        session = await this.sessionRepository.create(userId, agentId);
       }
     }
 
@@ -223,14 +223,14 @@ export class ChatService {
     let relevantMemories: string[] = [];
     try {
       relevantMemories = await this.agentMemoryService.getMemoriesForContext(
-        botId,
+        agentId,
         userId,
         message,
         apiKey
       );
       if (relevantMemories.length > 0) {
         console.log(
-          `Found ${relevantMemories.length} relevant memories for bot ${botId}`
+          `Found ${relevantMemories.length} relevant memories for agent ${agentId}`
         );
       }
     } catch (error) {
@@ -262,8 +262,8 @@ export class ChatService {
     }
 
     // Add system prompt if not already present
-    if (botConfig.system_prompt) {
-      const systemPrompt = String(botConfig.system_prompt);
+    if (agentConfig.system_prompt) {
+      const systemPrompt = String(agentConfig.system_prompt);
       if (
         !messagesForAPI.some(
           (m) => m.role === 'system' && m.content === systemPrompt
@@ -302,7 +302,7 @@ export class ChatService {
           const systemPromptIndex = messagesForAPI.findIndex(
             (m) =>
               m.role === 'system' &&
-              m.content === String(botConfig.system_prompt || '')
+              m.content === String(agentConfig.system_prompt || '')
           );
 
           if (systemPromptIndex >= 0) {
@@ -322,13 +322,13 @@ export class ChatService {
       }
     }
 
-    // Add bot-specific behavior rules (these are additional to system rules)
-    if (botConfig.behavior_rules) {
-      const behaviorRules = BehaviorRulesUtil.parse(botConfig.behavior_rules);
+    // Add agent-specific behavior rules (these are additional to system rules)
+    if (agentConfig.behavior_rules) {
+      const behaviorRules = BehaviorRulesUtil.parse(agentConfig.behavior_rules);
 
       // Format behavior rules as a system message
       if (behaviorRules.length > 0) {
-        const behaviorRulesMessage = BehaviorRulesUtil.formatBotRules(behaviorRules);
+        const behaviorRulesMessage = BehaviorRulesUtil.formatAgentRules(behaviorRules);
 
         if (behaviorRulesMessage.length > 0) {
           // Check if behavior rules are already present (exact match)
@@ -341,8 +341,8 @@ export class ChatService {
             const systemPromptIndex = messagesForAPI.findIndex(
               (m) =>
                 m.role === 'system' &&
-                m.content === String(botConfig.system_prompt || '')
-            );
+                m.content === String(agentConfig.system_prompt || '')
+              );
 
             if (systemPromptIndex >= 0) {
               // Insert after system prompt
@@ -370,11 +370,11 @@ export class ChatService {
 
     // Prepare OpenAI API request
     const openaiRequest = {
-      model: String(botConfig.model || 'gpt-4o-mini'),
+      model: String(agentConfig.model || 'gpt-4o-mini'),
       messages: messagesForAPI,
-      temperature: Number(botConfig.temperature || NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE),
-      max_tokens: botConfig.max_tokens
-        ? Number(botConfig.max_tokens)
+      temperature: Number(agentConfig.temperature || NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE),
+      max_tokens: agentConfig.max_tokens
+        ? Number(agentConfig.max_tokens)
         : undefined,
     };
 
@@ -426,7 +426,7 @@ export class ChatService {
     if (shouldSaveMemory) {
       try {
         await this.agentMemoryService.createMemory(
-          botId,
+          agentId,
           userId,
           session.id,
           session.sessionName,
@@ -436,18 +436,18 @@ export class ChatService {
 
         // Check if summarization is needed
         const shouldSummarize =
-          await this.agentMemoryService.shouldSummarize(botId, userId);
+          await this.agentMemoryService.shouldSummarize(agentId, userId);
         if (shouldSummarize) {
           // Run summarization asynchronously (don't wait)
           this.agentMemoryService
-            .summarizeMemories(botId, userId, apiKey)
+            .summarizeMemories(agentId, userId, apiKey)
             .catch((error) => {
               console.error('Error during memory summarization:', error);
             });
         }
 
         console.log(
-          `Saved memories for bot ${botId}, session ${session.id} (${allMessages.length} messages)`
+          `Saved memories for agent ${agentId}, session ${session.id} (${allMessages.length} messages)`
         );
       } catch (error) {
         console.error('Error saving memories:', error);
@@ -469,18 +469,18 @@ export class ChatService {
   }
 
   async updateSession(
-    botId: number,
+    agentId: number,
     sessionId: number,
     userId: string,
     sessionName?: string
   ): Promise<SessionResponseDto> {
-    // Verify the bot belongs to the user
-    const bot = await this.botRepository.findByIdAndUserId(botId, userId);
-    if (!bot) {
-      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+    // Verify the agent belongs to the user
+    const agent = await this.agentRepository.findByIdAndUserId(agentId, userId);
+    if (!agent) {
+      throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
     }
 
-    // Verify the session belongs to the bot and user
+    // Verify the session belongs to the agent and user
     const session = await this.sessionRepository.findByIdAndUserId(
       sessionId,
       userId
@@ -489,9 +489,9 @@ export class ChatService {
       throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
     }
 
-    if (session.botId !== botId) {
+    if (session.agentId !== agentId) {
       throw new HttpException(
-        'Session does not belong to this bot',
+        'Session does not belong to this agent',
         HttpStatus.BAD_REQUEST
       );
     }
@@ -511,17 +511,17 @@ export class ChatService {
   }
 
   async deleteSession(
-    botId: number,
+    agentId: number,
     sessionId: number,
     userId: string
   ): Promise<void> {
-    // Verify the bot belongs to the user
-    const bot = await this.botRepository.findByIdAndUserId(botId, userId);
-    if (!bot) {
-      throw new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+    // Verify the agent belongs to the user
+    const agent = await this.agentRepository.findByIdAndUserId(agentId, userId);
+    if (!agent) {
+      throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
     }
 
-    // Verify the session belongs to the bot and user
+    // Verify the session belongs to the agent and user
     const session = await this.sessionRepository.findByIdAndUserId(
       sessionId,
       userId
@@ -530,9 +530,9 @@ export class ChatService {
       throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
     }
 
-    if (session.botId !== botId) {
+    if (session.agentId !== agentId) {
       throw new HttpException(
-        'Session does not belong to this bot',
+        'Session does not belong to this agent',
         HttpStatus.BAD_REQUEST
       );
     }

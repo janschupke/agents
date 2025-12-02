@@ -1,5 +1,5 @@
 export enum QueryKey {
-  BOTS = 'bots',
+  AGENTS = 'agents',
   CHAT = 'chat',
   USER = 'user',
   CONFIG = 'config',
@@ -14,21 +14,21 @@ export enum QueryKey {
 }
 
 export const queryKeys = {
-  bots: {
-    all: [QueryKey.BOTS] as const,
-    lists: () => [...queryKeys.bots.all, QueryKey.LIST] as const,
-    list: (filters?: string) => [...queryKeys.bots.lists(), { filters }] as const,
-    details: () => [...queryKeys.bots.all, QueryKey.DETAIL] as const,
-    detail: (id: number) => [...queryKeys.bots.details(), id] as const,
-    sessions: (botId: number) => [...queryKeys.bots.detail(botId), QueryKey.SESSIONS] as const,
-    config: (botId: number) => [...queryKeys.bots.detail(botId), QueryKey.CONFIG] as const,
-    memories: (botId: number) => [...queryKeys.bots.detail(botId), QueryKey.MEMORIES] as const,
+  agents: {
+    all: [QueryKey.AGENTS] as const,
+    lists: () => [...queryKeys.agents.all, QueryKey.LIST] as const,
+    list: (filters?: string) => [...queryKeys.agents.lists(), { filters }] as const,
+    details: () => [...queryKeys.agents.all, QueryKey.DETAIL] as const,
+    detail: (id: number) => [...queryKeys.agents.details(), id] as const,
+    sessions: (agentId: number) => [...queryKeys.agents.detail(agentId), QueryKey.SESSIONS] as const,
+    config: (agentId: number) => [...queryKeys.agents.detail(agentId), QueryKey.CONFIG] as const,
+    memories: (agentId: number) => [...queryKeys.agents.detail(agentId), QueryKey.MEMORIES] as const,
   },
   chat: {
     all: [QueryKey.CHAT] as const,
-    history: (botId: number, sessionId?: number) =>
-      [...queryKeys.chat.all, QueryKey.HISTORY, botId, sessionId] as const,
-    sessions: (botId: number) => [...queryKeys.chat.all, QueryKey.SESSIONS, botId] as const,
+    history: (agentId: number, sessionId?: number) =>
+      [...queryKeys.chat.all, QueryKey.HISTORY, agentId, sessionId] as const,
+    sessions: (agentId: number) => [...queryKeys.chat.all, QueryKey.SESSIONS, agentId] as const,
   },
   user: {
     all: [QueryKey.USER] as const,
@@ -40,5 +40,3 @@ export const queryKeys = {
     system: () => [...queryKeys.config.all, QueryKey.SYSTEM] as const,
   },
 } as const;
-
-

@@ -1,7 +1,7 @@
 import { Skeleton } from '../../../../components/ui/feedback';
 
 /**
- * Loading skeleton for bot configuration form
+ * Loading skeleton for agent configuration form
  */
 export default function BotConfigFormSkeleton() {
   return (

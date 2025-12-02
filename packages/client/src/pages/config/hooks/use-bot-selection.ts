@@ -1,102 +1,102 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bot } from '../../../types/chat.types';
+import { Agent } from '../../../types/chat.types';
 import { LocalStorageManager } from '../../../utils/localStorage';
 
-interface UseBotSelectionOptions {
-  contextBots: Bot[];
-  localBots: Bot[];
-  loadingBots: boolean;
+interface UseAgentSelectionOptions {
+  contextAgents: Agent[];
+  localAgents: Agent[];
+  loadingAgents: boolean;
 }
 
-interface UseBotSelectionReturn {
-  currentBotId: number | null;
-  setCurrentBotId: (botId: number | null) => void;
-  bots: Bot[];
+interface UseAgentSelectionReturn {
+  currentAgentId: number | null;
+  setCurrentAgentId: (agentId: number | null) => void;
+  agents: Agent[];
 }
 
 /**
- * Manages bot selection state and initialization logic
+ * Manages agent selection state and initialization logic
  */
-export function useBotSelection({
-  contextBots,
-  localBots,
-  loadingBots,
-}: UseBotSelectionOptions): UseBotSelectionReturn {
-  // Load initial bot ID from localStorage
-  const [currentBotId, setCurrentBotIdState] = useState<number | null>(() =>
-    LocalStorageManager.getSelectedBotIdConfig()
+export function useAgentSelection({
+  contextAgents,
+  localAgents,
+  loadingAgents,
+}: UseAgentSelectionOptions): UseAgentSelectionReturn {
+  // Load initial agent ID from localStorage
+  const [currentAgentId, setCurrentAgentIdState] = useState<number | null>(() =>
+    LocalStorageManager.getSelectedAgentIdConfig()
   );
 
   // Track if we've initialized to avoid overriding stored values
   const initializedRef = useRef(false);
-  const botsLoadedRef = useRef(false);
+  const agentsLoadedRef = useRef(false);
 
-  // Save to localStorage whenever currentBotId changes
+  // Save to localStorage whenever currentAgentId changes
   useEffect(() => {
-    LocalStorageManager.setSelectedBotIdConfig(currentBotId);
-  }, [currentBotId]);
+    LocalStorageManager.setSelectedAgentIdConfig(currentAgentId);
+  }, [currentAgentId]);
 
-  // Validate and initialize currentBotId when bots load
+  // Validate and initialize currentAgentId when agents load
   useEffect(() => {
-    if (loadingBots) {
+    if (loadingAgents) {
       return;
     }
 
-    const allBots = [...contextBots, ...localBots];
+    const allAgents = [...contextAgents, ...localAgents];
 
-    // Track when bots first load
-    const botsJustLoaded = !botsLoadedRef.current && allBots.length > 0;
-    botsLoadedRef.current = allBots.length > 0;
+    // Track when agents first load
+    const agentsJustLoaded = !agentsLoadedRef.current && allAgents.length > 0;
+    agentsLoadedRef.current = allAgents.length > 0;
 
-    // Only validate/initialize once when bots first load
-    if (!initializedRef.current && botsJustLoaded) {
+    // Only validate/initialize once when agents first load
+    if (!initializedRef.current && agentsJustLoaded) {
       initializedRef.current = true;
 
-      // Read current stored botId (loaded from localStorage)
-      const storedBotId = currentBotId;
+      // Read current stored agentId (loaded from localStorage)
+      const storedAgentId = currentAgentId;
 
-      if (storedBotId !== null) {
-        // Validate stored bot exists
-        const botExists = allBots.some((b) => b.id === storedBotId);
-        if (!botExists) {
-          // Selected bot doesn't exist, clear selection
-          setCurrentBotIdState(null);
+      if (storedAgentId !== null) {
+        // Validate stored agent exists
+        const agentExists = allAgents.some((a) => a.id === storedAgentId);
+        if (!agentExists) {
+          // Selected agent doesn't exist, clear selection
+          setCurrentAgentIdState(null);
         }
-        // If bot exists, keep it - don't override
+        // If agent exists, keep it - don't override
       } else {
-        // If no stored bot, auto-select the first bot if available
-        if (allBots.length > 0) {
-          setCurrentBotIdState(allBots[0].id);
+        // If no stored agent, auto-select the first agent if available
+        if (allAgents.length > 0) {
+          setCurrentAgentIdState(allAgents[0].id);
         }
       }
-    } else if (initializedRef.current && currentBotId !== null) {
-      // After initialization, validate bot still exists
-      const botExists = allBots.some((b) => b.id === currentBotId);
-      if (!botExists) {
-        // Bot no longer exists, select first bot if available
-        if (allBots.length > 0) {
-          setCurrentBotIdState(allBots[0].id);
+    } else if (initializedRef.current && currentAgentId !== null) {
+      // After initialization, validate agent still exists
+      const agentExists = allAgents.some((a) => a.id === currentAgentId);
+      if (!agentExists) {
+        // Agent no longer exists, select first agent if available
+        if (allAgents.length > 0) {
+          setCurrentAgentIdState(allAgents[0].id);
         } else {
-          setCurrentBotIdState(null);
+          setCurrentAgentIdState(null);
         }
       }
-    } else if (initializedRef.current && currentBotId === null && allBots.length > 0) {
-      // If no bot is selected but bots are available, auto-select the first one
-      setCurrentBotIdState(allBots[0].id);
+    } else if (initializedRef.current && currentAgentId === null && allAgents.length > 0) {
+      // If no agent is selected but agents are available, auto-select the first one
+      setCurrentAgentIdState(allAgents[0].id);
     }
-  }, [loadingBots, contextBots, localBots, currentBotId]);
+  }, [loadingAgents, contextAgents, localAgents, currentAgentId]);
 
-  const setCurrentBotId = (botId: number | null) => {
-    setCurrentBotIdState(botId);
-    LocalStorageManager.setSelectedBotIdConfig(botId);
+  const setCurrentAgentId = (agentId: number | null) => {
+    setCurrentAgentIdState(agentId);
+    LocalStorageManager.setSelectedAgentIdConfig(agentId);
   };
 
-  // Merge context bots with local temporary bots - new bots (localBots) should appear at the top
-  const bots = [...localBots.filter((b) => b.id < 0), ...contextBots];
+  // Merge context agents with local temporary agents - new agents (localAgents) should appear at the top
+  const agents = [...localAgents.filter((a) => a.id < 0), ...contextAgents];
 
   return {
-    currentBotId,
-    setCurrentBotId,
-    bots,
+    currentAgentId,
+    setCurrentAgentId,
+    agents,
   };
 }

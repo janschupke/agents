@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../hooks/queries/query-keys';
-import { useBotSessions } from '../../../hooks/queries/use-bots';
+import { useAgentSessions } from '../../../hooks/queries/use-bots';
 import { useCreateSession, useDeleteSession } from '../../../hooks/mutations/use-bot-mutations';
 import { Session, ChatHistoryResponse } from '../../../types/chat.types';
 
 interface UseChatSessionOptions {
-  botId: number | null;
+  agentId: number | null;
 }
 
 interface UseChatSessionReturn {
@@ -21,27 +21,27 @@ interface UseChatSessionReturn {
 
 /**
  * Hook to manage chat session state and operations
- * Extracted from ChatBot component
+ * Extracted from ChatAgent component
  */
-export function useChatSession({ botId }: UseChatSessionOptions): UseChatSessionReturn {
+export function useChatSession({ agentId }: UseChatSessionOptions): UseChatSessionReturn {
   const queryClient = useQueryClient();
-  const { data: sessions = [], isLoading: sessionsLoading } = useBotSessions(botId);
+  const { data: sessions = [], isLoading: sessionsLoading } = useAgentSessions(agentId);
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
   const createSessionMutation = useCreateSession();
   const deleteSessionMutation = useDeleteSession();
   const sessionsInitializedRef = useRef(false);
 
-  // Auto-select most recent session when sessions first load or when bot changes
+  // Auto-select most recent session when sessions first load or when agent changes
   useEffect(() => {
-    if (!botId || sessionsLoading) {
+    if (!agentId || sessionsLoading) {
       return;
     }
 
-    // When sessions first load for this bot, select the most recent one
+    // When sessions first load for this agent, select the most recent one
     if (sessions.length > 0) {
       const mostRecentSessionId = sessions[0].id; // Sessions are ordered by createdAt desc (most recent first)
       
-      // On first load or when bot changes, always select most recent session
+      // On first load or when agent changes, always select most recent session
       if (!sessionsInitializedRef.current || !currentSessionId) {
         setCurrentSessionId(mostRecentSessionId);
         sessionsInitializedRef.current = true;
@@ -59,25 +59,25 @@ export function useChatSession({ botId }: UseChatSessionOptions): UseChatSession
       setCurrentSessionId(null);
       sessionsInitializedRef.current = true;
     }
-  }, [botId, sessionsLoading, sessions, currentSessionId]);
+  }, [agentId, sessionsLoading, sessions, currentSessionId]);
 
-  // Reset initialization flag when bot changes
+  // Reset initialization flag when agent changes
   useEffect(() => {
     sessionsInitializedRef.current = false;
-  }, [botId]);
+  }, [agentId]);
 
   // Prefetch chat history when session changes
   useEffect(() => {
-    if (botId && currentSessionId && currentSessionId > 0) {
+    if (agentId && currentSessionId && currentSessionId > 0) {
       queryClient.prefetchQuery({
-        queryKey: queryKeys.chat.history(botId, currentSessionId),
+        queryKey: queryKeys.chat.history(agentId, currentSessionId),
       });
     }
-  }, [botId, currentSessionId, queryClient]);
+  }, [agentId, currentSessionId, queryClient]);
 
   const handleSessionSelect = useCallback(
     async (sessionId: number) => {
-      if (sessionId === currentSessionId || !botId) {
+      if (sessionId === currentSessionId || !agentId) {
         return;
       }
 
@@ -86,23 +86,23 @@ export function useChatSession({ botId }: UseChatSessionOptions): UseChatSession
 
       // Load chat history
       const history = await queryClient.fetchQuery({
-        queryKey: queryKeys.chat.history(botId, sessionId),
+        queryKey: queryKeys.chat.history(agentId, sessionId),
         queryFn: async () => {
           const { ChatService } = await import('../../../services/chat.service');
-          return ChatService.getChatHistory(botId, sessionId);
+          return ChatService.getChatHistory(agentId, sessionId);
         },
       });
       
       return history;
     },
-    [botId, currentSessionId, queryClient]
+    [agentId, currentSessionId, queryClient]
   );
 
   const handleNewSession = useCallback(async () => {
-    if (!botId) return;
+    if (!agentId) return;
     
     try {
-      const newSession = await createSessionMutation.mutateAsync(botId);
+      const newSession = await createSessionMutation.mutateAsync(agentId);
       // Select the new session
       setCurrentSessionId(newSession.id);
       return newSession;
@@ -110,11 +110,11 @@ export function useChatSession({ botId }: UseChatSessionOptions): UseChatSession
       console.error('Error creating session:', error);
       throw error;
     }
-  }, [botId, createSessionMutation]);
+  }, [agentId, createSessionMutation]);
 
   const handleSessionDelete = useCallback(
     async (sessionId: number, onConfirm?: () => Promise<boolean>) => {
-      if (!botId) return;
+      if (!agentId) return;
 
       // If confirmation callback provided, use it
       if (onConfirm) {
@@ -127,7 +127,7 @@ export function useChatSession({ botId }: UseChatSessionOptions): UseChatSession
       const wasCurrentSession = currentSessionId === sessionId;
 
       try {
-        await deleteSessionMutation.mutateAsync({ botId, sessionId });
+        await deleteSessionMutation.mutateAsync({ agentId, sessionId });
 
         // Select first session if we deleted the current one
         if (wasCurrentSession) {
@@ -143,7 +143,7 @@ export function useChatSession({ botId }: UseChatSessionOptions): UseChatSession
         throw error;
       }
     },
-    [botId, currentSessionId, sessions, deleteSessionMutation, handleSessionSelect]
+    [agentId, currentSessionId, sessions, deleteSessionMutation, handleSessionSelect]
   );
 
   return {

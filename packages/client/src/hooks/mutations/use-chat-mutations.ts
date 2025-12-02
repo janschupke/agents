@@ -9,23 +9,23 @@ export function useSendMessage() {
 
   return useMutation({
     mutationFn: ({
-      botId,
+      agentId,
       message,
       sessionId,
     }: {
-      botId: number;
+      agentId: number;
       message: string;
       sessionId?: number;
-    }) => ChatService.sendMessage(botId, message, sessionId),
+    }) => ChatService.sendMessage(agentId, message, sessionId),
     onSuccess: (data, variables) => {
       // Invalidate chat history to refetch with new message
       queryClient.invalidateQueries({
-        queryKey: queryKeys.chat.history(variables.botId, variables.sessionId),
+        queryKey: queryKeys.chat.history(variables.agentId, variables.sessionId),
       });
       // If new session was created, invalidate sessions list
       if (data.session?.id && data.session.id !== variables.sessionId) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.chat.sessions(variables.botId) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.bots.sessions(variables.botId) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.chat.sessions(variables.agentId) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.agents.sessions(variables.agentId) });
       }
     },
     onError: (error: { message?: string }) => {

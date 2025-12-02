@@ -1,6 +1,6 @@
-import { ChatBotProps } from '../../../../types/chat.types';
+import { ChatAgentProps } from '../../../../types/chat.types';
 import { useConfirm } from '../../../../hooks/useConfirm';
-import { useChatBot } from '../../hooks/use-chat-bot';
+import { useChatAgent } from '../../hooks/use-chat-bot';
 import { useChatModals } from '../../hooks/use-chat-modals';
 import { useChatHandlers } from '../../hooks/use-chat-handlers';
 import { useChatInput } from '../../hooks/use-chat-input';
@@ -16,11 +16,11 @@ import ChatContent from './ChatContent';
 import ChatLoadingState from './ChatLoadingState';
 import ChatEmptyState from './ChatEmptyState';
 
-function ChatBotContent({ botId: propBotId }: ChatBotProps) {
+function ChatAgentContent({ agentId: propAgentId }: ChatAgentProps) {
   const { ConfirmDialog } = useConfirm();
 
-  // Bot initialization
-  const { actualBotId, loadingBots } = useChatBot({ propBotId });
+  // Agent initialization
+  const { actualAgentId, loadingAgents } = useChatAgent({ propAgentId });
 
   // Session and message management
   const {
@@ -30,10 +30,10 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
     handleSessionSelect,
     handleNewSession,
     handleSessionDelete,
-  } = useChatSession({ botId: actualBotId });
+  } = useChatSession({ agentId: actualAgentId });
 
   const { messages, loading: messagesLoading, sendMessage, setMessages } = useChatMessages({
-    botId: actualBotId,
+    agentId: actualAgentId,
     sessionId: currentSessionId,
   });
 
@@ -56,7 +56,7 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
     handleSessionDeleteWrapper,
     handleSessionNameSave,
   } = useChatHandlers({
-    botId: actualBotId,
+    agentId: actualAgentId,
     sessions,
     handleSessionSelect,
     handleNewSession,
@@ -65,7 +65,7 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
   });
 
   // Chat input management
-  const showChatPlaceholder = actualBotId !== null && currentSessionId === null;
+  const showChatPlaceholder = actualAgentId !== null && currentSessionId === null;
   const {
     input,
     setInput,
@@ -80,11 +80,11 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
 
   const loading = messagesLoading;
 
-  if (loadingBots) {
+  if (loadingAgents) {
     return <ChatLoadingState />;
   }
 
-  if (!actualBotId) {
+  if (!actualAgentId) {
     return <ChatEmptyState />;
   }
 
@@ -122,7 +122,7 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
         title={jsonModal.title}
         data={jsonModal.data}
       />
-      {sessionNameModal.sessionId && actualBotId && (
+      {sessionNameModal.sessionId && actualAgentId && (
         <SessionNameModal
           isOpen={sessionNameModal.isOpen}
           onClose={closeSessionNameModal}
@@ -130,7 +130,7 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
             sessions.find((s) => s.id === sessionNameModal.sessionId)?.session_name || null
           }
           onSave={handleSessionNameSave}
-          botId={actualBotId}
+          agentId={actualAgentId}
           sessionId={sessionNameModal.sessionId}
         />
       )}
@@ -139,6 +139,6 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
   );
 }
 
-export default function ChatBot({ botId: propBotId }: ChatBotProps) {
-  return <ChatBotContent botId={propBotId} />;
+export default function ChatAgent({ agentId: propAgentId }: ChatAgentProps) {
+  return <ChatAgentContent agentId={propAgentId} />;
 }

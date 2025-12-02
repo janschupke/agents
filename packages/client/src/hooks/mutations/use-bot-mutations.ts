@@ -1,57 +1,57 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { BotService } from '../../services/bot.service';
+import { AgentService } from '../../services/bot.service';
 import { ChatService } from '../../services/chat.service';
 import { MemoryService } from '../../services/memory.service';
-import { CreateBotRequest, UpdateBotRequest } from '../../types/chat.types';
+import { CreateAgentRequest, UpdateAgentRequest } from '../../types/chat.types';
 import { queryKeys } from '../queries/query-keys';
 import { useToast } from '../../contexts/ToastContext';
 
-export function useCreateBot() {
+export function useCreateAgent() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: (data: CreateBotRequest) => BotService.createBot(data),
+    mutationFn: (data: CreateAgentRequest) => AgentService.createAgent(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bots.all });
-      showToast('Bot created successfully', 'success');
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.all });
+      showToast('Agent created successfully', 'success');
     },
     onError: (error: { message?: string }) => {
-      showToast(error.message || 'Failed to create bot', 'error');
+      showToast(error.message || 'Failed to create agent', 'error');
     },
   });
 }
 
-export function useUpdateBot() {
+export function useUpdateAgent() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: ({ botId, data }: { botId: number; data: UpdateBotRequest }) =>
-      BotService.updateBot(botId, data),
+    mutationFn: ({ agentId, data }: { agentId: number; data: UpdateAgentRequest }) =>
+      AgentService.updateAgent(agentId, data),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bots.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.bots.detail(data.id) });
-      showToast('Bot updated successfully', 'success');
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(data.id) });
+      showToast('Agent updated successfully', 'success');
     },
     onError: (error: { message?: string }) => {
-      showToast(error.message || 'Failed to update bot', 'error');
+      showToast(error.message || 'Failed to update agent', 'error');
     },
   });
 }
 
-export function useDeleteBot() {
+export function useDeleteAgent() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: (botId: number) => BotService.deleteBot(botId),
+    mutationFn: (agentId: number) => AgentService.deleteAgent(agentId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bots.all });
-      showToast('Bot deleted successfully', 'success');
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.all });
+      showToast('Agent deleted successfully', 'success');
     },
     onError: (error: { message?: string }) => {
-      showToast(error.message || 'Failed to delete bot', 'error');
+      showToast(error.message || 'Failed to delete agent', 'error');
     },
   });
 }
@@ -61,10 +61,10 @@ export function useCreateSession() {
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: (botId: number) => ChatService.createSession(botId),
-    onSuccess: (_data, botId) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bots.sessions(botId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.chat.sessions(botId) });
+    mutationFn: (agentId: number) => ChatService.createSession(agentId),
+    onSuccess: (_data, agentId) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.sessions(agentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.chat.sessions(agentId) });
       showToast('Session created successfully', 'success');
     },
     onError: (error: { message?: string }) => {
@@ -79,18 +79,18 @@ export function useUpdateSession() {
 
   return useMutation({
     mutationFn: ({
-      botId,
+      agentId,
       sessionId,
       sessionName,
     }: {
-      botId: number;
+      agentId: number;
       sessionId: number;
       sessionName?: string;
-    }) => ChatService.updateSession(botId, sessionId, sessionName),
+    }) => ChatService.updateSession(agentId, sessionId, sessionName),
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bots.sessions(variables.botId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.chat.sessions(variables.botId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.chat.history(variables.botId, variables.sessionId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.sessions(variables.agentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.chat.sessions(variables.agentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.chat.history(variables.agentId, variables.sessionId) });
       showToast('Session updated successfully', 'success');
     },
     onError: (error: { message?: string }) => {
@@ -104,12 +104,12 @@ export function useDeleteSession() {
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: ({ botId, sessionId }: { botId: number; sessionId: number }) =>
-      ChatService.deleteSession(botId, sessionId),
+    mutationFn: ({ agentId, sessionId }: { agentId: number; sessionId: number }) =>
+      ChatService.deleteSession(agentId, sessionId),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bots.sessions(variables.botId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.chat.sessions(variables.botId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.chat.history(variables.botId, variables.sessionId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.sessions(variables.agentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.chat.sessions(variables.agentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.chat.history(variables.agentId, variables.sessionId) });
       showToast('Session deleted successfully', 'success');
     },
     onError: (error: { message?: string }) => {
@@ -124,16 +124,16 @@ export function useUpdateMemory() {
 
   return useMutation({
     mutationFn: ({
-      botId,
+      agentId,
       memoryId,
       keyPoint,
     }: {
-      botId: number;
+      agentId: number;
       memoryId: number;
       keyPoint: string;
-    }) => MemoryService.updateMemory(botId, memoryId, keyPoint),
+    }) => MemoryService.updateMemory(agentId, memoryId, keyPoint),
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bots.memories(variables.botId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.memories(variables.agentId) });
       showToast('Memory updated successfully', 'success');
     },
     onError: (error: { message?: string }) => {
@@ -147,10 +147,10 @@ export function useDeleteMemory() {
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: ({ botId, memoryId }: { botId: number; memoryId: number }) =>
-      MemoryService.deleteMemory(botId, memoryId),
+    mutationFn: ({ agentId, memoryId }: { agentId: number; memoryId: number }) =>
+      MemoryService.deleteMemory(agentId, memoryId),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bots.memories(variables.botId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.memories(variables.agentId) });
       showToast('Memory deleted successfully', 'success');
     },
     onError: (error: { message?: string }) => {
@@ -164,9 +164,9 @@ export function useSummarizeMemories() {
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: (botId: number) => MemoryService.summarizeMemories(botId),
-    onSuccess: (_, botId) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bots.memories(botId) });
+    mutationFn: (agentId: number) => MemoryService.summarizeMemories(agentId),
+    onSuccess: (_, agentId) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.memories(agentId) });
       showToast('Memories summarized successfully', 'success');
     },
     onError: (error: { message?: string }) => {

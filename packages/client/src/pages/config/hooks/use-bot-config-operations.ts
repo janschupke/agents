@@ -1,46 +1,46 @@
-import { Bot } from '../../../types/chat.types';
-import { useCreateBot, useUpdateBot, useDeleteBot } from '../../../hooks/mutations/use-bot-mutations';
+import { Agent } from '../../../types/chat.types';
+import { useCreateAgent, useUpdateAgent, useDeleteAgent } from '../../../hooks/mutations/use-bot-mutations';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../hooks/queries/query-keys';
 import { useConfirm } from '../../../hooks/useConfirm';
-import { BotFormValues } from './use-bot-form';
+import { AgentFormValues } from './use-bot-form';
 
-// Temporary bot ID for new bots (negative to indicate not saved)
-let tempBotIdCounter = -1;
+// Temporary agent ID for new agents (negative to indicate not saved)
+let tempAgentIdCounter = -1;
 
-interface UseBotConfigOperationsOptions {
-  contextBots: Bot[];
-  localBots: Bot[];
-  setLocalBots: React.Dispatch<React.SetStateAction<Bot[]>>;
-  currentBotId: number | null;
-  setCurrentBotId: (botId: number | null) => void;
+interface UseAgentConfigOperationsOptions {
+  contextAgents: Agent[];
+  localAgents: Agent[];
+  setLocalAgents: React.Dispatch<React.SetStateAction<Agent[]>>;
+  currentAgentId: number | null;
+  setCurrentAgentId: (agentId: number | null) => void;
 }
 
-interface UseBotConfigOperationsReturn {
-  handleSave: (bot: Bot, values: BotFormValues) => Promise<Bot | null>;
-  handleDelete: (botId: number) => Promise<void>;
-  handleNewBot: () => void;
+interface UseAgentConfigOperationsReturn {
+  handleSave: (agent: Agent, values: AgentFormValues) => Promise<Agent | null>;
+  handleDelete: (agentId: number) => Promise<void>;
+  handleNewAgent: () => void;
   saving: boolean;
 }
 
 /**
- * Manages bot CRUD operations (create, update, delete)
+ * Manages agent CRUD operations (create, update, delete)
  */
-export function useBotConfigOperations({
-  contextBots,
-  localBots,
-  setLocalBots,
-  currentBotId,
-  setCurrentBotId,
-}: UseBotConfigOperationsOptions): UseBotConfigOperationsReturn {
+export function useAgentConfigOperations({
+  contextAgents,
+  localAgents,
+  setLocalAgents,
+  currentAgentId,
+  setCurrentAgentId,
+}: UseAgentConfigOperationsOptions): UseAgentConfigOperationsReturn {
   const { confirm } = useConfirm();
   const queryClient = useQueryClient();
-  const createBotMutation = useCreateBot();
-  const updateBotMutation = useUpdateBot();
-  const deleteBotMutation = useDeleteBot();
+  const createAgentMutation = useCreateAgent();
+  const updateAgentMutation = useUpdateAgent();
+  const deleteAgentMutation = useDeleteAgent();
 
-  const handleSave = async (bot: Bot, values: BotFormValues): Promise<Bot | null> => {
-    if (!bot) return null;
+  const handleSave = async (agent: Agent, values: AgentFormValues): Promise<Agent | null> => {
+    if (!agent) return null;
 
     const validRules = values.behaviorRules.filter((rule) => rule.trim().length > 0);
     const configs = {
@@ -50,25 +50,25 @@ export function useBotConfigOperations({
     };
 
     try {
-      if (bot.id < 0) {
-        // Creating a new bot
-        const result = await createBotMutation.mutateAsync({
+      if (agent.id < 0) {
+        // Creating a new agent
+        const result = await createAgentMutation.mutateAsync({
           name: values.name.trim(),
           description: values.description.trim() || undefined,
           avatarUrl: values.avatarUrl || undefined,
           configs,
         });
-        // Remove from localBots if it was there
-        setLocalBots((prev) => prev.filter((b) => b.id !== bot.id));
-        // Update currentBotId to the saved bot's real ID
+        // Remove from localAgents if it was there
+        setLocalAgents((prev) => prev.filter((a) => a.id !== agent.id));
+        // Update currentAgentId to the saved agent's real ID
         if (result.id > 0) {
-          setCurrentBotId(result.id);
+          setCurrentAgentId(result.id);
         }
         return result;
       } else {
-        // Updating an existing bot
-        await updateBotMutation.mutateAsync({
-          botId: bot.id,
+        // Updating an existing agent
+        await updateAgentMutation.mutateAsync({
+          agentId: agent.id,
           data: {
             name: values.name.trim(),
             description: values.description.trim() || undefined,
@@ -76,13 +76,13 @@ export function useBotConfigOperations({
             configs,
           },
         });
-        // Get updated bot from cache
-        const updatedBot = queryClient.getQueryData<Bot>(queryKeys.bots.detail(bot.id));
-        if (updatedBot) {
-          return updatedBot;
+        // Get updated agent from cache
+        const updatedAgent = queryClient.getQueryData<Agent>(queryKeys.agents.detail(agent.id));
+        if (updatedAgent) {
+          return updatedAgent;
         } else {
           return {
-            ...bot,
+            ...agent,
             name: values.name.trim(),
             description: values.description.trim() || null,
             avatarUrl: values.avatarUrl || null,
@@ -91,19 +91,19 @@ export function useBotConfigOperations({
       }
     } catch (error) {
       // Error is handled by mutation hook (toast notification)
-      console.error('Failed to save bot:', error);
+      console.error('Failed to save agent:', error);
       return null;
     }
   };
 
-  const handleDelete = async (botId: number) => {
-    const allBots = [...contextBots, ...localBots];
-    const bot = allBots.find((b) => b.id === botId);
-    if (!bot) return;
+  const handleDelete = async (agentId: number) => {
+    const allAgents = [...contextAgents, ...localAgents];
+    const agent = allAgents.find((a) => a.id === agentId);
+    if (!agent) return;
 
     const confirmed = await confirm({
-      title: 'Delete Bot',
-      message: `Are you sure you want to delete "${bot.name}"? This will delete all related data: sessions, messages, configs, and memories.`,
+      title: 'Delete Agent',
+      message: `Are you sure you want to delete "${agent.name}"? This will delete all related data: sessions, messages, configs, and memories.`,
       confirmText: 'Delete',
       cancelText: 'Cancel',
       confirmVariant: 'danger',
@@ -114,43 +114,43 @@ export function useBotConfigOperations({
     }
 
     try {
-      await deleteBotMutation.mutateAsync(botId);
-      // Remove from localBots if it was there
-      setLocalBots((prev) => prev.filter((b) => b.id !== botId));
-      // If deleted bot was selected, select first available bot or clear selection
-      if (currentBotId === botId) {
-        const remainingBots = [...contextBots, ...localBots].filter((b) => b.id !== botId);
-        if (remainingBots.length > 0) {
-          setCurrentBotId(remainingBots[0].id);
+      await deleteAgentMutation.mutateAsync(agentId);
+      // Remove from localAgents if it was there
+      setLocalAgents((prev) => prev.filter((a) => a.id !== agentId));
+      // If deleted agent was selected, select first available agent or clear selection
+      if (currentAgentId === agentId) {
+        const remainingAgents = [...contextAgents, ...localAgents].filter((a) => a.id !== agentId);
+        if (remainingAgents.length > 0) {
+          setCurrentAgentId(remainingAgents[0].id);
         } else {
-          setCurrentBotId(null);
+          setCurrentAgentId(null);
         }
       }
     } catch (error) {
       // Error is handled by mutation hook (toast notification)
-      console.error('Failed to delete bot:', error);
+      console.error('Failed to delete agent:', error);
     }
   };
 
-  const handleNewBot = () => {
-    const tempId = tempBotIdCounter--;
-    const newBot: Bot = {
+  const handleNewAgent = () => {
+    const tempId = tempAgentIdCounter--;
+    const newAgent: Agent = {
       id: tempId,
       name: '',
       description: null,
       avatarUrl: null,
       createdAt: new Date().toISOString(),
     };
-    setLocalBots((prev) => [newBot, ...prev]);
-    setCurrentBotId(tempId);
+    setLocalAgents((prev) => [newAgent, ...prev]);
+    setCurrentAgentId(tempId);
   };
 
-  const saving = createBotMutation.isPending || updateBotMutation.isPending;
+  const saving = createAgentMutation.isPending || updateAgentMutation.isPending;
 
   return {
     handleSave,
     handleDelete,
-    handleNewBot,
+    handleNewAgent,
     saving,
   };
 }

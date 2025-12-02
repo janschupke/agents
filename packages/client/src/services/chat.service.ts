@@ -9,47 +9,47 @@ import {
 
 export class ChatService {
   /**
-   * Get all sessions for a bot
+   * Get all sessions for an agent
    */
-  static async getSessions(botId: number): Promise<Session[]> {
-    return apiManager.get<Session[]>(API_ENDPOINTS.CHAT.SESSIONS(botId));
+  static async getSessions(agentId: number): Promise<Session[]> {
+    return apiManager.get<Session[]>(API_ENDPOINTS.CHAT.SESSIONS(agentId));
   }
 
   /**
-   * Create a new session for a bot
+   * Create a new session for an agent
    */
-  static async createSession(botId: number): Promise<Session> {
-    return apiManager.post<Session>(API_ENDPOINTS.CHAT.SESSIONS(botId), {});
+  static async createSession(agentId: number): Promise<Session> {
+    return apiManager.post<Session>(API_ENDPOINTS.CHAT.SESSIONS(agentId), {});
   }
 
   /**
-   * Get chat history for a bot and optional session
+   * Get chat history for an agent and optional session
    */
-  static async getChatHistory(botId: number, sessionId?: number): Promise<ChatHistoryResponse> {
-    return apiManager.get<ChatHistoryResponse>(API_ENDPOINTS.CHAT.BY_BOT(botId, sessionId));
+  static async getChatHistory(agentId: number, sessionId?: number): Promise<ChatHistoryResponse> {
+    return apiManager.get<ChatHistoryResponse>(API_ENDPOINTS.CHAT.BY_AGENT(agentId, sessionId));
   }
 
   /**
-   * Send a message to a bot in a specific session
+   * Send a message to an agent in a specific session
    */
   static async sendMessage(
-    botId: number,
+    agentId: number,
     message: string,
     sessionId?: number
   ): Promise<SendMessageResponse> {
     const body: SendMessageRequest = { message };
-    return apiManager.post<SendMessageResponse>(API_ENDPOINTS.CHAT.BY_BOT(botId, sessionId), body);
+    return apiManager.post<SendMessageResponse>(API_ENDPOINTS.CHAT.BY_AGENT(agentId, sessionId), body);
   }
 
   /**
    * Update a session name
    */
   static async updateSession(
-    botId: number,
+    agentId: number,
     sessionId: number,
     sessionName?: string
   ): Promise<Session> {
-    return apiManager.put<Session>(API_ENDPOINTS.CHAT.SESSION(botId, sessionId), {
+    return apiManager.put<Session>(API_ENDPOINTS.CHAT.SESSION(agentId, sessionId), {
       session_name: sessionName,
     });
   }
@@ -57,7 +57,7 @@ export class ChatService {
   /**
    * Delete a session (and all related messages and memory chunks)
    */
-  static async deleteSession(botId: number, sessionId: number): Promise<void> {
-    return apiManager.delete(API_ENDPOINTS.CHAT.SESSION(botId, sessionId));
+  static async deleteSession(agentId: number, sessionId: number): Promise<void> {
+    return apiManager.delete(API_ENDPOINTS.CHAT.SESSION(agentId, sessionId));
   }
 }

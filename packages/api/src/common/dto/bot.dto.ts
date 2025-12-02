@@ -1,4 +1,4 @@
-export class BotConfigDto {
+export class AgentConfigDto {
   temperature?: number;
   system_prompt?: string;
   behavior_rules?: string | string[] | { rules: string[] };
@@ -6,16 +6,16 @@ export class BotConfigDto {
   max_tokens?: number;
 }
 
-export class CreateBotDto {
+export class CreateAgentDto {
   name: string;
   description?: string;
   avatarUrl?: string;
-  configs?: BotConfigDto;
+  configs?: AgentConfigDto;
 }
 
-export class UpdateBotDto {
+export class UpdateAgentDto {
   name: string;
   description?: string;
   avatarUrl?: string;
-  configs?: BotConfigDto;
+  configs?: AgentConfigDto;
 }

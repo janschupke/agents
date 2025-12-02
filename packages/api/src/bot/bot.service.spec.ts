@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpException } from '@nestjs/common';
-import { BotService } from './bot.service';
-import { BotRepository } from './bot.repository';
+import { AgentService } from './bot.service';
+import { AgentRepository } from './bot.repository';
 import { UserService } from '../user/user.service';
 
-describe('BotService', () => {
-  let service: BotService;
+describe('AgentService', () => {
+  let service: AgentService;
 
-  const mockBotRepository = {
+  const mockAgentRepository = {
     findAll: jest.fn(),
     findById: jest.fn(),
     findByIdWithConfig: jest.fn(),
@@ -17,7 +17,7 @@ describe('BotService', () => {
     update: jest.fn(),
     updateConfigs: jest.fn(),
     delete: jest.fn(),
-    mergeBotConfig: jest.fn(),
+    mergeAgentConfig: jest.fn(),
   };
 
   const mockUserService = {
@@ -27,10 +27,10 @@ describe('BotService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        BotService,
+        AgentService,
         {
-          provide: BotRepository,
-          useValue: mockBotRepository,
+          provide: AgentRepository,
+          useValue: mockAgentRepository,
         },
         {
           provide: UserService,
@@ -39,7 +39,7 @@ describe('BotService', () => {
       ],
     }).compile();
 
-    service = module.get<BotService>(BotService);
+    service = module.get<AgentService>(AgentService);
   });
 
   afterEach(() => {
@@ -51,117 +51,117 @@ describe('BotService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all bots for a user', async () => {
+    it('should return all agents for a user', async () => {
       const userId = 'user-123';
-      const mockBots = [
-        { id: 1, name: 'Bot 1', description: 'Description 1', userId },
-        { id: 2, name: 'Bot 2', description: 'Description 2', userId },
+      const mockAgents = [
+        { id: 1, name: 'Agent 1', description: 'Description 1', userId },
+        { id: 2, name: 'Agent 2', description: 'Description 2', userId },
       ];
 
-      mockBotRepository.findAll.mockResolvedValue(mockBots);
+      mockAgentRepository.findAll.mockResolvedValue(mockAgents);
 
       const result = await service.findAll(userId);
 
-      expect(result).toEqual(mockBots);
-      expect(mockBotRepository.findAll).toHaveBeenCalledWith(userId);
+      expect(result).toEqual(mockAgents);
+      expect(mockAgentRepository.findAll).toHaveBeenCalledWith(userId);
     });
   });
 
   describe('findById', () => {
-    it('should return a bot by id', async () => {
-      const botId = 1;
+    it('should return an agent by id', async () => {
+      const agentId = 1;
       const userId = 'user-123';
-      const mockBot = {
-        id: botId,
-        name: 'Test Bot',
+      const mockAgent = {
+        id: agentId,
+        name: 'Test Agent',
         description: 'Test Description',
         userId,
       };
-      const mockBotWithConfig = {
-        ...mockBot,
+      const mockAgentWithConfig = {
+        ...mockAgent,
         configs: [{ key: 'temperature', value: '0.7' }],
       };
 
-      mockBotRepository.findByIdWithConfig.mockResolvedValue(mockBotWithConfig);
-      mockBotRepository.findById.mockResolvedValue(mockBot);
+      mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockAgentWithConfig);
+      mockAgentRepository.findById.mockResolvedValue(mockAgent);
 
-      const result = await service.findById(botId, userId);
+      const result = await service.findById(agentId, userId);
 
       expect(result).toEqual({
-        ...mockBot,
-        configs: mockBotWithConfig.configs,
+        ...mockAgent,
+        configs: mockAgentWithConfig.configs,
       });
-      expect(mockBotRepository.findByIdWithConfig).toHaveBeenCalledWith(
-        botId,
+      expect(mockAgentRepository.findByIdWithConfig).toHaveBeenCalledWith(
+        agentId,
         userId
       );
-      expect(mockBotRepository.findById).toHaveBeenCalledWith(botId);
+      expect(mockAgentRepository.findById).toHaveBeenCalledWith(agentId);
     });
 
     it('should throw HttpException if bot not found', async () => {
-      const botId = 1;
+      const agentId = 1;
       const userId = 'user-123';
 
-      mockBotRepository.findByIdWithConfig.mockResolvedValue(null);
+      mockAgentRepository.findByIdWithConfig.mockResolvedValue(null);
 
-      await expect(service.findById(botId, userId)).rejects.toThrow(
+      await expect(service.findById(agentId, userId)).rejects.toThrow(
         HttpException
       );
-      await expect(service.findById(botId, userId)).rejects.toThrow(
-        'Bot not found'
+      await expect(service.findById(agentId, userId)).rejects.toThrow(
+        'Agent not found'
       );
     });
   });
 
   describe('create', () => {
-    it('should create a new bot', async () => {
+    it('should create a new agent', async () => {
       const userId = 'user-123';
       const name = 'New Bot';
       const description = 'New Description';
       const configs = { temperature: 0.7 };
-      const mockBot = {
+      const mockAgent = {
         id: 1,
         name,
         description,
         userId,
       };
 
-      mockBotRepository.findByName.mockResolvedValue(null);
-      mockBotRepository.create.mockResolvedValue(mockBot);
+      mockAgentRepository.findByName.mockResolvedValue(null);
+      mockAgentRepository.create.mockResolvedValue(mockAgent);
 
       const result = await service.create(userId, name, description, undefined, configs);
 
-      expect(result).toEqual(mockBot);
-      expect(mockBotRepository.findByName).toHaveBeenCalledWith(name, userId);
-      expect(mockBotRepository.create).toHaveBeenCalledWith(
+      expect(result).toEqual(mockAgent);
+      expect(mockAgentRepository.findByName).toHaveBeenCalledWith(name, userId);
+      expect(mockAgentRepository.create).toHaveBeenCalledWith(
         userId,
         name,
         description,
         undefined
       );
-      expect(mockBotRepository.updateConfigs).toHaveBeenCalledWith(
-        mockBot.id,
+      expect(mockAgentRepository.updateConfigs).toHaveBeenCalledWith(
+        mockAgent.id,
         configs
       );
     });
 
-    it('should create a bot without configs', async () => {
+    it('should create an agent without configs', async () => {
       const userId = 'user-123';
       const name = 'New Bot';
-      const mockBot = {
+      const mockAgent = {
         id: 1,
         name,
         description: null,
         userId,
       };
 
-      mockBotRepository.findByName.mockResolvedValue(null);
-      mockBotRepository.create.mockResolvedValue(mockBot);
+      mockAgentRepository.findByName.mockResolvedValue(null);
+      mockAgentRepository.create.mockResolvedValue(mockAgent);
 
       const result = await service.create(userId, name);
 
-      expect(result).toEqual(mockBot);
-      expect(mockBotRepository.updateConfigs).not.toHaveBeenCalled();
+      expect(result).toEqual(mockAgent);
+      expect(mockAgentRepository.updateConfigs).not.toHaveBeenCalled();
     });
 
     it('should throw HttpException if name is empty', async () => {
@@ -170,7 +170,7 @@ describe('BotService', () => {
 
       await expect(service.create(userId, name)).rejects.toThrow(HttpException);
       await expect(service.create(userId, name)).rejects.toThrow(
-        'Bot name is required'
+        'Agent name is required'
       );
     });
 
@@ -180,49 +180,49 @@ describe('BotService', () => {
 
       await expect(service.create(userId, name)).rejects.toThrow(HttpException);
       await expect(service.create(userId, name)).rejects.toThrow(
-        'Bot name is required'
+        'Agent name is required'
       );
     });
 
-    it('should throw HttpException if bot with same name exists', async () => {
+    it('should throw HttpException if agent with same name exists', async () => {
       const userId = 'user-123';
       const name = 'Existing Bot';
-      const existingBot = { id: 1, name, userId };
+      const existingAgent = { id: 1, name, userId };
 
-      mockBotRepository.findByName.mockResolvedValue(existingBot);
+      mockAgentRepository.findByName.mockResolvedValue(existingAgent);
 
       await expect(service.create(userId, name)).rejects.toThrow(HttpException);
       await expect(service.create(userId, name)).rejects.toThrow(
-        'Bot with this name already exists'
+        'Agent with this name already exists'
       );
     });
   });
 
   describe('update', () => {
-    it('should update a bot', async () => {
-      const botId = 1;
+    it('should update an agent', async () => {
+      const agentId = 1;
       const userId = 'user-123';
       const name = 'Updated Bot';
       const description = 'Updated Description';
       const configs = { temperature: 0.8 };
-      const existingBot = {
-        id: botId,
-        name: 'Old Bot',
+      const existingAgent = {
+        id: agentId,
+        name: 'Old Agent',
         description: 'Old Description',
         userId,
       };
-      const updatedBot = {
-        ...existingBot,
+      const updatedAgent = {
+        ...existingAgent,
         name,
         description,
       };
 
-      mockBotRepository.findByIdAndUserId.mockResolvedValue(existingBot);
-      mockBotRepository.findByName.mockResolvedValue(null);
-      mockBotRepository.update.mockResolvedValue(updatedBot);
+      mockAgentRepository.findByIdAndUserId.mockResolvedValue(existingAgent);
+      mockAgentRepository.findByName.mockResolvedValue(null);
+      mockAgentRepository.update.mockResolvedValue(updatedAgent);
 
       const result = await service.update(
-        botId,
+        agentId,
         userId,
         name,
         description,
@@ -230,103 +230,103 @@ describe('BotService', () => {
         configs
       );
 
-      expect(result).toEqual(updatedBot);
-      expect(mockBotRepository.findByIdAndUserId).toHaveBeenCalledWith(
-        botId,
+      expect(result).toEqual(updatedAgent);
+      expect(mockAgentRepository.findByIdAndUserId).toHaveBeenCalledWith(
+        agentId,
         userId
       );
-      expect(mockBotRepository.update).toHaveBeenCalledWith(
-        botId,
+      expect(mockAgentRepository.update).toHaveBeenCalledWith(
+        agentId,
         userId,
         name,
         description,
         undefined
       );
-      expect(mockBotRepository.updateConfigs).toHaveBeenCalledWith(
-        botId,
+      expect(mockAgentRepository.updateConfigs).toHaveBeenCalledWith(
+        agentId,
         configs
       );
     });
 
     it('should throw HttpException if bot not found', async () => {
-      const botId = 1;
+      const agentId = 1;
       const userId = 'user-123';
       const name = 'Updated Bot';
 
-      mockBotRepository.findByIdAndUserId.mockResolvedValue(null);
+      mockAgentRepository.findByIdAndUserId.mockResolvedValue(null);
 
-      await expect(service.update(botId, userId, name)).rejects.toThrow(
+      await expect(service.update(agentId, userId, name)).rejects.toThrow(
         HttpException
       );
-      await expect(service.update(botId, userId, name)).rejects.toThrow(
-        'Bot not found'
+      await expect(service.update(agentId, userId, name)).rejects.toThrow(
+        'Agent not found'
       );
     });
 
     it('should throw HttpException if name is empty', async () => {
-      const botId = 1;
+      const agentId = 1;
       const userId = 'user-123';
       const name = '';
-      const existingBot = { id: botId, name: 'Old Bot', userId };
+      const existingAgent = { id: agentId, name: 'Old Agent', userId };
 
-      mockBotRepository.findByIdAndUserId.mockResolvedValue(existingBot);
+      mockAgentRepository.findByIdAndUserId.mockResolvedValue(existingAgent);
 
-      await expect(service.update(botId, userId, name)).rejects.toThrow(
+      await expect(service.update(agentId, userId, name)).rejects.toThrow(
         HttpException
       );
-      await expect(service.update(botId, userId, name)).rejects.toThrow(
-        'Bot name is required'
+      await expect(service.update(agentId, userId, name)).rejects.toThrow(
+        'Agent name is required'
       );
     });
 
-    it('should throw HttpException if new name conflicts with another bot', async () => {
-      const botId = 1;
+    it('should throw HttpException if new name conflicts with another agent', async () => {
+      const agentId = 1;
       const userId = 'user-123';
       const name = 'Conflicting Bot';
-      const existingBot = { id: botId, name: 'Old Bot', userId };
-      const conflictingBot = { id: 2, name, userId };
+      const existingAgent = { id: agentId, name: 'Old Agent', userId };
+      const conflictingAgent = { id: 2, name, userId };
 
-      mockBotRepository.findByIdAndUserId.mockResolvedValue(existingBot);
-      mockBotRepository.findByName.mockResolvedValue(conflictingBot);
+      mockAgentRepository.findByIdAndUserId.mockResolvedValue(existingAgent);
+      mockAgentRepository.findByName.mockResolvedValue(conflictingAgent);
 
-      await expect(service.update(botId, userId, name)).rejects.toThrow(
+      await expect(service.update(agentId, userId, name)).rejects.toThrow(
         HttpException
       );
-      await expect(service.update(botId, userId, name)).rejects.toThrow(
-        'Bot with this name already exists'
+      await expect(service.update(agentId, userId, name)).rejects.toThrow(
+        'Agent with this name already exists'
       );
     });
   });
 
   describe('delete', () => {
-    it('should delete a bot', async () => {
-      const botId = 1;
+    it('should delete an agent', async () => {
+      const agentId = 1;
       const userId = 'user-123';
-      const mockBot = { id: botId, name: 'Test Bot', userId };
+      const mockAgent = { id: agentId, name: 'Test Agent', userId };
 
-      mockBotRepository.findByIdAndUserId.mockResolvedValue(mockBot);
-      mockBotRepository.delete.mockResolvedValue(undefined);
+      mockAgentRepository.findByIdAndUserId.mockResolvedValue(mockAgent);
+      mockAgentRepository.delete.mockResolvedValue(undefined);
 
-      await service.delete(botId, userId);
+      await service.delete(agentId, userId);
 
-      expect(mockBotRepository.findByIdAndUserId).toHaveBeenCalledWith(
-        botId,
+      expect(mockAgentRepository.findByIdAndUserId).toHaveBeenCalledWith(
+        agentId,
         userId
       );
-      expect(mockBotRepository.delete).toHaveBeenCalledWith(botId, userId);
+      expect(mockAgentRepository.delete).toHaveBeenCalledWith(agentId, userId);
     });
 
     it('should throw HttpException if bot not found', async () => {
-      const botId = 1;
+      const agentId = 1;
       const userId = 'user-123';
 
-      mockBotRepository.findByIdAndUserId.mockResolvedValue(null);
+      mockAgentRepository.findByIdAndUserId.mockResolvedValue(null);
 
-      await expect(service.delete(botId, userId)).rejects.toThrow(
+      await expect(service.delete(agentId, userId)).rejects.toThrow(
         HttpException
       );
-      await expect(service.delete(botId, userId)).rejects.toThrow(
-        'Bot not found'
+      await expect(service.delete(agentId, userId)).rejects.toThrow(
+        'Agent not found'
       );
     });
   });

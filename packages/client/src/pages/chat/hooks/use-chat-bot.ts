@@ -1,38 +1,38 @@
 import { useEffect } from 'react';
-import { useSelectedBot } from '../../../contexts/AppContext';
-import { useBots } from '../../../hooks/queries/use-bots';
+import { useSelectedAgent } from '../../../contexts/AppContext';
+import { useAgents } from '../../../hooks/queries/use-bots';
 
-interface UseChatBotOptions {
-  propBotId?: number;
+interface UseChatAgentOptions {
+  propAgentId?: number;
 }
 
-interface UseChatBotReturn {
-  actualBotId: number | null;
-  loadingBots: boolean;
+interface UseChatAgentReturn {
+  actualAgentId: number | null;
+  loadingAgents: boolean;
 }
 
 /**
- * Manages bot selection and initialization for chat
+ * Manages agent selection and initialization for chat
  */
-export function useChatBot({ propBotId }: UseChatBotOptions): UseChatBotReturn {
-  const { selectedBotId, setSelectedBotId } = useSelectedBot();
-  const { data: bots = [], isLoading: loadingBots } = useBots();
-  const actualBotId = propBotId || selectedBotId || (bots.length > 0 ? bots[0].id : null);
+export function useChatAgent({ propAgentId }: UseChatAgentOptions): UseChatAgentReturn {
+  const { selectedAgentId, setSelectedAgentId } = useSelectedAgent();
+  const { data: agents = [], isLoading: loadingAgents } = useAgents();
+  const actualAgentId = propAgentId || selectedAgentId || (agents.length > 0 ? agents[0].id : null);
 
-  // Initialize bot selection
+  // Initialize agent selection
   useEffect(() => {
-    if (propBotId) {
-      setSelectedBotId(propBotId);
+    if (propAgentId) {
+      setSelectedAgentId(propAgentId);
       return;
     }
 
-    if (!loadingBots && bots.length > 0 && !selectedBotId) {
-      setSelectedBotId(bots[0].id);
+    if (!loadingAgents && agents.length > 0 && !selectedAgentId) {
+      setSelectedAgentId(agents[0].id);
     }
-  }, [propBotId, loadingBots, bots, selectedBotId, setSelectedBotId]);
+  }, [propAgentId, loadingAgents, agents, selectedAgentId, setSelectedAgentId]);
 
   return {
-    actualBotId,
-    loadingBots,
+    actualAgentId,
+    loadingAgents,
   };
 }

@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { Bot } from '../../../types/chat.types';
+import { Agent } from '../../../types/chat.types';
 import { useFormValidation } from '../../../hooks/use-form-validation';
 import { validationRules } from '../../../utils/validation';
 import { parseBehaviorRules } from '../utils/bot.utils';
 
-export interface BotFormValues extends Record<string, unknown> {
+export interface AgentFormValues extends Record<string, unknown> {
   name: string;
   description: string;
   avatarUrl: string | null;
@@ -13,43 +13,43 @@ export interface BotFormValues extends Record<string, unknown> {
   behaviorRules: string[];
 }
 
-interface UseBotFormOptions {
-  bot: Bot | null;
-  botData: Bot | null;
+interface UseAgentFormOptions {
+  agent: Agent | null;
+  agentData: Agent | null;
 }
 
-interface UseBotFormReturn {
-  values: BotFormValues;
-  errors: Partial<Record<keyof BotFormValues, string | null>>;
-  touched: Partial<Record<keyof BotFormValues, boolean>>;
-  setValue: <K extends keyof BotFormValues>(field: K, value: BotFormValues[K]) => void;
-  setTouched: (field: keyof BotFormValues) => void;
-  validateAll: () => { isValid: boolean; errors: Partial<Record<keyof BotFormValues, string>> };
+interface UseAgentFormReturn {
+  values: AgentFormValues;
+  errors: Partial<Record<keyof AgentFormValues, string | null>>;
+  touched: Partial<Record<keyof AgentFormValues, boolean>>;
+  setValue: <K extends keyof AgentFormValues>(field: K, value: AgentFormValues[K]) => void;
+  setTouched: (field: keyof AgentFormValues) => void;
+  validateAll: () => { isValid: boolean; errors: Partial<Record<keyof AgentFormValues, string>> };
   reset: () => void;
 }
 
 /**
- * Manages form state and validation for bot configuration
+ * Manages form state and validation for agent configuration
  */
-export function useBotForm({ bot, botData }: UseBotFormOptions): UseBotFormReturn {
+export function useAgentForm({ agent, agentData }: UseAgentFormOptions): UseAgentFormReturn {
   // Initial form values
-  const initialValues = useMemo<BotFormValues>(() => {
-    if (bot && botData) {
-      const config = botData.configs || {};
+  const initialValues = useMemo<AgentFormValues>(() => {
+    if (agent && agentData) {
+      const config = agentData.configs || {};
       return {
-        name: bot.name,
-        description: bot.description || '',
-        avatarUrl: bot.avatarUrl || null,
+        name: agent.name,
+        description: agent.description || '',
+        avatarUrl: agent.avatarUrl || null,
         temperature: typeof config.temperature === 'number' ? config.temperature : 0.7,
         systemPrompt: typeof config.system_prompt === 'string' ? config.system_prompt : '',
         behaviorRules: parseBehaviorRules(config.behavior_rules),
       };
-    } else if (bot && bot.id < 0) {
-      // New bot
+    } else if (agent && agent.id < 0) {
+      // New agent
       return {
-        name: bot.name || '',
-        description: bot.description || '',
-        avatarUrl: bot.avatarUrl || null,
+        name: agent.name || '',
+        description: agent.description || '',
+        avatarUrl: agent.avatarUrl || null,
         temperature: 0.7,
         systemPrompt: '',
         behaviorRules: [],
@@ -63,11 +63,11 @@ export function useBotForm({ bot, botData }: UseBotFormOptions): UseBotFormRetur
       systemPrompt: '',
       behaviorRules: [],
     };
-  }, [bot, botData]);
+  }, [agent, agentData]);
 
   // Form validation
   const validationSchema = {
-    name: [validationRules.required('Bot name is required')],
+    name: [validationRules.required('Agent name is required')],
   };
 
   const {
@@ -78,40 +78,40 @@ export function useBotForm({ bot, botData }: UseBotFormOptions): UseBotFormRetur
     setTouched,
     validateAll,
     reset,
-  } = useFormValidation<BotFormValues>(validationSchema, initialValues);
+  } = useFormValidation<AgentFormValues>(validationSchema, initialValues);
 
-  // Track previous bot/botData IDs to prevent unnecessary updates
-  const prevBotIdRef = useRef<number | null>(bot?.id ?? null);
-  const prevBotDataIdRef = useRef<number | null>(botData?.id ?? null);
+  // Track previous agent/agentData IDs to prevent unnecessary updates
+  const prevAgentIdRef = useRef<number | null>(agent?.id ?? null);
+  const prevAgentDataIdRef = useRef<number | null>(agentData?.id ?? null);
 
-  // Update form when bot or botData changes
+  // Update form when agent or agentData changes
   useEffect(() => {
-    const currentBotId = bot?.id ?? null;
-    const currentBotDataId = botData?.id ?? null;
+    const currentAgentId = agent?.id ?? null;
+    const currentAgentDataId = agentData?.id ?? null;
 
-    // Only update if bot or botData ID actually changed
+    // Only update if agent or agentData ID actually changed
     if (
-      prevBotIdRef.current === currentBotId &&
-      prevBotDataIdRef.current === currentBotDataId
+      prevAgentIdRef.current === currentAgentId &&
+      prevAgentDataIdRef.current === currentAgentDataId
     ) {
       return;
     }
 
-    prevBotIdRef.current = currentBotId;
-    prevBotDataIdRef.current = currentBotDataId;
+    prevAgentIdRef.current = currentAgentId;
+    prevAgentDataIdRef.current = currentAgentDataId;
 
-    if (bot && botData) {
-      const config = botData.configs || {};
-      setValue('name', bot.name);
-      setValue('description', bot.description || '');
-      setValue('avatarUrl', bot.avatarUrl || null);
+    if (agent && agentData) {
+      const config = agentData.configs || {};
+      setValue('name', agent.name);
+      setValue('description', agent.description || '');
+      setValue('avatarUrl', agent.avatarUrl || null);
       setValue('temperature', typeof config.temperature === 'number' ? config.temperature : 0.7);
       setValue('systemPrompt', typeof config.system_prompt === 'string' ? config.system_prompt : '');
       setValue('behaviorRules', parseBehaviorRules(config.behavior_rules));
-    } else if (bot && bot.id < 0) {
-      setValue('name', bot.name || '');
-      setValue('description', bot.description || '');
-      setValue('avatarUrl', bot.avatarUrl || null);
+    } else if (agent && agent.id < 0) {
+      setValue('name', agent.name || '');
+      setValue('description', agent.description || '');
+      setValue('avatarUrl', agent.avatarUrl || null);
       setValue('temperature', 0.7);
       setValue('systemPrompt', '');
       setValue('behaviorRules', []);
@@ -119,9 +119,9 @@ export function useBotForm({ bot, botData }: UseBotFormOptions): UseBotFormRetur
       reset();
     }
     // Note: setValue and reset are intentionally excluded from deps to prevent infinite loops
-    // They are stable enough for this use case (only called when bot/botData IDs change)
+    // They are stable enough for this use case (only called when agent/agentData IDs change)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bot?.id, botData?.id]);
+  }, [agent?.id, agentData?.id]);
 
   return {
     values,

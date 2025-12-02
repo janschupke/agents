@@ -1,40 +1,40 @@
 import { apiManager } from './api-manager';
 import { API_ENDPOINTS } from '../constants/api.constants';
-import { Bot, CreateBotRequest, UpdateBotRequest } from '../types/chat.types';
+import { Agent, CreateAgentRequest, UpdateAgentRequest } from '../types/chat.types';
 
-export class BotService {
+export class AgentService {
   /**
-   * Get all bots
+   * Get all agents
    */
-  static async getAllBots(): Promise<Bot[]> {
-    return apiManager.get<Bot[]>(API_ENDPOINTS.BOTS.BASE);
+  static async getAllAgents(): Promise<Agent[]> {
+    return apiManager.get<Agent[]>(API_ENDPOINTS.AGENTS.BASE);
   }
 
   /**
-   * Get a bot by ID
+   * Get an agent by ID
    */
-  static async getBot(botId: number): Promise<Bot> {
-    return apiManager.get<Bot>(API_ENDPOINTS.BOTS.BY_ID(botId));
+  static async getAgent(agentId: number): Promise<Agent> {
+    return apiManager.get<Agent>(API_ENDPOINTS.AGENTS.BY_ID(agentId));
   }
 
   /**
-   * Create a new bot
+   * Create a new agent
    */
-  static async createBot(data: CreateBotRequest): Promise<Bot> {
-    return apiManager.post<Bot>(API_ENDPOINTS.BOTS.BASE, data);
+  static async createAgent(data: CreateAgentRequest): Promise<Agent> {
+    return apiManager.post<Agent>(API_ENDPOINTS.AGENTS.BASE, data);
   }
 
   /**
-   * Update a bot
+   * Update an agent
    */
-  static async updateBot(botId: number, data: UpdateBotRequest): Promise<Bot> {
-    return apiManager.put<Bot>(API_ENDPOINTS.BOTS.BY_ID(botId), data);
+  static async updateAgent(agentId: number, data: UpdateAgentRequest): Promise<Agent> {
+    return apiManager.put<Agent>(API_ENDPOINTS.AGENTS.BY_ID(agentId), data);
   }
 
   /**
-   * Delete a bot (and all related data: sessions, messages, configs, memories)
+   * Delete an agent (and all related data: sessions, messages, configs, memories)
    */
-  static async deleteBot(botId: number): Promise<void> {
-    return apiManager.delete(API_ENDPOINTS.BOTS.BY_ID(botId));
+  static async deleteAgent(agentId: number): Promise<void> {
+    return apiManager.delete(API_ENDPOINTS.AGENTS.BY_ID(agentId));
   }
 }

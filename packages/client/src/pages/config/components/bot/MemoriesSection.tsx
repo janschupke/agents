@@ -3,7 +3,7 @@ import { IconRefresh } from '../../../../components/ui/Icons';
 import MemoriesList from './MemoriesList';
 
 interface MemoriesSectionProps {
-  botId: number;
+  agentId: number;
   memories: AgentMemory[];
   loading: boolean;
   editingId: number | null;
@@ -14,10 +14,10 @@ interface MemoriesSectionProps {
 }
 
 /**
- * Section component for displaying and managing bot memories
+ * Section component for displaying and managing agent memories
  */
 export default function MemoriesSection({
-  botId,
+  agentId,
   memories,
   loading,
   editingId,
@@ -30,7 +30,7 @@ export default function MemoriesSection({
     <div>
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-base font-semibold text-text-secondary">Memories</h3>
-        {botId > 0 && (
+        {agentId > 0 && (
           <button
             onClick={onRefresh}
             disabled={loading}
@@ -49,7 +49,7 @@ export default function MemoriesSection({
         onEdit={onEdit}
         onDelete={onDelete}
         onRefresh={onRefresh}
-        botId={botId}
+        agentId={agentId}
       />
     </div>
   );

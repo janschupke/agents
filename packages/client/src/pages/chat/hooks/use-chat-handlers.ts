@@ -4,7 +4,7 @@ import { queryKeys } from '../../../hooks/queries/query-keys';
 import { Session, Message, ChatHistoryResponse } from '../../../types/chat.types';
 
 interface UseChatHandlersOptions {
-  botId: number | null;
+  agentId: number | null;
   sessions: Session[];
   handleSessionSelect: (sessionId: number) => Promise<ChatHistoryResponse | undefined>;
   handleNewSession: () => Promise<Session | undefined>;
@@ -23,7 +23,7 @@ interface UseChatHandlersReturn {
  * Wraps session handlers with additional logic (confirmations, message clearing, etc.)
  */
 export function useChatHandlers({
-  botId,
+  agentId,
   sessions,
   handleSessionSelect,
   handleNewSession,
@@ -64,8 +64,8 @@ export function useChatHandlers({
   const handleSessionNameSave = async (name?: string) => {
     // Session name is updated by the mutation hook in SessionNameModal
     // Just refresh sessions (name parameter is provided by SessionNameModal but not needed here)
-    if (botId) {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bots.sessions(botId) });
+    if (agentId) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.sessions(agentId) });
     }
     // Suppress unused parameter warning
     void name;

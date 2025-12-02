@@ -73,7 +73,7 @@ export class AgentMemoryService {
   }
 
   async createMemory(
-    botId: number,
+    agentId: number,
     userId: string,
     sessionId: number,
     sessionName: string | null,
@@ -103,14 +103,14 @@ export class AgentMemoryService {
 
         if (embedding && embedding.length > 0) {
           await this.memoryRepository.create(
-            botId,
+            agentId,
             userId,
             insight,
             context,
             embedding
           );
           console.log(
-            `Created memory for bot ${botId}, user ${userId}: ${insight.substring(0, 50)}...`
+            `Created memory for agent ${agentId}, user ${userId}: ${insight.substring(0, 50)}...`
           );
         }
       } catch (error) {
@@ -120,25 +120,25 @@ export class AgentMemoryService {
     }
   }
 
-  async shouldSummarize(botId: number, userId: string): Promise<boolean> {
+  async shouldSummarize(agentId: number, userId: string): Promise<boolean> {
     const updateCount = await this.memoryRepository.getUpdateCount(
-      botId,
+      agentId,
       userId
     );
     return updateCount >= MEMORY_CONFIG.MEMORY_SUMMARIZATION_INTERVAL;
   }
 
   async summarizeMemories(
-    botId: number,
+    agentId: number,
     userId: string,
     apiKey: string
   ): Promise<void> {
     console.log(
-      `Starting memory summarization for bot ${botId}, user ${userId}`
+      `Starting memory summarization for agent ${agentId}, user ${userId}`
     );
 
     const memories = await this.memoryRepository.findForSummarization(
-      botId,
+      agentId,
       userId,
       NUMERIC_CONSTANTS.MEMORY_SUMMARIZATION_LIMIT
     );
@@ -171,7 +171,7 @@ export class AgentMemoryService {
             // Use context from the most recent memory in the group
             const latestMemory = group[group.length - 1];
             await this.memoryRepository.create(
-              botId,
+              agentId,
               userId,
               summary,
               latestMemory.context,
@@ -194,12 +194,12 @@ export class AgentMemoryService {
     }
 
     // Reset update count
-    await this.memoryRepository.resetUpdateCount(botId, userId);
+    await this.memoryRepository.resetUpdateCount(agentId, userId);
     console.log('Memory summarization completed');
   }
 
   async getMemoriesForContext(
-    botId: number,
+    agentId: number,
     userId: string,
     queryText: string,
     apiKey: string
@@ -212,7 +212,7 @@ export class AgentMemoryService {
 
       const similar = await this.memoryRepository.findSimilar(
         queryVector,
-        botId,
+        agentId,
         userId,
         MEMORY_CONFIG.MAX_SIMILAR_MEMORIES,
         MEMORY_CONFIG.SIMILARITY_THRESHOLD

@@ -1,7 +1,7 @@
 import { AvatarPicker } from '../../../../components/ui/file-upload';
 import { ValidatedInput } from '../../../../components/ui/form';
 
-interface BotNameAndAvatarProps {
+interface AgentNameAndAvatarProps {
   avatarUrl: string | null;
   name: string;
   nameError?: string;
@@ -16,7 +16,7 @@ interface BotNameAndAvatarProps {
 /**
  * Combined avatar picker and name input field component
  */
-export default function BotNameAndAvatar({
+export default function AgentNameAndAvatar({
   avatarUrl,
   name,
   nameError,
@@ -26,17 +26,17 @@ export default function BotNameAndAvatar({
   onAvatarChange,
   onNameChange,
   onNameBlur,
-}: BotNameAndAvatarProps) {
+}: AgentNameAndAvatarProps) {
   return (
     <div className="flex items-start gap-4">
       <AvatarPicker value={avatarUrl} onChange={onAvatarChange} />
       <div className="flex-1">
         <div>
-          <label htmlFor="bot-name" className="block text-sm font-medium text-text-secondary mb-1.5">
-            Bot Name
+          <label htmlFor="agent-name" className="block text-sm font-medium text-text-secondary mb-1.5">
+            Agent Name
           </label>
           <ValidatedInput
-            id="bot-name"
+            id="agent-name"
             type="text"
             value={name}
             onChange={(e) => onNameChange(e.target.value)}
@@ -45,7 +45,7 @@ export default function BotNameAndAvatar({
             touched={nameTouched}
             disabled={saving}
             className="w-full"
-            placeholder="Enter bot name"
+            placeholder="Enter agent name"
             autoFocus={autoFocus}
           />
         </div>

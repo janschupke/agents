@@ -1,8 +1,8 @@
 import { memo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
 import { SignIn } from '@clerk/clerk-react';
-import { ChatBot } from './pages/chat';
-import { BotConfig } from './pages/config';
+import { ChatAgent } from './pages/chat';
+import { AgentConfig } from './pages/config';
 import { UserProfile } from './pages/profile';
 import UserDropdown from './components/auth/UserDropdown';
 import { Footer } from './components/ui/layout';
@@ -44,7 +44,7 @@ const AppHeader = memo(function AppHeader() {
                 ? 'bg-primary text-text-inverse'
                 : 'bg-background text-text-primary hover:bg-background-secondary'
             }`}
-            title="Bot Configuration"
+            title="Agent Configuration"
           >
             <IconSettings className="w-4 h-4" />
             <span className="hidden sm:inline">Config</span>
@@ -126,8 +126,8 @@ function AppContent() {
         <PageTransition>
           <Routes>
             <Route path="/" element={<Navigate to="/chat" replace />} />
-            <Route path="/chat" element={<ChatBot />} />
-            <Route path="/config" element={<BotConfig />} />
+            <Route path="/chat" element={<ChatAgent />} />
+            <Route path="/config" element={<AgentConfig />} />
             <Route path="/profile" element={<UserProfile />} />
           </Routes>
         </PageTransition>

@@ -5,41 +5,41 @@ interface NameFieldProps {
   value: string;
   onChange: (value: string) => void;
   autoFocus?: boolean;
-  botId?: number; // Track bot ID to detect when new bot is selected
+  agentId?: number; // Track agent ID to detect when new agent is selected
 }
 
-export function NameField({ value, onChange, autoFocus = false, botId }: NameFieldProps) {
+export function NameField({ value, onChange, autoFocus = false, agentId }: NameFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const prevBotIdRef = useRef<number | undefined>(undefined);
+  const prevAgentIdRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    // Focus when a new bot (negative ID) is selected
-    if (autoFocus && botId !== undefined && botId < 0 && prevBotIdRef.current !== botId && inputRef.current) {
+    // Focus when a new agent (negative ID) is selected
+    if (autoFocus && agentId !== undefined && agentId < 0 && prevAgentIdRef.current !== agentId && inputRef.current) {
       // Small delay to ensure the component is fully rendered and visible
       const timer = setTimeout(() => {
         inputRef.current?.focus();
         inputRef.current?.select(); // Also select the text if any
       }, 100);
-      prevBotIdRef.current = botId;
+      prevAgentIdRef.current = agentId;
       return () => clearTimeout(timer);
-    } else if (botId !== undefined) {
-      prevBotIdRef.current = botId;
+    } else if (agentId !== undefined) {
+      prevAgentIdRef.current = agentId;
     }
-  }, [autoFocus, botId]);
+  }, [autoFocus, agentId]);
 
   return (
     <div>
-      <label htmlFor="bot-name" className="block text-sm font-medium text-text-secondary mb-1.5">
-        Bot Name
+      <label htmlFor="agent-name" className="block text-sm font-medium text-text-secondary mb-1.5">
+        Agent Name
       </label>
       <input
         ref={inputRef}
-        id="bot-name"
+        id="agent-name"
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="w-full h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus"
-        placeholder="Enter bot name"
+        placeholder="Enter agent name"
       />
     </div>
   );
@@ -54,18 +54,18 @@ export function DescriptionField({ value, onChange }: DescriptionFieldProps) {
   return (
     <div>
       <label
-        htmlFor="bot-description"
+        htmlFor="agent-description"
         className="block text-sm font-medium text-text-secondary mb-1.5"
       >
         Description (optional)
       </label>
       <textarea
-        id="bot-description"
+        id="agent-description"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
         className="w-full px-3 py-2 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus resize-none"
-        placeholder="Enter bot description"
+        placeholder="Enter agent description"
       />
     </div>
   );
@@ -80,14 +80,14 @@ export function TemperatureField({ value, onChange }: TemperatureFieldProps) {
   return (
     <div>
       <label
-        htmlFor="bot-temperature"
+        htmlFor="agent-temperature"
         className="block text-sm font-medium text-text-secondary mb-1.5"
       >
         Temperature: <span className="font-mono">{value.toFixed(2)}</span>
       </label>
       <div className="relative">
         <input
-          id="bot-temperature"
+          id="agent-temperature"
           type="range"
           min="0"
           max="2"
@@ -118,21 +118,21 @@ export function SystemPromptField({ value, onChange }: SystemPromptFieldProps) {
   return (
     <div>
       <label
-        htmlFor="bot-system-prompt"
+        htmlFor="agent-system-prompt"
         className="block text-sm font-medium text-text-secondary mb-1.5"
       >
         System Prompt
       </label>
       <textarea
-        id="bot-system-prompt"
+        id="agent-system-prompt"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={4}
         className="w-full px-3 py-2 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus resize-none font-mono"
-        placeholder="Enter system prompt for the bot"
+        placeholder="Enter system prompt for the agent"
       />
       <p className="text-xs text-text-tertiary mt-1">
-        This prompt defines the bot's role and behavior
+        This prompt defines the agent's role and behavior
       </p>
     </div>
   );

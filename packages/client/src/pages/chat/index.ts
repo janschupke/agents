@@ -1,2 +1,1 @@
-export { default as ChatBot } from './components/chat/ChatBot';
-
+export { default as ChatAgent } from './components/chat/ChatBot';

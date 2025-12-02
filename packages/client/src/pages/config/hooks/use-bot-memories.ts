@@ -4,11 +4,11 @@ import { useUpdateMemory, useDeleteMemory } from '../../../hooks/mutations/use-b
 import { queryKeys } from '../../../hooks/queries/query-keys';
 import { useConfirm } from '../../../hooks/useConfirm';
 
-interface UseBotMemoriesOptions {
-  botId: number | null;
+interface UseAgentMemoriesOptions {
+  agentId: number | null;
 }
 
-interface UseBotMemoriesReturn {
+interface UseAgentMemoriesReturn {
   editingId: number | null;
   deletingId: number | null;
   handleDeleteMemory: (memoryId: number) => Promise<void>;
@@ -17,9 +17,9 @@ interface UseBotMemoriesReturn {
 }
 
 /**
- * Manages memory operations (edit, delete, refresh) for a bot
+ * Manages memory operations (edit, delete, refresh) for an agent
  */
-export function useBotMemories({ botId }: UseBotMemoriesOptions): UseBotMemoriesReturn {
+export function useAgentMemories({ agentId }: UseAgentMemoriesOptions): UseAgentMemoriesReturn {
   const { confirm } = useConfirm();
   const queryClient = useQueryClient();
   const updateMemoryMutation = useUpdateMemory();
@@ -28,7 +28,7 @@ export function useBotMemories({ botId }: UseBotMemoriesOptions): UseBotMemories
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const handleDeleteMemory = async (memoryId: number) => {
-    if (!botId || botId < 0) return;
+    if (!agentId || agentId < 0) return;
 
     const confirmed = await confirm({
       title: 'Delete Memory',
@@ -44,7 +44,7 @@ export function useBotMemories({ botId }: UseBotMemoriesOptions): UseBotMemories
 
     setDeletingId(memoryId);
     try {
-      await deleteMemoryMutation.mutateAsync({ botId, memoryId });
+      await deleteMemoryMutation.mutateAsync({ agentId, memoryId });
     } catch (error) {
       // Error is handled by mutation hook
       console.error('Failed to delete memory:', error);
@@ -54,12 +54,12 @@ export function useBotMemories({ botId }: UseBotMemoriesOptions): UseBotMemories
   };
 
   const handleEditMemory = async (memoryId: number, newKeyPoint: string) => {
-    if (!botId || botId < 0) return;
+    if (!agentId || agentId < 0) return;
 
     setEditingId(memoryId);
     try {
       await updateMemoryMutation.mutateAsync({
-        botId,
+        agentId,
         memoryId,
         keyPoint: newKeyPoint,
       });
@@ -72,8 +72,8 @@ export function useBotMemories({ botId }: UseBotMemoriesOptions): UseBotMemories
   };
 
   const handleRefreshMemories = () => {
-    if (!botId || botId < 0) return;
-    queryClient.invalidateQueries({ queryKey: queryKeys.bots.memories(botId) });
+    if (!agentId || agentId < 0) return;
+    queryClient.invalidateQueries({ queryKey: queryKeys.agents.memories(agentId) });
   };
 
   return {

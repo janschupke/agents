@@ -1,4 +1,4 @@
-CREATE TABLE bots (
+CREATE TABLE agents (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT,

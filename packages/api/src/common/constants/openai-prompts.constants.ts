@@ -93,8 +93,6 @@ ${memoriesText}`,
 
   BEHAVIOR_RULES: {
     SYSTEM: (rulesText: string) => `System Behavior Rules (Required):\n${rulesText}`,
-    BOT: (rulesText: string) => `Behavior Rules:\n${rulesText}`,
+    AGENT: (rulesText: string) => `Behavior Rules:\n${rulesText}`,
   },
 } as const;
-
-

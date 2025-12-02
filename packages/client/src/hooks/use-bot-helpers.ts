@@ -1,86 +1,85 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from './queries/query-keys';
-import { Bot, Session } from '../types/chat.types';
+import { Agent, Session } from '../types/chat.types';
 
 /**
- * Helper hooks for bot operations using React Query cache
- * These replace the BotContext functionality
+ * Helper hooks for agent operations using React Query cache
+ * These replace the AgentContext functionality
  */
 
 /**
- * Get a bot by ID from React Query cache
+ * Get an agent by ID from React Query cache
  */
-export function useGetBot() {
+export function useGetAgent() {
   const queryClient = useQueryClient();
 
-  return (botId: number): Bot | undefined => {
-    return queryClient.getQueryData<Bot>(queryKeys.bots.detail(botId));
+  return (agentId: number): Agent | undefined => {
+    return queryClient.getQueryData<Agent>(queryKeys.agents.detail(agentId));
   };
 }
 
 /**
- * Get bot sessions from React Query cache
+ * Get agent sessions from React Query cache
  */
-export function useGetBotSessions() {
+export function useGetAgentSessions() {
   const queryClient = useQueryClient();
 
-  return (botId: number): Session[] | undefined => {
-    return queryClient.getQueryData<Session[]>(queryKeys.bots.sessions(botId));
+  return (agentId: number): Session[] | undefined => {
+    return queryClient.getQueryData<Session[]>(queryKeys.agents.sessions(agentId));
   };
 }
 
 /**
- * Helper to invalidate bot-related queries
+ * Helper to invalidate agent-related queries
  */
-export function useInvalidateBot() {
+export function useInvalidateAgent() {
   const queryClient = useQueryClient();
 
   return {
-    invalidateBot: (botId: number) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bots.detail(botId) });
+    invalidateAgent: (agentId: number) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agentId) });
     },
-    invalidateBotList: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bots.all });
+    invalidateAgentList: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.all });
     },
-    invalidateBotSessions: (botId: number) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bots.sessions(botId) });
+    invalidateAgentSessions: (agentId: number) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.sessions(agentId) });
     },
     invalidateAll: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bots.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.all });
     },
   };
 }
 
 /**
- * Helper to optimistically update bot in cache
+ * Helper to optimistically update agent in cache
  */
-export function useUpdateBotCache() {
+export function useUpdateAgentCache() {
   const queryClient = useQueryClient();
 
-  return (bot: Bot) => {
-    queryClient.setQueryData(queryKeys.bots.detail(bot.id), bot);
-    queryClient.invalidateQueries({ queryKey: queryKeys.bots.all });
+  return (agent: Agent) => {
+    queryClient.setQueryData(queryKeys.agents.detail(agent.id), agent);
+    queryClient.invalidateQueries({ queryKey: queryKeys.agents.all });
   };
 }
 
 /**
- * Helper to optimistically update bot sessions in cache
+ * Helper to optimistically update agent sessions in cache
  */
-export function useUpdateBotSessionsCache() {
+export function useUpdateAgentSessionsCache() {
   const queryClient = useQueryClient();
 
   return {
-    addSession: (botId: number, session: Session) => {
-      const currentSessions = queryClient.getQueryData<Session[]>(queryKeys.bots.sessions(botId)) || [];
-      queryClient.setQueryData(queryKeys.bots.sessions(botId), [session, ...currentSessions]);
+    addSession: (agentId: number, session: Session) => {
+      const currentSessions = queryClient.getQueryData<Session[]>(queryKeys.agents.sessions(agentId)) || [];
+      queryClient.setQueryData(queryKeys.agents.sessions(agentId), [session, ...currentSessions]);
     },
-    removeSession: (botId: number, sessionId: number) => {
-      const currentSessions = queryClient.getQueryData<Session[]>(queryKeys.bots.sessions(botId)) || [];
+    removeSession: (agentId: number, sessionId: number) => {
+      const currentSessions = queryClient.getQueryData<Session[]>(queryKeys.agents.sessions(agentId)) || [];
       queryClient.setQueryData(
-        queryKeys.bots.sessions(botId),
+        queryKeys.agents.sessions(agentId),
         currentSessions.filter((s) => s.id !== sessionId)
       );
     },
   };
 }
-

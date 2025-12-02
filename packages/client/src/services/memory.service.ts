@@ -4,21 +4,21 @@ import { AgentMemory } from '../types/chat.types';
 
 export class MemoryService {
   /**
-   * Get all memories for a bot
+   * Get all memories for an agent
    */
-  static async getMemories(botId: number): Promise<AgentMemory[]> {
-    return apiManager.get<AgentMemory[]>(API_ENDPOINTS.BOTS.MEMORIES(botId));
+  static async getMemories(agentId: number): Promise<AgentMemory[]> {
+    return apiManager.get<AgentMemory[]>(API_ENDPOINTS.AGENTS.MEMORIES(agentId));
   }
 
   /**
    * Get a specific memory
    */
   static async getMemory(
-    botId: number,
+    agentId: number,
     memoryId: number
   ): Promise<AgentMemory> {
     return apiManager.get<AgentMemory>(
-      API_ENDPOINTS.BOTS.MEMORY(botId, memoryId)
+      API_ENDPOINTS.AGENTS.MEMORY(agentId, memoryId)
     );
   }
 
@@ -26,12 +26,12 @@ export class MemoryService {
    * Update a memory
    */
   static async updateMemory(
-    botId: number,
+    agentId: number,
     memoryId: number,
     keyPoint: string
   ): Promise<AgentMemory> {
     return apiManager.put<AgentMemory>(
-      API_ENDPOINTS.BOTS.MEMORY(botId, memoryId),
+      API_ENDPOINTS.AGENTS.MEMORY(agentId, memoryId),
       { keyPoint }
     );
   }
@@ -39,14 +39,14 @@ export class MemoryService {
   /**
    * Delete a memory
    */
-  static async deleteMemory(botId: number, memoryId: number): Promise<void> {
-    return apiManager.delete(API_ENDPOINTS.BOTS.MEMORY(botId, memoryId));
+  static async deleteMemory(agentId: number, memoryId: number): Promise<void> {
+    return apiManager.delete(API_ENDPOINTS.AGENTS.MEMORY(agentId, memoryId));
   }
 
   /**
    * Manually trigger memory summarization
    */
-  static async summarizeMemories(botId: number): Promise<void> {
-    return apiManager.post(API_ENDPOINTS.BOTS.MEMORIES_SUMMARIZE(botId), {});
+  static async summarizeMemories(agentId: number): Promise<void> {
+    return apiManager.post(API_ENDPOINTS.AGENTS.MEMORIES_SUMMARIZE(agentId), {});
   }
 }

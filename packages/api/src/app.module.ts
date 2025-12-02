@@ -3,7 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
 import { HealthcheckModule } from './healthcheck/healthcheck.module';
 import { ChatModule } from './chat/chat.module';
-import { BotModule } from './bot/bot.module';
+import { AgentModule } from './bot/bot.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { WebhookModule } from './webhook/webhook.module';
@@ -18,7 +18,7 @@ import { ClerkGuard } from './auth/clerk.guard';
     PrismaModule,
     HealthcheckModule,
     ChatModule,
-    BotModule,
+    AgentModule,
     AuthModule,
     UserModule,
     WebhookModule,

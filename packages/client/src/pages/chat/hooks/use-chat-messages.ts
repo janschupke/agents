@@ -6,7 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../hooks/queries/query-keys';
 
 interface UseChatMessagesOptions {
-  botId: number | null;
+  agentId: number | null;
   sessionId: number | null;
 }
 
@@ -22,11 +22,11 @@ interface UseChatMessagesReturn {
  * Extracted from ChatBot component
  */
 export function useChatMessages({
-  botId,
+  agentId,
   sessionId,
 }: UseChatMessagesOptions): UseChatMessagesReturn {
   const queryClient = useQueryClient();
-  const { data: chatHistory, isLoading: loadingChatHistory, isFetching: fetchingChatHistory } = useChatHistory(botId, sessionId);
+  const { data: chatHistory, isLoading: loadingChatHistory, isFetching: fetchingChatHistory } = useChatHistory(agentId, sessionId);
   const sendMessageMutation = useSendMessage();
   const [messages, setMessages] = useState<Message[]>([]);
   const previousMessageCountRef = useRef(0);
@@ -43,7 +43,7 @@ export function useChatMessages({
 
   // Update messages from chat history
   useEffect(() => {
-    if (chatHistory && botId && sessionId) {
+    if (chatHistory && agentId && sessionId) {
       const historySessionId = chatHistory.session?.id;
       // Only update messages if the history matches the current session
       if (historySessionId === sessionId && chatHistory.messages) {
@@ -54,7 +54,7 @@ export function useChatMessages({
       setMessages([]);
       loadingSessionIdRef.current = null;
     }
-  }, [chatHistory, botId, sessionId]);
+  }, [chatHistory, agentId, sessionId]);
 
   // Reset initial load flag when session changes
   useEffect(() => {
@@ -64,7 +64,7 @@ export function useChatMessages({
   }, [sessionId]);
 
   const sendMessage = async (message: string) => {
-    if (!message.trim() || !botId) return;
+    if (!message.trim() || !agentId) return;
 
     // Optimistically add user message
     const userMessage: Message = {
@@ -75,7 +75,7 @@ export function useChatMessages({
 
     try {
       const result = await sendMessageMutation.mutateAsync({
-        botId,
+        agentId,
         message,
         sessionId: sessionId || undefined,
       });
@@ -104,7 +104,7 @@ export function useChatMessages({
 
       // If new session was created, invalidate sessions query
       if (result.session?.id && result.session.id !== sessionId) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.bots.sessions(botId) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.agents.sessions(agentId) });
       }
 
       return result;

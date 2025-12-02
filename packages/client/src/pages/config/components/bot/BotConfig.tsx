@@ -1,63 +1,63 @@
 import { useState } from 'react';
-import { Bot } from '../../../../types/chat.types';
+import { Agent } from '../../../../types/chat.types';
 import BotSidebar from './BotSidebar';
 import BotConfigForm from './BotConfigForm';
 import { PageContainer } from '../../../../components/ui/layout';
-import { useBots } from '../../../../hooks/queries/use-bots';
-import { useBotSelection } from '../../hooks/use-bot-selection';
-import { useBotConfigOperations } from '../../hooks/use-bot-config-operations';
+import { useAgents } from '../../../../hooks/queries/use-bots';
+import { useAgentSelection } from '../../hooks/use-bot-selection';
+import { useAgentConfigOperations } from '../../hooks/use-bot-config-operations';
 
-export default function BotConfig() {
-  const { data: contextBots = [], isLoading: loadingBots } = useBots();
-  const [localBots, setLocalBots] = useState<Bot[]>([]);
+export default function AgentConfig() {
+  const { data: contextAgents = [], isLoading: loadingAgents } = useAgents();
+  const [localAgents, setLocalAgents] = useState<Agent[]>([]);
 
-  // Bot selection management
-  const { currentBotId, setCurrentBotId, bots } = useBotSelection({
-    contextBots,
-    localBots,
-    loadingBots,
+  // Agent selection management
+  const { currentAgentId, setCurrentAgentId, agents } = useAgentSelection({
+    contextAgents,
+    localAgents,
+    loadingAgents,
   });
 
-  // Bot operations (create, update, delete)
-  const { handleSave, handleDelete, handleNewBot, saving } = useBotConfigOperations({
-    contextBots,
-    localBots,
-    setLocalBots,
-    currentBotId,
-    setCurrentBotId,
+  // Agent operations (create, update, delete)
+  const { handleSave, handleDelete, handleNewAgent, saving } = useAgentConfigOperations({
+    contextAgents,
+    localAgents,
+    setLocalAgents,
+    currentAgentId,
+    setCurrentAgentId,
   });
 
-  const handleBotSelect = (botId: number) => {
-    // Validate bot exists before selecting
-    const allBots = [...contextBots, ...localBots];
-    if (allBots.some((b) => b.id === botId)) {
-      setCurrentBotId(botId);
+  const handleAgentSelect = (agentId: number) => {
+    // Validate agent exists before selecting
+    const allAgents = [...contextAgents, ...localAgents];
+    if (allAgents.some((a) => a.id === agentId)) {
+      setCurrentAgentId(agentId);
     }
   };
 
-  const handleBotSave = async (bot: Bot, values: Parameters<typeof handleSave>[1]) => {
-    await handleSave(bot, values);
-    // Note: handleSave already handles localBots cleanup and currentBotId update
+  const handleAgentSave = async (agent: Agent, values: Parameters<typeof handleSave>[1]) => {
+    await handleSave(agent, values);
+    // Note: handleSave already handles localAgents cleanup and currentAgentId update
   };
 
-  const currentBot = bots.find((b) => b.id === currentBotId) || null;
+  const currentAgent = agents.find((a) => a.id === currentAgentId) || null;
 
   return (
     <PageContainer>
       <div className="flex h-full">
         <BotSidebar
-          bots={bots}
-          currentBotId={currentBotId}
-          onBotSelect={handleBotSelect}
-          onNewBot={handleNewBot}
-          onBotDelete={handleDelete}
-          loading={loadingBots}
+          agents={agents}
+          currentAgentId={currentAgentId}
+          onAgentSelect={handleAgentSelect}
+          onNewAgent={handleNewAgent}
+          onAgentDelete={handleDelete}
+          loading={loadingAgents}
         />
         <div className="flex-1 flex flex-col overflow-hidden">
           <BotConfigForm
-            bot={currentBot}
+            agent={currentAgent}
             saving={saving}
-            onSaveClick={handleBotSave}
+            onSaveClick={handleAgentSave}
           />
         </div>
       </div>

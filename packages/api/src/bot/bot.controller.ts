@@ -10,22 +10,22 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { BotService } from './bot.service';
+import { AgentService } from './bot.service';
 import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
-import { CreateBotDto, UpdateBotDto } from '../common/dto/bot.dto';
+import { CreateAgentDto, UpdateAgentDto } from '../common/dto/bot.dto';
 import { SuccessResponseDto } from '../common/dto/common.dto';
-import { BotResponse } from '../common/interfaces/bot.interface';
+import { AgentResponse } from '../common/interfaces/bot.interface';
 import { API_ROUTES } from '../common/constants/api-routes.constants.js';
 
-@Controller(API_ROUTES.BOTS.BASE)
-export class BotController {
-  constructor(private readonly botService: BotService) {}
+@Controller(API_ROUTES.AGENTS.BASE)
+export class AgentController {
+  constructor(private readonly agentService: AgentService) {}
 
   @Get()
-  async getAllBots(@User() user: AuthenticatedUser): Promise<BotResponse[]> {
+  async getAllAgents(@User() user: AuthenticatedUser): Promise<AgentResponse[]> {
     try {
-      return await this.botService.findAll(user.id);
+      return await this.agentService.findAll(user.id);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -39,12 +39,12 @@ export class BotController {
   }
 
   @Get(':id')
-  async getBot(
+  async getAgent(
     @Param('id', ParseIntPipe) id: number,
     @User() user: AuthenticatedUser
-  ): Promise<BotResponse> {
+  ): Promise<AgentResponse> {
     try {
-      return await this.botService.findById(id, user.id);
+      return await this.agentService.findById(id, user.id);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -58,10 +58,10 @@ export class BotController {
   }
 
   @Post()
-  async createBot(
-    @Body() body: CreateBotDto,
+  async createAgent(
+    @Body() body: CreateAgentDto,
     @User() user: AuthenticatedUser
-  ): Promise<BotResponse> {
+  ): Promise<AgentResponse> {
     try {
       // Prepare configs object if provided
       const configs: Record<string, unknown> | undefined = body.configs
@@ -74,7 +74,7 @@ export class BotController {
           }
         : undefined;
 
-      return await this.botService.create(
+      return await this.agentService.create(
         user.id,
         body.name,
         body.description,
@@ -94,11 +94,11 @@ export class BotController {
   }
 
   @Put(':id')
-  async updateBot(
+  async updateAgent(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: UpdateBotDto,
+    @Body() body: UpdateAgentDto,
     @User() user: AuthenticatedUser
-  ): Promise<BotResponse> {
+  ): Promise<AgentResponse> {
     try {
       // Prepare configs object if provided
       const configs: Record<string, unknown> | undefined = body.configs
@@ -111,7 +111,7 @@ export class BotController {
           }
         : undefined;
 
-      return await this.botService.update(
+      return await this.agentService.update(
         id,
         user.id,
         body.name,
@@ -132,12 +132,12 @@ export class BotController {
   }
 
   @Delete(':id')
-  async deleteBot(
+  async deleteAgent(
     @Param('id', ParseIntPipe) id: number,
     @User() user: AuthenticatedUser
   ): Promise<SuccessResponseDto> {
     try {
-      await this.botService.delete(id, user.id);
+      await this.agentService.delete(id, user.id);
       return { success: true };
     } catch (error) {
       if (error instanceof HttpException) {

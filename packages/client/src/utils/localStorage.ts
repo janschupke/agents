@@ -3,69 +3,69 @@
  */
 
 const STORAGE_KEYS = {
-  SELECTED_BOT_ID_CHAT: 'selectedBotId_chat',
-  SELECTED_BOT_ID_CONFIG: 'selectedBotId_config',
+  SELECTED_AGENT_ID_CHAT: 'selectedAgentId_chat',
+  SELECTED_AGENT_ID_CONFIG: 'selectedAgentId_config',
   SELECTED_SESSION_ID: 'selectedSessionId',
 } as const;
 
 export class LocalStorageManager {
   /**
-   * Get selected bot ID for chat view
+   * Get selected agent ID for chat view
    */
-  static getSelectedBotIdChat(): number | null {
+  static getSelectedAgentIdChat(): number | null {
     try {
-      const value = localStorage.getItem(STORAGE_KEYS.SELECTED_BOT_ID_CHAT);
+      const value = localStorage.getItem(STORAGE_KEYS.SELECTED_AGENT_ID_CHAT);
       if (value === null) return null;
       const parsed = parseInt(value, 10);
       return isNaN(parsed) ? null : parsed;
     } catch (error) {
-      console.error('Error reading selectedBotId_chat from localStorage:', error);
+      console.error('Error reading selectedAgentId_chat from localStorage:', error);
       return null;
     }
   }
 
   /**
-   * Set selected bot ID for chat view
+   * Set selected agent ID for chat view
    */
-  static setSelectedBotIdChat(botId: number | null): void {
+  static setSelectedAgentIdChat(agentId: number | null): void {
     try {
-      if (botId === null) {
-        localStorage.removeItem(STORAGE_KEYS.SELECTED_BOT_ID_CHAT);
+      if (agentId === null) {
+        localStorage.removeItem(STORAGE_KEYS.SELECTED_AGENT_ID_CHAT);
       } else {
-        localStorage.setItem(STORAGE_KEYS.SELECTED_BOT_ID_CHAT, String(botId));
+        localStorage.setItem(STORAGE_KEYS.SELECTED_AGENT_ID_CHAT, String(agentId));
       }
     } catch (error) {
-      console.error('Error writing selectedBotId_chat to localStorage:', error);
+      console.error('Error writing selectedAgentId_chat to localStorage:', error);
     }
   }
 
   /**
-   * Get selected bot ID for config view
+   * Get selected agent ID for config view
    */
-  static getSelectedBotIdConfig(): number | null {
+  static getSelectedAgentIdConfig(): number | null {
     try {
-      const value = localStorage.getItem(STORAGE_KEYS.SELECTED_BOT_ID_CONFIG);
+      const value = localStorage.getItem(STORAGE_KEYS.SELECTED_AGENT_ID_CONFIG);
       if (value === null) return null;
       const parsed = parseInt(value, 10);
       return isNaN(parsed) ? null : parsed;
     } catch (error) {
-      console.error('Error reading selectedBotId_config from localStorage:', error);
+      console.error('Error reading selectedAgentId_config from localStorage:', error);
       return null;
     }
   }
 
   /**
-   * Set selected bot ID for config view
+   * Set selected agent ID for config view
    */
-  static setSelectedBotIdConfig(botId: number | null): void {
+  static setSelectedAgentIdConfig(agentId: number | null): void {
     try {
-      if (botId === null) {
-        localStorage.removeItem(STORAGE_KEYS.SELECTED_BOT_ID_CONFIG);
+      if (agentId === null) {
+        localStorage.removeItem(STORAGE_KEYS.SELECTED_AGENT_ID_CONFIG);
       } else {
-        localStorage.setItem(STORAGE_KEYS.SELECTED_BOT_ID_CONFIG, String(botId));
+        localStorage.setItem(STORAGE_KEYS.SELECTED_AGENT_ID_CONFIG, String(agentId));
       }
     } catch (error) {
-      console.error('Error writing selectedBotId_config to localStorage:', error);
+      console.error('Error writing selectedAgentId_config to localStorage:', error);
     }
   }
 
