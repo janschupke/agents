@@ -1,3 +1,4 @@
+import { useEffect, useState, useRef } from 'react';
 import { Bot } from '../../../../types/chat.types';
 import { PageHeader } from '../../../../components/ui/layout';
 import { useBot } from '../../../../hooks/queries/use-bots';
@@ -5,6 +6,7 @@ import { useBotMemories as useBotMemoriesQuery } from '../../../../hooks/queries
 import { useBotForm } from '../../hooks/use-bot-form';
 import { useBotMemories } from '../../hooks/use-bot-memories';
 import { FormButton, FormContainer, ButtonType, ButtonVariant } from '../../../../components/ui/form';
+import { FadeIn } from '../../../../components/ui/animation';
 import {
   DescriptionField,
   TemperatureField,
@@ -22,6 +24,21 @@ interface BotConfigFormProps {
 }
 
 export default function BotConfigForm({ bot, saving = false, onSaveClick }: BotConfigFormProps) {
+  // Track bot ID changes to trigger fade-in animation
+  const [fadeKey, setFadeKey] = useState(0);
+  const previousBotIdRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const currentBotId = bot?.id ?? null;
+    // Trigger fade-in whenever bot ID changes (including when switching back to a previous bot)
+    if (currentBotId !== previousBotIdRef.current) {
+      if (currentBotId !== null) {
+        setFadeKey((prev) => prev + 1);
+      }
+      previousBotIdRef.current = currentBotId;
+    }
+  }, [bot?.id]);
+
   // React Query hooks
   const { data: botData, isLoading: loadingBot } = useBot(bot?.id || null);
   const { data: memories = [], isLoading: loadingMemories } = useBotMemoriesQuery(bot?.id || null);
@@ -89,34 +106,36 @@ export default function BotConfigForm({ bot, saving = false, onSaveClick }: BotC
           {loadingConfig ? (
             <BotConfigFormSkeleton />
           ) : (
-            <div className="space-y-5">
-              <BotNameAndAvatar
-                avatarUrl={values.avatarUrl}
-                name={values.name}
-                nameError={errors.name ?? undefined}
-                nameTouched={touched.name}
-                saving={saving}
-                autoFocus={bot.id < 0}
-                onAvatarChange={(url) => setValue('avatarUrl', url)}
-                onNameChange={(value) => setValue('name', value)}
-                onNameBlur={() => setTouched('name')}
-              />
-              <DescriptionField value={values.description} onChange={(val) => setValue('description', val)} />
-              <TemperatureField value={values.temperature} onChange={(val) => setValue('temperature', val)} />
-              <SystemPromptField value={values.systemPrompt} onChange={(val) => setValue('systemPrompt', val)} />
-              <BehaviorRulesField rules={values.behaviorRules} onChange={(rules) => setValue('behaviorRules', rules)} />
+            <FadeIn key={fadeKey}>
+              <div className="space-y-5">
+                <BotNameAndAvatar
+                  avatarUrl={values.avatarUrl}
+                  name={values.name}
+                  nameError={errors.name ?? undefined}
+                  nameTouched={touched.name}
+                  saving={saving}
+                  autoFocus={bot.id < 0}
+                  onAvatarChange={(url) => setValue('avatarUrl', url)}
+                  onNameChange={(value) => setValue('name', value)}
+                  onNameBlur={() => setTouched('name')}
+                />
+                <DescriptionField value={values.description} onChange={(val) => setValue('description', val)} />
+                <TemperatureField value={values.temperature} onChange={(val) => setValue('temperature', val)} />
+                <SystemPromptField value={values.systemPrompt} onChange={(val) => setValue('systemPrompt', val)} />
+                <BehaviorRulesField rules={values.behaviorRules} onChange={(rules) => setValue('behaviorRules', rules)} />
 
-              <MemoriesSection
-                botId={bot.id}
-                memories={memories}
-                loading={loadingMemories}
-                editingId={editingId}
-                deletingId={deletingId}
-                onEdit={handleEditMemory}
-                onDelete={handleDeleteMemory}
-                onRefresh={handleRefreshMemories}
-              />
-            </div>
+                <MemoriesSection
+                  botId={bot.id}
+                  memories={memories}
+                  loading={loadingMemories}
+                  editingId={editingId}
+                  deletingId={deletingId}
+                  onEdit={handleEditMemory}
+                  onDelete={handleDeleteMemory}
+                  onRefresh={handleRefreshMemories}
+                />
+              </div>
+            </FadeIn>
           )}
         </FormContainer>
       </div>
