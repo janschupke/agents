@@ -43,20 +43,50 @@ export class SessionRepository {
     agentId: number,
     userId: string
   ): Promise<ChatSession | null> {
-    return this.prisma.chatSession.findFirst({
-      where: { agentId, userId },
-      orderBy: { createdAt: 'desc' },
-    });
+    // Get all sessions ordered by last message date, then return the first one
+    const sessions = await this.findAllByAgentId(agentId, userId);
+    return sessions.length > 0 ? sessions[0] : null;
+  }
+
+  /**
+   * Gets the activity date for a session.
+   * For sessions with messages, this is the last message date.
+   * For empty sessions, this is the creation date.
+   * This allows empty sessions to be freshest only if their creation is more recent
+   * than any other session's last message.
+   */
+  private getSessionActivityDate(
+    session: ChatSession & { messages?: { createdAt: Date }[] }
+  ): Date {
+    return session.messages?.[0]?.createdAt || session.createdAt;
   }
 
   async findAllByAgentId(
     agentId: number,
     userId: string
   ): Promise<ChatSession[]> {
-    return this.prisma.chatSession.findMany({
+    // Fetch sessions with their latest message to order by activity date
+    const sessions = await this.prisma.chatSession.findMany({
       where: { agentId, userId },
-      orderBy: { createdAt: 'desc' },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1, // Only need the latest message
+        },
+      },
     });
+
+    // Sort by activity date (desc): last message date if exists, otherwise creation date
+    // This ensures empty sessions are only freshest if their creation is more recent
+    // than any other session's last message date
+    const sorted = sessions.sort((a, b) => {
+      const aActivityDate = this.getSessionActivityDate(a);
+      const bActivityDate = this.getSessionActivityDate(b);
+      return bActivityDate.getTime() - aActivityDate.getTime();
+    });
+
+    // Return sessions without the messages relation (we only needed it for sorting)
+    return sorted.map(({ messages, ...session }) => session);
   }
 
   async update(

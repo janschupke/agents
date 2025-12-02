@@ -119,12 +119,8 @@ export function useChatMessages({
         return [...updated, assistantMessage];
       });
 
-      // If new session was created, invalidate sessions query
-      if (result.session?.id && result.session.id !== sessionId) {
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.agents.sessions(agentId),
-        });
-      }
+      // Sessions query is already invalidated by useSendMessage mutation
+      // This ensures automatic reordering by last message date
 
       return result;
     } catch (error) {

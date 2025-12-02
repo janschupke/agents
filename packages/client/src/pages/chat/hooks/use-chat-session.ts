@@ -41,6 +41,7 @@ export function useChatSession({
   const createSessionMutation = useCreateSession();
   const deleteSessionMutation = useDeleteSession();
   const sessionsInitializedRef = useRef(false);
+  const pendingNewSessionIdRef = useRef<number | null>(null);
 
   // Auto-select most recent session when sessions first load or when agent changes
   useEffect(() => {
@@ -50,7 +51,20 @@ export function useChatSession({
 
     // When sessions first load for this agent, select the most recent one
     if (sessions.length > 0) {
-      const mostRecentSessionId = sessions[0].id; // Sessions are ordered by createdAt desc (most recent first)
+      const mostRecentSessionId = sessions[0].id; // Sessions are ordered by last message date desc (freshest first, new sessions with no messages are freshest)
+
+      // If we have a pending new session, select it once it appears in the list
+      if (pendingNewSessionIdRef.current) {
+        const pendingSessionExists = sessions.some(
+          (s) => s.id === pendingNewSessionIdRef.current
+        );
+        if (pendingSessionExists) {
+          setCurrentSessionId(pendingNewSessionIdRef.current);
+          pendingNewSessionIdRef.current = null;
+          sessionsInitializedRef.current = true;
+          return;
+        }
+      }
 
       // On first load or when agent changes, always select most recent session
       if (!sessionsInitializedRef.current || !currentSessionId) {
@@ -72,9 +86,10 @@ export function useChatSession({
     }
   }, [agentId, sessionsLoading, sessions, currentSessionId]);
 
-  // Reset initialization flag when agent changes
+  // Reset initialization flag and pending session when agent changes
   useEffect(() => {
     sessionsInitializedRef.current = false;
+    pendingNewSessionIdRef.current = null;
   }, [agentId]);
 
   // Prefetch chat history when session changes
@@ -116,11 +131,14 @@ export function useChatSession({
 
     try {
       const newSession = await createSessionMutation.mutateAsync(agentId);
-      // Select the new session
+      // Mark this session as pending selection - it will be selected when sessions refetch
+      pendingNewSessionIdRef.current = newSession.id;
+      // Optimistically set it immediately in case sessions are already loaded
       setCurrentSessionId(newSession.id);
       return newSession;
     } catch (error) {
       console.error('Error creating session:', error);
+      pendingNewSessionIdRef.current = null;
       throw error;
     }
   }, [agentId, createSessionMutation]);

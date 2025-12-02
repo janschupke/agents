@@ -25,15 +25,14 @@ export function useSendMessage() {
           variables.sessionId
         ),
       });
-      // If new session was created, invalidate sessions list
-      if (data.session?.id && data.session.id !== variables.sessionId) {
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.chat.sessions(variables.agentId),
-        });
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.agents.sessions(variables.agentId),
-        });
-      }
+      // Always invalidate sessions list to reorder by last message date
+      // This ensures the session with the new message moves to the top
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.chat.sessions(variables.agentId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.agents.sessions(variables.agentId),
+      });
     },
     onError: (error: { message?: string }) => {
       showToast(error.message || 'Failed to send message', 'error');
