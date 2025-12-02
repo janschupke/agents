@@ -20,8 +20,7 @@ export default function Sidebar({
   className = '',
   width = 'md',
 }: SidebarProps) {
-  const widthClass =
-    typeof width === 'number' ? '' : widthClasses[width];
+  const widthClass = typeof width === 'number' ? '' : widthClasses[width];
   const widthStyle = typeof width === 'number' ? { width: `${width}px` } : {};
 
   return (

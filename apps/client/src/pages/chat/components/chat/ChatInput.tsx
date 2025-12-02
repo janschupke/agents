@@ -33,7 +33,9 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
           ref={inputRef}
           type="text"
           value={input}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onInputChange(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            onInputChange(e.target.value)
+          }
           placeholder={t('chat.placeholder')}
           disabled={disabled}
           className="flex-1"

@@ -28,8 +28,7 @@ export function useAutoOpenAgent({
 
     const hasNoAgents = agents.length === 0;
     const currentAgentExists =
-      currentAgentId !== null &&
-      agents.some((a) => a.id === currentAgentId);
+      currentAgentId !== null && agents.some((a) => a.id === currentAgentId);
 
     // If there are no agents, clear any invalid selection and reset the ref
     if (hasNoAgents && currentAgentId !== null && !currentAgentExists) {
@@ -47,11 +46,5 @@ export function useAutoOpenAgent({
       hasAutoOpenedRef.current = true;
       onNewAgent();
     }
-  }, [
-    loadingAgents,
-    agents,
-    currentAgentId,
-    setCurrentAgentId,
-    onNewAgent,
-  ]);
+  }, [loadingAgents, agents, currentAgentId, setCurrentAgentId, onNewAgent]);
 }

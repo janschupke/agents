@@ -18,11 +18,7 @@ export default function InfoField({
     <div className={className}>
       <label className="text-sm font-medium text-text-secondary">{label}</label>
       <div className="mt-1 text-text-primary">
-        {typeof value === 'string' ? (
-          <p>{value}</p>
-        ) : (
-          value
-        )}
+        {typeof value === 'string' ? <p>{value}</p> : value}
       </div>
     </div>
   );

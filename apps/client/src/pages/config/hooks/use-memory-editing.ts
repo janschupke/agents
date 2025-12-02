@@ -4,6 +4,7 @@ import { AgentMemory } from '../../../types/chat.types';
 interface UseMemoryEditingReturn {
   editingMemoryId: number | null;
   editValue: string;
+  setEditValue: (value: string) => void;
   handleStartEdit: (memory: AgentMemory) => void;
   handleCancelEdit: () => void;
   handleSaveEdit: (
@@ -43,6 +44,7 @@ export function useMemoryEditing(): UseMemoryEditingReturn {
   return {
     editingMemoryId,
     editValue,
+    setEditValue,
     handleStartEdit,
     handleCancelEdit,
     handleSaveEdit,

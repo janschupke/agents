@@ -20,7 +20,10 @@ import { appConfig } from '../../config/app.config.js';
 export class DelayInterceptor implements NestInterceptor {
   private readonly logger = new Logger(DelayInterceptor.name);
 
-  intercept(_context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(
+    _context: ExecutionContext,
+    next: CallHandler
+  ): Observable<unknown> {
     // Only work in development mode, never in production
     if (appConfig.nodeEnv === 'production') {
       return next.handle();

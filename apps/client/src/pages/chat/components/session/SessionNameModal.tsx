@@ -98,60 +98,53 @@ export default function SessionNameModal({
       onClick={onClose}
     >
       <div onClick={(e) => e.stopPropagation()}>
-        <Card
-          variant="elevated"
-          padding="none"
-          className="w-full max-w-md m-4"
-        >
-          <ModalHeader
-            title={t('chat.editSessionName')}
-            onClose={onClose}
-          />
-        <div className="px-6 py-4">
-          <FormContainer saving={saving} error={errorMessage}>
-            <FormField
-              label={t('chat.sessionName')}
-              labelFor="session-name"
-              error={errors.name}
-              touched={touched.name}
-              hint={t('chat.defaultSessionName')}
+        <Card variant="elevated" padding="none" className="w-full max-w-md m-4">
+          <ModalHeader title={t('chat.editSessionName')} onClose={onClose} />
+          <div className="px-6 py-4">
+            <FormContainer saving={saving} error={errorMessage}>
+              <FormField
+                label={t('chat.sessionName')}
+                labelFor="session-name"
+                error={errors.name}
+                touched={touched.name}
+                hint={t('chat.defaultSessionName')}
+              >
+                <Input
+                  ref={inputRef}
+                  id="session-name"
+                  type="text"
+                  value={values.name}
+                  onChange={(e) => setValue('name', e.target.value)}
+                  onBlur={() => setTouched('name')}
+                  onKeyDown={handleKeyDown}
+                  disabled={saving}
+                  className="w-full"
+                  placeholder={t('chat.enterSessionName')}
+                />
+              </FormField>
+            </FormContainer>
+          </div>
+          <ModalFooter>
+            <FormButton
+              type={ButtonType.BUTTON}
+              onClick={onClose}
+              disabled={saving}
+              variant={ButtonVariant.SECONDARY}
             >
-              <Input
-                ref={inputRef}
-                id="session-name"
-                type="text"
-                value={values.name}
-                onChange={(e) => setValue('name', e.target.value)}
-                onBlur={() => setTouched('name')}
-                onKeyDown={handleKeyDown}
-                disabled={saving}
-                className="w-full"
-                placeholder={t('chat.enterSessionName')}
-              />
-            </FormField>
-          </FormContainer>
-        </div>
-        <ModalFooter>
-          <FormButton
-            type={ButtonType.BUTTON}
-            onClick={onClose}
-            disabled={saving}
-            variant={ButtonVariant.SECONDARY}
-          >
-            {t('common.cancel')}
-          </FormButton>
-          <FormButton
-            type={ButtonType.BUTTON}
-            onClick={handleSave}
-            loading={saving}
-            disabled={saving}
-            variant={ButtonVariant.PRIMARY}
-            tooltip={saving ? t('config.saving') : t('common.save')}
-          >
-            {t('common.save')}
-          </FormButton>
-        </ModalFooter>
-      </Card>
+              {t('common.cancel')}
+            </FormButton>
+            <FormButton
+              type={ButtonType.BUTTON}
+              onClick={handleSave}
+              loading={saving}
+              disabled={saving}
+              variant={ButtonVariant.PRIMARY}
+              tooltip={saving ? t('config.saving') : t('common.save')}
+            >
+              {t('common.save')}
+            </FormButton>
+          </ModalFooter>
+        </Card>
       </div>
     </div>
   );

@@ -1,8 +1,4 @@
-import {
-  AvatarPicker,
-  ValidatedInput,
-  FormField,
-} from '@openai/ui';
+import { AvatarPicker, ValidatedInput, FormField } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 interface AgentNameAndAvatarProps {

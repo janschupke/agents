@@ -35,6 +35,7 @@ export default function MemoriesList({
   const {
     editingMemoryId,
     editValue,
+    setEditValue,
     handleStartEdit,
     handleCancelEdit,
     handleSaveEdit,

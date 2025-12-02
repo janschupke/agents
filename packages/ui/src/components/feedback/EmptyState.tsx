@@ -20,12 +20,8 @@ export default function EmptyState({
     <div className={`flex-1 flex items-center justify-center ${className}`}>
       <div className="text-center">
         {icon && <div className="mb-4 mx-auto">{icon}</div>}
-        {title && (
-          <p className="text-text-secondary mb-2">{title}</p>
-        )}
-        {message && (
-          <p className="text-sm text-text-tertiary">{message}</p>
-        )}
+        {title && <p className="text-text-secondary mb-2">{title}</p>}
+        {message && <p className="text-sm text-text-tertiary">{message}</p>}
       </div>
     </div>
   );

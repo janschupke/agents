@@ -13,7 +13,13 @@ import { ChatAgent } from './pages/chat';
 import { AgentConfig } from './pages/config';
 import { UserProfile } from './pages/profile';
 import UserDropdown from './components/auth/UserDropdown';
-import { Footer, IconChat, IconSettings, Skeleton, PageTransition } from '@openai/ui';
+import {
+  Footer,
+  IconChat,
+  IconSettings,
+  Skeleton,
+  PageTransition,
+} from '@openai/ui';
 import { AppProvider } from './contexts/AppContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';

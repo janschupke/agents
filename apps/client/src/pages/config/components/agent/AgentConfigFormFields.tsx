@@ -6,6 +6,7 @@ import {
   Input,
   Textarea,
   ButtonVariant,
+  ButtonType,
 } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 
@@ -131,7 +132,7 @@ export function BehaviorRulesField({
               })}
             />
             <Button
-              type="button"
+              type={ButtonType.BUTTON}
               onClick={() => {
                 const newRules = rules.filter((_, i) => i !== index);
                 onChange(newRules);
@@ -146,7 +147,7 @@ export function BehaviorRulesField({
           </div>
         ))}
         <Button
-          type="button"
+          type={ButtonType.BUTTON}
           onClick={() => onChange([...rules, ''])}
           variant={ButtonVariant.SECONDARY}
           size="sm"
