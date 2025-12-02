@@ -7,6 +7,7 @@ import {
 import { MessageTranslationRepository } from './message-translation.repository';
 import { OPENAI_PROMPTS } from '../common/constants/openai-prompts.constants.js';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
+import { OPENAI_MODELS } from '../common/constants/api.constants.js';
 
 @Injectable()
 export class WordTranslationService {
@@ -146,7 +147,7 @@ export class WordTranslationService {
 
     try {
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: OPENAI_MODELS.TRANSLATION,
         messages: [
           {
             role: 'system',

@@ -79,4 +79,54 @@ export class OpenAIService {
       .map((msg) => `${msg.role}: ${msg.content}`)
       .join('\n');
   }
+
+  /**
+   * Helper method for common OpenAI chat completion pattern
+   * Centralizes the pattern used across multiple services
+   */
+  async createChatCompletion(
+    apiKey: string,
+    options: {
+      model: string;
+      systemMessage: string;
+      userMessage: string;
+      temperature?: number;
+      maxTokens?: number;
+    }
+  ): Promise<string> {
+    try {
+      const openai = this.getClient(apiKey);
+      const completion = await openai.chat.completions.create({
+        model: options.model,
+        messages: [
+          {
+            role: 'system',
+            content: options.systemMessage,
+          },
+          {
+            role: 'user',
+            content: options.userMessage,
+          },
+        ],
+        temperature: options.temperature ?? NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE,
+        max_tokens: options.maxTokens,
+      });
+
+      const response = completion.choices[0]?.message?.content;
+      if (!response) {
+        throw new InternalServerErrorException('No response from OpenAI');
+      }
+
+      return response;
+    } catch (error) {
+      const err = error as { message?: string };
+      this.logger.error(
+        'Error creating chat completion:',
+        err.message || 'Unknown error'
+      );
+      throw new InternalServerErrorException(
+        `Failed to create chat completion: ${err.message || 'Unknown error'}`
+      );
+    }
+  }
 }

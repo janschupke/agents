@@ -3,6 +3,7 @@ import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 import { AgentRepository } from '../agent/agent.repository';
 import { SessionRepository } from '../session/session.repository';
+import { SessionService } from '../session/session.service';
 import { MessageRepository } from '../message/message.repository';
 import { AgentMemoryModule } from '../memory/agent-memory.module';
 import { OpenAIService } from '../openai/openai.service';
@@ -22,6 +23,7 @@ import { MessageTranslationModule } from '../message-translation/message-transla
   controllers: [ChatController],
   providers: [
     ChatService,
+    SessionService,
     AgentRepository,
     SessionRepository,
     MessageRepository,

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { AgentRepository } from '../agent/agent.repository';
 import { SessionRepository } from '../session/session.repository';
+import { SessionService } from '../session/session.service';
 import { MessageRepository } from '../message/message.repository';
 import { AgentMemoryService } from '../memory/agent-memory.service';
 import { OpenAIService } from '../openai/openai.service';
@@ -14,10 +15,10 @@ import { SystemConfigRepository } from '../system-config/system-config.repositor
 import { MessageTranslationService } from '../message-translation/message-translation.service';
 import { WordTranslationService } from '../message-translation/word-translation.service';
 import { MessageRole } from '../common/enums/message-role.enum';
-import { MEMORY_CONFIG } from '../common/constants/api.constants.js';
+import { MEMORY_CONFIG, OPENAI_MODELS } from '../common/constants/api.constants.js';
 import { BehaviorRulesUtil } from '../common/utils/behavior-rules.util.js';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
-import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
+import { MAGIC_STRINGS, ERROR_MESSAGES } from '../common/constants/error-messages.constants.js';
 import {
   SessionResponseDto,
   ChatHistoryResponseDto,
@@ -31,6 +32,7 @@ export class ChatService {
   constructor(
     private readonly agentRepository: AgentRepository,
     private readonly sessionRepository: SessionRepository,
+    private readonly sessionService: SessionService,
     private readonly messageRepository: MessageRepository,
     private readonly agentMemoryService: AgentMemoryService,
     private readonly openaiService: OpenAIService,
@@ -44,51 +46,49 @@ export class ChatService {
     agentId: number,
     userId: string
   ): Promise<SessionResponseDto[]> {
-    // Load agent with config
-    const agent = await this.agentRepository.findByIdWithConfig(
-      agentId,
-      userId
-    );
-    if (!agent) {
-      throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
-    }
-
-    // Get all sessions for this agent and user
-    const sessions = await this.sessionRepository.findAllByAgentId(
-      agentId,
-      userId
-    );
-
-    return sessions.map((session) => ({
-      id: session.id,
-      session_name: session.sessionName,
-      createdAt: session.createdAt,
-    }));
+    return this.sessionService.getSessions(agentId, userId);
   }
 
   async createSession(
     agentId: number,
     userId: string
   ): Promise<SessionResponseDto> {
-    // User is automatically synced to DB by ClerkGuard
+    return this.sessionService.createSession(agentId, userId);
+  }
 
-    // Load agent with config
+  /**
+   * Validate agent access and return agent with config
+   */
+  private async validateAgentAccess(
+    agentId: number,
+    userId: string
+  ): Promise<{ id: number; name: string; description: string | null; configs: Record<string, unknown> }> {
     const agent = await this.agentRepository.findByIdWithConfig(
       agentId,
       userId
     );
     if (!agent) {
-      throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
+      throw new HttpException(ERROR_MESSAGES.AGENT_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
+    return agent;
+  }
 
-    // Create new session
-    const session = await this.sessionRepository.create(userId, agentId);
-
-    return {
-      id: session.id,
-      session_name: session.sessionName,
-      createdAt: session.createdAt,
-    };
+  /**
+   * Validate session access and return session
+   */
+  private async validateSessionAccess(
+    sessionId: number,
+    agentId: number,
+    userId: string
+  ): Promise<{ id: number; agentId: number; sessionName: string | null }> {
+    const session = await this.sessionRepository.findByIdAndUserId(
+      sessionId,
+      userId
+    );
+    if (!session || session.agentId !== agentId) {
+      throw new HttpException(ERROR_MESSAGES.SESSION_NOT_FOUND, HttpStatus.NOT_FOUND);
+    }
+    return session;
   }
 
   async getChatHistory(
@@ -97,24 +97,12 @@ export class ChatService {
     sessionId?: number
   ): Promise<ChatHistoryResponseDto> {
     // Load agent with config
-    const agent = await this.agentRepository.findByIdWithConfig(
-      agentId,
-      userId
-    );
-    if (!agent) {
-      throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
-    }
+    const agent = await this.validateAgentAccess(agentId, userId);
 
     // Get session (don't create - session creation only happens in sendMessage)
     let session;
     if (sessionId) {
-      session = await this.sessionRepository.findByIdAndUserId(
-        sessionId,
-        userId
-      );
-      if (!session || session.agentId !== agentId) {
-        throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
-      }
+      session = await this.validateSessionAccess(sessionId, agentId, userId);
     } else {
       // If no sessionId provided, find latest session but don't create one
       session = await this.sessionRepository.findLatestByAgentId(
@@ -216,32 +204,19 @@ export class ChatService {
     );
     if (!apiKey) {
       throw new HttpException(
-        'OpenAI API key is required. Please set your API key in your profile.',
+        ERROR_MESSAGES.OPENAI_API_KEY_REQUIRED,
         HttpStatus.BAD_REQUEST
       );
     }
 
     // Load agent with config
-    const agent = await this.agentRepository.findByIdWithConfig(
-      agentId,
-      userId
-    );
-    if (!agent) {
-      throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
-    }
-
+    const agent = await this.validateAgentAccess(agentId, userId);
     const agentConfig = this.agentRepository.mergeAgentConfig(agent.configs);
 
     // Get or create session
     let session;
     if (sessionId) {
-      session = await this.sessionRepository.findByIdAndUserId(
-        sessionId,
-        userId
-      );
-      if (!session || session.agentId !== agentId) {
-        throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
-      }
+      session = await this.validateSessionAccess(sessionId, agentId, userId);
     } else {
       session = await this.sessionRepository.findLatestByAgentId(
         agentId,
@@ -284,15 +259,15 @@ export class ChatService {
         .map((m, i) => `${i + 1}. ${m}`)
         .join('\n\n')}`;
 
-      const systemMessages = messagesForAPI.filter((m) => m.role === 'system');
+      const systemMessages = messagesForAPI.filter((m) => m.role === MessageRole.SYSTEM);
       const nonSystemMessages = messagesForAPI.filter(
-        (m) => m.role !== 'system'
+        (m) => m.role !== MessageRole.SYSTEM
       );
 
       messagesForAPI.length = 0;
       messagesForAPI.push(...systemMessages);
       messagesForAPI.push({
-        role: 'system',
+        role: MessageRole.SYSTEM,
         content: memoryContext,
       });
       messagesForAPI.push(...nonSystemMessages);
@@ -303,11 +278,11 @@ export class ChatService {
       const systemPrompt = String(agentConfig.system_prompt);
       if (
         !messagesForAPI.some(
-          (m) => m.role === 'system' && m.content === systemPrompt
+          (m) => m.role === MessageRole.SYSTEM && m.content === systemPrompt
         )
       ) {
         messagesForAPI.unshift({
-          role: 'system',
+          role: MessageRole.SYSTEM,
           content: systemPrompt,
         });
       }
@@ -335,26 +310,26 @@ export class ChatService {
         if (
           !messagesForAPI.some(
             (m) =>
-              m.role === 'system' && m.content === systemBehaviorRulesMessage
+              m.role === MessageRole.SYSTEM && m.content === systemBehaviorRulesMessage
           )
         ) {
           // Add system behavior rules after system prompt but before agent-specific rules
           const systemPromptIndex = messagesForAPI.findIndex(
             (m) =>
-              m.role === 'system' &&
+              m.role === MessageRole.SYSTEM &&
               m.content === String(agentConfig.system_prompt || '')
           );
 
           if (systemPromptIndex >= 0) {
             // Insert after system prompt
             messagesForAPI.splice(systemPromptIndex + 1, 0, {
-              role: 'system',
+              role: MessageRole.SYSTEM,
               content: systemBehaviorRulesMessage,
             });
           } else {
             // No system prompt found, add at the beginning
             messagesForAPI.unshift({
-              role: 'system',
+              role: MessageRole.SYSTEM,
               content: systemBehaviorRulesMessage,
             });
           }
@@ -375,26 +350,26 @@ export class ChatService {
           // Check if behavior rules are already present (exact match)
           if (
             !messagesForAPI.some(
-              (m) => m.role === 'system' && m.content === behaviorRulesMessage
+              (m) => m.role === MessageRole.SYSTEM && m.content === behaviorRulesMessage
             )
           ) {
             // Add behavior rules after system prompt but before other system messages
             const systemPromptIndex = messagesForAPI.findIndex(
               (m) =>
-                m.role === 'system' &&
+                m.role === MessageRole.SYSTEM &&
                 m.content === String(agentConfig.system_prompt || '')
             );
 
             if (systemPromptIndex >= 0) {
               // Insert after system prompt
               messagesForAPI.splice(systemPromptIndex + 1, 0, {
-                role: 'system',
+                role: MessageRole.SYSTEM,
                 content: behaviorRulesMessage,
               });
             } else {
               // No system prompt found, add at the beginning
               messagesForAPI.unshift({
-                role: 'system',
+                role: MessageRole.SYSTEM,
                 content: behaviorRulesMessage,
               });
             }
@@ -405,13 +380,13 @@ export class ChatService {
 
     // Add user message
     messagesForAPI.push({
-      role: 'user',
+      role: MessageRole.USER,
       content: message,
     });
 
     // Prepare OpenAI API request
     const openaiRequest = {
-      model: String(agentConfig.model || 'gpt-4o-mini'),
+      model: String(agentConfig.model || OPENAI_MODELS.DEFAULT),
       messages: messagesForAPI,
       temperature: Number(
         agentConfig.temperature || NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE
@@ -424,7 +399,7 @@ export class ChatService {
     // Save user message to database with raw request
     const userMessage = await this.messageRepository.create(
       session.id,
-      'user',
+      MessageRole.USER,
       message,
       undefined,
       openaiRequest,
@@ -438,7 +413,7 @@ export class ChatService {
     const response = completion.choices[0]?.message?.content;
     if (!response) {
       throw new HttpException(
-        'No response from OpenAI',
+        ERROR_MESSAGES.NO_RESPONSE_FROM_OPENAI,
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
@@ -446,7 +421,7 @@ export class ChatService {
     // Save assistant message to database with raw response
     const assistantMessage = await this.messageRepository.create(
       session.id,
-      'assistant',
+      MessageRole.ASSISTANT,
       response,
       {
         model: agentConfig.model,
@@ -519,40 +494,7 @@ export class ChatService {
     userId: string,
     sessionName?: string
   ): Promise<SessionResponseDto> {
-    // Verify the agent belongs to the user
-    const agent = await this.agentRepository.findByIdAndUserId(agentId, userId);
-    if (!agent) {
-      throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
-    }
-
-    // Verify the session belongs to the agent and user
-    const session = await this.sessionRepository.findByIdAndUserId(
-      sessionId,
-      userId
-    );
-    if (!session) {
-      throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
-    }
-
-    if (session.agentId !== agentId) {
-      throw new HttpException(
-        'Session does not belong to this agent',
-        HttpStatus.BAD_REQUEST
-      );
-    }
-
-    // Update the session
-    const updated = await this.sessionRepository.update(
-      sessionId,
-      userId,
-      sessionName
-    );
-
-    return {
-      id: updated.id,
-      session_name: updated.sessionName,
-      createdAt: updated.createdAt,
-    };
+    return this.sessionService.updateSession(agentId, sessionId, userId, sessionName);
   }
 
   async deleteSession(
@@ -560,29 +502,6 @@ export class ChatService {
     sessionId: number,
     userId: string
   ): Promise<void> {
-    // Verify the agent belongs to the user
-    const agent = await this.agentRepository.findByIdAndUserId(agentId, userId);
-    if (!agent) {
-      throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
-    }
-
-    // Verify the session belongs to the agent and user
-    const session = await this.sessionRepository.findByIdAndUserId(
-      sessionId,
-      userId
-    );
-    if (!session) {
-      throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
-    }
-
-    if (session.agentId !== agentId) {
-      throw new HttpException(
-        'Session does not belong to this agent',
-        HttpStatus.BAD_REQUEST
-      );
-    }
-
-    // Delete the session - Prisma will cascade delete all related data (messages, memory chunks)
-    await this.sessionRepository.delete(sessionId, userId);
+    return this.sessionService.deleteSession(agentId, sessionId, userId);
   }
 }

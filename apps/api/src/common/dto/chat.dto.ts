@@ -1,4 +1,5 @@
 import { SendMessageDto } from './send-message.dto';
+import { MessageRole } from '../enums/message-role.enum';
 
 export class SessionResponseDto {
   id!: number;
@@ -16,7 +17,7 @@ export class UpdateSessionDto {
 
 export class MessageResponseDto {
   id?: number;
-  role!: 'user' | 'assistant' | 'system';
+  role!: MessageRole;
   content!: string;
   rawRequest?: unknown;
   rawResponse?: unknown;

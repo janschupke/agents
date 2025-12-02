@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Message, Prisma } from '@prisma/client';
+import { MessageRole } from '../common/enums/message-role.enum';
 
 interface MessageForOpenAI {
-  role: 'user' | 'assistant' | 'system';
+  role: MessageRole;
   content: string;
 }
 
@@ -13,7 +14,7 @@ export class MessageRepository {
 
   async create(
     sessionId: number,
-    role: 'user' | 'assistant' | 'system',
+    role: MessageRole,
     content: string,
     metadata?: Record<string, unknown>,
     rawRequest?: unknown,
@@ -54,7 +55,7 @@ export class MessageRepository {
   ): Promise<MessageForOpenAI[]> {
     const messages = await this.findAllBySessionId(sessionId, limit);
     return messages.map((msg) => ({
-      role: msg.role as 'user' | 'assistant' | 'system',
+      role: msg.role as MessageRole,
       content: msg.content,
     }));
   }

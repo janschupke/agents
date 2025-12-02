@@ -51,45 +51,56 @@ export class SessionRepository {
     return sessions.length > 0 ? sessions[0] : null;
   }
 
-  /**
-   * Gets the activity date for a session.
-   * For sessions with messages, this is the last message date.
-   * For empty sessions, this is the creation date.
-   * This allows empty sessions to be freshest only if their creation is more recent
-   * than any other session's last message.
-   */
-  private getSessionActivityDate(
-    session: ChatSession & { messages?: { createdAt: Date }[] }
-  ): Date {
-    return session.messages?.[0]?.createdAt || session.createdAt;
-  }
 
   async findAllByAgentId(
     agentId: number,
     userId: string
   ): Promise<ChatSession[]> {
-    // Fetch sessions with their latest message to order by activity date
-    const sessions = await this.prisma.chatSession.findMany({
-      where: { agentId, userId },
-      include: {
-        messages: {
-          orderBy: { createdAt: 'desc' },
-          take: 1, // Only need the latest message
-        },
-      },
-    });
+    // Optimized: Use a subquery to get latest message date for each session
+    // This avoids loading all message data just for sorting
+    const sessionsWithActivity = await this.prisma.$queryRawUnsafe<
+      Array<{
+        id: number;
+        user_id: string;
+        agent_id: number;
+        session_name: string | null;
+        created_at: Date;
+        updated_at: Date;
+        last_message_at: Date | null;
+      }>
+    >(
+      `SELECT 
+        cs.id,
+        cs.user_id,
+        cs.agent_id,
+        cs.session_name,
+        cs.created_at,
+        cs.updated_at,
+        (
+          SELECT MAX(m.created_at)
+          FROM messages m
+          WHERE m.session_id = cs.id
+        ) as last_message_at
+      FROM chat_sessions cs
+      WHERE cs.agent_id = $1 AND cs.user_id = $2
+      ORDER BY 
+        COALESCE(
+          (SELECT MAX(m.created_at) FROM messages m WHERE m.session_id = cs.id),
+          cs.created_at
+        ) DESC`,
+      agentId,
+      userId
+    );
 
-    // Sort by activity date (desc): last message date if exists, otherwise creation date
-    // This ensures empty sessions are only freshest if their creation is more recent
-    // than any other session's last message date
-    const sorted = sessions.sort((a, b) => {
-      const aActivityDate = this.getSessionActivityDate(a);
-      const bActivityDate = this.getSessionActivityDate(b);
-      return bActivityDate.getTime() - aActivityDate.getTime();
-    });
-
-    // Return sessions without the messages relation (we only needed it for sorting)
-    return sorted.map(({ ...session }) => session);
+    // Map back to ChatSession format
+    return sessionsWithActivity.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      agentId: row.agent_id,
+      sessionName: row.session_name,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
   }
 
   async update(

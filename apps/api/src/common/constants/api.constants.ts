@@ -1,7 +1,13 @@
 import { NUMERIC_CONSTANTS } from './numeric.constants.js';
 
+export const OPENAI_MODELS = {
+  DEFAULT: 'gpt-4o-mini',
+  TRANSLATION: 'gpt-4o-mini',
+  MEMORY: 'gpt-4o-mini',
+} as const;
+
 export const DEFAULT_AGENT_CONFIG = {
-  model: 'gpt-4o-mini',
+  model: OPENAI_MODELS.DEFAULT,
   temperature: NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE,
   max_tokens: NUMERIC_CONSTANTS.DEFAULT_MAX_TOKENS,
   system_prompt: 'You are a helpful assistant.',

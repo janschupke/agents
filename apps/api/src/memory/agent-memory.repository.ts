@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AgentMemory } from '@prisma/client';
+import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 
 interface AgentMemoryWithVector {
   id: number;
@@ -22,6 +23,8 @@ interface AgentMemoryWithVector {
 @Injectable()
 export class AgentMemoryRepository {
   private readonly logger = new Logger(AgentMemoryRepository.name);
+  // Vector dimension constant for SQL queries (pgvector requires literal in type definition)
+  private readonly VECTOR_DIMENSION = NUMERIC_CONSTANTS.EMBEDDING_DIMENSIONS;
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -36,9 +39,9 @@ export class AgentMemoryRepository {
       throw new BadRequestException('Vector is required for agent memory creation');
     }
 
-      if (vector.length !== 1536) {
+      if (vector.length !== this.VECTOR_DIMENSION) {
         this.logger.warn(
-          `Warning: Vector length is ${vector.length}, expected 1536. Attempting to proceed...`
+          `Warning: Vector length is ${vector.length}, expected ${this.VECTOR_DIMENSION}. Attempting to proceed...`
         );
       }
 
@@ -63,7 +66,7 @@ export class AgentMemoryRepository {
         }>
       >(
         `INSERT INTO agent_memories (agent_id, user_id, key_point, context, vector_embedding, update_count)
-         VALUES ($1, $2, $3, $4::jsonb, $5::vector(1536), $6)
+         VALUES ($1, $2, $3, $4::jsonb, $5::vector(${this.VECTOR_DIMENSION}), $6)
          RETURNING id, agent_id, user_id, key_point, context, vector_embedding, created_at, updated_at, update_count`,
         agentId,
         userId,
@@ -165,13 +168,13 @@ export class AgentMemoryRepository {
         }>
       >(
         `SELECT id, agent_id, user_id, key_point, context,
-         1 - (vector_embedding <=> $1::vector(1536)) as similarity,
+         1 - (vector_embedding <=> $1::vector(${this.VECTOR_DIMENSION})) as similarity,
          created_at, updated_at, update_count
          FROM agent_memories
          WHERE agent_id = $2 AND user_id = $3
          AND vector_embedding IS NOT NULL
-         AND 1 - (vector_embedding <=> $1::vector(1536)) >= $4
-         ORDER BY vector_embedding <=> $1::vector(1536)
+         AND 1 - (vector_embedding <=> $1::vector(${this.VECTOR_DIMENSION})) >= $4
+         ORDER BY vector_embedding <=> $1::vector(${this.VECTOR_DIMENSION})
          LIMIT $5`,
         vectorString,
         agentId,

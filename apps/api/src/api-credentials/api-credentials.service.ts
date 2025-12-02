@@ -2,7 +2,7 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiCredentialsRepository } from './api-credentials.repository';
 import { EncryptionService } from '../common/services/encryption.service';
 import { ApiCredentialsStatus } from '../common/interfaces/api-credentials.interface';
-import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
+import { MAGIC_STRINGS, ERROR_MESSAGES } from '../common/constants/error-messages.constants.js';
 
 @Injectable()
 export class ApiCredentialsService {
@@ -18,7 +18,7 @@ export class ApiCredentialsService {
   ): Promise<void> {
     if (!apiKey || apiKey.trim().length === 0) {
       throw new HttpException(
-        'API key cannot be empty',
+        ERROR_MESSAGES.API_KEY_CANNOT_BE_EMPTY,
         HttpStatus.BAD_REQUEST
       );
     }
@@ -32,7 +32,7 @@ export class ApiCredentialsService {
       }
       const err = error as { message?: string };
       throw new HttpException(
-        `Failed to save API key: ${err.message || 'Unknown error'}`,
+        `${ERROR_MESSAGES.FAILED_TO_SAVE_API_KEY}: ${err.message || ERROR_MESSAGES.UNKNOWN_ERROR}`,
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
@@ -57,7 +57,7 @@ export class ApiCredentialsService {
     } catch (error) {
       const err = error as { message?: string };
       throw new HttpException(
-        `Failed to decrypt API key: ${err.message || 'Unknown error'}`,
+        `${ERROR_MESSAGES.FAILED_TO_DECRYPT_API_KEY}: ${err.message || ERROR_MESSAGES.UNKNOWN_ERROR}`,
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
@@ -73,7 +73,7 @@ export class ApiCredentialsService {
       provider
     );
     if (!credential) {
-      throw new HttpException('API key not found', HttpStatus.NOT_FOUND);
+      throw new HttpException(ERROR_MESSAGES.API_KEY_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
 
     await this.repository.delete(userId, provider);

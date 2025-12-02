@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AgentMemoryRepository } from './agent-memory.repository';
 import { OpenAIService } from '../openai/openai.service';
-import { MEMORY_CONFIG } from '../common/constants/api.constants.js';
+import { MEMORY_CONFIG, OPENAI_MODELS } from '../common/constants/api.constants.js';
 import { OPENAI_PROMPTS } from '../common/constants/openai-prompts.constants.js';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 
@@ -39,7 +39,7 @@ export class AgentMemoryService {
     try {
       const openai = this.openaiService.getClient(apiKey);
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: OPENAI_MODELS.MEMORY,
         messages: [
           {
             role: 'system',
@@ -325,7 +325,7 @@ export class AgentMemoryService {
     try {
       const openai = this.openaiService.getClient(apiKey);
       const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: OPENAI_MODELS.MEMORY,
         messages: [
           {
             role: 'system',
