@@ -1,6 +1,6 @@
 import { WordTranslation, MessageRole } from '../../types/chat.types.js';
 import WordTooltip from './WordTooltip';
-import MarkdownContent from './MarkdownContent';
+import MarkdownContent from '../markdown/MarkdownContent';
 
 interface TranslatableMessageContentProps {
   content: string;
