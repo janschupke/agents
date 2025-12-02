@@ -1,0 +1,29 @@
+{
+  "root": true,
+  "extends": [
+    "../../.eslintrc.json",
+    "plugin:react-hooks/recommended"
+  ],
+  "env": {
+    "browser": true,
+    "es2020": true
+  },
+  "plugins": ["react-refresh"],
+  "ignorePatterns": ["dist", "node_modules"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "error",
+    "react-refresh/only-export-components": [
+      "error",
+      { "allowConstantExport": true }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/contexts/**/*.tsx", "src/hooks/**/*.ts"],
+      "rules": {
+        "react-refresh/only-export-components": "off"
+      }
+    }
+  ],
+  "reportUnusedDisableDirectives": true
+}

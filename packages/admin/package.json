@@ -7,15 +7,16 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx",
-    "test": "vitest",
-    "test:run": "vitest run --passWithNoTests",
+    "lint": "eslint . --ext .ts,.tsx --max-warnings 0 --fix",
+    "lint:check": "eslint . --ext .ts,.tsx --max-warnings 0",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,css}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,css}\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "types": "tsc --noEmit",
-    "prettier:check": "prettier --check \"src/**/*.{ts,tsx,json,css,md}\"",
-    "prettier:write": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",
-    "check": "npm run test:run && npm run types && npm run build && npm run lint && npm run prettier:write"
+    "test:run": "vitest run --passWithNoTests",
+    "check": "pnpm typecheck && pnpm test && pnpm lint:check && pnpm format:check && pnpm build"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.53.8",

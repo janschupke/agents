@@ -1,0 +1,15 @@
+{
+  "root": true,
+  "extends": ["../../.eslintrc.json"],
+  "env": {
+    "node": true,
+    "es2020": true
+  },
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "ignorePatterns": ["dist", "coverage", "node_modules"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "error"
+  }
+}
