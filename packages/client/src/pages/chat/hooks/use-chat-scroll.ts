@@ -11,7 +11,7 @@ interface UseChatScrollReturn {
 
 /**
  * Hook to manage auto-scrolling to bottom of chat
- * Extracted from ChatBot component
+ * Extracted from ChatAgent component
  */
 export function useChatScroll({ messages, sessionId }: UseChatScrollOptions): UseChatScrollReturn {
   const messagesEndRef = useRef<HTMLDivElement>(null);

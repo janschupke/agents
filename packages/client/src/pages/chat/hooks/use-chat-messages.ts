@@ -19,7 +19,7 @@ interface UseChatMessagesReturn {
 
 /**
  * Hook to manage chat messages state and operations
- * Extracted from ChatBot component
+ * Extracted from ChatAgent component
  */
 export function useChatMessages({
   agentId,

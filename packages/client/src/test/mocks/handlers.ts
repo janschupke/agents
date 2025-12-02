@@ -4,17 +4,17 @@ import { http, HttpResponse } from 'msw';
 const API_BASE = 'http://localhost:3001';
 
 // Mock data
-export const mockBots = [
+export const mockAgents = [
   {
     id: 1,
-    name: 'Test Bot 1',
+    name: 'Test Agent 1',
     description: 'Test Description 1',
     avatarUrl: null,
     createdAt: '2024-01-01T00:00:00.000Z',
   },
   {
     id: 2,
-    name: 'Test Bot 2',
+    name: 'Test Agent 2',
     description: 'Test Description 2',
     avatarUrl: null,
     createdAt: '2024-01-02T00:00:00.000Z',
@@ -33,19 +33,19 @@ export const mockSessions = [
   {
     id: 1,
     session_name: 'Session 1',
-    bot_id: 1,
+    agent_id: 1,
   },
   {
     id: 2,
     session_name: 'Session 2',
-    bot_id: 1,
+    agent_id: 1,
   },
 ];
 
 export const mockChatHistory = {
-  bot: {
+  agent: {
     id: 1,
-    name: 'Test Bot',
+    name: 'Test Agent',
     description: 'Test Description',
   },
   session: {
@@ -68,96 +68,96 @@ export const mockSendMessageResponse = {
 // MSW Handlers
 // Note: MSW matches against the full URL including baseURL, so we use the full URL here
 export const handlers = [
-  // Bots endpoints
-  http.get(`${API_BASE}/api/bots`, () => {
-    return HttpResponse.json(mockBots);
+  // Agents endpoints
+  http.get(`${API_BASE}/api/agents`, () => {
+    return HttpResponse.json(mockAgents);
   }),
 
-  http.get(`${API_BASE}/api/bots/:botId`, ({ params }) => {
-    const botId = Number(params.botId);
-    const bot = mockBots.find((b) => b.id === botId);
-    if (!bot) {
-      return HttpResponse.json({ message: 'Bot not found' }, { status: 404 });
+  http.get(`${API_BASE}/api/agents/:agentId`, ({ params }) => {
+    const agentId = Number(params.agentId);
+    const agent = mockAgents.find((a) => a.id === agentId);
+    if (!agent) {
+      return HttpResponse.json({ message: 'Agent not found' }, { status: 404 });
     }
-    return HttpResponse.json(bot);
+    return HttpResponse.json(agent);
   }),
 
-  http.post(`${API_BASE}/api/bots`, async ({ request }) => {
+  http.post(`${API_BASE}/api/agents`, async ({ request }) => {
     const body = await request.json() as { name: string; description?: string; configs?: unknown };
-    const newBot = {
-      id: mockBots.length + 1,
+    const newAgent = {
+      id: mockAgents.length + 1,
       name: body.name,
       description: body.description || null,
       avatarUrl: null,
       createdAt: new Date().toISOString(),
     };
-    mockBots.push(newBot);
-    return HttpResponse.json(newBot, { status: 201 });
+    mockAgents.push(newAgent);
+    return HttpResponse.json(newAgent, { status: 201 });
   }),
 
-  http.put(`${API_BASE}/api/bots/:botId`, async ({ params, request }) => {
-    const botId = Number(params.botId);
-    const botIndex = mockBots.findIndex((b) => b.id === botId);
-    if (botIndex === -1) {
-      return HttpResponse.json({ message: 'Bot not found' }, { status: 404 });
+  http.put(`${API_BASE}/api/agents/:agentId`, async ({ params, request }) => {
+    const agentId = Number(params.agentId);
+    const agentIndex = mockAgents.findIndex((a) => a.id === agentId);
+    if (agentIndex === -1) {
+      return HttpResponse.json({ message: 'Agent not found' }, { status: 404 });
     }
-    const body = await request.json() as Partial<typeof mockBots[0]>;
-    const updatedBot = { ...mockBots[botIndex], ...body };
-    mockBots[botIndex] = updatedBot;
-    return HttpResponse.json(updatedBot);
+    const body = await request.json() as Partial<typeof mockAgents[0]>;
+    const updatedAgent = { ...mockAgents[agentIndex], ...body };
+    mockAgents[agentIndex] = updatedAgent;
+    return HttpResponse.json(updatedAgent);
   }),
 
-  http.delete(`${API_BASE}/api/bots/:botId`, ({ params }) => {
-    const botId = Number(params.botId);
-    const botIndex = mockBots.findIndex((b) => b.id === botId);
-    if (botIndex === -1) {
-      return HttpResponse.json({ message: 'Bot not found' }, { status: 404 });
+  http.delete(`${API_BASE}/api/agents/:agentId`, ({ params }) => {
+    const agentId = Number(params.agentId);
+    const agentIndex = mockAgents.findIndex((a) => a.id === agentId);
+    if (agentIndex === -1) {
+      return HttpResponse.json({ message: 'Agent not found' }, { status: 404 });
     }
-    mockBots.splice(botIndex, 1);
+    mockAgents.splice(agentIndex, 1);
     return HttpResponse.json({ success: true });
   }),
 
-  // Bot memories endpoints
-  http.get(`${API_BASE}/api/bots/:botId/memories`, () => {
+  // Agent memories endpoints
+  http.get(`${API_BASE}/api/agents/:agentId/memories`, () => {
     return HttpResponse.json([]);
   }),
 
-  http.get(`${API_BASE}/api/bots/:botId/memories/:memoryId`, () => {
+  http.get(`${API_BASE}/api/agents/:agentId/memories/:memoryId`, () => {
     return HttpResponse.json({
       id: 1,
-      botId: 1,
+      agentId: 1,
       keyPoint: 'Test memory',
       createdAt: new Date().toISOString(),
     });
   }),
 
-  http.put(`${API_BASE}/api/bots/:botId/memories/:memoryId`, async ({ request }) => {
+  http.put(`${API_BASE}/api/agents/:agentId/memories/:memoryId`, async ({ request }) => {
     const body = await request.json() as { keyPoint: string };
     return HttpResponse.json({
       id: 1,
-      botId: 1,
+      agentId: 1,
       keyPoint: body.keyPoint,
       createdAt: new Date().toISOString(),
     });
   }),
 
-  http.delete(`${API_BASE}/api/bots/:botId/memories/:memoryId`, () => {
+  http.delete(`${API_BASE}/api/agents/:agentId/memories/:memoryId`, () => {
     return HttpResponse.json({ success: true });
   }),
 
-  http.post(`${API_BASE}/api/bots/:botId/memories/summarize`, () => {
+  http.post(`${API_BASE}/api/agents/:agentId/memories/summarize`, () => {
     return HttpResponse.json({ success: true });
   }),
 
   // Chat endpoints
-  http.get(`${API_BASE}/api/chat/:botId`, ({ params, request }) => {
-    const botId = Number(params.botId);
+  http.get(`${API_BASE}/api/chat/:agentId`, ({ params, request }) => {
+    const agentId = Number(params.agentId);
     const url = new URL(request.url);
     const sessionId = url.searchParams.get('sessionId');
     
-    const bot = mockBots.find((b) => b.id === botId);
-    if (!bot) {
-      return HttpResponse.json({ message: 'Bot not found' }, { status: 404 });
+    const agent = mockAgents.find((a) => a.id === agentId);
+    if (!agent) {
+      return HttpResponse.json({ message: 'Agent not found' }, { status: 404 });
     }
 
     const session = sessionId
@@ -165,25 +165,25 @@ export const handlers = [
       : mockSessions[0];
 
     return HttpResponse.json({
-      bot: {
-        id: bot.id,
-        name: bot.name,
-        description: bot.description,
+      agent: {
+        id: agent.id,
+        name: agent.name,
+        description: agent.description,
       },
       session: session || null,
       messages: [],
     });
   }),
 
-  http.post(`${API_BASE}/api/chat/:botId`, async ({ params, request }) => {
-    const botId = Number(params.botId);
+  http.post(`${API_BASE}/api/chat/:agentId`, async ({ params, request }) => {
+    const agentId = Number(params.agentId);
     const url = new URL(request.url);
     const sessionId = url.searchParams.get('sessionId');
     const body = await request.json() as { message: string };
 
-    const bot = mockBots.find((b) => b.id === botId);
-    if (!bot) {
-      return HttpResponse.json({ message: 'Bot not found' }, { status: 404 });
+    const agent = mockAgents.find((a) => a.id === agentId);
+    if (!agent) {
+      return HttpResponse.json({ message: 'Agent not found' }, { status: 404 });
     }
 
     return HttpResponse.json({
@@ -195,24 +195,24 @@ export const handlers = [
     });
   }),
 
-  http.get(`${API_BASE}/api/chat/:botId/sessions`, ({ params }) => {
-    const botId = Number(params.botId);
-    const botSessions = mockSessions.filter((s) => s.bot_id === botId);
-    return HttpResponse.json(botSessions);
+  http.get(`${API_BASE}/api/chat/:agentId/sessions`, ({ params }) => {
+    const agentId = Number(params.agentId);
+    const agentSessions = mockSessions.filter((s) => s.agent_id === agentId);
+    return HttpResponse.json(agentSessions);
   }),
 
-  http.post(`${API_BASE}/api/chat/:botId/sessions`, ({ params }) => {
-    const botId = Number(params.botId);
+  http.post(`${API_BASE}/api/chat/:agentId/sessions`, ({ params }) => {
+    const agentId = Number(params.agentId);
     const newSession = {
       id: mockSessions.length + 1,
       session_name: null,
-      bot_id: botId,
+      agent_id: agentId,
     };
     mockSessions.push(newSession);
     return HttpResponse.json(newSession, { status: 201 });
   }),
 
-  http.put(`${API_BASE}/api/chat/:botId/sessions/:sessionId`, async ({ params, request }) => {
+  http.put(`${API_BASE}/api/chat/:agentId/sessions/:sessionId`, async ({ params, request }) => {
     const sessionId = Number(params.sessionId);
     const sessionIndex = mockSessions.findIndex((s) => s.id === sessionId);
     if (sessionIndex === -1) {
@@ -224,7 +224,7 @@ export const handlers = [
     return HttpResponse.json(updatedSession);
   }),
 
-  http.delete(`${API_BASE}/api/chat/:botId/sessions/:sessionId`, ({ params }) => {
+  http.delete(`${API_BASE}/api/chat/:agentId/sessions/:sessionId`, ({ params }) => {
     const sessionId = Number(params.sessionId);
     const sessionIndex = mockSessions.findIndex((s) => s.id === sessionId);
     if (sessionIndex === -1) {

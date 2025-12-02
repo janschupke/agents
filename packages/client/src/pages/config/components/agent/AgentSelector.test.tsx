@@ -2,8 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import BotSelector from './BotSelector';
-import { BotProvider } from '../../../../contexts/BotContext';
+import AgentSelector from './AgentSelector';
 import { AppProvider } from '../../../../contexts/AppContext';
 import { AuthProvider } from '../../../../contexts/AuthContext';
 import { QueryProvider } from '../../../../providers/QueryProvider';
@@ -16,12 +15,12 @@ vi.mock('@clerk/clerk-react', () => ({
   })),
 }));
 
-// Mock BotService
-vi.mock('../../../../services/bot.service', () => ({
-  BotService: {
-    getAllBots: vi.fn().mockResolvedValue([
-      { id: 1, name: 'Bot 1', description: 'Description 1', createdAt: '2024-01-01' },
-      { id: 2, name: 'Bot 2', description: 'Description 2', createdAt: '2024-01-02' },
+// Mock AgentService
+vi.mock('../../../../services/agent.service', () => ({
+  AgentService: {
+    getAllAgents: vi.fn().mockResolvedValue([
+      { id: 1, name: 'Agent 1', description: 'Description 1', createdAt: '2024-01-01' },
+      { id: 2, name: 'Agent 2', description: 'Description 2', createdAt: '2024-01-02' },
     ]),
   },
 }));
@@ -38,33 +37,33 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <QueryProvider>
     <AuthProvider>
       <AppProvider>
-        <BotProvider>{children}</BotProvider>
+          {children}
       </AppProvider>
     </AuthProvider>
   </QueryProvider>
 );
 
-// Helper to wait for bots to load
-const waitForBotsToLoad = async () => {
+// Helper to wait for agents to load
+const waitForAgentsToLoad = async () => {
   await new Promise((resolve) => setTimeout(resolve, 100));
 };
 
-describe('BotSelector', () => {
+describe('AgentSelector', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should render bot selector button', async () => {
+  it('should render agent selector button', async () => {
     render(
       <TestWrapper>
-        <BotSelector />
+        <AgentSelector />
       </TestWrapper>
     );
 
-    await waitForBotsToLoad();
+    await waitForAgentsToLoad();
     await waitFor(
       () => {
-        expect(screen.getByRole('button', { name: /select bot/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /select agent/i })).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
@@ -74,54 +73,54 @@ describe('BotSelector', () => {
     const user = userEvent.setup();
     render(
       <TestWrapper>
-        <BotSelector />
+        <AgentSelector />
       </TestWrapper>
     );
 
-    await waitForBotsToLoad();
+    await waitForAgentsToLoad();
     await waitFor(
       () => {
-        expect(screen.getByRole('button', { name: /select bot/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /select agent/i })).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
 
-    const button = screen.getByRole('button', { name: /select bot/i });
+    const button = screen.getByRole('button', { name: /select agent/i });
     await user.click(button);
 
     await waitFor(
       () => {
-        expect(screen.getByText('Bot 2')).toBeInTheDocument();
+        expect(screen.getByText('Agent 2')).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
   });
 
-  it('should open dropdown and show bot list', async () => {
+  it('should open dropdown and show agent list', async () => {
     const user = userEvent.setup();
     render(
       <TestWrapper>
-        <BotSelector />
+        <AgentSelector />
       </TestWrapper>
     );
 
-    await waitForBotsToLoad();
+    await waitForAgentsToLoad();
     await waitFor(
       () => {
-        expect(screen.getByRole('button', { name: /select bot/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /select agent/i })).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
 
     // Open dropdown
-    const button = screen.getByRole('button', { name: /select bot/i });
+    const button = screen.getByRole('button', { name: /select agent/i });
     await user.click(button);
 
-    // Should show bot options
+    // Should show agent options
     await waitFor(
       () => {
-        expect(screen.getByText('Bot 1')).toBeInTheDocument();
-        expect(screen.getByText('Bot 2')).toBeInTheDocument();
+        expect(screen.getByText('Agent 1')).toBeInTheDocument();
+        expect(screen.getByText('Agent 2')).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
@@ -131,44 +130,44 @@ describe('BotSelector', () => {
     const user = userEvent.setup();
     render(
       <TestWrapper>
-        <BotSelector />
+        <AgentSelector />
       </TestWrapper>
     );
 
-    await waitForBotsToLoad();
+    await waitForAgentsToLoad();
     await waitFor(
       () => {
-        expect(screen.getByRole('button', { name: /select bot/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /select agent/i })).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
 
     // Open dropdown
-    const button = screen.getByRole('button', { name: /select bot/i });
+    const button = screen.getByRole('button', { name: /select agent/i });
     await user.click(button);
 
-    // Should show dropdown with bots
+    // Should show dropdown with agents
     await waitFor(
       () => {
-        const bot1 = screen.getByText('Bot 1');
-        expect(bot1).toBeInTheDocument();
+        const agent1 = screen.getByText('Agent 1');
+        expect(agent1).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
   });
 
-  it('should render with placeholder when no bot selected', async () => {
+  it('should render with placeholder when no agent selected', async () => {
     render(
       <TestWrapper>
-        <BotSelector />
+        <AgentSelector />
       </TestWrapper>
     );
 
-    await waitForBotsToLoad();
+    await waitForAgentsToLoad();
     await waitFor(
       () => {
-        // Should show button (either with bot name or "Select Bot")
-        const button = screen.getByRole('button', { name: /select bot/i });
+        // Should show button (either with agent name or "Select Agent")
+        const button = screen.getByRole('button', { name: /select agent/i });
         expect(button).toBeInTheDocument();
       },
       { timeout: 3000 }

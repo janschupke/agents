@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { AgentController } from './bot.controller';
-import { AgentService } from './bot.service';
+import { AgentController } from './agent.controller';
+import { AgentService } from './agent.service';
 import { AuthenticatedUser } from '../common/types/auth.types';
 
 describe('AgentController', () => {

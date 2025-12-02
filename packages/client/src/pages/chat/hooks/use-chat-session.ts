@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../hooks/queries/query-keys';
-import { useAgentSessions } from '../../../hooks/queries/use-bots';
-import { useCreateSession, useDeleteSession } from '../../../hooks/mutations/use-bot-mutations';
+import { useAgentSessions } from '../../../hooks/queries/use-agents';
+import { useCreateSession, useDeleteSession } from '../../../hooks/mutations/use-agent-mutations';
 import { Session, ChatHistoryResponse } from '../../../types/chat.types';
 
 interface UseChatSessionOptions {

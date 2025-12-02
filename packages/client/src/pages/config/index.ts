@@ -1,1 +1,1 @@
-export { default as AgentConfig } from './components/bot/BotConfig';
+export { default as AgentConfig } from './components/agent/AgentConfig';

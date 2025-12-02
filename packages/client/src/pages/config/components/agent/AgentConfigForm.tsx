@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { Agent } from '../../../../types/chat.types';
 import { PageHeader } from '../../../../components/ui/layout';
-import { useAgent } from '../../../../hooks/queries/use-bots';
-import { useAgentMemories as useAgentMemoriesQuery } from '../../../../hooks/queries/use-bots';
-import { useAgentForm } from '../../hooks/use-bot-form';
-import { useAgentMemories } from '../../hooks/use-bot-memories';
+import { useAgent } from '../../../../hooks/queries/use-agents';
+import { useAgentMemories as useAgentMemoriesQuery } from '../../../../hooks/queries/use-agents';
+import { useAgentForm } from '../../hooks/use-agent-form';
+import { useAgentMemories } from '../../hooks/use-agent-memories';
 import { FormButton, FormContainer, ButtonType, ButtonVariant } from '../../../../components/ui/form';
 import { FadeIn } from '../../../../components/ui/animation';
 import {
@@ -12,9 +12,9 @@ import {
   TemperatureField,
   SystemPromptField,
   BehaviorRulesField,
-} from './BotConfigFormFields';
-import BotConfigFormSkeleton from './BotConfigFormSkeleton';
-import AgentNameAndAvatar from './BotNameAndAvatar';
+} from './AgentConfigFormFields';
+import AgentConfigFormSkeleton from './AgentConfigFormSkeleton';
+import AgentNameAndAvatar from './AgentNameAndAvatar';
 import MemoriesSection from './MemoriesSection';
 
 interface AgentConfigFormProps {
@@ -104,7 +104,7 @@ export default function AgentConfigForm({ agent, saving = false, onSaveClick }: 
       <div className="flex-1 overflow-y-auto p-5">
         <FormContainer saving={saving}>
           {loadingConfig ? (
-            <BotConfigFormSkeleton />
+            <AgentConfigFormSkeleton />
           ) : (
             <FadeIn key={fadeKey}>
               <div className="space-y-5">

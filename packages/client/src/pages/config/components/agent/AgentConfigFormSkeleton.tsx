@@ -3,7 +3,7 @@ import { Skeleton } from '../../../../components/ui/feedback';
 /**
  * Loading skeleton for agent configuration form
  */
-export default function BotConfigFormSkeleton() {
+export default function AgentConfigFormSkeleton() {
   return (
     <div className="space-y-5">
       <div className="flex items-start gap-4">

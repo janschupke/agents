@@ -10,12 +10,12 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { AgentService } from './bot.service';
+import { AgentService } from './agent.service';
 import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
-import { CreateAgentDto, UpdateAgentDto } from '../common/dto/bot.dto';
+import { CreateAgentDto, UpdateAgentDto } from '../common/dto/agent.dto';
 import { SuccessResponseDto } from '../common/dto/common.dto';
-import { AgentResponse } from '../common/interfaces/bot.interface';
+import { AgentResponse } from '../common/interfaces/agent.interface';
 import { API_ROUTES } from '../common/constants/api-routes.constants.js';
 
 @Controller(API_ROUTES.AGENTS.BASE)

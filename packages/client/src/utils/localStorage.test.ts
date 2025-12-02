@@ -34,56 +34,56 @@ describe('LocalStorageManager', () => {
     vi.restoreAllMocks();
   });
 
-  describe('getSelectedBotIdChat and setSelectedBotIdChat', () => {
-    it('should get and set selected bot ID for chat', () => {
-      expect(LocalStorageManager.getSelectedBotIdChat()).toBeNull();
+  describe('getSelectedAgentIdChat and setSelectedAgentIdChat', () => {
+    it('should get and set selected agent ID for chat', () => {
+      expect(LocalStorageManager.getSelectedAgentIdChat()).toBeNull();
 
-      LocalStorageManager.setSelectedBotIdChat(1);
-      expect(LocalStorageManager.getSelectedBotIdChat()).toBe(1);
+      LocalStorageManager.setSelectedAgentIdChat(1);
+      expect(LocalStorageManager.getSelectedAgentIdChat()).toBe(1);
 
-      LocalStorageManager.setSelectedBotIdChat(42);
-      expect(LocalStorageManager.getSelectedBotIdChat()).toBe(42);
+      LocalStorageManager.setSelectedAgentIdChat(42);
+      expect(LocalStorageManager.getSelectedAgentIdChat()).toBe(42);
     });
 
-    it('should return null when bot ID is cleared', () => {
-      LocalStorageManager.setSelectedBotIdChat(1);
-      expect(LocalStorageManager.getSelectedBotIdChat()).toBe(1);
+    it('should return null when agent ID is cleared', () => {
+      LocalStorageManager.setSelectedAgentIdChat(1);
+      expect(LocalStorageManager.getSelectedAgentIdChat()).toBe(1);
 
-      LocalStorageManager.setSelectedBotIdChat(null);
-      expect(LocalStorageManager.getSelectedBotIdChat()).toBeNull();
+      LocalStorageManager.setSelectedAgentIdChat(null);
+      expect(LocalStorageManager.getSelectedAgentIdChat()).toBeNull();
     });
 
     it('should return null for invalid stored values', () => {
-      localStorage.setItem('selectedBotId_chat', 'invalid');
-      expect(LocalStorageManager.getSelectedBotIdChat()).toBeNull();
+      localStorage.setItem('selectedAgentId_chat', 'invalid');
+      expect(LocalStorageManager.getSelectedAgentIdChat()).toBeNull();
 
-      localStorage.setItem('selectedBotId_chat', 'not-a-number');
-      expect(LocalStorageManager.getSelectedBotIdChat()).toBeNull();
+      localStorage.setItem('selectedAgentId_chat', 'not-a-number');
+      expect(LocalStorageManager.getSelectedAgentIdChat()).toBeNull();
     });
   });
 
-  describe('getSelectedBotIdConfig and setSelectedBotIdConfig', () => {
-    it('should get and set selected bot ID for config', () => {
-      expect(LocalStorageManager.getSelectedBotIdConfig()).toBeNull();
+  describe('getSelectedAgentIdConfig and setSelectedAgentIdConfig', () => {
+    it('should get and set selected agent ID for config', () => {
+      expect(LocalStorageManager.getSelectedAgentIdConfig()).toBeNull();
 
-      LocalStorageManager.setSelectedBotIdConfig(2);
-      expect(LocalStorageManager.getSelectedBotIdConfig()).toBe(2);
+      LocalStorageManager.setSelectedAgentIdConfig(2);
+      expect(LocalStorageManager.getSelectedAgentIdConfig()).toBe(2);
 
-      LocalStorageManager.setSelectedBotIdConfig(99);
-      expect(LocalStorageManager.getSelectedBotIdConfig()).toBe(99);
+      LocalStorageManager.setSelectedAgentIdConfig(99);
+      expect(LocalStorageManager.getSelectedAgentIdConfig()).toBe(99);
     });
 
-    it('should return null when bot ID is cleared', () => {
-      LocalStorageManager.setSelectedBotIdConfig(2);
-      expect(LocalStorageManager.getSelectedBotIdConfig()).toBe(2);
+    it('should return null when agent ID is cleared', () => {
+      LocalStorageManager.setSelectedAgentIdConfig(2);
+      expect(LocalStorageManager.getSelectedAgentIdConfig()).toBe(2);
 
-      LocalStorageManager.setSelectedBotIdConfig(null);
-      expect(LocalStorageManager.getSelectedBotIdConfig()).toBeNull();
+      LocalStorageManager.setSelectedAgentIdConfig(null);
+      expect(LocalStorageManager.getSelectedAgentIdConfig()).toBeNull();
     });
 
     it('should handle invalid stored values', () => {
-      localStorage.setItem('selectedBotId_config', 'abc');
-      expect(LocalStorageManager.getSelectedBotIdConfig()).toBeNull();
+      localStorage.setItem('selectedAgentId_config', 'abc');
+      expect(LocalStorageManager.getSelectedAgentIdConfig()).toBeNull();
     });
   });
 
@@ -114,18 +114,18 @@ describe('LocalStorageManager', () => {
 
   describe('clearAll', () => {
     it('should clear all stored values', () => {
-      LocalStorageManager.setSelectedBotIdChat(1);
-      LocalStorageManager.setSelectedBotIdConfig(2);
+      LocalStorageManager.setSelectedAgentIdChat(1);
+      LocalStorageManager.setSelectedAgentIdConfig(2);
       LocalStorageManager.setSelectedSessionId(10);
 
-      expect(LocalStorageManager.getSelectedBotIdChat()).toBe(1);
-      expect(LocalStorageManager.getSelectedBotIdConfig()).toBe(2);
+      expect(LocalStorageManager.getSelectedAgentIdChat()).toBe(1);
+      expect(LocalStorageManager.getSelectedAgentIdConfig()).toBe(2);
       expect(LocalStorageManager.getSelectedSessionId()).toBe(10);
 
       LocalStorageManager.clearAll();
 
-      expect(LocalStorageManager.getSelectedBotIdChat()).toBeNull();
-      expect(LocalStorageManager.getSelectedBotIdConfig()).toBeNull();
+      expect(LocalStorageManager.getSelectedAgentIdChat()).toBeNull();
+      expect(LocalStorageManager.getSelectedAgentIdConfig()).toBeNull();
       expect(LocalStorageManager.getSelectedSessionId()).toBeNull();
     });
   });
@@ -139,7 +139,7 @@ describe('LocalStorageManager', () => {
       });
 
       const consoleErrorSpy = vi.spyOn(console, 'error');
-      const result = LocalStorageManager.getSelectedBotIdChat();
+      const result = LocalStorageManager.getSelectedAgentIdChat();
 
       expect(result).toBeNull();
       expect(consoleErrorSpy).toHaveBeenCalled();
@@ -156,7 +156,7 @@ describe('LocalStorageManager', () => {
       });
 
       const consoleErrorSpy = vi.spyOn(console, 'error');
-      LocalStorageManager.setSelectedBotIdChat(1);
+      LocalStorageManager.setSelectedAgentIdChat(1);
 
       expect(consoleErrorSpy).toHaveBeenCalled();
 

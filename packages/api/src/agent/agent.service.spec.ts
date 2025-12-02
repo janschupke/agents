@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpException } from '@nestjs/common';
-import { AgentService } from './bot.service';
-import { AgentRepository } from './bot.repository';
+import { AgentService } from './agent.service';
+import { AgentRepository } from './agent.repository';
 import { UserService } from '../user/user.service';
 
 describe('AgentService', () => {

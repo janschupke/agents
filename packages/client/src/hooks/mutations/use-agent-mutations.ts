@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AgentService } from '../../services/bot.service';
+import { AgentService } from '../../services/agent.service';
 import { ChatService } from '../../services/chat.service';
 import { MemoryService } from '../../services/memory.service';
 import { CreateAgentRequest, UpdateAgentRequest } from '../../types/chat.types';

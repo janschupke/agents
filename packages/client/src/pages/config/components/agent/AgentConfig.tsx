@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Agent } from '../../../../types/chat.types';
-import BotSidebar from './BotSidebar';
-import BotConfigForm from './BotConfigForm';
+import AgentSidebar from './AgentSidebar';
+import AgentConfigForm from './AgentConfigForm';
 import { PageContainer } from '../../../../components/ui/layout';
-import { useAgents } from '../../../../hooks/queries/use-bots';
-import { useAgentSelection } from '../../hooks/use-bot-selection';
-import { useAgentConfigOperations } from '../../hooks/use-bot-config-operations';
+import { useAgents } from '../../../../hooks/queries/use-agents';
+import { useAgentSelection } from '../../hooks/use-agent-selection';
+import { useAgentConfigOperations } from '../../hooks/use-agent-config-operations';
 
 export default function AgentConfig() {
   const { data: contextAgents = [], isLoading: loadingAgents } = useAgents();
@@ -45,7 +45,7 @@ export default function AgentConfig() {
   return (
     <PageContainer>
       <div className="flex h-full">
-        <BotSidebar
+        <AgentSidebar
           agents={agents}
           currentAgentId={currentAgentId}
           onAgentSelect={handleAgentSelect}
@@ -54,7 +54,7 @@ export default function AgentConfig() {
           loading={loadingAgents}
         />
         <div className="flex-1 flex flex-col overflow-hidden">
-          <BotConfigForm
+          <AgentConfigForm
             agent={currentAgent}
             saving={saving}
             onSaveClick={handleAgentSave}

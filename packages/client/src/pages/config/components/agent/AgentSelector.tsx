@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { IconChevronDown } from '../../../../components/ui/Icons';
-import { useAgents } from '../../../../hooks/queries/use-bots';
+import { useAgents } from '../../../../hooks/queries/use-agents';
 import { useSelectedAgent } from '../../../../contexts/AppContext';
 import { DropdownTransition } from '../../../../components/ui/animation';
 

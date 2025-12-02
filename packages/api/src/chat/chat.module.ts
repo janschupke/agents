@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
-import { BotRepository } from '../bot/bot.repository';
+import { AgentRepository } from '../agent/agent.repository';
 import { SessionRepository } from '../session/session.repository';
 import { MessageRepository } from '../message/message.repository';
 import { AgentMemoryModule } from '../memory/agent-memory.module';
@@ -22,7 +22,7 @@ import { MessageTranslationModule } from '../message-translation/message-transla
   controllers: [ChatController],
   providers: [
     ChatService,
-    BotRepository,
+    AgentRepository,
     SessionRepository,
     MessageRepository,
     OpenAIService,

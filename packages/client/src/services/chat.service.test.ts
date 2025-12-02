@@ -10,9 +10,9 @@ describe('ChatService', () => {
       const result = await ChatService.getChatHistory(1);
 
       expect(result).toMatchObject({
-        bot: {
+        agent: {
           id: 1,
-          name: 'Test Bot 1',
+          name: 'Test Agent 1',
         },
         session: {
           id: 1,

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
-import ChatBot from './ChatBot';
+import ChatAgent from './ChatAgent';
 import { AuthProvider } from '../../../../contexts/AuthContext';
 import { AppProvider } from '../../../../contexts/AppContext';
 import { ToastProvider } from '../../../../contexts/ToastContext';
@@ -49,25 +49,25 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   </BrowserRouter>
 );
 
-describe('ChatBot', () => {
+describe('ChatAgent', () => {
   beforeEach(() => {
     // Set up MSW handlers for these tests
     server.use(
-      http.get(`${API_BASE_URL}/api/bots`, () => {
+      http.get(`${API_BASE_URL}/api/agents`, () => {
         return HttpResponse.json([
           {
             id: 1,
-            name: 'Test Bot',
+            name: 'Test Agent',
             description: 'Test Description',
             avatarUrl: null,
             createdAt: '2024-01-01T00:00:00.000Z',
           },
         ]);
       }),
-      http.get(`${API_BASE_URL}/api/bots/1`, () => {
+      http.get(`${API_BASE_URL}/api/agents/1`, () => {
         return HttpResponse.json({
           id: 1,
-          name: 'Test Bot',
+          name: 'Test Agent',
           description: 'Test Description',
           avatarUrl: null,
           createdAt: '2024-01-01T00:00:00.000Z',
@@ -75,7 +75,7 @@ describe('ChatBot', () => {
       }),
       http.get(`${API_BASE_URL}/api/chat/1/sessions`, () => {
         return HttpResponse.json([
-          { id: 1, session_name: 'Session 1', bot_id: 1 },
+          { id: 1, session_name: 'Session 1', agent_id: 1 },
         ]);
       }),
       http.get(`${API_BASE_URL}/api/user/me`, () => {
@@ -97,13 +97,13 @@ describe('ChatBot', () => {
     cleanup();
   });
 
-  it('should render chat bot with bot name', async () => {
+  it('should render chat agent with agent name', async () => {
     server.use(
       http.get(`${API_BASE_URL}/api/chat/1`, () => {
         return HttpResponse.json({
-          bot: {
+          agent: {
             id: 1,
-            name: 'Test Bot',
+            name: 'Test Agent',
             description: 'Test Description',
           },
           session: {
@@ -117,12 +117,12 @@ describe('ChatBot', () => {
 
     render(
       <TestWrapper>
-        <ChatBot botId={1} />
+        <ChatAgent agentId={1} />
       </TestWrapper>
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Test Bot')).toBeInTheDocument();
+      expect(screen.getByText('Test Agent')).toBeInTheDocument();
     }, { timeout: 1000 });
   });
 
@@ -136,9 +136,9 @@ describe('ChatBot', () => {
         
         if (sessionId === '1') {
           return HttpResponse.json({
-            bot: {
+            agent: {
               id: 1,
-              name: 'Test Bot',
+              name: 'Test Agent',
               description: 'Test Description',
             },
             session: {
@@ -155,7 +155,7 @@ describe('ChatBot', () => {
         return HttpResponse.json({
           bot: {
             id: 1,
-            name: 'Test Bot',
+            name: 'Test Agent',
             description: 'Test Description',
           },
           session: null,
@@ -166,13 +166,13 @@ describe('ChatBot', () => {
 
     render(
       <TestWrapper>
-        <ChatBot botId={1} />
+        <ChatAgent agentId={1} />
       </TestWrapper>
     );
 
     // Wait for bot to load
     await waitFor(() => {
-      expect(screen.getByText('Test Bot')).toBeInTheDocument();
+      expect(screen.getByText('Test Agent')).toBeInTheDocument();
     }, { timeout: 1000 });
 
     // Click on the session in the sidebar to select it
@@ -206,9 +206,9 @@ describe('ChatBot', () => {
         
         if (sessionId === '1') {
           return HttpResponse.json({
-            bot: {
+            agent: {
               id: 1,
-              name: 'Test Bot',
+              name: 'Test Agent',
               description: 'Test Description',
             },
             session: {
@@ -225,7 +225,7 @@ describe('ChatBot', () => {
         return HttpResponse.json({
           bot: {
             id: 1,
-            name: 'Test Bot',
+            name: 'Test Agent',
             description: 'Test Description',
           },
           session: null,
@@ -249,13 +249,13 @@ describe('ChatBot', () => {
 
     render(
       <TestWrapper>
-        <ChatBot botId={1} />
+        <ChatAgent agentId={1} />
       </TestWrapper>
     );
 
     // Wait for bot to load
     await waitFor(() => {
-      expect(screen.getByText('Test Bot')).toBeInTheDocument();
+      expect(screen.getByText('Test Agent')).toBeInTheDocument();
     }, { timeout: 1000 });
 
     // Click on the session in the sidebar to select it
@@ -300,9 +300,9 @@ describe('ChatBot', () => {
         
         if (sessionId === '1') {
           return HttpResponse.json({
-            bot: {
+            agent: {
               id: 1,
-              name: 'Test Bot',
+              name: 'Test Agent',
               description: 'Test Description',
             },
             session: {
@@ -320,7 +320,7 @@ describe('ChatBot', () => {
         return HttpResponse.json({
           bot: {
             id: 1,
-            name: 'Test Bot',
+            name: 'Test Agent',
             description: 'Test Description',
           },
           session: null,
@@ -331,13 +331,13 @@ describe('ChatBot', () => {
 
     render(
       <TestWrapper>
-        <ChatBot botId={1} />
+        <ChatAgent agentId={1} />
       </TestWrapper>
     );
 
     // Wait for bot to load
     await waitFor(() => {
-      expect(screen.getByText('Test Bot')).toBeInTheDocument();
+      expect(screen.getByText('Test Agent')).toBeInTheDocument();
     }, { timeout: 1000 });
 
     // Click on the session in the sidebar to select it

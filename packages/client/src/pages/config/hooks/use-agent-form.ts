@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Agent } from '../../../types/chat.types';
 import { useFormValidation } from '../../../hooks/use-form-validation';
 import { validationRules } from '../../../utils/validation';
-import { parseBehaviorRules } from '../utils/bot.utils';
+import { parseBehaviorRules } from '../utils/agent.utils';
 
 export interface AgentFormValues extends Record<string, unknown> {
   name: string;

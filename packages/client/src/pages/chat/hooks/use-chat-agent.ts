@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useSelectedAgent } from '../../../contexts/AppContext';
-import { useAgents } from '../../../hooks/queries/use-bots';
+import { useAgents } from '../../../hooks/queries/use-agents';
 
 interface UseChatAgentOptions {
   propAgentId?: number;

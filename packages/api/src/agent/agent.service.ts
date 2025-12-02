@@ -1,7 +1,7 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { AgentRepository } from './bot.repository';
+import { AgentRepository } from './agent.repository';
 import { UserService } from '../user/user.service';
-import { AgentResponse } from '../common/interfaces/bot.interface';
+import { AgentResponse } from '../common/interfaces/agent.interface';
 
 @Injectable()
 export class AgentService {

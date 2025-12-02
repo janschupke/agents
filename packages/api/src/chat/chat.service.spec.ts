@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpException } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { BotRepository } from '../bot/bot.repository';
+import { AgentRepository } from '../agent/agent.repository';
 import { SessionRepository } from '../session/session.repository';
 import { MessageRepository } from '../message/message.repository';
 import { AgentMemoryService } from '../memory/agent-memory.service';
@@ -12,13 +12,13 @@ import { UserService } from '../user/user.service';
 describe('ChatService', () => {
   let service: ChatService;
 
-  const mockBotRepository = {
+  const mockAgentRepository = {
     findByIdWithConfig: jest.fn(),
-    mergeBotConfig: jest.fn(),
+    mergeAgentConfig: jest.fn(),
   };
 
   const mockSessionRepository = {
-    findLatestByBotId: jest.fn(),
+    findLatestByAgentId: jest.fn(),
     create: jest.fn(),
   };
 
@@ -52,8 +52,8 @@ describe('ChatService', () => {
       providers: [
         ChatService,
         {
-          provide: BotRepository,
-          useValue: mockBotRepository,
+          provide: AgentRepository,
+          useValue: mockAgentRepository,
         },
         {
           provide: SessionRepository,
@@ -97,7 +97,7 @@ describe('ChatService', () => {
     it('should return chat history for existing bot', async () => {
       const botId = 1;
       const userId = 'user-123';
-      const mockBot = {
+      const mockAgent = {
         id: botId,
         name: 'Test Bot',
         description: 'Test Description',
@@ -113,7 +113,7 @@ describe('ChatService', () => {
         { role: 'assistant', content: 'Hi there!' },
       ];
 
-      mockBotRepository.findByIdWithConfig.mockResolvedValue(mockBot);
+      mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockBot);
       mockSessionRepository.findLatestByBotId.mockResolvedValue(mockSession);
       mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue(
         mockMessages
@@ -123,9 +123,9 @@ describe('ChatService', () => {
 
       expect(result).toEqual({
         bot: {
-          id: mockBot.id,
-          name: mockBot.name,
-          description: mockBot.description,
+          id: mockAgent.id,
+          name: mockAgent.name,
+          description: mockAgent.description,
         },
         session: {
           id: mockSession.id,
@@ -138,7 +138,7 @@ describe('ChatService', () => {
     it('should create session if not exists', async () => {
       const botId = 1;
       const userId = 'user-123';
-      const mockBot = {
+      const mockAgent = {
         id: botId,
         name: 'Test Bot',
         description: 'Test Description',
@@ -150,7 +150,7 @@ describe('ChatService', () => {
         sessionName: 'Session 1',
       };
 
-      mockBotRepository.findByIdWithConfig.mockResolvedValue(mockBot);
+      mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockBot);
       mockSessionRepository.findLatestByBotId.mockResolvedValue(null);
       mockSessionRepository.create.mockResolvedValue(mockSession);
       mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue([]);
@@ -163,7 +163,7 @@ describe('ChatService', () => {
     it('should throw HttpException if bot not found', async () => {
       const botId = 1;
       const userId = 'user-123';
-      mockBotRepository.findByIdWithConfig.mockResolvedValue(null);
+      mockAgentRepository.findByIdWithConfig.mockResolvedValue(null);
 
       await expect(service.getChatHistory(botId, userId)).rejects.toThrow(
         HttpException
@@ -179,7 +179,7 @@ describe('ChatService', () => {
       const botId = 1;
       const userId = 'user-123';
       const message = 'Hello';
-      mockBotRepository.findByIdWithConfig.mockResolvedValue(null);
+      mockAgentRepository.findByIdWithConfig.mockResolvedValue(null);
 
       await expect(service.sendMessage(botId, userId, message)).rejects.toThrow(
         HttpException

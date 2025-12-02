@@ -1,6 +1,6 @@
 import { ChatAgentProps } from '../../../../types/chat.types';
 import { useConfirm } from '../../../../hooks/useConfirm';
-import { useChatAgent } from '../../hooks/use-chat-bot';
+import { useChatAgent } from '../../hooks/use-chat-agent';
 import { useChatModals } from '../../hooks/use-chat-modals';
 import { useChatHandlers } from '../../hooks/use-chat-handlers';
 import { useChatInput } from '../../hooks/use-chat-input';

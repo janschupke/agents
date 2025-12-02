@@ -1,5 +1,5 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { AgentRepository } from '../bot/bot.repository';
+import { AgentRepository } from '../agent/agent.repository';
 import { SessionRepository } from '../session/session.repository';
 import { MessageRepository } from '../message/message.repository';
 import { AgentMemoryService } from '../memory/agent-memory.service';

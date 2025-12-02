@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type { Agent, Prisma } from '@prisma/client';
-import { AgentWithConfig } from '../common/interfaces/bot.interface';
+import { AgentWithConfig } from '../common/interfaces/agent.interface';
 import { DEFAULT_AGENT_CONFIG } from '../common/constants/api.constants';
 
 @Injectable()
