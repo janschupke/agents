@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { AgentMemory } from '../../../../types/chat.types';
 import {
   IconClose,
@@ -10,6 +9,7 @@ import {
   ButtonVariant,
 } from '@openai/ui';
 import { formatRelativeDate } from '@openai/utils';
+import { useMemoryEditing } from '../../hooks/use-memory-editing';
 
 interface MemoriesListProps {
   memories: AgentMemory[];
@@ -32,8 +32,13 @@ export default function MemoriesList({
   onRefresh: _onRefresh,
   agentId,
 }: MemoriesListProps) {
-  const [editingMemoryId, setEditingMemoryId] = useState<number | null>(null);
-  const [editValue, setEditValue] = useState<string>('');
+  const {
+    editingMemoryId,
+    editValue,
+    handleStartEdit,
+    handleCancelEdit,
+    handleSaveEdit,
+  } = useMemoryEditing();
 
   if (agentId < 0) {
     return (
@@ -58,24 +63,6 @@ export default function MemoriesList({
       </div>
     );
   }
-
-  const handleStartEdit = (memory: AgentMemory) => {
-    setEditingMemoryId(memory.id);
-    setEditValue(memory.keyPoint);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingMemoryId(null);
-    setEditValue('');
-  };
-
-  const handleSaveEdit = (memoryId: number) => {
-    if (editValue.trim()) {
-      onEdit(memoryId, editValue.trim());
-      setEditingMemoryId(null);
-      setEditValue('');
-    }
-  };
 
   return (
     <div className="space-y-2">
@@ -103,7 +90,7 @@ export default function MemoriesList({
                   />
                   <div className="flex gap-2">
                     <Button
-                      onClick={() => handleSaveEdit(memory.id)}
+                      onClick={() => handleSaveEdit(memory.id, onEdit)}
                       disabled={!editValue.trim() || editingId === memory.id}
                       variant={ButtonVariant.PRIMARY}
                       size="sm"

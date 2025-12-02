@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { Agent } from '../../../../types/chat.types';
 import AgentSidebar from './AgentSidebar';
 import AgentConfigForm from './AgentConfigForm';
@@ -6,11 +6,11 @@ import { PageContainer } from '@openai/ui';
 import { useAgents } from '../../../../hooks/queries/use-agents';
 import { useAgentSelection } from '../../hooks/use-agent-selection';
 import { useAgentConfigOperations } from '../../hooks/use-agent-config-operations';
+import { useAutoOpenAgent } from '../../hooks/use-auto-open-agent';
 
 export default function AgentConfig() {
   const { data: contextAgents = [], isLoading: loadingAgents } = useAgents();
   const [localAgents, setLocalAgents] = useState<Agent[]>([]);
-  const hasAutoOpenedRef = useRef(false);
 
   // Agent selection management
   const { currentAgentId, setCurrentAgentId, agents } = useAgentSelection({
@@ -30,28 +30,13 @@ export default function AgentConfig() {
     });
 
   // Auto-open new agent form when there are no agents
-  useEffect(() => {
-    if (loadingAgents) {
-      return;
-    }
-
-    // Use the merged agents array from the selection hook for consistency
-    const hasNoAgents = agents.length === 0;
-    const currentAgentExists = currentAgentId !== null && agents.some((a) => a.id === currentAgentId);
-    
-    // If there are no agents, clear any invalid selection and reset the ref
-    if (hasNoAgents && currentAgentId !== null && !currentAgentExists) {
-      setCurrentAgentId(null);
-      hasAutoOpenedRef.current = false;
-      return;
-    }
-    
-    // Auto-open form when there are no agents and none is selected (or selected agent doesn't exist)
-    if (hasNoAgents && (currentAgentId === null || !currentAgentExists) && !hasAutoOpenedRef.current) {
-      hasAutoOpenedRef.current = true;
-      handleNewAgent();
-    }
-  }, [loadingAgents, agents, currentAgentId, setCurrentAgentId, handleNewAgent]);
+  useAutoOpenAgent({
+    agents,
+    currentAgentId,
+    setCurrentAgentId,
+    loadingAgents,
+    onNewAgent: handleNewAgent,
+  });
 
   const handleAgentSelect = (agentId: number) => {
     // Validate agent exists before selecting

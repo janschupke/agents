@@ -7,9 +7,6 @@ import {
   SidebarHeader,
   SidebarContent,
   SidebarItem,
-  Avatar,
-  Button,
-  ButtonVariant,
 } from '@openai/ui';
 
 interface AgentSidebarProps {

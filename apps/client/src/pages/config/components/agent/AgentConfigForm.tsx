@@ -1,10 +1,10 @@
-import { useEffect, useState, useRef } from 'react';
 import { Agent } from '../../../../types/chat.types';
 import { PageHeader } from '@openai/ui';
 import { useAgent } from '../../../../hooks/queries/use-agents';
 import { useAgentMemories as useAgentMemoriesQuery } from '../../../../hooks/queries/use-agents';
 import { useAgentForm } from '../../hooks/use-agent-form';
 import { useAgentMemories } from '../../hooks/use-agent-memories';
+import { useFadeInOnChange } from '../../hooks/use-fade-in-on-change';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import {
   FormButton,
@@ -38,19 +38,7 @@ export default function AgentConfigForm({
   onSaveClick,
 }: AgentConfigFormProps) {
   // Track agent ID changes to trigger fade-in animation
-  const [fadeKey, setFadeKey] = useState(0);
-  const previousAgentIdRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    const currentAgentId = agent?.id ?? null;
-    // Trigger fade-in whenever agent ID changes (including when switching back to a previous agent)
-    if (currentAgentId !== previousAgentIdRef.current) {
-      if (currentAgentId !== null) {
-        setFadeKey((prev) => prev + 1);
-      }
-      previousAgentIdRef.current = currentAgentId;
-    }
-  }, [agent?.id]);
+  const fadeKey = useFadeInOnChange(agent?.id);
 
   // React Query hooks
   const { data: agentData, isLoading: loadingAgent } = useAgent(

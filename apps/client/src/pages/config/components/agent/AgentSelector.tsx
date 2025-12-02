@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import {
   IconChevronDown,
   Avatar,
@@ -9,6 +9,7 @@ import {
 import { useAgents } from '../../../../hooks/queries/use-agents';
 import { useSelectedAgent } from '../../../../contexts/AppContext';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
+import { useClickOutside } from '../../hooks/use-click-outside';
 
 export default function AgentSelector() {
   const { t } = useTranslation(I18nNamespace.CLIENT);
@@ -18,24 +19,7 @@ export default function AgentSelector() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
+  useClickOutside(dropdownRef, () => setIsOpen(false), isOpen);
 
   const currentAgent = agents.find((a) => a.id === selectedAgentId);
   const displayName = currentAgent?.name || t('config.selectAgent');
@@ -58,7 +42,7 @@ export default function AgentSelector() {
         tooltip={t('config.selectAgent')}
       >
         <Avatar
-          src={currentAgent?.avatarUrl}
+          src={currentAgent?.avatarUrl || undefined}
           name={displayName}
           size="md"
         />
@@ -84,7 +68,7 @@ export default function AgentSelector() {
               }`}
             >
               <Avatar
-                src={agent.avatarUrl}
+                src={agent.avatarUrl || undefined}
                 name={agent.name}
                 size="sm"
               />
