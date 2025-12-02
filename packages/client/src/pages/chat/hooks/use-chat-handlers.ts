@@ -34,8 +34,9 @@ export function useChatHandlers({
   const queryClient = useQueryClient();
 
   const handleSessionSelectWrapper = async (sessionId: number) => {
-    await handleSessionSelect(sessionId);
+    // Clear messages immediately when switching sessions to prevent stale data
     setMessages([]);
+    await handleSessionSelect(sessionId);
   };
 
   const handleNewSessionWrapper = async () => {

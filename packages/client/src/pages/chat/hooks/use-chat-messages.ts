@@ -26,21 +26,33 @@ export function useChatMessages({
   sessionId,
 }: UseChatMessagesOptions): UseChatMessagesReturn {
   const queryClient = useQueryClient();
-  const { data: chatHistory, isLoading: loadingChatHistory } = useChatHistory(botId, sessionId);
+  const { data: chatHistory, isLoading: loadingChatHistory, isFetching: fetchingChatHistory } = useChatHistory(botId, sessionId);
   const sendMessageMutation = useSendMessage();
   const [messages, setMessages] = useState<Message[]>([]);
   const previousMessageCountRef = useRef(0);
   const isInitialLoadRef = useRef(true);
+  const loadingSessionIdRef = useRef<number | null>(null);
+
+  // Clear messages immediately when sessionId changes
+  useEffect(() => {
+    if (sessionId !== loadingSessionIdRef.current) {
+      setMessages([]);
+      loadingSessionIdRef.current = sessionId;
+    }
+  }, [sessionId]);
 
   // Update messages from chat history
   useEffect(() => {
     if (chatHistory && botId && sessionId) {
       const historySessionId = chatHistory.session?.id;
+      // Only update messages if the history matches the current session
       if (historySessionId === sessionId && chatHistory.messages) {
         setMessages(chatHistory.messages);
+        loadingSessionIdRef.current = sessionId;
       }
     } else if (!sessionId) {
       setMessages([]);
+      loadingSessionIdRef.current = null;
     }
   }, [chatHistory, botId, sessionId]);
 
@@ -48,6 +60,7 @@ export function useChatMessages({
   useEffect(() => {
     isInitialLoadRef.current = true;
     previousMessageCountRef.current = 0;
+    loadingSessionIdRef.current = sessionId;
   }, [sessionId]);
 
   const sendMessage = async (message: string) => {
@@ -103,7 +116,18 @@ export function useChatMessages({
     }
   };
 
-  const loading = loadingChatHistory || sendMessageMutation.isPending;
+  // Only show loading if:
+  // 1. We're loading/fetching AND (we have no messages yet OR the history matches current session), OR
+  // 2. We're sending a message
+  // This prevents showing loading state for stale/previous sessions when rapidly switching
+  // React Query's useChatHistory automatically handles query key changes, so isLoading should
+  // only be true for the current session's query. We add an extra check to ensure we don't
+  // show loading if we have messages from a different session.
+  const isInitialLoad = messages.length === 0;
+  const isLoadingForCurrentSession = 
+    (loadingChatHistory || fetchingChatHistory) && 
+    (isInitialLoad || chatHistory?.session?.id === sessionId);
+  const loading = isLoadingForCurrentSession || sendMessageMutation.isPending;
 
   return {
     messages,
