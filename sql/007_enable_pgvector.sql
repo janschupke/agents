@@ -66,10 +66,10 @@ BEGIN
 END;
 $$;
 
--- Function to find similar memories for a bot (across all sessions)
-CREATE OR REPLACE FUNCTION find_similar_memories_for_bot(
+-- Function to find similar memories for an agent (across all sessions)
+CREATE OR REPLACE FUNCTION find_similar_memories_for_agent(
   query_embedding vector(1536),
-  bot_id_param integer,
+  agent_id_param integer,
   match_threshold float DEFAULT 0.7,
   match_count int DEFAULT 5
 )
@@ -84,17 +84,17 @@ AS $$
 DECLARE
   session_ids_array integer[];
 BEGIN
-  -- Get all session IDs for this bot
+  -- Get all session IDs for this agent
   SELECT ARRAY_AGG(id) INTO session_ids_array
   FROM chat_sessions
-  WHERE bot_id = bot_id_param;
+  WHERE agent_id = agent_id_param;
   
   -- If no sessions found, return empty
   IF session_ids_array IS NULL THEN
     RETURN;
   END IF;
   
-  -- Use the general function with bot's session IDs
+  -- Use the general function with agent's session IDs
   RETURN QUERY
   SELECT * FROM find_similar_memories(
     query_embedding,

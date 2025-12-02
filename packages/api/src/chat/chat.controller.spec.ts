@@ -49,8 +49,8 @@ describe('ChatController', () => {
   });
 
   describe('getSessions', () => {
-    it('should return sessions for a bot', async () => {
-      const botId = 1;
+    it('should return sessions for an agent', async () => {
+      const agentId = 1;
       const mockSessions = [
         { id: 1, session_name: 'Session 1', createdAt: new Date() },
         { id: 2, session_name: 'Session 2', createdAt: new Date() },
@@ -58,29 +58,29 @@ describe('ChatController', () => {
 
       mockChatService.getSessions.mockResolvedValue(mockSessions);
 
-      const result = await controller.getSessions(botId, mockUser);
+      const result = await controller.getSessions(agentId, mockUser);
 
       expect(result).toEqual(mockSessions);
-      expect(chatService.getSessions).toHaveBeenCalledWith(botId, mockUser.id);
+      expect(chatService.getSessions).toHaveBeenCalledWith(agentId, mockUser.id);
     });
 
     it('should throw HttpException on service error', async () => {
-      const botId = 1;
-      const error = new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+      const agentId = 1;
+      const error = new HttpException('Agent not found', HttpStatus.NOT_FOUND);
       mockChatService.getSessions.mockRejectedValue(error);
 
-      await expect(controller.getSessions(botId, mockUser)).rejects.toThrow(
+      await expect(controller.getSessions(agentId, mockUser)).rejects.toThrow(
         HttpException
       );
-      await expect(controller.getSessions(botId, mockUser)).rejects.toThrow(
-        'Bot not found'
+      await expect(controller.getSessions(agentId, mockUser)).rejects.toThrow(
+        'Agent not found'
       );
     });
   });
 
   describe('createSession', () => {
     it('should create a new session', async () => {
-      const botId = 1;
+      const agentId = 1;
       const mockSession = {
         id: 1,
         session_name: 'New Session',
@@ -89,34 +89,34 @@ describe('ChatController', () => {
 
       mockChatService.createSession.mockResolvedValue(mockSession);
 
-      const result = await controller.createSession(botId, mockUser);
+      const result = await controller.createSession(agentId, mockUser);
 
       expect(result).toEqual(mockSession);
       expect(chatService.createSession).toHaveBeenCalledWith(
-        botId,
+        agentId,
         mockUser.id
       );
     });
 
     it('should throw HttpException on service error', async () => {
-      const botId = 1;
-      const error = new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+      const agentId = 1;
+      const error = new HttpException('Agent not found', HttpStatus.NOT_FOUND);
       mockChatService.createSession.mockRejectedValue(error);
 
-      await expect(controller.createSession(botId, mockUser)).rejects.toThrow(
+      await expect(controller.createSession(agentId, mockUser)).rejects.toThrow(
         HttpException
       );
-      await expect(controller.createSession(botId, mockUser)).rejects.toThrow(
-        'Bot not found'
+      await expect(controller.createSession(agentId, mockUser)).rejects.toThrow(
+        'Agent not found'
       );
     });
   });
 
   describe('getChatHistory', () => {
     it('should return chat history without sessionId', async () => {
-      const botId = 1;
+      const agentId = 1;
       const mockHistory = {
-        bot: { id: botId, name: 'Test Bot', description: 'Test' },
+        agent: { id: agentId, name: 'Test Agent', description: 'Test' },
         session: { id: 1, session_name: 'Session 1' },
         messages: [
           { role: 'user', content: 'Hello' },
@@ -126,21 +126,21 @@ describe('ChatController', () => {
 
       mockChatService.getChatHistory.mockResolvedValue(mockHistory);
 
-      const result = await controller.getChatHistory(botId, mockUser);
+      const result = await controller.getChatHistory(agentId, mockUser);
 
       expect(result).toEqual(mockHistory);
       expect(chatService.getChatHistory).toHaveBeenCalledWith(
-        botId,
+        agentId,
         mockUser.id,
         undefined
       );
     });
 
     it('should return chat history with sessionId', async () => {
-      const botId = 1;
+      const agentId = 1;
       const sessionId = '5';
       const mockHistory = {
-        bot: { id: botId, name: 'Test Bot', description: 'Test' },
+        agent: { id: agentId, name: 'Test Agent', description: 'Test' },
         session: { id: 5, session_name: 'Session 5' },
         messages: [],
       };
@@ -148,36 +148,36 @@ describe('ChatController', () => {
       mockChatService.getChatHistory.mockResolvedValue(mockHistory);
 
       const result = await controller.getChatHistory(
-        botId,
+        agentId,
         mockUser,
         sessionId
       );
 
       expect(result).toEqual(mockHistory);
       expect(chatService.getChatHistory).toHaveBeenCalledWith(
-        botId,
+        agentId,
         mockUser.id,
         5
       );
     });
 
     it('should throw HttpException on service error', async () => {
-      const botId = 1;
-      const error = new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+      const agentId = 1;
+      const error = new HttpException('Agent not found', HttpStatus.NOT_FOUND);
       mockChatService.getChatHistory.mockRejectedValue(error);
 
-      await expect(controller.getChatHistory(botId, mockUser)).rejects.toThrow(
+      await expect(controller.getChatHistory(agentId, mockUser)).rejects.toThrow(
         HttpException
       );
-      await expect(controller.getChatHistory(botId, mockUser)).rejects.toThrow(
-        'Bot not found'
+      await expect(controller.getChatHistory(agentId, mockUser)).rejects.toThrow(
+        'Agent not found'
       );
     });
   });
 
   describe('sendMessage', () => {
     it('should send a message', async () => {
-      const botId = 1;
+      const agentId = 1;
       const sendMessageDto = { message: 'Hello' };
       const mockResponse = {
         response: 'Hi there!',
@@ -189,14 +189,14 @@ describe('ChatController', () => {
       mockChatService.sendMessage.mockResolvedValue(mockResponse);
 
       const result = await controller.sendMessage(
-        botId,
+        agentId,
         sendMessageDto,
         mockUser
       );
 
       expect(result).toEqual(mockResponse);
       expect(chatService.sendMessage).toHaveBeenCalledWith(
-        botId,
+        agentId,
         mockUser.id,
         sendMessageDto.message,
         undefined
@@ -204,7 +204,7 @@ describe('ChatController', () => {
     });
 
     it('should send a message with sessionId', async () => {
-      const botId = 1;
+      const agentId = 1;
       const sessionId = '5';
       const sendMessageDto = { message: 'Hello' };
       const mockResponse = {
@@ -217,7 +217,7 @@ describe('ChatController', () => {
       mockChatService.sendMessage.mockResolvedValue(mockResponse);
 
       const result = await controller.sendMessage(
-        botId,
+        agentId,
         sendMessageDto,
         mockUser,
         sessionId
@@ -225,7 +225,7 @@ describe('ChatController', () => {
 
       expect(result).toEqual(mockResponse);
       expect(chatService.sendMessage).toHaveBeenCalledWith(
-        botId,
+        agentId,
         mockUser.id,
         sendMessageDto.message,
         5
@@ -272,40 +272,40 @@ describe('ChatController', () => {
     });
 
     it('should throw HttpException on service error', async () => {
-      const botId = 1;
+      const agentId = 1;
       const sendMessageDto = { message: 'Hello' };
-      const error = new HttpException('Bot not found', HttpStatus.NOT_FOUND);
+      const error = new HttpException('Agent not found', HttpStatus.NOT_FOUND);
 
       mockChatService.sendMessage.mockRejectedValue(error);
 
       await expect(
-        controller.sendMessage(botId, sendMessageDto, mockUser)
+        controller.sendMessage(agentId, sendMessageDto, mockUser)
       ).rejects.toThrow(HttpException);
       await expect(
-        controller.sendMessage(botId, sendMessageDto, mockUser)
-      ).rejects.toThrow('Bot not found');
+        controller.sendMessage(agentId, sendMessageDto, mockUser)
+      ).rejects.toThrow('Agent not found');
     });
   });
 
   describe('deleteSession', () => {
     it('should delete a session', async () => {
-      const botId = 1;
+      const agentId = 1;
       const sessionId = 1;
 
       mockChatService.deleteSession.mockResolvedValue(undefined);
 
-      const result = await controller.deleteSession(botId, sessionId, mockUser);
+      const result = await controller.deleteSession(agentId, sessionId, mockUser);
 
       expect(result).toEqual({ success: true });
       expect(chatService.deleteSession).toHaveBeenCalledWith(
-        botId,
+        agentId,
         sessionId,
         mockUser.id
       );
     });
 
     it('should throw HttpException on service error', async () => {
-      const botId = 1;
+      const agentId = 1;
       const sessionId = 1;
       const error = new HttpException(
         'Session not found',
@@ -315,10 +315,10 @@ describe('ChatController', () => {
       mockChatService.deleteSession.mockRejectedValue(error);
 
       await expect(
-        controller.deleteSession(botId, sessionId, mockUser)
+        controller.deleteSession(agentId, sessionId, mockUser)
       ).rejects.toThrow(HttpException);
       await expect(
-        controller.deleteSession(botId, sessionId, mockUser)
+        controller.deleteSession(agentId, sessionId, mockUser)
       ).rejects.toThrow('Session not found');
     });
   });

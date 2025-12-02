@@ -48,19 +48,19 @@ describe('AgentController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('getAllBots', () => {
-    it('should return all bots', async () => {
-      const mockBots = [
-        { id: 1, name: 'Bot 1', description: 'Description 1' },
-        { id: 2, name: 'Bot 2', description: 'Description 2' },
+  describe('getAllAgents', () => {
+    it('should return all agents', async () => {
+      const mockAgents = [
+        { id: 1, name: 'Agent 1', description: 'Description 1' },
+        { id: 2, name: 'Agent 2', description: 'Description 2' },
       ];
 
-      mockBotService.findAll.mockResolvedValue(mockBots);
+      mockAgentService.findAll.mockResolvedValue(mockAgents);
 
-      const result = await controller.getAllBots(mockUser);
+      const result = await controller.getAllAgents(mockUser);
 
-      expect(result).toEqual(mockBots);
-      expect(botService.findAll).toHaveBeenCalledWith(mockUser.id);
+      expect(result).toEqual(mockAgents);
+      expect(agentService.findAll).toHaveBeenCalledWith(mockUser.id);
     });
 
     it('should throw HttpException on service error', async () => {
@@ -68,78 +68,78 @@ describe('AgentController', () => {
         'Service error',
         HttpStatus.INTERNAL_SERVER_ERROR
       );
-      mockBotService.findAll.mockRejectedValue(error);
+      mockAgentService.findAll.mockRejectedValue(error);
 
-      await expect(controller.getAllBots(mockUser)).rejects.toThrow(
+      await expect(controller.getAllAgents(mockUser)).rejects.toThrow(
         HttpException
       );
-      await expect(controller.getAllBots(mockUser)).rejects.toThrow(
+      await expect(controller.getAllAgents(mockUser)).rejects.toThrow(
         'Service error'
       );
     });
 
     it('should handle unknown errors', async () => {
       const error = new Error('Unknown error');
-      mockBotService.findAll.mockRejectedValue(error);
+      mockAgentService.findAll.mockRejectedValue(error);
 
-      await expect(controller.getAllBots(mockUser)).rejects.toThrow(
+      await expect(controller.getAllAgents(mockUser)).rejects.toThrow(
         HttpException
       );
-      await expect(controller.getAllBots(mockUser)).rejects.toThrow(
+      await expect(controller.getAllAgents(mockUser)).rejects.toThrow(
         'Unknown error'
       );
     });
   });
 
-  describe('getBot', () => {
-    it('should return a bot by id', async () => {
-      const botId = 1;
-      const mockBot = {
-        id: botId,
-        name: 'Test Bot',
+  describe('getAgent', () => {
+    it('should return an agent by id', async () => {
+      const agentId = 1;
+      const mockAgent = {
+        id: agentId,
+        name: 'Test Agent',
         description: 'Test Description',
       };
 
-      mockBotService.findById.mockResolvedValue(mockBot);
+      mockAgentService.findById.mockResolvedValue(mockAgent);
 
-      const result = await controller.getBot(botId, mockUser);
+      const result = await controller.getAgent(agentId, mockUser);
 
-      expect(result).toEqual(mockBot);
-      expect(botService.findById).toHaveBeenCalledWith(botId, mockUser.id);
+      expect(result).toEqual(mockAgent);
+      expect(agentService.findById).toHaveBeenCalledWith(agentId, mockUser.id);
     });
 
     it('should throw HttpException on service error', async () => {
-      const botId = 1;
-      const error = new HttpException('Bot not found', HttpStatus.NOT_FOUND);
-      mockBotService.findById.mockRejectedValue(error);
+      const agentId = 1;
+      const error = new HttpException('Agent not found', HttpStatus.NOT_FOUND);
+      mockAgentService.findById.mockRejectedValue(error);
 
-      await expect(controller.getBot(botId, mockUser)).rejects.toThrow(
+      await expect(controller.getAgent(agentId, mockUser)).rejects.toThrow(
         HttpException
       );
-      await expect(controller.getBot(botId, mockUser)).rejects.toThrow(
-        'Bot not found'
+      await expect(controller.getAgent(agentId, mockUser)).rejects.toThrow(
+        'Agent not found'
       );
     });
   });
 
-  describe('createBot', () => {
-    it('should create a new bot', async () => {
+  describe('createAgent', () => {
+    it('should create a new agent', async () => {
       const createDto = {
-        name: 'New Bot',
+        name: 'New Agent',
         description: 'New Description',
         configs: {
           temperature: 0.7,
           system_prompt: 'You are helpful',
         },
       };
-      const mockBot = { id: 1, ...createDto };
+      const mockAgent = { id: 1, ...createDto };
 
-      mockBotService.create.mockResolvedValue(mockBot);
+      mockAgentService.create.mockResolvedValue(mockAgent);
 
-      const result = await controller.createBot(createDto, mockUser);
+      const result = await controller.createAgent(createDto, mockUser);
 
-      expect(result).toEqual(mockBot);
-      expect(botService.create).toHaveBeenCalledWith(
+      expect(result).toEqual(mockAgent);
+      expect(agentService.create).toHaveBeenCalledWith(
         mockUser.id,
         createDto.name,
         createDto.description,
@@ -150,19 +150,19 @@ describe('AgentController', () => {
       );
     });
 
-    it('should create a bot without configs', async () => {
+    it('should create an agent without configs', async () => {
       const createDto = {
-        name: 'New Bot',
+        name: 'New Agent',
         description: 'New Description',
       };
-      const mockBot = { id: 1, ...createDto };
+      const mockAgent = { id: 1, ...createDto };
 
-      mockBotService.create.mockResolvedValue(mockBot);
+      mockAgentService.create.mockResolvedValue(mockAgent);
 
-      const result = await controller.createBot(createDto, mockUser);
+      const result = await controller.createAgent(createDto, mockUser);
 
-      expect(result).toEqual(mockBot);
-      expect(botService.create).toHaveBeenCalledWith(
+      expect(result).toEqual(mockAgent);
+      expect(agentService.create).toHaveBeenCalledWith(
         mockUser.id,
         createDto.name,
         createDto.description,
@@ -171,41 +171,41 @@ describe('AgentController', () => {
     });
 
     it('should throw HttpException on service error', async () => {
-      const createDto = { name: 'New Bot' };
+      const createDto = { name: 'New Agent' };
       const error = new HttpException(
-        'Bot name already exists',
+        'Agent name already exists',
         HttpStatus.CONFLICT
       );
-      mockBotService.create.mockRejectedValue(error);
+      mockAgentService.create.mockRejectedValue(error);
 
-      await expect(controller.createBot(createDto, mockUser)).rejects.toThrow(
+      await expect(controller.createAgent(createDto, mockUser)).rejects.toThrow(
         HttpException
       );
-      await expect(controller.createBot(createDto, mockUser)).rejects.toThrow(
-        'Bot name already exists'
+      await expect(controller.createAgent(createDto, mockUser)).rejects.toThrow(
+        'Agent name already exists'
       );
     });
   });
 
-  describe('updateBot', () => {
-    it('should update a bot', async () => {
-      const botId = 1;
+  describe('updateAgent', () => {
+    it('should update an agent', async () => {
+      const agentId = 1;
       const updateDto = {
-        name: 'Updated Bot',
+        name: 'Updated Agent',
         description: 'Updated Description',
         configs: {
           temperature: 0.8,
         },
       };
-      const mockBot = { id: botId, ...updateDto };
+      const mockAgent = { id: agentId, ...updateDto };
 
-      mockBotService.update.mockResolvedValue(mockBot);
+      mockAgentService.update.mockResolvedValue(mockAgent);
 
-      const result = await controller.updateBot(botId, updateDto, mockUser);
+      const result = await controller.updateAgent(agentId, updateDto, mockUser);
 
-      expect(result).toEqual(mockBot);
-      expect(botService.update).toHaveBeenCalledWith(
-        botId,
+      expect(result).toEqual(mockAgent);
+      expect(agentService.update).toHaveBeenCalledWith(
+        agentId,
         mockUser.id,
         updateDto.name,
         updateDto.description,
@@ -216,42 +216,42 @@ describe('AgentController', () => {
     });
 
     it('should throw HttpException on service error', async () => {
-      const botId = 1;
-      const updateDto = { name: 'Updated Bot' };
-      const error = new HttpException('Bot not found', HttpStatus.NOT_FOUND);
-      mockBotService.update.mockRejectedValue(error);
+      const agentId = 1;
+      const updateDto = { name: 'Updated Agent' };
+      const error = new HttpException('Agent not found', HttpStatus.NOT_FOUND);
+      mockAgentService.update.mockRejectedValue(error);
 
       await expect(
-        controller.updateBot(botId, updateDto, mockUser)
+        controller.updateAgent(agentId, updateDto, mockUser)
       ).rejects.toThrow(HttpException);
       await expect(
-        controller.updateBot(botId, updateDto, mockUser)
-      ).rejects.toThrow('Bot not found');
+        controller.updateAgent(agentId, updateDto, mockUser)
+      ).rejects.toThrow('Agent not found');
     });
   });
 
-  describe('deleteBot', () => {
-    it('should delete a bot', async () => {
-      const botId = 1;
+  describe('deleteAgent', () => {
+    it('should delete an agent', async () => {
+      const agentId = 1;
 
-      mockBotService.delete.mockResolvedValue(undefined);
+      mockAgentService.delete.mockResolvedValue(undefined);
 
-      const result = await controller.deleteBot(botId, mockUser);
+      const result = await controller.deleteAgent(agentId, mockUser);
 
       expect(result).toEqual({ success: true });
-      expect(botService.delete).toHaveBeenCalledWith(botId, mockUser.id);
+      expect(agentService.delete).toHaveBeenCalledWith(agentId, mockUser.id);
     });
 
     it('should throw HttpException on service error', async () => {
-      const botId = 1;
-      const error = new HttpException('Bot not found', HttpStatus.NOT_FOUND);
-      mockBotService.delete.mockRejectedValue(error);
+      const agentId = 1;
+      const error = new HttpException('Agent not found', HttpStatus.NOT_FOUND);
+      mockAgentService.delete.mockRejectedValue(error);
 
-      await expect(controller.deleteBot(botId, mockUser)).rejects.toThrow(
+      await expect(controller.deleteAgent(agentId, mockUser)).rejects.toThrow(
         HttpException
       );
-      await expect(controller.deleteBot(botId, mockUser)).rejects.toThrow(
-        'Bot not found'
+      await expect(controller.deleteAgent(agentId, mockUser)).rejects.toThrow(
+        'Agent not found'
       );
     });
   });

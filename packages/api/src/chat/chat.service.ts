@@ -298,7 +298,7 @@ export class ChatService {
             (m) => m.role === 'system' && m.content === systemBehaviorRulesMessage
           )
         ) {
-          // Add system behavior rules after system prompt but before bot-specific rules
+          // Add system behavior rules after system prompt but before agent-specific rules
           const systemPromptIndex = messagesForAPI.findIndex(
             (m) =>
               m.role === 'system' &&

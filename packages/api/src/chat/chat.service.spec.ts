@@ -94,18 +94,18 @@ describe('ChatService', () => {
   });
 
   describe('getChatHistory', () => {
-    it('should return chat history for existing bot', async () => {
-      const botId = 1;
+    it('should return chat history for existing agent', async () => {
+      const agentId = 1;
       const userId = 'user-123';
       const mockAgent = {
-        id: botId,
-        name: 'Test Bot',
+        id: agentId,
+        name: 'Test Agent',
         description: 'Test Description',
         config: {},
       };
       const mockSession = {
         id: 1,
-        botId,
+        agentId,
         sessionName: 'Session 1',
       };
       const mockMessages = [
@@ -113,16 +113,16 @@ describe('ChatService', () => {
         { role: 'assistant', content: 'Hi there!' },
       ];
 
-      mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockBot);
-      mockSessionRepository.findLatestByBotId.mockResolvedValue(mockSession);
+      mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockAgent);
+      mockSessionRepository.findLatestByAgentId.mockResolvedValue(mockSession);
       mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue(
         mockMessages
       );
 
-      const result = await service.getChatHistory(botId, userId);
+      const result = await service.getChatHistory(agentId, userId);
 
       expect(result).toEqual({
-        bot: {
+        agent: {
           id: mockAgent.id,
           name: mockAgent.name,
           description: mockAgent.description,
@@ -136,52 +136,52 @@ describe('ChatService', () => {
     });
 
     it('should create session if not exists', async () => {
-      const botId = 1;
+      const agentId = 1;
       const userId = 'user-123';
       const mockAgent = {
-        id: botId,
-        name: 'Test Bot',
+        id: agentId,
+        name: 'Test Agent',
         description: 'Test Description',
         config: {},
       };
       const mockSession = {
         id: 1,
-        botId,
+        agentId,
         sessionName: 'Session 1',
       };
 
-      mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockBot);
-      mockSessionRepository.findLatestByBotId.mockResolvedValue(null);
+      mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockAgent);
+      mockSessionRepository.findLatestByAgentId.mockResolvedValue(null);
       mockSessionRepository.create.mockResolvedValue(mockSession);
       mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue([]);
 
-      await service.getChatHistory(botId, userId);
+      await service.getChatHistory(agentId, userId);
 
-      expect(mockSessionRepository.create).toHaveBeenCalledWith(userId, botId);
+      expect(mockSessionRepository.create).toHaveBeenCalledWith(userId, agentId);
     });
 
-    it('should throw HttpException if bot not found', async () => {
-      const botId = 1;
+    it('should throw HttpException if agent not found', async () => {
+      const agentId = 1;
       const userId = 'user-123';
       mockAgentRepository.findByIdWithConfig.mockResolvedValue(null);
 
-      await expect(service.getChatHistory(botId, userId)).rejects.toThrow(
+      await expect(service.getChatHistory(agentId, userId)).rejects.toThrow(
         HttpException
       );
-      await expect(service.getChatHistory(botId, userId)).rejects.toThrow(
-        'Bot not found'
+      await expect(service.getChatHistory(agentId, userId)).rejects.toThrow(
+        'Agent not found'
       );
     });
   });
 
   describe('sendMessage', () => {
-    it('should throw HttpException if bot not found', async () => {
-      const botId = 1;
+    it('should throw HttpException if agent not found', async () => {
+      const agentId = 1;
       const userId = 'user-123';
       const message = 'Hello';
       mockAgentRepository.findByIdWithConfig.mockResolvedValue(null);
 
-      await expect(service.sendMessage(botId, userId, message)).rejects.toThrow(
+      await expect(service.sendMessage(agentId, userId, message)).rejects.toThrow(
         HttpException
       );
     });

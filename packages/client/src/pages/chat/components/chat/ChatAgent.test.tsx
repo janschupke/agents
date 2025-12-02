@@ -153,7 +153,7 @@ describe('ChatAgent', () => {
         }
         
         return HttpResponse.json({
-          bot: {
+          agent: {
             id: 1,
             name: 'Test Agent',
             description: 'Test Description',
@@ -170,7 +170,7 @@ describe('ChatAgent', () => {
       </TestWrapper>
     );
 
-    // Wait for bot to load
+    // Wait for agent to load
     await waitFor(() => {
       expect(screen.getByText('Test Agent')).toBeInTheDocument();
     }, { timeout: 1000 });
@@ -223,7 +223,7 @@ describe('ChatAgent', () => {
         }
         
         return HttpResponse.json({
-          bot: {
+          agent: {
             id: 1,
             name: 'Test Agent',
             description: 'Test Description',
@@ -253,7 +253,7 @@ describe('ChatAgent', () => {
       </TestWrapper>
     );
 
-    // Wait for bot to load
+    // Wait for agent to load
     await waitFor(() => {
       expect(screen.getByText('Test Agent')).toBeInTheDocument();
     }, { timeout: 1000 });
@@ -318,7 +318,7 @@ describe('ChatAgent', () => {
         }
         
         return HttpResponse.json({
-          bot: {
+          agent: {
             id: 1,
             name: 'Test Agent',
             description: 'Test Description',
@@ -335,7 +335,7 @@ describe('ChatAgent', () => {
       </TestWrapper>
     );
 
-    // Wait for bot to load
+    // Wait for agent to load
     await waitFor(() => {
       expect(screen.getByText('Test Agent')).toBeInTheDocument();
     }, { timeout: 1000 });

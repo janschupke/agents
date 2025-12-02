@@ -24,13 +24,13 @@ VALUES (1, 'Default Session');
 -- 4. Insert initial messages to simulate a conversation
 INSERT INTO messages (session_id, role, content, metadata)
 VALUES
-(1, 'system', 'You are TestBot, a helpful assistant.', NULL),
+(1, 'system', 'You are TestAgent, a helpful assistant.', NULL),
 (1, 'user', 'Hello, who are you?', NULL),
-(1, 'assistant', 'Hello! I am TestBot, your helpful assistant. How can I help you today?', NULL);
+(1, 'assistant', 'Hello! I am TestAgent, your helpful assistant. How can I help you today?', NULL);
 
 -- 5. Optionally, insert example memory chunks for semantic search
 INSERT INTO memory_chunks (session_id, chunk, vector)
 VALUES
 (1, 'User likes chatbots and AI tools.', NULL),
 (1, 'User is testing a general-purpose LLM chatbot.', NULL),
-(1, 'The bot should answer politely and concisely.', NULL);
+(1, 'The agent should answer politely and concisely.', NULL);

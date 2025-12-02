@@ -98,7 +98,7 @@ describe('AgentService', () => {
       expect(mockAgentRepository.findById).toHaveBeenCalledWith(agentId);
     });
 
-    it('should throw HttpException if bot not found', async () => {
+    it('should throw HttpException if agent not found', async () => {
       const agentId = 1;
       const userId = 'user-123';
 
@@ -116,7 +116,7 @@ describe('AgentService', () => {
   describe('create', () => {
     it('should create a new agent', async () => {
       const userId = 'user-123';
-      const name = 'New Bot';
+      const name = 'New Agent';
       const description = 'New Description';
       const configs = { temperature: 0.7 };
       const mockAgent = {
@@ -147,7 +147,7 @@ describe('AgentService', () => {
 
     it('should create an agent without configs', async () => {
       const userId = 'user-123';
-      const name = 'New Bot';
+      const name = 'New Agent';
       const mockAgent = {
         id: 1,
         name,
@@ -186,7 +186,7 @@ describe('AgentService', () => {
 
     it('should throw HttpException if agent with same name exists', async () => {
       const userId = 'user-123';
-      const name = 'Existing Bot';
+      const name = 'Existing Agent';
       const existingAgent = { id: 1, name, userId };
 
       mockAgentRepository.findByName.mockResolvedValue(existingAgent);
@@ -202,7 +202,7 @@ describe('AgentService', () => {
     it('should update an agent', async () => {
       const agentId = 1;
       const userId = 'user-123';
-      const name = 'Updated Bot';
+      const name = 'Updated Agent';
       const description = 'Updated Description';
       const configs = { temperature: 0.8 };
       const existingAgent = {
@@ -248,10 +248,10 @@ describe('AgentService', () => {
       );
     });
 
-    it('should throw HttpException if bot not found', async () => {
+    it('should throw HttpException if agent not found', async () => {
       const agentId = 1;
       const userId = 'user-123';
-      const name = 'Updated Bot';
+      const name = 'Updated Agent';
 
       mockAgentRepository.findByIdAndUserId.mockResolvedValue(null);
 
@@ -282,7 +282,7 @@ describe('AgentService', () => {
     it('should throw HttpException if new name conflicts with another agent', async () => {
       const agentId = 1;
       const userId = 'user-123';
-      const name = 'Conflicting Bot';
+      const name = 'Conflicting Agent';
       const existingAgent = { id: agentId, name: 'Old Agent', userId };
       const conflictingAgent = { id: 2, name, userId };
 
@@ -316,7 +316,7 @@ describe('AgentService', () => {
       expect(mockAgentRepository.delete).toHaveBeenCalledWith(agentId, userId);
     });
 
-    it('should throw HttpException if bot not found', async () => {
+    it('should throw HttpException if agent not found', async () => {
       const agentId = 1;
       const userId = 'user-123';
 
