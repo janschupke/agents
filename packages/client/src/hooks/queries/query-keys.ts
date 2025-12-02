@@ -40,3 +40,4 @@ export const queryKeys = {
     system: () => [...queryKeys.config.all, QueryKey.SYSTEM] as const,
   },
 } as const;
+

@@ -817,3 +817,4 @@ const loadChatHistory = useCallback(
 - Translations are stored per message, so editing a message would require re-translation
 - The context window (10 messages) can be adjusted based on performance and cost considerations
 - Consider using a cheaper model (like `gpt-4o-mini`) for translations to reduce costs
+

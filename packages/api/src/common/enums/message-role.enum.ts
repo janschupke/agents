@@ -3,3 +3,4 @@ export enum MessageRole {
   ASSISTANT = 'assistant',
   SYSTEM = 'system',
 }
+

@@ -74,3 +74,4 @@ export class BehaviorRulesUtil {
     return formatted.length > 0 ? `Behavior Rules:\n${formatted}` : '';
   }
 }
+

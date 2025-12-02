@@ -1742,3 +1742,4 @@ Add to the existing CSS:
 - **Error Handling**: All API calls include proper error handling and user feedback via toast notifications
 - **Performance**: Vocabulary extraction uses OpenAI API, so it may take a few seconds. Consider adding progress indicators for better UX
 - **Scalability**: For large vocabulary lists, consider implementing virtual scrolling in the management view
+

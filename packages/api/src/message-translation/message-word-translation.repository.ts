@@ -68,3 +68,4 @@ export class MessageWordTranslationRepository {
     return count > 0;
   }
 }
+

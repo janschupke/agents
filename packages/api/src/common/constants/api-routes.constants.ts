@@ -54,3 +54,4 @@ export const API_ROUTES = {
     BASE: 'api/healthcheck',
   },
 } as const;
+
