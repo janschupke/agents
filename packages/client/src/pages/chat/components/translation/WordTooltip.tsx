@@ -60,7 +60,9 @@ export default function WordTooltip({
       >
         {children}
       </span>
-      {tooltipElement && typeof document !== 'undefined' && createPortal(tooltipElement, document.body)}
+      {tooltipElement &&
+        typeof document !== 'undefined' &&
+        createPortal(tooltipElement, document.body)}
     </>
   );
 }

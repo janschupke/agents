@@ -20,12 +20,19 @@ export function useSendMessage() {
     onSuccess: (data, variables) => {
       // Invalidate chat history to refetch with new message
       queryClient.invalidateQueries({
-        queryKey: queryKeys.chat.history(variables.agentId, variables.sessionId),
+        queryKey: queryKeys.chat.history(
+          variables.agentId,
+          variables.sessionId
+        ),
       });
       // If new session was created, invalidate sessions list
       if (data.session?.id && data.session.id !== variables.sessionId) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.chat.sessions(variables.agentId) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.agents.sessions(variables.agentId) });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.chat.sessions(variables.agentId),
+        });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.agents.sessions(variables.agentId),
+        });
       }
     },
     onError: (error: { message?: string }) => {

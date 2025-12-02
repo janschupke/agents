@@ -17,7 +17,8 @@ export default function FadeTransition({
   className = '',
   duration = 'normal',
 }: FadeTransitionProps) {
-  const transitionClass = duration === 'fast' ? 'transition-fade-fast' : 'transition-fade';
+  const transitionClass =
+    duration === 'fast' ? 'transition-fade-fast' : 'transition-fade';
 
   return (
     <div

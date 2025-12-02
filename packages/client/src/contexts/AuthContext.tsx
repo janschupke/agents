@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from 'react';
 import { useUser } from '@clerk/clerk-react';
 
 interface AuthContextValue {
@@ -22,7 +28,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, [isSignedIn, isLoaded]);
 
-  return <AuthContext.Provider value={authState}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={authState}>{children}</AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

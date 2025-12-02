@@ -6,7 +6,6 @@ import { CreateAgentRequest, UpdateAgentRequest } from '../types/chat.types';
 import { API_BASE_URL } from '../constants/api.constants';
 
 describe('AgentService', () => {
-
   describe('getAllAgents', () => {
     it('should fetch all agents successfully', async () => {
       const result = await AgentService.getAllAgents();
@@ -22,7 +21,10 @@ describe('AgentService', () => {
     it('should throw error when fetch fails', async () => {
       server.use(
         http.get(`${API_BASE_URL}/api/agents`, () => {
-          return HttpResponse.json({ message: 'Internal server error' }, { status: 500 });
+          return HttpResponse.json(
+            { message: 'Internal server error' },
+            { status: 500 }
+          );
         })
       );
 
@@ -44,7 +46,10 @@ describe('AgentService', () => {
     it('should throw error when agent not found', async () => {
       server.use(
         http.get(`${API_BASE_URL}/api/agents/999`, () => {
-          return HttpResponse.json({ message: 'Agent not found' }, { status: 404 });
+          return HttpResponse.json(
+            { message: 'Agent not found' },
+            { status: 404 }
+          );
         })
       );
 
@@ -80,7 +85,10 @@ describe('AgentService', () => {
 
       server.use(
         http.post(`${API_BASE_URL}/api/agents`, () => {
-          return HttpResponse.json({ message: 'Validation error' }, { status: 400 });
+          return HttpResponse.json(
+            { message: 'Validation error' },
+            { status: 400 }
+          );
         })
       );
 
@@ -111,12 +119,14 @@ describe('AgentService', () => {
 
       server.use(
         http.put(`${API_BASE_URL}/api/agents/999`, () => {
-          return HttpResponse.json({ message: 'Agent not found' }, { status: 404 });
+          return HttpResponse.json(
+            { message: 'Agent not found' },
+            { status: 404 }
+          );
         })
       );
 
       await expect(AgentService.updateAgent(999, updateData)).rejects.toThrow();
     });
   });
-
 });

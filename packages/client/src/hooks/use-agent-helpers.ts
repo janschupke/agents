@@ -25,7 +25,9 @@ export function useGetAgentSessions() {
   const queryClient = useQueryClient();
 
   return (agentId: number): Session[] | undefined => {
-    return queryClient.getQueryData<Session[]>(queryKeys.agents.sessions(agentId));
+    return queryClient.getQueryData<Session[]>(
+      queryKeys.agents.sessions(agentId)
+    );
   };
 }
 
@@ -37,13 +39,17 @@ export function useInvalidateAgent() {
 
   return {
     invalidateAgent: (agentId: number) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agentId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.agents.detail(agentId),
+      });
     },
     invalidateAgentList: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.all });
     },
     invalidateAgentSessions: (agentId: number) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.agents.sessions(agentId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.agents.sessions(agentId),
+      });
     },
     invalidateAll: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.all });
@@ -71,11 +77,20 @@ export function useUpdateAgentSessionsCache() {
 
   return {
     addSession: (agentId: number, session: Session) => {
-      const currentSessions = queryClient.getQueryData<Session[]>(queryKeys.agents.sessions(agentId)) || [];
-      queryClient.setQueryData(queryKeys.agents.sessions(agentId), [session, ...currentSessions]);
+      const currentSessions =
+        queryClient.getQueryData<Session[]>(
+          queryKeys.agents.sessions(agentId)
+        ) || [];
+      queryClient.setQueryData(queryKeys.agents.sessions(agentId), [
+        session,
+        ...currentSessions,
+      ]);
     },
     removeSession: (agentId: number, sessionId: number) => {
-      const currentSessions = queryClient.getQueryData<Session[]>(queryKeys.agents.sessions(agentId)) || [];
+      const currentSessions =
+        queryClient.getQueryData<Session[]>(
+          queryKeys.agents.sessions(agentId)
+        ) || [];
       queryClient.setQueryData(
         queryKeys.agents.sessions(agentId),
         currentSessions.filter((s) => s.id !== sessionId)

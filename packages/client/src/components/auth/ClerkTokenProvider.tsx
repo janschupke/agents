@@ -5,12 +5,16 @@ import { tokenProvider } from '../../services/token-provider';
 /**
  * Component that sets up token provider for API requests
  * This should be rendered inside ClerkProvider
- * 
+ *
  * Uses useLayoutEffect to set up the token getter synchronously before
  * other components' effects run, preventing race conditions where API
  * calls happen before the token getter is configured.
  */
-export default function ClerkTokenProvider({ children }: { children: React.ReactNode }) {
+export default function ClerkTokenProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { getToken, isSignedIn } = useAuth();
 
   // Use useLayoutEffect to ensure token getter is set up synchronously

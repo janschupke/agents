@@ -1,5 +1,9 @@
 import { Agent } from '../../../types/chat.types';
-import { useCreateAgent, useUpdateAgent, useDeleteAgent } from '../../../hooks/mutations/use-agent-mutations';
+import {
+  useCreateAgent,
+  useUpdateAgent,
+  useDeleteAgent,
+} from '../../../hooks/mutations/use-agent-mutations';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../hooks/queries/query-keys';
 import { useConfirm } from '../../../hooks/useConfirm';
@@ -39,10 +43,15 @@ export function useAgentConfigOperations({
   const updateAgentMutation = useUpdateAgent();
   const deleteAgentMutation = useDeleteAgent();
 
-  const handleSave = async (agent: Agent, values: AgentFormValues): Promise<Agent | null> => {
+  const handleSave = async (
+    agent: Agent,
+    values: AgentFormValues
+  ): Promise<Agent | null> => {
     if (!agent) return null;
 
-    const validRules = values.behaviorRules.filter((rule) => rule.trim().length > 0);
+    const validRules = values.behaviorRules.filter(
+      (rule) => rule.trim().length > 0
+    );
     const configs = {
       temperature: values.temperature,
       system_prompt: values.systemPrompt.trim() || undefined,
@@ -77,7 +86,9 @@ export function useAgentConfigOperations({
           },
         });
         // Get updated agent from cache
-        const updatedAgent = queryClient.getQueryData<Agent>(queryKeys.agents.detail(agent.id));
+        const updatedAgent = queryClient.getQueryData<Agent>(
+          queryKeys.agents.detail(agent.id)
+        );
         if (updatedAgent) {
           return updatedAgent;
         } else {
@@ -119,7 +130,9 @@ export function useAgentConfigOperations({
       setLocalAgents((prev) => prev.filter((a) => a.id !== agentId));
       // If deleted agent was selected, select first available agent or clear selection
       if (currentAgentId === agentId) {
-        const remainingAgents = [...contextAgents, ...localAgents].filter((a) => a.id !== agentId);
+        const remainingAgents = [...contextAgents, ...localAgents].filter(
+          (a) => a.id !== agentId
+        );
         if (remainingAgents.length > 0) {
           setCurrentAgentId(remainingAgents[0].id);
         } else {

@@ -29,13 +29,13 @@ export default function TranslatableMessageContent({
   // This is a simplified approach - you may need more sophisticated parsing
   // to handle markdown properly
   const words = content.split(/(\s+)/);
-  
+
   return (
     <span className="markdown-wrapper">
       {words.map((word, index) => {
         const cleanWord = word.trim().toLowerCase();
         const translation = translationMap.get(cleanWord);
-        
+
         if (translation && word.trim()) {
           return (
             <WordTooltip key={index} translation={translation}>
@@ -43,7 +43,7 @@ export default function TranslatableMessageContent({
             </WordTooltip>
           );
         }
-        
+
         return <span key={index}>{word}</span>;
       })}
     </span>

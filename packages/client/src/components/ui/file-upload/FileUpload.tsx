@@ -37,7 +37,9 @@ export default function FileUpload({
   return (
     <div>
       {label && (
-        <label className="block text-sm font-medium text-text-secondary mb-1.5">{label}</label>
+        <label className="block text-sm font-medium text-text-secondary mb-1.5">
+          {label}
+        </label>
       )}
       <DragDropArea
         isDragging={isDragging}
@@ -74,7 +76,9 @@ export default function FileUpload({
               </button>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-text-primary font-medium">Image uploaded</p>
+              <p className="text-sm text-text-primary font-medium">
+                Image uploaded
+              </p>
               <p className="text-xs text-text-tertiary mt-1">
                 Click to change or drag a new image here
               </p>
@@ -93,9 +97,7 @@ export default function FileUpload({
           </div>
         )}
       </DragDropArea>
-      {error && (
-        <p className="text-xs text-red-600 mt-1.5">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-600 mt-1.5">{error}</p>}
     </div>
   );
 }

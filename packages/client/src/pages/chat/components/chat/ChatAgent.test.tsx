@@ -30,6 +30,11 @@ vi.mock('@clerk/clerk-react', () => ({
   })),
 }));
 
+// Mock useTokenReady to return true immediately for fast tests
+vi.mock('../../../../hooks/use-token-ready', () => ({
+  useTokenReady: vi.fn(() => true),
+}));
+
 // Mock scrollIntoView for jsdom
 Object.defineProperty(Element.prototype, 'scrollIntoView', {
   value: vi.fn(),
@@ -75,7 +80,12 @@ describe('ChatAgent', () => {
       }),
       http.get(`${API_BASE_URL}/api/chat/1/sessions`, () => {
         return HttpResponse.json([
-          { id: 1, session_name: 'Session 1', agent_id: 1 },
+          {
+            id: 1,
+            session_name: 'Session 1',
+            agent_id: 1,
+            createdAt: '2024-01-01T00:00:00.000Z',
+          },
         ]);
       }),
       http.get(`${API_BASE_URL}/api/user/me`, () => {
@@ -121,19 +131,23 @@ describe('ChatAgent', () => {
       </TestWrapper>
     );
 
-    await waitFor(() => {
-      expect(screen.getByText('Test Agent')).toBeInTheDocument();
-    }, { timeout: 1000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('Test Agent')).toBeInTheDocument();
+      },
+      { timeout: 1000 }
+    );
   });
 
   it('should display messages from chat history', async () => {
-    const user = userEvent.setup();
-    
+    // Mock chat history endpoint - return messages when sessionId=1 is requested
+    // The auto-select will trigger a prefetch, then useChatHistory will fetch when sessionId changes
     server.use(
       http.get(`${API_BASE_URL}/api/chat/1`, ({ request }) => {
         const url = new URL(request.url);
         const sessionId = url.searchParams.get('sessionId');
-        
+
+        // When sessionId is provided (either via prefetch or useChatHistory query), return messages
         if (sessionId === '1') {
           return HttpResponse.json({
             agent: {
@@ -146,12 +160,23 @@ describe('ChatAgent', () => {
               session_name: 'Session 1',
             },
             messages: [
-              { id: 1, role: MessageRole.USER, content: 'Hello', createdAt: new Date().toISOString() },
-              { id: 2, role: MessageRole.ASSISTANT, content: 'Hi there!', createdAt: new Date().toISOString() },
+              {
+                id: 1,
+                role: MessageRole.USER,
+                content: 'Hello',
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 2,
+                role: MessageRole.ASSISTANT,
+                content: 'Hi there!',
+                createdAt: new Date().toISOString(),
+              },
             ],
           });
         }
-        
+
+        // Return empty when no sessionId (initial load before session is selected)
         return HttpResponse.json({
           agent: {
             id: 1,
@@ -173,37 +198,26 @@ describe('ChatAgent', () => {
     // Wait for agent to load
     await waitFor(() => {
       expect(screen.getByText('Test Agent')).toBeInTheDocument();
-    }, { timeout: 1000 });
+    });
 
-    // Click on the session in the sidebar to select it
+    // Wait for messages to appear after session auto-selects and chat history loads
+    // useChatSession auto-selects first session, which triggers useChatHistory query
     await waitFor(() => {
-      const sessionButton = screen.getByText('Session 1');
-      expect(sessionButton).toBeInTheDocument();
-    }, { timeout: 1000 });
-
-    const sessionButton = screen.getByText('Session 1');
-    await user.click(sessionButton);
-
-    // Wait for messages to load after session is selected
-    await waitFor(
-      () => {
-        expect(screen.getByText('Hello')).toBeInTheDocument();
-        expect(screen.getByText('Hi there!')).toBeInTheDocument();
-      },
-      { timeout: 1000 }
-    );
+      expect(screen.getByText('Hello')).toBeInTheDocument();
+      expect(screen.getByText('Hi there!')).toBeInTheDocument();
+    });
   });
 
   it('should send message when form is submitted', async () => {
     const user = userEvent.setup();
-    
+
     let messageCount = 0;
-    
+
     server.use(
       http.get(`${API_BASE_URL}/api/chat/1`, ({ request }) => {
         const url = new URL(request.url);
         const sessionId = url.searchParams.get('sessionId');
-        
+
         if (sessionId === '1') {
           return HttpResponse.json({
             agent: {
@@ -215,13 +229,26 @@ describe('ChatAgent', () => {
               id: 1,
               session_name: 'Session 1',
             },
-            messages: messageCount > 0 ? [
-              { id: 1, role: MessageRole.USER, content: 'Test message', createdAt: new Date().toISOString() },
-              { id: 2, role: MessageRole.ASSISTANT, content: 'Test response', createdAt: new Date().toISOString() },
-            ] : [],
+            messages:
+              messageCount > 0
+                ? [
+                    {
+                      id: 1,
+                      role: MessageRole.USER,
+                      content: 'Test message',
+                      createdAt: new Date().toISOString(),
+                    },
+                    {
+                      id: 2,
+                      role: MessageRole.ASSISTANT,
+                      content: 'Test response',
+                      createdAt: new Date().toISOString(),
+                    },
+                  ]
+                : [],
           });
         }
-        
+
         return HttpResponse.json({
           agent: {
             id: 1,
@@ -253,15 +280,21 @@ describe('ChatAgent', () => {
     );
 
     // Wait for agent to load
-    await waitFor(() => {
-      expect(screen.getByText('Test Agent')).toBeInTheDocument();
-    }, { timeout: 1000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('Test Agent')).toBeInTheDocument();
+      },
+      { timeout: 1000 }
+    );
 
     // Click on the session in the sidebar to select it
-    await waitFor(() => {
-      const sessionButton = screen.getByText('Session 1');
-      expect(sessionButton).toBeInTheDocument();
-    }, { timeout: 1000 });
+    await waitFor(
+      () => {
+        const sessionButton = screen.getByText('Session 1');
+        expect(sessionButton).toBeInTheDocument();
+      },
+      { timeout: 1000 }
+    );
 
     const sessionButton = screen.getByText('Session 1');
     await user.click(sessionButton);
@@ -269,7 +302,9 @@ describe('ChatAgent', () => {
     // Wait for chat input to appear after session is selected
     await waitFor(
       () => {
-        expect(screen.getByPlaceholderText(/type your message/i)).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText(/type your message/i)
+        ).toBeInTheDocument();
       },
       { timeout: 1000 }
     );
@@ -290,13 +325,11 @@ describe('ChatAgent', () => {
   });
 
   it('should filter out system messages', async () => {
-    const user = userEvent.setup();
-    
     server.use(
       http.get(`${API_BASE_URL}/api/chat/1`, ({ request }) => {
         const url = new URL(request.url);
         const sessionId = url.searchParams.get('sessionId');
-        
+
         if (sessionId === '1') {
           return HttpResponse.json({
             agent: {
@@ -309,13 +342,29 @@ describe('ChatAgent', () => {
               session_name: 'Session 1',
             },
             messages: [
-              { id: 1, role: MessageRole.SYSTEM, content: 'System message', createdAt: new Date().toISOString() },
-              { id: 2, role: MessageRole.USER, content: 'User message', createdAt: new Date().toISOString() },
-              { id: 3, role: MessageRole.ASSISTANT, content: 'Assistant message', createdAt: new Date().toISOString() },
+              {
+                id: 1,
+                role: MessageRole.SYSTEM,
+                content: 'System message',
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 2,
+                role: MessageRole.USER,
+                content: 'User message',
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: 3,
+                role: MessageRole.ASSISTANT,
+                content: 'Assistant message',
+                createdAt: new Date().toISOString(),
+              },
             ],
           });
         }
-        
+
+        // Return empty when no sessionId (initial load)
         return HttpResponse.json({
           agent: {
             id: 1,
@@ -337,25 +386,14 @@ describe('ChatAgent', () => {
     // Wait for agent to load
     await waitFor(() => {
       expect(screen.getByText('Test Agent')).toBeInTheDocument();
-    }, { timeout: 1000 });
+    });
 
-    // Click on the session in the sidebar to select it
+    // Wait for messages to load after session auto-selects
+    // System messages should be filtered out
     await waitFor(() => {
-      const sessionButton = screen.getByText('Session 1');
-      expect(sessionButton).toBeInTheDocument();
-    }, { timeout: 1000 });
-
-    const sessionButton = screen.getByText('Session 1');
-    await user.click(sessionButton);
-
-    // Wait for messages to load after session is selected
-    await waitFor(
-      () => {
-        expect(screen.queryByText('System message')).not.toBeInTheDocument();
-        expect(screen.getByText('User message')).toBeInTheDocument();
-        expect(screen.getByText('Assistant message')).toBeInTheDocument();
-      },
-      { timeout: 1000 }
-    );
+      expect(screen.queryByText('System message')).not.toBeInTheDocument();
+      expect(screen.getByText('User message')).toBeInTheDocument();
+      expect(screen.getByText('Assistant message')).toBeInTheDocument();
+    });
   });
 });

@@ -22,7 +22,7 @@ interface UseFileUploadReturn {
  * Hook for file upload functionality with validation and base64 conversion
  */
 export function useFileUpload({
-  accept: _accept = 'image/*', // eslint-disable-line @typescript-eslint/no-unused-vars
+  accept: _accept = 'image/*',
   maxSizeMB = 5,
   onChange,
 }: UseFileUploadOptions): UseFileUploadReturn {
@@ -70,7 +70,8 @@ export function useFileUpload({
         const dataUrl = await validateAndConvertFile(file);
         onChange(dataUrl);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to upload file';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to upload file';
         setError(errorMessage);
       }
     },

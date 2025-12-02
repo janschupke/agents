@@ -30,10 +30,11 @@ export function useChatModals(): UseChatModalsReturn {
     data: null,
   });
 
-  const [sessionNameModal, setSessionNameModal] = useState<SessionNameModalState>({
-    isOpen: false,
-    sessionId: null,
-  });
+  const [sessionNameModal, setSessionNameModal] =
+    useState<SessionNameModalState>({
+      isOpen: false,
+      sessionId: null,
+    });
 
   const openJsonModal = (title: string, data: unknown) => {
     setJsonModal({ isOpen: true, title, data });
@@ -60,4 +61,3 @@ export function useChatModals(): UseChatModalsReturn {
     closeSessionNameModal,
   };
 }
-

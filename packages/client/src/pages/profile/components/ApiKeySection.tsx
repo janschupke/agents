@@ -1,5 +1,16 @@
-import { IconPencil, IconTrash, IconClose, IconCheck } from '../../../components/ui/Icons';
-import { FormButton, FormContainer, ValidatedInput, ButtonType, ButtonVariant } from '../../../components/ui/form';
+import {
+  IconPencil,
+  IconTrash,
+  IconClose,
+  IconCheck,
+} from '../../../components/ui/Icons';
+import {
+  FormButton,
+  FormContainer,
+  ValidatedInput,
+  ButtonType,
+  ButtonVariant,
+} from '../../../components/ui/form';
 import { useApiKey } from '../hooks/use-api-key';
 
 /**
@@ -27,13 +38,14 @@ export default function ApiKeySection() {
       <FormContainer saving={saving} error={errorMessage}>
         <div className="mb-4">
           <label className="text-sm font-medium text-text-secondary block mb-2">
-            OpenAI API Key {!hasApiKey && <span className="text-red-600">*</span>}
+            OpenAI API Key{' '}
+            {!hasApiKey && <span className="text-red-600">*</span>}
           </label>
           {!hasApiKey && (
             <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
               <p className="text-sm text-yellow-800">
-                <strong>Required:</strong> You must set your OpenAI API key to use the chat
-                feature. Get your API key from{' '}
+                <strong>Required:</strong> You must set your OpenAI API key to
+                use the chat feature. Get your API key from{' '}
                 <a
                   href="https://platform.openai.com/api-keys"
                   target="_blank"
@@ -46,8 +58,8 @@ export default function ApiKeySection() {
             </div>
           )}
           <p className="text-xs text-text-tertiary mb-3">
-            Your API key is encrypted and stored securely. It will never be sent back to the
-            frontend in plaintext.
+            Your API key is encrypted and stored securely. It will never be sent
+            back to the frontend in plaintext.
           </p>
           {!showApiKeyInput && hasApiKey ? (
             <div className="flex items-center gap-2">
@@ -81,7 +93,9 @@ export default function ApiKeySection() {
                 <ValidatedInput
                   type="password"
                   value={values.apiKey}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue('apiKey', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setValue('apiKey', e.target.value)
+                  }
                   onBlur={() => setTouched('apiKey')}
                   disabled={saving}
                   error={errors.apiKey}

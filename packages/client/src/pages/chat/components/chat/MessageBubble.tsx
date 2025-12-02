@@ -42,7 +42,9 @@ export default function MessageBubble({
         }`}
       >
         <div className="markdown-wrapper">
-          {message.role === MessageRole.ASSISTANT && wordTranslations && wordTranslations.length > 0 ? (
+          {message.role === MessageRole.ASSISTANT &&
+          wordTranslations &&
+          wordTranslations.length > 0 ? (
             <TranslatableMarkdownContent
               content={message.content}
               wordTranslations={wordTranslations}
@@ -53,7 +55,7 @@ export default function MessageBubble({
         </div>
 
         {/* Action buttons container - overlay text with background when visible */}
-        <div 
+        <div
           className={`absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${
             message.role === MessageRole.USER
               ? 'bg-message-user'
@@ -70,10 +72,10 @@ export default function MessageBubble({
               isTranslating
                 ? 'Translating...'
                 : hasTranslation
-                ? showTranslation
-                  ? 'Hide translation'
-                  : 'Show translation'
-                : 'Click to translate'
+                  ? showTranslation
+                    ? 'Hide translation'
+                    : 'Show translation'
+                  : 'Click to translate'
             }
           >
             {isTranslating ? (

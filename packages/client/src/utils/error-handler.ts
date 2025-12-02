@@ -1,6 +1,11 @@
 import { ApiError } from '../services/api-client';
 
-export type ErrorType = 'network' | 'validation' | 'server' | 'authentication' | 'unknown';
+export type ErrorType =
+  | 'network'
+  | 'validation'
+  | 'server'
+  | 'authentication'
+  | 'unknown';
 
 export interface ParsedError {
   message: string;

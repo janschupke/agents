@@ -29,7 +29,9 @@ export default function MemoriesSection({
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-base font-semibold text-text-secondary">Memories</h3>
+        <h3 className="text-base font-semibold text-text-secondary">
+          Memories
+        </h3>
         {agentId > 0 && (
           <button
             onClick={onRefresh}
@@ -37,7 +39,9 @@ export default function MemoriesSection({
             className="h-6 w-6 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title="Refresh memories"
           >
-            <IconRefresh className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <IconRefresh
+              className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`}
+            />
           </button>
         )}
       </div>

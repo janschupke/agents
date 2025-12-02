@@ -32,12 +32,20 @@ function ChatAgentContent({ agentId: propAgentId }: ChatAgentProps) {
     handleSessionDelete,
   } = useChatSession({ agentId: actualAgentId });
 
-  const { messages, loading: messagesLoading, sendMessage, setMessages } = useChatMessages({
+  const {
+    messages,
+    loading: messagesLoading,
+    sendMessage,
+    setMessages,
+  } = useChatMessages({
     agentId: actualAgentId,
     sessionId: currentSessionId,
   });
 
-  const { messagesEndRef } = useChatScroll({ messages, sessionId: currentSessionId });
+  const { messagesEndRef } = useChatScroll({
+    messages,
+    sessionId: currentSessionId,
+  });
 
   // Modal management
   const {
@@ -65,13 +73,9 @@ function ChatAgentContent({ agentId: propAgentId }: ChatAgentProps) {
   });
 
   // Chat input management
-  const showChatPlaceholder = actualAgentId !== null && currentSessionId === null;
-  const {
-    input,
-    setInput,
-    chatInputRef,
-    handleSubmit,
-  } = useChatInput({
+  const showChatPlaceholder =
+    actualAgentId !== null && currentSessionId === null;
+  const { input, setInput, chatInputRef, handleSubmit } = useChatInput({
     currentSessionId,
     messagesLoading,
     showChatPlaceholder,
@@ -127,7 +131,8 @@ function ChatAgentContent({ agentId: propAgentId }: ChatAgentProps) {
           isOpen={sessionNameModal.isOpen}
           onClose={closeSessionNameModal}
           currentName={
-            sessions.find((s) => s.id === sessionNameModal.sessionId)?.session_name || null
+            sessions.find((s) => s.id === sessionNameModal.sessionId)
+              ?.session_name || null
           }
           onSave={handleSessionNameSave}
           agentId={actualAgentId}

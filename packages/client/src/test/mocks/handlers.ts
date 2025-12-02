@@ -93,14 +93,18 @@ export const handlers = [
   }),
 
   http.post(`${API_BASE}/api/agents`, async ({ request }) => {
-    const body = await request.json() as { name: string; description?: string; configs?: unknown };
+    const body = (await request.json()) as {
+      name: string;
+      description?: string;
+      configs?: unknown;
+    };
     const newAgent = {
       id: mockAgents.length + 1,
       name: body.name,
       description: body.description || null,
       avatarUrl: null,
       createdAt: new Date().toISOString(),
-    } as typeof mockAgents[number];
+    } as (typeof mockAgents)[number];
     mockAgents.push(newAgent);
     return HttpResponse.json(newAgent, { status: 201 });
   }),
@@ -111,7 +115,7 @@ export const handlers = [
     if (agentIndex === -1) {
       return HttpResponse.json({ message: 'Agent not found' }, { status: 404 });
     }
-    const body = await request.json() as Partial<typeof mockAgents[0]>;
+    const body = (await request.json()) as Partial<(typeof mockAgents)[0]>;
     const updatedAgent = { ...mockAgents[agentIndex], ...body };
     mockAgents[agentIndex] = updatedAgent;
     return HttpResponse.json(updatedAgent);
@@ -141,15 +145,18 @@ export const handlers = [
     });
   }),
 
-  http.put(`${API_BASE}/api/agents/:agentId/memories/:memoryId`, async ({ request }) => {
-    const body = await request.json() as { keyPoint: string };
-    return HttpResponse.json({
-      id: 1,
-      agentId: 1,
-      keyPoint: body.keyPoint,
-      createdAt: new Date().toISOString(),
-    });
-  }),
+  http.put(
+    `${API_BASE}/api/agents/:agentId/memories/:memoryId`,
+    async ({ request }) => {
+      const body = (await request.json()) as { keyPoint: string };
+      return HttpResponse.json({
+        id: 1,
+        agentId: 1,
+        keyPoint: body.keyPoint,
+        createdAt: new Date().toISOString(),
+      });
+    }
+  ),
 
   http.delete(`${API_BASE}/api/agents/:agentId/memories/:memoryId`, () => {
     return HttpResponse.json({ success: true });
@@ -164,7 +171,7 @@ export const handlers = [
     const agentId = Number(params.agentId);
     const url = new URL(request.url);
     const sessionId = url.searchParams.get('sessionId');
-    
+
     const agent = mockAgents.find((a) => a.id === agentId);
     if (!agent) {
       return HttpResponse.json({ message: 'Agent not found' }, { status: 404 });
@@ -189,7 +196,7 @@ export const handlers = [
     const agentId = Number(params.agentId);
     const url = new URL(request.url);
     const sessionId = url.searchParams.get('sessionId');
-    await request.json() as { message: string }; // Validate request body
+    (await request.json()) as { message: string }; // Validate request body
 
     const agent = mockAgents.find((a) => a.id === agentId);
     if (!agent) {
@@ -217,32 +224,44 @@ export const handlers = [
       id: mockSessions.length + 1,
       session_name: null,
       agent_id: agentId,
-    } as typeof mockSessions[number];
+    } as (typeof mockSessions)[number];
     mockSessions.push(newSession);
     return HttpResponse.json(newSession, { status: 201 });
   }),
 
-  http.put(`${API_BASE}/api/chat/:agentId/sessions/:sessionId`, async ({ params, request }) => {
-    const sessionId = Number(params.sessionId);
-    const sessionIndex = mockSessions.findIndex((s) => s.id === sessionId);
-    if (sessionIndex === -1) {
-      return HttpResponse.json({ message: 'Session not found' }, { status: 404 });
+  http.put(
+    `${API_BASE}/api/chat/:agentId/sessions/:sessionId`,
+    async ({ params, request }) => {
+      const sessionId = Number(params.sessionId);
+      const sessionIndex = mockSessions.findIndex((s) => s.id === sessionId);
+      if (sessionIndex === -1) {
+        return HttpResponse.json(
+          { message: 'Session not found' },
+          { status: 404 }
+        );
+      }
+      const body = (await request.json()) as { session_name?: string };
+      const updatedSession = { ...mockSessions[sessionIndex], ...body };
+      mockSessions[sessionIndex] = updatedSession;
+      return HttpResponse.json(updatedSession);
     }
-    const body = await request.json() as { session_name?: string };
-    const updatedSession = { ...mockSessions[sessionIndex], ...body };
-    mockSessions[sessionIndex] = updatedSession;
-    return HttpResponse.json(updatedSession);
-  }),
+  ),
 
-  http.delete(`${API_BASE}/api/chat/:agentId/sessions/:sessionId`, ({ params }) => {
-    const sessionId = Number(params.sessionId);
-    const sessionIndex = mockSessions.findIndex((s) => s.id === sessionId);
-    if (sessionIndex === -1) {
-      return HttpResponse.json({ message: 'Session not found' }, { status: 404 });
+  http.delete(
+    `${API_BASE}/api/chat/:agentId/sessions/:sessionId`,
+    ({ params }) => {
+      const sessionId = Number(params.sessionId);
+      const sessionIndex = mockSessions.findIndex((s) => s.id === sessionId);
+      if (sessionIndex === -1) {
+        return HttpResponse.json(
+          { message: 'Session not found' },
+          { status: 404 }
+        );
+      }
+      mockSessions.splice(sessionIndex, 1);
+      return HttpResponse.json({ success: true });
     }
-    mockSessions.splice(sessionIndex, 1);
-    return HttpResponse.json({ success: true });
-  }),
+  ),
 
   // User endpoints
   http.get(`${API_BASE}/api/user/me`, () => {
@@ -255,7 +274,7 @@ export const handlers = [
   }),
 
   http.post(`${API_BASE}/api/api-credentials/openai`, async ({ request }) => {
-    await request.json() as { apiKey: string }; // Validate request body
+    (await request.json()) as { apiKey: string }; // Validate request body
     // In a real scenario, this would store the API key
     return HttpResponse.json({ success: true });
   }),

@@ -3,7 +3,12 @@ import { IconClose } from '../../../../components/ui/Icons';
 import { NUMERIC_CONSTANTS } from '../../../../constants/numeric.constants';
 import { useUpdateSession } from '../../../../hooks/mutations/use-agent-mutations';
 import { useFormValidation } from '../../../../hooks/use-form-validation';
-import { FormButton, FormContainer, ButtonType, ButtonVariant } from '../../../../components/ui/form';
+import {
+  FormButton,
+  FormContainer,
+  ButtonType,
+  ButtonVariant,
+} from '../../../../components/ui/form';
 
 interface SessionNameModalProps {
   isOpen: boolean;
@@ -29,16 +34,8 @@ export default function SessionNameModal({
   const inputRef = useRef<HTMLInputElement>(null);
   const updateSessionMutation = useUpdateSession();
 
-  const {
-    values,
-    errors,
-    touched,
-    setValue,
-    setTouched,
-  } = useFormValidation<SessionFormValues>(
-    {},
-    { name: currentName || '' }
-  );
+  const { values, errors, touched, setValue, setTouched } =
+    useFormValidation<SessionFormValues>({}, { name: currentName || '' });
 
   useEffect(() => {
     if (isOpen) {
@@ -87,9 +84,10 @@ export default function SessionNameModal({
 
   const saving = updateSessionMutation.isPending;
   const formError = updateSessionMutation.error;
-  const errorMessage = formError && typeof formError === 'object' && 'message' in formError
-    ? (formError as { message: string }).message
-    : null;
+  const errorMessage =
+    formError && typeof formError === 'object' && 'message' in formError
+      ? (formError as { message: string }).message
+      : null;
 
   return (
     <div
@@ -101,7 +99,9 @@ export default function SessionNameModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-text-secondary">Edit Session Name</h2>
+          <h2 className="text-lg font-semibold text-text-secondary">
+            Edit Session Name
+          </h2>
           <button
             onClick={onClose}
             className="text-text-tertiary hover:text-text-primary transition-colors"

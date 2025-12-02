@@ -6,7 +6,11 @@ interface LoadingProps {
   className?: string;
 }
 
-export default function Loading({ variant = 'inline', text, className = '' }: LoadingProps) {
+export default function Loading({
+  variant = 'inline',
+  text,
+  className = '',
+}: LoadingProps) {
   const containerStyles = {
     'full-page': 'min-h-screen flex items-center justify-center',
     inline: 'flex items-center justify-center py-4',

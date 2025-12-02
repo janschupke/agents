@@ -20,7 +20,9 @@ export default function FormContainer({
           {error}
         </div>
       )}
-      <div className={saving ? 'opacity-50 pointer-events-none' : ''}>{children}</div>
+      <div className={saving ? 'opacity-50 pointer-events-none' : ''}>
+        {children}
+      </div>
     </div>
   );
 }

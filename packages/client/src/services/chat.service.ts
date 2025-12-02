@@ -25,8 +25,13 @@ export class ChatService {
   /**
    * Get chat history for an agent and optional session
    */
-  static async getChatHistory(agentId: number, sessionId?: number): Promise<ChatHistoryResponse> {
-    return apiManager.get<ChatHistoryResponse>(API_ENDPOINTS.CHAT.BY_AGENT(agentId, sessionId));
+  static async getChatHistory(
+    agentId: number,
+    sessionId?: number
+  ): Promise<ChatHistoryResponse> {
+    return apiManager.get<ChatHistoryResponse>(
+      API_ENDPOINTS.CHAT.BY_AGENT(agentId, sessionId)
+    );
   }
 
   /**
@@ -38,7 +43,10 @@ export class ChatService {
     sessionId?: number
   ): Promise<SendMessageResponse> {
     const body: SendMessageRequest = { message };
-    return apiManager.post<SendMessageResponse>(API_ENDPOINTS.CHAT.BY_AGENT(agentId, sessionId), body);
+    return apiManager.post<SendMessageResponse>(
+      API_ENDPOINTS.CHAT.BY_AGENT(agentId, sessionId),
+      body
+    );
   }
 
   /**
@@ -49,15 +57,21 @@ export class ChatService {
     sessionId: number,
     sessionName?: string
   ): Promise<Session> {
-    return apiManager.put<Session>(API_ENDPOINTS.CHAT.SESSION(agentId, sessionId), {
-      session_name: sessionName,
-    });
+    return apiManager.put<Session>(
+      API_ENDPOINTS.CHAT.SESSION(agentId, sessionId),
+      {
+        session_name: sessionName,
+      }
+    );
   }
 
   /**
    * Delete a session (and all related messages and memory chunks)
    */
-  static async deleteSession(agentId: number, sessionId: number): Promise<void> {
+  static async deleteSession(
+    agentId: number,
+    sessionId: number
+  ): Promise<void> {
     return apiManager.delete(API_ENDPOINTS.CHAT.SESSION(agentId, sessionId));
   }
 }

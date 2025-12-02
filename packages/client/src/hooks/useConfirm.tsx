@@ -17,18 +17,15 @@ interface ConfirmState extends ConfirmOptions {
 export function useConfirm() {
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
 
-  const confirm = useCallback(
-    (options: ConfirmOptions): Promise<boolean> => {
-      return new Promise((resolve) => {
-        setConfirmState({
-          ...options,
-          isOpen: true,
-          resolve,
-        });
+  const confirm = useCallback((options: ConfirmOptions): Promise<boolean> => {
+    return new Promise((resolve) => {
+      setConfirmState({
+        ...options,
+        isOpen: true,
+        resolve,
       });
-    },
-    []
-  );
+    });
+  }, []);
 
   const handleConfirm = useCallback(() => {
     if (confirmState) {

@@ -20,7 +20,10 @@ describe('UserService', () => {
     it('should throw error when user not authenticated', async () => {
       server.use(
         http.get(`${API_BASE_URL}/api/user/me`, () => {
-          return HttpResponse.json({ message: 'Unauthorized' }, { status: 401 });
+          return HttpResponse.json(
+            { message: 'Unauthorized' },
+            { status: 401 }
+          );
         })
       );
 
@@ -30,7 +33,10 @@ describe('UserService', () => {
     it('should throw error when fetch fails', async () => {
       server.use(
         http.get(`${API_BASE_URL}/api/user/me`, () => {
-          return HttpResponse.json({ message: 'Internal server error' }, { status: 500 });
+          return HttpResponse.json(
+            { message: 'Internal server error' },
+            { status: 500 }
+          );
         })
       );
 

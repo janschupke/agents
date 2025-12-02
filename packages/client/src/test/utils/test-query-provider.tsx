@@ -13,10 +13,14 @@ interface TestQueryProviderProps {
  */
 export function TestQueryProvider({ children }: TestQueryProviderProps) {
   const queryClientRef = useRef<QueryClient | null>(null);
-  
+
   if (!queryClientRef.current) {
     queryClientRef.current = createTestQueryClient();
   }
-  
-  return <QueryClientProvider client={queryClientRef.current}>{children}</QueryClientProvider>;
+
+  return (
+    <QueryClientProvider client={queryClientRef.current}>
+      {children}
+    </QueryClientProvider>
+  );
 }

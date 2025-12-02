@@ -12,7 +12,9 @@ interface UseMessageTranslationReturn {
   isTranslating: boolean;
   showTranslation: boolean;
   translation: string | undefined;
-  wordTranslations: import('../../../types/chat.types').WordTranslation[] | undefined;
+  wordTranslations:
+    | import('../../../types/chat.types').WordTranslation[]
+    | undefined;
   handleTranslate: (e?: React.MouseEvent) => Promise<void>;
   setShowTranslation: (show: boolean) => void;
 }
@@ -30,7 +32,9 @@ export function useMessageTranslation({
   const [translation, setTranslation] = useState<string | undefined>(
     message.translation
   );
-  const [wordTranslations, setWordTranslations] = useState(message.wordTranslations);
+  const [wordTranslations, setWordTranslations] = useState(
+    message.wordTranslations
+  );
 
   // Sync translation state when message prop changes
   useEffect(() => {
@@ -44,7 +48,12 @@ export function useMessageTranslation({
 
   // Load translations on mount if available (for assistant messages)
   useEffect(() => {
-    if (messageId && message.role === MessageRole.ASSISTANT && !translation && !wordTranslations) {
+    if (
+      messageId &&
+      message.role === MessageRole.ASSISTANT &&
+      !translation &&
+      !wordTranslations
+    ) {
       // Check if translations exist in the database
       WordTranslationService.getMessageTranslations(messageId)
         .then((result) => {
@@ -68,7 +77,7 @@ export function useMessageTranslation({
       e.preventDefault();
       e.stopPropagation();
     }
-    
+
     if (!messageId) return;
 
     // If translation exists, just toggle display
@@ -82,20 +91,22 @@ export function useMessageTranslation({
     try {
       if (message.role === MessageRole.ASSISTANT) {
         // For assistant messages, request word translations + full translation
-        const result = await TranslationService.translateMessageWithWords(messageId);
+        const result =
+          await TranslationService.translateMessageWithWords(messageId);
         setTranslation(result.translation);
         setShowTranslation(true);
-        
+
         // Update message with translations
         setWordTranslations(result.wordTranslations);
         message.translation = result.translation;
         message.wordTranslations = result.wordTranslations;
       } else {
         // For user messages, request full translation only
-        const translatedText = await TranslationService.translateMessage(messageId);
+        const translatedText =
+          await TranslationService.translateMessage(messageId);
         setTranslation(translatedText);
         setShowTranslation(true);
-        
+
         // Update message in parent
         message.translation = translatedText;
       }

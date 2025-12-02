@@ -1,7 +1,11 @@
 // Skeleton loading components
 
 export function Skeleton({ className = '' }: { className?: string }) {
-  return <div className={`animate-pulse bg-background-tertiary rounded ${className}`} />;
+  return (
+    <div
+      className={`animate-pulse bg-background-tertiary rounded ${className}`}
+    />
+  );
 }
 
 export function SkeletonText({
@@ -24,7 +28,11 @@ export function SkeletonButton({ className = '' }: { className?: string }) {
   return <Skeleton className={`h-8 rounded-md ${className}`} />;
 }
 
-export function SkeletonSidebarItem({ className = '' }: { className?: string }) {
+export function SkeletonSidebarItem({
+  className = '',
+}: {
+  className?: string;
+}) {
   return (
     <div className={`flex items-center gap-3 p-2 ${className}`}>
       <Skeleton className="w-8 h-8 rounded" />

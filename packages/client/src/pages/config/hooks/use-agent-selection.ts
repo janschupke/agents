@@ -80,7 +80,11 @@ export function useAgentSelection({
           setCurrentAgentIdState(null);
         }
       }
-    } else if (initializedRef.current && currentAgentId === null && allAgents.length > 0) {
+    } else if (
+      initializedRef.current &&
+      currentAgentId === null &&
+      allAgents.length > 0
+    ) {
       // If no agent is selected but agents are available, auto-select the first one
       setCurrentAgentIdState(allAgents[0].id);
     }

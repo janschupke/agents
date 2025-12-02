@@ -12,9 +12,17 @@ describe('ChatInput', () => {
     const handleInputChange = vi.fn();
     const handleSubmit = vi.fn((e) => e.preventDefault());
 
-    render(<ChatInput input="" onInputChange={handleInputChange} onSubmit={handleSubmit} />);
+    render(
+      <ChatInput
+        input=""
+        onInputChange={handleInputChange}
+        onSubmit={handleSubmit}
+      />
+    );
 
-    expect(screen.getByPlaceholderText('Type your message...')).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText('Type your message...')
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /send/i })).toBeInTheDocument();
   });
 
@@ -23,7 +31,13 @@ describe('ChatInput', () => {
     const handleInputChange = vi.fn();
     const handleSubmit = vi.fn((e) => e.preventDefault());
 
-    render(<ChatInput input="" onInputChange={handleInputChange} onSubmit={handleSubmit} />);
+    render(
+      <ChatInput
+        input=""
+        onInputChange={handleInputChange}
+        onSubmit={handleSubmit}
+      />
+    );
 
     const input = screen.getByPlaceholderText('Type your message...');
     await user.type(input, 'Hello');
@@ -38,7 +52,11 @@ describe('ChatInput', () => {
     const handleSubmit = vi.fn((e) => e.preventDefault());
 
     render(
-      <ChatInput input="Test message" onInputChange={handleInputChange} onSubmit={handleSubmit} />
+      <ChatInput
+        input="Test message"
+        onInputChange={handleInputChange}
+        onSubmit={handleSubmit}
+      />
     );
 
     const form = screen.getByRole('button', { name: /send/i }).closest('form');
@@ -54,7 +72,11 @@ describe('ChatInput', () => {
     const handleSubmit = vi.fn((e) => e.preventDefault());
 
     render(
-      <ChatInput input="Test message" onInputChange={handleInputChange} onSubmit={handleSubmit} />
+      <ChatInput
+        input="Test message"
+        onInputChange={handleInputChange}
+        onSubmit={handleSubmit}
+      />
     );
 
     const input = screen.getByPlaceholderText('Type your message...');
@@ -67,7 +89,13 @@ describe('ChatInput', () => {
     const handleInputChange = vi.fn();
     const handleSubmit = vi.fn((e) => e.preventDefault());
 
-    render(<ChatInput input="" onInputChange={handleInputChange} onSubmit={handleSubmit} />);
+    render(
+      <ChatInput
+        input=""
+        onInputChange={handleInputChange}
+        onSubmit={handleSubmit}
+      />
+    );
 
     const sendButton = screen.getByRole('button', { name: /send/i });
     expect(sendButton).toBeDisabled();
@@ -77,7 +105,13 @@ describe('ChatInput', () => {
     const handleInputChange = vi.fn();
     const handleSubmit = vi.fn((e) => e.preventDefault());
 
-    render(<ChatInput input="   " onInputChange={handleInputChange} onSubmit={handleSubmit} />);
+    render(
+      <ChatInput
+        input="   "
+        onInputChange={handleInputChange}
+        onSubmit={handleSubmit}
+      />
+    );
 
     const sendButton = screen.getByRole('button', { name: /send/i });
     expect(sendButton).toBeDisabled();
@@ -87,7 +121,13 @@ describe('ChatInput', () => {
     const handleInputChange = vi.fn();
     const handleSubmit = vi.fn((e) => e.preventDefault());
 
-    render(<ChatInput input="Hello" onInputChange={handleInputChange} onSubmit={handleSubmit} />);
+    render(
+      <ChatInput
+        input="Hello"
+        onInputChange={handleInputChange}
+        onSubmit={handleSubmit}
+      />
+    );
 
     const sendButton = screen.getByRole('button', { name: /send/i });
     expect(sendButton).not.toBeDisabled();
@@ -125,7 +165,9 @@ describe('ChatInput', () => {
       />
     );
 
-    const input = screen.getByPlaceholderText('Type your message...') as HTMLInputElement;
+    const input = screen.getByPlaceholderText(
+      'Type your message...'
+    ) as HTMLInputElement;
     expect(input.value).toBe('Current message');
   });
 });

@@ -13,7 +13,10 @@ export default function AgentSelector() {
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -57,7 +60,9 @@ export default function AgentSelector() {
             {displayName.charAt(0).toUpperCase()}
           </div>
         )}
-        <h2 className="text-lg font-semibold text-text-secondary">{displayName}</h2>
+        <h2 className="text-lg font-semibold text-text-secondary">
+          {displayName}
+        </h2>
         <IconChevronDown
           className={`w-4 h-4 text-text-tertiary transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />
@@ -87,7 +92,9 @@ export default function AgentSelector() {
                 </div>
               )}
               <span className="truncate">{agent.name}</span>
-              {agent.id === selectedAgentId && <span className="ml-auto text-xs">✓</span>}
+              {agent.id === selectedAgentId && (
+                <span className="ml-auto text-xs">✓</span>
+              )}
             </button>
           ))}
         </div>

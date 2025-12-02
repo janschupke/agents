@@ -32,7 +32,9 @@ export default function AvatarPicker({
 
   return (
     <div className="flex-shrink-0">
-      <label className="block text-sm font-medium text-text-secondary mb-1.5">Avatar</label>
+      <label className="block text-sm font-medium text-text-secondary mb-1.5">
+        Avatar
+      </label>
       <DragDropArea
         isDragging={isDragging}
         hasValue={!!value}
@@ -73,9 +75,7 @@ export default function AvatarPicker({
           </div>
         )}
       </DragDropArea>
-      {error && (
-        <p className="text-xs text-red-600 mt-1.5">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-600 mt-1.5">{error}</p>}
     </div>
   );
 }

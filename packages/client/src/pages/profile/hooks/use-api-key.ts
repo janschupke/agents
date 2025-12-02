@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useUpdateApiKey, useDeleteApiKey } from '../../../hooks/mutations/use-user-mutations';
+import {
+  useUpdateApiKey,
+  useDeleteApiKey,
+} from '../../../hooks/mutations/use-user-mutations';
 import { queryKeys } from '../../../hooks/queries/query-keys';
 import { useApiKeyStatus } from '../../../hooks/queries/use-user';
 import { useConfirm } from '../../../hooks/useConfirm';
@@ -53,15 +56,8 @@ export function useApiKey(): UseApiKeyReturn {
     apiKey: [validationRules.required('API key is required')],
   };
 
-  const {
-    values,
-    errors,
-    touched,
-    setValue,
-    setTouched,
-    validateAll,
-    reset,
-  } = useFormValidation<ApiKeyFormValues>(validationSchema, { apiKey: '' });
+  const { values, errors, touched, setValue, setTouched, validateAll, reset } =
+    useFormValidation<ApiKeyFormValues>(validationSchema, { apiKey: '' });
 
   const handleSaveApiKey = async () => {
     const validation = validateAll();
@@ -85,7 +81,8 @@ export function useApiKey(): UseApiKeyReturn {
   const handleDeleteApiKey = async () => {
     const confirmed = await confirm({
       title: 'Delete API Key',
-      message: 'Are you sure you want to delete your API key? You will need to set it again to use the chat.',
+      message:
+        'Are you sure you want to delete your API key? You will need to set it again to use the chat.',
       confirmText: 'Delete',
       cancelText: 'Cancel',
       confirmVariant: 'danger',
@@ -118,11 +115,13 @@ export function useApiKey(): UseApiKeyReturn {
     reset();
   };
 
-  const saving = updateApiKeyMutation.isPending || deleteApiKeyMutation.isPending;
+  const saving =
+    updateApiKeyMutation.isPending || deleteApiKeyMutation.isPending;
   const formError = updateApiKeyMutation.error || deleteApiKeyMutation.error;
-  const errorMessage = formError && typeof formError === 'object' && 'message' in formError
-    ? (formError as { message: string }).message
-    : null;
+  const errorMessage =
+    formError && typeof formError === 'object' && 'message' in formError
+      ? (formError as { message: string }).message
+      : null;
 
   return {
     showApiKeyInput,

@@ -22,7 +22,10 @@ export interface FieldValidationState {
 /**
  * Validate a single field against rules
  */
-export function validateField<T>(value: T, rules?: ValidationRule<T>[]): string | null {
+export function validateField<T>(
+  value: T,
+  rules?: ValidationRule<T>[]
+): string | null {
   if (!rules || rules.length === 0) {
     return null;
   }

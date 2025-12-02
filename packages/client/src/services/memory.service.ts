@@ -7,7 +7,9 @@ export class MemoryService {
    * Get all memories for an agent
    */
   static async getMemories(agentId: number): Promise<AgentMemory[]> {
-    return apiManager.get<AgentMemory[]>(API_ENDPOINTS.AGENTS.MEMORIES(agentId));
+    return apiManager.get<AgentMemory[]>(
+      API_ENDPOINTS.AGENTS.MEMORIES(agentId)
+    );
   }
 
   /**
@@ -47,6 +49,9 @@ export class MemoryService {
    * Manually trigger memory summarization
    */
   static async summarizeMemories(agentId: number): Promise<void> {
-    return apiManager.post(API_ENDPOINTS.AGENTS.MEMORIES_SUMMARIZE(agentId), {});
+    return apiManager.post(
+      API_ENDPOINTS.AGENTS.MEMORIES_SUMMARIZE(agentId),
+      {}
+    );
   }
 }

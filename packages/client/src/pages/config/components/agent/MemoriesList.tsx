@@ -22,7 +22,7 @@ export default function MemoriesList({
   deletingId,
   onEdit,
   onDelete,
-  onRefresh: _onRefresh, // eslint-disable-line @typescript-eslint/no-unused-vars
+  onRefresh: _onRefresh,
   agentId,
 }: MemoriesListProps) {
   const [editingMemoryId, setEditingMemoryId] = useState<number | null>(null);
@@ -84,10 +84,9 @@ export default function MemoriesList({
                 {memory.context?.sessionName && (
                   <> • Session: {memory.context.sessionName}</>
                 )}
-                {memory.context?.sessionId &&
-                  !memory.context?.sessionName && (
-                    <> • Session: #{memory.context.sessionId}</>
-                  )}
+                {memory.context?.sessionId && !memory.context?.sessionName && (
+                  <> • Session: #{memory.context.sessionId}</>
+                )}
               </div>
               {editingMemoryId === memory.id ? (
                 <div className="space-y-2">

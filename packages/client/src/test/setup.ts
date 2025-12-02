@@ -9,7 +9,7 @@ expect.extend(matchers);
 
 // Establish API mocking before all tests
 beforeAll(() => {
-  server.listen({ 
+  server.listen({
     onUnhandledRequest: 'bypass', // Bypass unhandled requests to avoid hanging
   });
 });

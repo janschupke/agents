@@ -13,7 +13,7 @@ export function createTestQueryClient() {
         gcTime: 0, // Immediately garbage collect unused queries
         staleTime: 0, // Always consider data stale
         refetchOnWindowFocus: false,
-        refetchOnMount: false,
+        refetchOnMount: true, // Allow refetch on mount so queries run in tests
         refetchOnReconnect: false,
         networkMode: 'always', // Don't wait for network status
       },

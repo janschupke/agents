@@ -19,13 +19,14 @@ export default function AgentConfig() {
   });
 
   // Agent operations (create, update, delete)
-  const { handleSave, handleDelete, handleNewAgent, saving } = useAgentConfigOperations({
-    contextAgents,
-    localAgents,
-    setLocalAgents,
-    currentAgentId,
-    setCurrentAgentId,
-  });
+  const { handleSave, handleDelete, handleNewAgent, saving } =
+    useAgentConfigOperations({
+      contextAgents,
+      localAgents,
+      setLocalAgents,
+      currentAgentId,
+      setCurrentAgentId,
+    });
 
   const handleAgentSelect = (agentId: number) => {
     // Validate agent exists before selecting
@@ -35,7 +36,10 @@ export default function AgentConfig() {
     }
   };
 
-  const handleAgentSave = async (agent: Agent, values: Parameters<typeof handleSave>[1]) => {
+  const handleAgentSave = async (
+    agent: Agent,
+    values: Parameters<typeof handleSave>[1]
+  ) => {
     await handleSave(agent, values);
     // Note: handleSave already handles localAgents cleanup and currentAgentId update
   };

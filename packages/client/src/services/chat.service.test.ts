@@ -49,11 +49,16 @@ describe('ChatService', () => {
     it('should throw error when send fails', async () => {
       server.use(
         http.post(`${API_BASE_URL}/api/chat/1`, () => {
-          return HttpResponse.json({ message: 'Internal server error' }, { status: 500 });
+          return HttpResponse.json(
+            { message: 'Internal server error' },
+            { status: 500 }
+          );
         })
       );
 
-      await expect(ChatService.sendMessage(1, 'Test message')).rejects.toThrow();
+      await expect(
+        ChatService.sendMessage(1, 'Test message')
+      ).rejects.toThrow();
     });
   });
 });

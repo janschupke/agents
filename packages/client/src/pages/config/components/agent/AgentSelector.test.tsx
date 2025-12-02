@@ -19,8 +19,18 @@ vi.mock('@clerk/clerk-react', () => ({
 vi.mock('../../../../services/agent.service', () => ({
   AgentService: {
     getAllAgents: vi.fn().mockResolvedValue([
-      { id: 1, name: 'Agent 1', description: 'Description 1', createdAt: '2024-01-01' },
-      { id: 2, name: 'Agent 2', description: 'Description 2', createdAt: '2024-01-02' },
+      {
+        id: 1,
+        name: 'Agent 1',
+        description: 'Description 1',
+        createdAt: '2024-01-01',
+      },
+      {
+        id: 2,
+        name: 'Agent 2',
+        description: 'Description 2',
+        createdAt: '2024-01-02',
+      },
     ]),
   },
 }));
@@ -36,9 +46,7 @@ vi.mock('../../../../services/chat.service', () => ({
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <QueryProvider>
     <AuthProvider>
-      <AppProvider>
-          {children}
-      </AppProvider>
+      <AppProvider>{children}</AppProvider>
     </AuthProvider>
   </QueryProvider>
 );
@@ -63,7 +71,9 @@ describe('AgentSelector', () => {
     await waitForAgentsToLoad();
     await waitFor(
       () => {
-        expect(screen.getByRole('button', { name: /select agent/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /select agent/i })
+        ).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
@@ -80,7 +90,9 @@ describe('AgentSelector', () => {
     await waitForAgentsToLoad();
     await waitFor(
       () => {
-        expect(screen.getByRole('button', { name: /select agent/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /select agent/i })
+        ).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
@@ -107,7 +119,9 @@ describe('AgentSelector', () => {
     await waitForAgentsToLoad();
     await waitFor(
       () => {
-        expect(screen.getByRole('button', { name: /select agent/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /select agent/i })
+        ).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
@@ -137,7 +151,9 @@ describe('AgentSelector', () => {
     await waitForAgentsToLoad();
     await waitFor(
       () => {
-        expect(screen.getByRole('button', { name: /select agent/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /select agent/i })
+        ).toBeInTheDocument();
       },
       { timeout: 3000 }
     );

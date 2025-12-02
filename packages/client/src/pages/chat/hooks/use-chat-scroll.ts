@@ -13,7 +13,10 @@ interface UseChatScrollReturn {
  * Hook to manage auto-scrolling to bottom of chat
  * Extracted from ChatAgent component
  */
-export function useChatScroll({ messages, sessionId }: UseChatScrollOptions): UseChatScrollReturn {
+export function useChatScroll({
+  messages,
+  sessionId,
+}: UseChatScrollOptions): UseChatScrollReturn {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isInitialLoadRef = useRef(true);
   const previousMessageCountRef = useRef(0);
@@ -22,17 +25,17 @@ export function useChatScroll({ messages, sessionId }: UseChatScrollOptions): Us
   useEffect(() => {
     const messageCount = messages.length;
     const isNewMessage = messageCount > previousMessageCountRef.current;
-    
+
     if (isInitialLoadRef.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
       isInitialLoadRef.current = false;
     } else if (isNewMessage) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-    
+
     previousMessageCountRef.current = messageCount;
   }, [messages]);
-  
+
   // Reset initial load flag when session changes
   useEffect(() => {
     isInitialLoadRef.current = true;

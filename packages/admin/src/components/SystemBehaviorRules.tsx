@@ -77,8 +77,9 @@ export default function SystemBehaviorRules() {
           System Behavior Rules
         </h2>
         <p className="text-text-tertiary text-sm">
-          These rules apply to all agents and cannot be overridden by agent-specific rules.
-          System rules are always included first in the conversation context.
+          These rules apply to all agents and cannot be overridden by
+          agent-specific rules. System rules are always included first in the
+          conversation context.
         </p>
       </div>
 

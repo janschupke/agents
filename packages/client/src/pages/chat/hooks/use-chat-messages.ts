@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Message, MessageRole, SendMessageResponse } from '../../../types/chat.types';
+import {
+  Message,
+  MessageRole,
+  SendMessageResponse,
+} from '../../../types/chat.types';
 import { useChatHistory } from '../../../hooks/queries/use-chat';
 import { useSendMessage } from '../../../hooks/mutations/use-chat-mutations';
 import { useQueryClient } from '@tanstack/react-query';
@@ -26,7 +30,11 @@ export function useChatMessages({
   sessionId,
 }: UseChatMessagesOptions): UseChatMessagesReturn {
   const queryClient = useQueryClient();
-  const { data: chatHistory, isLoading: loadingChatHistory, isFetching: fetchingChatHistory } = useChatHistory(agentId, sessionId);
+  const {
+    data: chatHistory,
+    isLoading: loadingChatHistory,
+    isFetching: fetchingChatHistory,
+  } = useChatHistory(agentId, sessionId);
   const sendMessageMutation = useSendMessage();
   const [messages, setMessages] = useState<Message[]>([]);
   const previousMessageCountRef = useRef(0);
@@ -92,7 +100,10 @@ export function useChatMessages({
         // Update last user message with ID if available
         const updated = [...prev];
         const lastUserIndex = updated.length - 2;
-        if (lastUserIndex >= 0 && updated[lastUserIndex]?.role === MessageRole.USER) {
+        if (
+          lastUserIndex >= 0 &&
+          updated[lastUserIndex]?.role === MessageRole.USER
+        ) {
           updated[lastUserIndex] = {
             ...updated[lastUserIndex],
             id: result.userMessageId ?? updated[lastUserIndex].id,
@@ -104,7 +115,9 @@ export function useChatMessages({
 
       // If new session was created, invalidate sessions query
       if (result.session?.id && result.session.id !== sessionId) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.agents.sessions(agentId) });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.agents.sessions(agentId),
+        });
       }
 
       return result;
@@ -124,8 +137,8 @@ export function useChatMessages({
   // only be true for the current session's query. We add an extra check to ensure we don't
   // show loading if we have messages from a different session.
   const isInitialLoad = messages.length === 0;
-  const isLoadingForCurrentSession = 
-    (loadingChatHistory || fetchingChatHistory) && 
+  const isLoadingForCurrentSession =
+    (loadingChatHistory || fetchingChatHistory) &&
     (isInitialLoad || chatHistory?.session?.id === sessionId);
   const loading = isLoadingForCurrentSession || sendMessageMutation.isPending;
 

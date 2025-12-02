@@ -22,7 +22,6 @@ export default function TranslatableMarkdownContent({
   wordTranslations = [],
   className = '',
 }: TranslatableMarkdownContentProps) {
-
   // If no translations, use regular markdown
   if (wordTranslations.length === 0) {
     return <MarkdownContent content={content} className={className} />;

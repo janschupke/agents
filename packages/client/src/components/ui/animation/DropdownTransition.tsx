@@ -16,9 +16,5 @@ export default function DropdownTransition({
 }: DropdownTransitionProps) {
   if (!show) return null;
 
-  return (
-    <div className={`animate-fade-in ${className}`}>
-      {children}
-    </div>
-  );
+  return <div className={`animate-fade-in ${className}`}>{children}</div>;
 }

@@ -8,13 +8,24 @@ interface NameFieldProps {
   agentId?: number; // Track agent ID to detect when new agent is selected
 }
 
-export function NameField({ value, onChange, autoFocus = false, agentId }: NameFieldProps) {
+export function NameField({
+  value,
+  onChange,
+  autoFocus = false,
+  agentId,
+}: NameFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const prevAgentIdRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     // Focus when a new agent (negative ID) is selected
-    if (autoFocus && agentId !== undefined && agentId < 0 && prevAgentIdRef.current !== agentId && inputRef.current) {
+    if (
+      autoFocus &&
+      agentId !== undefined &&
+      agentId < 0 &&
+      prevAgentIdRef.current !== agentId &&
+      inputRef.current
+    ) {
       // Small delay to ensure the component is fully rendered and visible
       const timer = setTimeout(() => {
         inputRef.current?.focus();
@@ -29,7 +40,10 @@ export function NameField({ value, onChange, autoFocus = false, agentId }: NameF
 
   return (
     <div>
-      <label htmlFor="agent-name" className="block text-sm font-medium text-text-secondary mb-1.5">
+      <label
+        htmlFor="agent-name"
+        className="block text-sm font-medium text-text-secondary mb-1.5"
+      >
         Agent Name
       </label>
       <input
@@ -143,10 +157,15 @@ interface BehaviorRulesFieldProps {
   onChange: (rules: string[]) => void;
 }
 
-export function BehaviorRulesField({ rules, onChange }: BehaviorRulesFieldProps) {
+export function BehaviorRulesField({
+  rules,
+  onChange,
+}: BehaviorRulesFieldProps) {
   return (
     <div>
-      <label className="block text-sm font-medium text-text-secondary mb-1.5">Behavior Rules</label>
+      <label className="block text-sm font-medium text-text-secondary mb-1.5">
+        Behavior Rules
+      </label>
       <div className="space-y-2">
         {rules.map((rule, index) => (
           <div key={index} className="flex items-center gap-2">
@@ -183,7 +202,9 @@ export function BehaviorRulesField({ rules, onChange }: BehaviorRulesFieldProps)
           <span>Add Rule</span>
         </button>
       </div>
-      <p className="text-xs text-text-tertiary mt-2">Rules will be saved as a JSON array</p>
+      <p className="text-xs text-text-tertiary mt-2">
+        Rules will be saved as a JSON array
+      </p>
     </div>
   );
 }

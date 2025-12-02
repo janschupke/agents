@@ -14,7 +14,10 @@ export default function UserDropdown() {
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -32,7 +35,9 @@ export default function UserDropdown() {
   const displayName =
     userInfo?.firstName || userInfo?.lastName
       ? `${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim()
-      : userInfo?.email || clerkUser?.primaryEmailAddress?.emailAddress || 'User';
+      : userInfo?.email ||
+        clerkUser?.primaryEmailAddress?.emailAddress ||
+        'User';
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -42,7 +47,11 @@ export default function UserDropdown() {
         aria-label="User menu"
       >
         {userImage ? (
-          <img src={userImage} alt="User" className="w-6 h-6 rounded-full border border-border" />
+          <img
+            src={userImage}
+            alt="User"
+            className="w-6 h-6 rounded-full border border-border"
+          />
         ) : (
           <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-text-inverse text-xs font-semibold border border-border">
             {displayName.charAt(0).toUpperCase()}
@@ -56,9 +65,13 @@ export default function UserDropdown() {
       <DropdownTransition show={isOpen}>
         <div className="absolute right-0 mt-1 w-56 bg-background border border-border py-1 z-50">
           <div className="px-3 py-2 border-b border-border">
-            <p className="text-sm font-medium text-text-primary">{displayName}</p>
+            <p className="text-sm font-medium text-text-primary">
+              {displayName}
+            </p>
             {userInfo?.email && (
-              <p className="text-xs text-text-tertiary mt-0.5">{userInfo.email}</p>
+              <p className="text-xs text-text-tertiary mt-0.5">
+                {userInfo.email}
+              </p>
             )}
           </div>
           <Link

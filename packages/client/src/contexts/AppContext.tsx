@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 import { LocalStorageManager } from '../utils/localStorage';
 
 interface AppContextValue {
@@ -15,12 +21,12 @@ const AppContext = createContext<AppContextValue | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   // Load initial values from localStorage
-  const [selectedAgentId, setSelectedAgentIdState] = useState<number | null>(() =>
-    LocalStorageManager.getSelectedAgentIdChat()
+  const [selectedAgentId, setSelectedAgentIdState] = useState<number | null>(
+    () => LocalStorageManager.getSelectedAgentIdChat()
   );
-  const [selectedSessionId, setSelectedSessionIdState] = useState<number | null>(() =>
-    LocalStorageManager.getSelectedSessionId()
-  );
+  const [selectedSessionId, setSelectedSessionIdState] = useState<
+    number | null
+  >(() => LocalStorageManager.getSelectedSessionId());
 
   // Save to localStorage whenever values change
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 
-interface ValidatedInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface ValidatedInputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string | null;
   touched?: boolean;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
@@ -40,9 +41,7 @@ export default function ValidatedInput({
           hasError ? 'border-red-500' : 'border-border-input'
         } ${className}`}
       />
-      {hasError && (
-        <p className="text-xs text-red-600 mt-1">{error}</p>
-      )}
+      {hasError && <p className="text-xs text-red-600 mt-1">{error}</p>}
     </div>
   );
 }

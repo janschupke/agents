@@ -9,7 +9,13 @@ interface SessionItemProps {
   onEdit?: (sessionId: number) => void;
 }
 
-export default function SessionItem({ session, isSelected, onSelect, onDelete, onEdit }: SessionItemProps) {
+export default function SessionItem({
+  session,
+  isSelected,
+  onSelect,
+  onDelete,
+  onEdit,
+}: SessionItemProps) {
   const formatSessionName = (session: Session): string => {
     if (session.session_name) {
       return session.session_name;
@@ -35,7 +41,9 @@ export default function SessionItem({ session, isSelected, onSelect, onDelete, o
           isSelected ? 'text-text-inverse' : ''
         }`}
       >
-        <div className="text-sm font-medium truncate">{formatSessionName(session)}</div>
+        <div className="text-sm font-medium truncate">
+          {formatSessionName(session)}
+        </div>
         <div
           className={`text-xs mt-0.5 ${
             isSelected ? 'text-text-inverse opacity-80' : 'text-text-tertiary'

@@ -37,18 +37,23 @@ class ApiClient {
   /**
    * Build full URL with query parameters
    */
-  private buildURL(endpoint: string, params?: Record<string, string | number | boolean>): string {
+  private buildURL(
+    endpoint: string,
+    params?: Record<string, string | number | boolean>
+  ): string {
     // Handle relative and absolute URLs
     let fullUrl: string;
     if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
       fullUrl = endpoint;
     } else {
       // Ensure baseURL ends with / and endpoint doesn't start with /
-      const base = this.baseURL.endsWith('/') ? this.baseURL.slice(0, -1) : this.baseURL;
+      const base = this.baseURL.endsWith('/')
+        ? this.baseURL.slice(0, -1)
+        : this.baseURL;
       const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
       fullUrl = `${base}${path}`;
     }
-    
+
     // Add query parameters
     if (params && Object.keys(params).length > 0) {
       const url = new URL(fullUrl);
@@ -59,7 +64,7 @@ class ApiClient {
       });
       return url.toString();
     }
-    
+
     return fullUrl;
   }
 
@@ -68,8 +73,9 @@ class ApiClient {
    */
   private async getAuthToken(): Promise<string | null> {
     // Skip delays in test environment
-    const isTest = import.meta.env.MODE === 'test' || import.meta.env.VITEST === 'true';
-    
+    const isTest =
+      import.meta.env.MODE === 'test' || import.meta.env.VITEST === 'true';
+
     // Wait for token provider to be ready if it's not yet
     if (!tokenProvider.isReady() && !isTest) {
       // Wait up to 500ms for token provider to be set up (only in non-test)
@@ -83,14 +89,14 @@ class ApiClient {
 
     // Try to get token
     let token = await tokenProvider.getToken();
-    
+
     // If no token and token provider is ready, wait a bit and retry once (only in non-test)
     if (!token && tokenProvider.isReady() && !isTest) {
       // Small delay to allow token to be fetched
       await new Promise((resolve) => setTimeout(resolve, 100));
       token = await tokenProvider.getToken();
     }
-    
+
     return token;
   }
 
@@ -107,7 +113,7 @@ class ApiClient {
     try {
       const data = await response.json();
       apiError.data = data;
-      
+
       if (typeof data === 'object' && data !== null && 'message' in data) {
         apiError.message = String(data.message);
       }
@@ -123,7 +129,8 @@ class ApiClient {
         apiError.message = 'Authentication required';
         apiError.expected = true;
       } else {
-        apiError.message = 'Authentication failed - token may be invalid or expired';
+        apiError.message =
+          'Authentication failed - token may be invalid or expired';
         apiError.expected = true;
       }
     }
@@ -140,8 +147,9 @@ class ApiClient {
     data?: unknown,
     options?: ApiRequestOptions
   ): Promise<T> {
-    const { skipErrorHandling, params, headers, ...fetchOptions } = options || {};
-    
+    const { skipErrorHandling, params, headers, ...fetchOptions } =
+      options || {};
+
     const url = this.buildURL(endpoint, params);
     const token = await this.getAuthToken();
 
@@ -176,7 +184,11 @@ class ApiClient {
       }
 
       // Handle empty responses (e.g., 204 No Content or DELETE requests)
-      if (response.status === 204 || response.status === 201 && response.headers.get('content-length') === '0') {
+      if (
+        response.status === 204 ||
+        (response.status === 201 &&
+          response.headers.get('content-length') === '0')
+      ) {
         return {} as T;
       }
 
@@ -189,19 +201,19 @@ class ApiClient {
         }
         return JSON.parse(text) as T;
       }
-      
+
       // Return empty object for non-JSON responses
       return {} as T;
     } catch (error) {
       if (skipErrorHandling) {
         throw error;
       }
-      
+
       // If it's already an ApiError, re-throw it
       if (error && typeof error === 'object' && 'message' in error) {
         throw error;
       }
-      
+
       // Otherwise, wrap it
       throw {
         message: error instanceof Error ? error.message : 'Network error',
@@ -220,21 +232,33 @@ class ApiClient {
   /**
    * POST request
    */
-  async post<T>(endpoint: string, data?: unknown, options?: ApiRequestOptions): Promise<T> {
+  async post<T>(
+    endpoint: string,
+    data?: unknown,
+    options?: ApiRequestOptions
+  ): Promise<T> {
     return this.request<T>(endpoint, 'POST', data, options);
   }
 
   /**
    * PUT request
    */
-  async put<T>(endpoint: string, data?: unknown, options?: ApiRequestOptions): Promise<T> {
+  async put<T>(
+    endpoint: string,
+    data?: unknown,
+    options?: ApiRequestOptions
+  ): Promise<T> {
     return this.request<T>(endpoint, 'PUT', data, options);
   }
 
   /**
    * PATCH request
    */
-  async patch<T>(endpoint: string, data?: unknown, options?: ApiRequestOptions): Promise<T> {
+  async patch<T>(
+    endpoint: string,
+    data?: unknown,
+    options?: ApiRequestOptions
+  ): Promise<T> {
     return this.request<T>(endpoint, 'PATCH', data, options);
   }
 

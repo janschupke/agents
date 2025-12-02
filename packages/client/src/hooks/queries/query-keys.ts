@@ -17,18 +17,23 @@ export const queryKeys = {
   agents: {
     all: [QueryKey.AGENTS] as const,
     lists: () => [...queryKeys.agents.all, QueryKey.LIST] as const,
-    list: (filters?: string) => [...queryKeys.agents.lists(), { filters }] as const,
+    list: (filters?: string) =>
+      [...queryKeys.agents.lists(), { filters }] as const,
     details: () => [...queryKeys.agents.all, QueryKey.DETAIL] as const,
     detail: (id: number) => [...queryKeys.agents.details(), id] as const,
-    sessions: (agentId: number) => [...queryKeys.agents.detail(agentId), QueryKey.SESSIONS] as const,
-    config: (agentId: number) => [...queryKeys.agents.detail(agentId), QueryKey.CONFIG] as const,
-    memories: (agentId: number) => [...queryKeys.agents.detail(agentId), QueryKey.MEMORIES] as const,
+    sessions: (agentId: number) =>
+      [...queryKeys.agents.detail(agentId), QueryKey.SESSIONS] as const,
+    config: (agentId: number) =>
+      [...queryKeys.agents.detail(agentId), QueryKey.CONFIG] as const,
+    memories: (agentId: number) =>
+      [...queryKeys.agents.detail(agentId), QueryKey.MEMORIES] as const,
   },
   chat: {
     all: [QueryKey.CHAT] as const,
     history: (agentId: number, sessionId?: number) =>
       [...queryKeys.chat.all, QueryKey.HISTORY, agentId, sessionId] as const,
-    sessions: (agentId: number) => [...queryKeys.chat.all, QueryKey.SESSIONS, agentId] as const,
+    sessions: (agentId: number) =>
+      [...queryKeys.chat.all, QueryKey.SESSIONS, agentId] as const,
   },
   user: {
     all: [QueryKey.USER] as const,

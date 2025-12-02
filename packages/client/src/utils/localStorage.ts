@@ -19,7 +19,10 @@ export class LocalStorageManager {
       const parsed = parseInt(value, 10);
       return isNaN(parsed) ? null : parsed;
     } catch (error) {
-      console.error('Error reading selectedAgentId_chat from localStorage:', error);
+      console.error(
+        'Error reading selectedAgentId_chat from localStorage:',
+        error
+      );
       return null;
     }
   }
@@ -32,10 +35,16 @@ export class LocalStorageManager {
       if (agentId === null) {
         localStorage.removeItem(STORAGE_KEYS.SELECTED_AGENT_ID_CHAT);
       } else {
-        localStorage.setItem(STORAGE_KEYS.SELECTED_AGENT_ID_CHAT, String(agentId));
+        localStorage.setItem(
+          STORAGE_KEYS.SELECTED_AGENT_ID_CHAT,
+          String(agentId)
+        );
       }
     } catch (error) {
-      console.error('Error writing selectedAgentId_chat to localStorage:', error);
+      console.error(
+        'Error writing selectedAgentId_chat to localStorage:',
+        error
+      );
     }
   }
 
@@ -49,7 +58,10 @@ export class LocalStorageManager {
       const parsed = parseInt(value, 10);
       return isNaN(parsed) ? null : parsed;
     } catch (error) {
-      console.error('Error reading selectedAgentId_config from localStorage:', error);
+      console.error(
+        'Error reading selectedAgentId_config from localStorage:',
+        error
+      );
       return null;
     }
   }
@@ -62,10 +74,16 @@ export class LocalStorageManager {
       if (agentId === null) {
         localStorage.removeItem(STORAGE_KEYS.SELECTED_AGENT_ID_CONFIG);
       } else {
-        localStorage.setItem(STORAGE_KEYS.SELECTED_AGENT_ID_CONFIG, String(agentId));
+        localStorage.setItem(
+          STORAGE_KEYS.SELECTED_AGENT_ID_CONFIG,
+          String(agentId)
+        );
       }
     } catch (error) {
-      console.error('Error writing selectedAgentId_config to localStorage:', error);
+      console.error(
+        'Error writing selectedAgentId_config to localStorage:',
+        error
+      );
     }
   }
 
@@ -79,7 +97,10 @@ export class LocalStorageManager {
       const parsed = parseInt(value, 10);
       return isNaN(parsed) ? null : parsed;
     } catch (error) {
-      console.error('Error reading selectedSessionId from localStorage:', error);
+      console.error(
+        'Error reading selectedSessionId from localStorage:',
+        error
+      );
       return null;
     }
   }
@@ -92,7 +113,10 @@ export class LocalStorageManager {
       if (sessionId === null) {
         localStorage.removeItem(STORAGE_KEYS.SELECTED_SESSION_ID);
       } else {
-        localStorage.setItem(STORAGE_KEYS.SELECTED_SESSION_ID, String(sessionId));
+        localStorage.setItem(
+          STORAGE_KEYS.SELECTED_SESSION_ID,
+          String(sessionId)
+        );
       }
     } catch (error) {
       console.error('Error writing selectedSessionId to localStorage:', error);

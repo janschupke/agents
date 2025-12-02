@@ -15,7 +15,12 @@ interface JsonModalProps {
 /**
  * Modal for displaying JSON data
  */
-export default function JsonModal({ isOpen, onClose, title, data }: JsonModalProps) {
+export default function JsonModal({
+  isOpen,
+  onClose,
+  title,
+  data,
+}: JsonModalProps) {
   if (!isOpen) return null;
 
   const jsonString = JSON.stringify(data, null, 2);

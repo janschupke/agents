@@ -9,9 +9,9 @@ export class WordTranslationService {
   static async getWordTranslations(
     messageId: number
   ): Promise<WordTranslation[]> {
-    const response = await apiManager.get<{ wordTranslations: WordTranslation[] }>(
-      API_ENDPOINTS.MESSAGES.WORD_TRANSLATIONS(messageId)
-    );
+    const response = await apiManager.get<{
+      wordTranslations: WordTranslation[];
+    }>(API_ENDPOINTS.MESSAGES.WORD_TRANSLATIONS(messageId));
     return response.wordTranslations;
   }
 
@@ -24,8 +24,9 @@ export class WordTranslationService {
     // Note: This endpoint doesn't match the backend exactly, but we'll use the translations endpoint
     // Backend has: GET /api/messages/:messageId/translations
     // For now, we'll construct it manually since it's not in our constants structure
-    return apiManager.get<{ translation?: string; wordTranslations: WordTranslation[] }>(
-      `/api/messages/${messageId}/translations`
-    );
+    return apiManager.get<{
+      translation?: string;
+      wordTranslations: WordTranslation[];
+    }>(`/api/messages/${messageId}/translations`);
   }
 }

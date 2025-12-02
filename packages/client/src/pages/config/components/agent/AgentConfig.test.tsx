@@ -23,17 +23,19 @@ vi.mock('@clerk/clerk-react', () => ({
 vi.mock('../../../../services/agent.service', () => ({
   AgentService: {
     getAllAgents: vi.fn(),
-    getAgent: vi.fn(() => Promise.resolve({
-      id: 1,
-      name: 'Test Agent',
-      description: 'Test',
-      createdAt: '2024-01-01T00:00:00Z',
-      configs: {
-        temperature: 0.7,
-        system_prompt: '',
-        behavior_rules: [],
-      },
-    })),
+    getAgent: vi.fn(() =>
+      Promise.resolve({
+        id: 1,
+        name: 'Test Agent',
+        description: 'Test',
+        createdAt: '2024-01-01T00:00:00Z',
+        configs: {
+          temperature: 0.7,
+          system_prompt: '',
+          behavior_rules: [],
+        },
+      })
+    ),
     createAgent: vi.fn(),
     updateAgent: vi.fn(),
     deleteAgent: vi.fn(),
@@ -100,7 +102,7 @@ describe('AgentConfig', () => {
 
   it('should add new agent to the top of the list', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <TestWrapper>
         <AgentConfig />
@@ -126,8 +128,10 @@ describe('AgentConfig', () => {
 
     // Verify the order: new agent should be at the top of the sidebar
     // Get all agent items from the sidebar
-    const agentItems = screen.getAllByRole('button', { name: /Existing Agent|New Agent/i });
-    
+    const agentItems = screen.getAllByRole('button', {
+      name: /Existing Agent|New Agent/i,
+    });
+
     // The first item should be the new agent (it will have "(New)" label or be the selected one)
     // Since new agents have empty names, we verify by checking that the input is focused
     // which means the new agent is selected, and it should be the first in the list
@@ -136,7 +140,7 @@ describe('AgentConfig', () => {
 
   it('should keep new agent at top after saving', async () => {
     const user = userEvent.setup();
-    
+
     const newAgent: Agent = {
       id: 3,
       name: 'Newly Created Agent',
@@ -184,21 +188,29 @@ describe('AgentConfig', () => {
 
     // After save, refreshAgents is called which should return the new agent first
     // The new agent should remain at the top of the list
-    await waitFor(() => {
-      expect(mockGetAllAgents).toHaveBeenCalled();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(mockGetAllAgents).toHaveBeenCalled();
+      },
+      { timeout: 3000 }
+    );
 
     // Verify the agent list order - new agent should be at top
     // After refresh, the new agent should appear first in the list
-    await waitFor(() => {
-      const agentItems = screen.getAllByText(/Existing Agent|Newly Created Agent/i);
-      expect(agentItems.length).toBeGreaterThan(0);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        const agentItems = screen.getAllByText(
+          /Existing Agent|Newly Created Agent/i
+        );
+        expect(agentItems.length).toBeGreaterThan(0);
+      },
+      { timeout: 3000 }
+    );
   });
 
   it('should maintain order: new agents (local) at top, then context agents', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <TestWrapper>
         <AgentConfig />
@@ -216,7 +228,9 @@ describe('AgentConfig', () => {
 
     // Wait a bit
     await waitFor(() => {
-      expect(screen.getByPlaceholderText('Enter agent name')).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('Enter agent name')
+      ).toBeInTheDocument();
     });
 
     // Create second new agent (should appear above first new agent)

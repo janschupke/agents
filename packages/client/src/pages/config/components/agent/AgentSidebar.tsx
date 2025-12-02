@@ -38,7 +38,9 @@ export default function AgentSidebar({
             <SkeletonList count={5} />
           </div>
         ) : agents.length === 0 ? (
-          <div className="p-4 text-text-tertiary text-center text-sm">No agents yet</div>
+          <div className="p-4 text-text-tertiary text-center text-sm">
+            No agents yet
+          </div>
         ) : (
           <div className="flex flex-col">
             {agents.map((agent) => (
@@ -54,11 +56,15 @@ export default function AgentSidebar({
                   onClick={() => onAgentSelect(agent.id)}
                   className="flex-1 px-3 py-2 text-left transition-colors min-w-0 bg-transparent"
                 >
-                  <div className={`text-sm font-medium truncate ${
-                    currentAgentId === agent.id ? 'text-text-inverse' : ''
-                  }`}>
+                  <div
+                    className={`text-sm font-medium truncate ${
+                      currentAgentId === agent.id ? 'text-text-inverse' : ''
+                    }`}
+                  >
                     {agent.name}
-                    {agent.id < 0 && <span className="ml-1.5 text-xs opacity-70">(New)</span>}
+                    {agent.id < 0 && (
+                      <span className="ml-1.5 text-xs opacity-70">(New)</span>
+                    )}
                   </div>
                   {agent.description && (
                     <div

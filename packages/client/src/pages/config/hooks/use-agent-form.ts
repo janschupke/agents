@@ -22,16 +22,25 @@ interface UseAgentFormReturn {
   values: AgentFormValues;
   errors: Partial<Record<keyof AgentFormValues, string | null>>;
   touched: Partial<Record<keyof AgentFormValues, boolean>>;
-  setValue: <K extends keyof AgentFormValues>(field: K, value: AgentFormValues[K]) => void;
+  setValue: <K extends keyof AgentFormValues>(
+    field: K,
+    value: AgentFormValues[K]
+  ) => void;
   setTouched: (field: keyof AgentFormValues) => void;
-  validateAll: () => { isValid: boolean; errors: Partial<Record<keyof AgentFormValues, string>> };
+  validateAll: () => {
+    isValid: boolean;
+    errors: Partial<Record<keyof AgentFormValues, string>>;
+  };
   reset: () => void;
 }
 
 /**
  * Manages form state and validation for agent configuration
  */
-export function useAgentForm({ agent, agentData }: UseAgentFormOptions): UseAgentFormReturn {
+export function useAgentForm({
+  agent,
+  agentData,
+}: UseAgentFormOptions): UseAgentFormReturn {
   // Initial form values
   const initialValues = useMemo<AgentFormValues>(() => {
     if (agent && agentData) {
@@ -40,8 +49,10 @@ export function useAgentForm({ agent, agentData }: UseAgentFormOptions): UseAgen
         name: agent.name,
         description: agent.description || '',
         avatarUrl: agent.avatarUrl || null,
-        temperature: typeof config.temperature === 'number' ? config.temperature : 0.7,
-        systemPrompt: typeof config.system_prompt === 'string' ? config.system_prompt : '',
+        temperature:
+          typeof config.temperature === 'number' ? config.temperature : 0.7,
+        systemPrompt:
+          typeof config.system_prompt === 'string' ? config.system_prompt : '',
         behaviorRules: parseBehaviorRules(config.behavior_rules),
       };
     } else if (agent && agent.id < 0) {
@@ -70,15 +81,8 @@ export function useAgentForm({ agent, agentData }: UseAgentFormOptions): UseAgen
     name: [validationRules.required('Agent name is required')],
   };
 
-  const {
-    values,
-    errors,
-    touched,
-    setValue,
-    setTouched,
-    validateAll,
-    reset,
-  } = useFormValidation<AgentFormValues>(validationSchema, initialValues);
+  const { values, errors, touched, setValue, setTouched, validateAll, reset } =
+    useFormValidation<AgentFormValues>(validationSchema, initialValues);
 
   // Track previous agent/agentData IDs to prevent unnecessary updates
   const prevAgentIdRef = useRef<number | null>(agent?.id ?? null);
@@ -105,8 +109,14 @@ export function useAgentForm({ agent, agentData }: UseAgentFormOptions): UseAgen
       setValue('name', agent.name);
       setValue('description', agent.description || '');
       setValue('avatarUrl', agent.avatarUrl || null);
-      setValue('temperature', typeof config.temperature === 'number' ? config.temperature : 0.7);
-      setValue('systemPrompt', typeof config.system_prompt === 'string' ? config.system_prompt : '');
+      setValue(
+        'temperature',
+        typeof config.temperature === 'number' ? config.temperature : 0.7
+      );
+      setValue(
+        'systemPrompt',
+        typeof config.system_prompt === 'string' ? config.system_prompt : ''
+      );
       setValue('behaviorRules', parseBehaviorRules(config.behavior_rules));
     } else if (agent && agent.id < 0) {
       setValue('name', agent.name || '');

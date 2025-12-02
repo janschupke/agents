@@ -11,7 +11,7 @@ export const tokenProvider = {
     tokenGetter = getter;
     isReady = true;
     // Notify all waiting callbacks
-    readyCallbacks.forEach(callback => callback());
+    readyCallbacks.forEach((callback) => callback());
     readyCallbacks = [];
   },
 

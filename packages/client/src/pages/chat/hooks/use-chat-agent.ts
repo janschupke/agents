@@ -14,10 +14,13 @@ interface UseChatAgentReturn {
 /**
  * Manages agent selection and initialization for chat
  */
-export function useChatAgent({ propAgentId }: UseChatAgentOptions): UseChatAgentReturn {
+export function useChatAgent({
+  propAgentId,
+}: UseChatAgentOptions): UseChatAgentReturn {
   const { selectedAgentId, setSelectedAgentId } = useSelectedAgent();
   const { data: agents = [], isLoading: loadingAgents } = useAgents();
-  const actualAgentId = propAgentId || selectedAgentId || (agents.length > 0 ? agents[0].id : null);
+  const actualAgentId =
+    propAgentId || selectedAgentId || (agents.length > 0 ? agents[0].id : null);
 
   // Initialize agent selection
   useEffect(() => {

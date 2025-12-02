@@ -1,5 +1,12 @@
 import { memo } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  Link,
+} from 'react-router-dom';
 import { SignIn } from '@clerk/clerk-react';
 import { ChatAgent } from './pages/chat';
 import { AgentConfig } from './pages/config';
@@ -114,7 +121,11 @@ function AppContent() {
   }
 
   // Redirect to profile if no API key (except if already on profile page)
-  if (hasApiKey === false && location.pathname !== '/profile' && location.pathname !== '/') {
+  if (
+    hasApiKey === false &&
+    location.pathname !== '/profile' &&
+    location.pathname !== '/'
+  ) {
     return <Navigate to="/profile" replace />;
   }
 

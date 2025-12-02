@@ -27,9 +27,7 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
             ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
             : 'User'}
         </h3>
-        {user.email && (
-          <p className="text-text-secondary mt-1">{user.email}</p>
-        )}
+        {user.email && <p className="text-text-secondary mt-1">{user.email}</p>}
       </div>
     </div>
   );

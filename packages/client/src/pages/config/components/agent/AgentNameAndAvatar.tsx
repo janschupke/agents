@@ -32,7 +32,10 @@ export default function AgentNameAndAvatar({
       <AvatarPicker value={avatarUrl} onChange={onAvatarChange} />
       <div className="flex-1">
         <div>
-          <label htmlFor="agent-name" className="block text-sm font-medium text-text-secondary mb-1.5">
+          <label
+            htmlFor="agent-name"
+            className="block text-sm font-medium text-text-secondary mb-1.5"
+          >
             Agent Name
           </label>
           <ValidatedInput

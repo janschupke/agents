@@ -12,11 +12,18 @@ interface ChatMessagesProps {
   sessionId?: number | null;
 }
 
-export default function ChatMessages({ messages, loading, onShowJson, sessionId }: ChatMessagesProps) {
-  const filteredMessages = messages.filter((msg) => msg.role !== MessageRole.SYSTEM);
+export default function ChatMessages({
+  messages,
+  loading,
+  onShowJson,
+  sessionId,
+}: ChatMessagesProps) {
+  const filteredMessages = messages.filter(
+    (msg) => msg.role !== MessageRole.SYSTEM
+  );
   const initialMessageCountRef = useRef<number | null>(null);
   const lastSessionIdRef = useRef<number | null | undefined>(undefined);
-  
+
   // Reset and track initial message count when session changes or on first render
   useEffect(() => {
     if (sessionId !== lastSessionIdRef.current) {
@@ -24,12 +31,15 @@ export default function ChatMessages({ messages, loading, onShowJson, sessionId 
       initialMessageCountRef.current = null;
       lastSessionIdRef.current = sessionId;
     }
-    
-    if (initialMessageCountRef.current === null && filteredMessages.length > 0) {
+
+    if (
+      initialMessageCountRef.current === null &&
+      filteredMessages.length > 0
+    ) {
       initialMessageCountRef.current = filteredMessages.length;
     }
   }, [filteredMessages.length, sessionId]);
-  
+
   // Determine if a message is new (added after initial load)
   const isNewMessage = (index: number) => {
     if (initialMessageCountRef.current === null) return false;
@@ -53,7 +63,7 @@ export default function ChatMessages({ messages, loading, onShowJson, sessionId 
         const isNew = isNewMessage(index);
         const messageKey = message.id || index;
         const positioningClasses = `flex flex-col max-w-[80%] ${message.role === MessageRole.USER ? 'self-end' : 'self-start'}`;
-        
+
         // Only animate new messages
         return isNew ? (
           <FadeIn key={messageKey} className={positioningClasses}>

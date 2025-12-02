@@ -1,5 +1,10 @@
 import { useState, useCallback, useMemo } from 'react';
-import { ValidationSchema, validateField, validateAll, ValidationResult } from '../utils/validation';
+import {
+  ValidationSchema,
+  validateField,
+  validateAll,
+  ValidationResult,
+} from '../utils/validation';
 
 export interface UseFormValidationReturn<T extends Record<string, unknown>> {
   values: T;
@@ -18,22 +23,23 @@ export function useFormValidation<T extends Record<string, unknown>>(
   initialValues: T
 ): UseFormValidationReturn<T> {
   const [values, setValues] = useState<T>(initialValues);
-  const [errors, setErrors] = useState<Record<keyof T, string | null>>({} as Record<keyof T, string | null>);
-  const [touched, setTouchedState] = useState<Record<keyof T, boolean>>({} as Record<keyof T, boolean>);
-
-  const setValue = useCallback(
-    <K extends keyof T>(field: K, value: T[K]) => {
-      setValues((prev) => ({ ...prev, [field]: value }));
-      // Clear error when user starts typing
-      setErrors((prev) => {
-        if (prev[field]) {
-          return { ...prev, [field]: null };
-        }
-        return prev;
-      });
-    },
-    []
+  const [errors, setErrors] = useState<Record<keyof T, string | null>>(
+    {} as Record<keyof T, string | null>
   );
+  const [touched, setTouchedState] = useState<Record<keyof T, boolean>>(
+    {} as Record<keyof T, boolean>
+  );
+
+  const setValue = useCallback(<K extends keyof T>(field: K, value: T[K]) => {
+    setValues((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    setErrors((prev) => {
+      if (prev[field]) {
+        return { ...prev, [field]: null };
+      }
+      return prev;
+    });
+  }, []);
 
   const setTouched = useCallback((field: keyof T, isTouched = true) => {
     setTouchedState((prev) => ({ ...prev, [field]: isTouched }));
@@ -53,10 +59,13 @@ export function useFormValidation<T extends Record<string, unknown>>(
     const result = validateAll(values, schema);
     setErrors(result.errors as Record<keyof T, string | null>);
     // Mark all fields as touched when validating all
-    const allTouched = Object.keys(schema).reduce((acc, key) => {
-      acc[key as keyof T] = true;
-      return acc;
-    }, {} as Record<keyof T, boolean>);
+    const allTouched = Object.keys(schema).reduce(
+      (acc, key) => {
+        acc[key as keyof T] = true;
+        return acc;
+      },
+      {} as Record<keyof T, boolean>
+    );
     setTouchedState((prev) => ({ ...prev, ...allTouched }));
     return result;
   }, [values, schema]);

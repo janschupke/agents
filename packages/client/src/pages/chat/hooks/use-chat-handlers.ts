@@ -1,14 +1,23 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useConfirm } from '../../../hooks/useConfirm';
 import { queryKeys } from '../../../hooks/queries/query-keys';
-import { Session, Message, ChatHistoryResponse } from '../../../types/chat.types';
+import {
+  Session,
+  Message,
+  ChatHistoryResponse,
+} from '../../../types/chat.types';
 
 interface UseChatHandlersOptions {
   agentId: number | null;
   sessions: Session[];
-  handleSessionSelect: (sessionId: number) => Promise<ChatHistoryResponse | undefined>;
+  handleSessionSelect: (
+    sessionId: number
+  ) => Promise<ChatHistoryResponse | undefined>;
   handleNewSession: () => Promise<Session | undefined>;
-  handleSessionDelete: (sessionId: number, onConfirm?: () => Promise<boolean>) => Promise<void>;
+  handleSessionDelete: (
+    sessionId: number,
+    onConfirm?: () => Promise<boolean>
+  ) => Promise<void>;
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
 }
 
@@ -46,7 +55,9 @@ export function useChatHandlers({
 
   const handleSessionDeleteWrapper = async (sessionId: number) => {
     const sessionToDelete = sessions.find((s) => s.id === sessionId);
-    const sessionName = sessionToDelete?.session_name || `Session ${new Date(sessionToDelete?.createdAt || Date.now()).toLocaleDateString()}`;
+    const sessionName =
+      sessionToDelete?.session_name ||
+      `Session ${new Date(sessionToDelete?.createdAt || Date.now()).toLocaleDateString()}`;
 
     const confirmed = await confirm({
       title: 'Delete Session',
@@ -57,7 +68,9 @@ export function useChatHandlers({
     });
 
     if (confirmed) {
-      await handleSessionDelete(sessionId, async () => Promise.resolve(confirmed));
+      await handleSessionDelete(sessionId, async () =>
+        Promise.resolve(confirmed)
+      );
     }
   };
 
@@ -65,7 +78,9 @@ export function useChatHandlers({
     // Session name is updated by the mutation hook in SessionNameModal
     // Just refresh sessions (name parameter is provided by SessionNameModal but not needed here)
     if (agentId) {
-      queryClient.invalidateQueries({ queryKey: queryKeys.agents.sessions(agentId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.agents.sessions(agentId),
+      });
     }
     // Suppress unused parameter warning
     void name;

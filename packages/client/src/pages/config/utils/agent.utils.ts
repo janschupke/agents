@@ -15,7 +15,9 @@ export function parseBehaviorRules(behavior_rules: unknown): string[] {
         'rules' in parsed &&
         Array.isArray((parsed as { rules: unknown }).rules)
       ) {
-        return (parsed as { rules: unknown[] }).rules.map((r: unknown) => String(r));
+        return (parsed as { rules: unknown[] }).rules.map((r: unknown) =>
+          String(r)
+        );
       } else {
         return [String(parsed)];
       }

@@ -11,7 +11,9 @@ export default function UserDetails({ user }: UserDetailsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
-        <label className="text-sm font-medium text-text-secondary">User ID</label>
+        <label className="text-sm font-medium text-text-secondary">
+          User ID
+        </label>
         <p className="mt-1 text-text-primary font-mono text-sm break-all">
           {user.id}
         </p>
@@ -19,21 +21,27 @@ export default function UserDetails({ user }: UserDetailsProps) {
 
       {user.firstName && (
         <div>
-          <label className="text-sm font-medium text-text-secondary">First Name</label>
+          <label className="text-sm font-medium text-text-secondary">
+            First Name
+          </label>
           <p className="mt-1 text-text-primary">{user.firstName}</p>
         </div>
       )}
 
       {user.lastName && (
         <div>
-          <label className="text-sm font-medium text-text-secondary">Last Name</label>
+          <label className="text-sm font-medium text-text-secondary">
+            Last Name
+          </label>
           <p className="mt-1 text-text-primary">{user.lastName}</p>
         </div>
       )}
 
       {user.email && (
         <div>
-          <label className="text-sm font-medium text-text-secondary">Email</label>
+          <label className="text-sm font-medium text-text-secondary">
+            Email
+          </label>
           <p className="mt-1 text-text-primary">{user.email}</p>
         </div>
       )}
@@ -51,7 +59,9 @@ export default function UserDetails({ user }: UserDetailsProps) {
               </span>
             ))
           ) : (
-            <span className="text-text-secondary text-sm">No roles assigned</span>
+            <span className="text-text-secondary text-sm">
+              No roles assigned
+            </span>
           )}
         </div>
       </div>

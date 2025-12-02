@@ -1,6 +1,10 @@
 import { apiManager } from './api-manager';
 import { API_ENDPOINTS } from '../constants/api.constants';
-import { Agent, CreateAgentRequest, UpdateAgentRequest } from '../types/chat.types';
+import {
+  Agent,
+  CreateAgentRequest,
+  UpdateAgentRequest,
+} from '../types/chat.types';
 
 export class AgentService {
   /**
@@ -27,7 +31,10 @@ export class AgentService {
   /**
    * Update an agent
    */
-  static async updateAgent(agentId: number, data: UpdateAgentRequest): Promise<Agent> {
+  static async updateAgent(
+    agentId: number,
+    data: UpdateAgentRequest
+  ): Promise<Agent> {
     return apiManager.put<Agent>(API_ENDPOINTS.AGENTS.BY_ID(agentId), data);
   }
 

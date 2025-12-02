@@ -10,7 +10,11 @@ interface FadeInProps {
  * Wrapper component that applies fade-in animation to its children
  * Preserves flex positioning by not adding extra wrapper styles
  */
-export default function FadeIn({ children, className = '', delay = 0 }: FadeInProps) {
+export default function FadeIn({
+  children,
+  className = '',
+  delay = 0,
+}: FadeInProps) {
   return (
     <div
       className={`animate-fade-in ${className}`}

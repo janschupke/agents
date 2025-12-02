@@ -38,7 +38,7 @@ export default function WordPresenter({
     for (const word of sortedWords) {
       const originalWord = word.originalWord;
       const wordLength = originalWord.length;
-      
+
       // Check if this word matches at the current position
       if (
         i + wordLength <= textLength &&
@@ -69,7 +69,11 @@ export default function WordPresenter({
     <>
       {parts.map((part, index) => {
         if (!part.translation) {
-          return <span key={index} className="inline">{part.text}</span>;
+          return (
+            <span key={index} className="inline">
+              {part.text}
+            </span>
+          );
         }
 
         return (

@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useUpdateMemory, useDeleteMemory } from '../../../hooks/mutations/use-agent-mutations';
+import {
+  useUpdateMemory,
+  useDeleteMemory,
+} from '../../../hooks/mutations/use-agent-mutations';
 import { queryKeys } from '../../../hooks/queries/query-keys';
 import { useConfirm } from '../../../hooks/useConfirm';
 
@@ -19,7 +22,9 @@ interface UseAgentMemoriesReturn {
 /**
  * Manages memory operations (edit, delete, refresh) for an agent
  */
-export function useAgentMemories({ agentId }: UseAgentMemoriesOptions): UseAgentMemoriesReturn {
+export function useAgentMemories({
+  agentId,
+}: UseAgentMemoriesOptions): UseAgentMemoriesReturn {
   const { confirm } = useConfirm();
   const queryClient = useQueryClient();
   const updateMemoryMutation = useUpdateMemory();
@@ -73,7 +78,9 @@ export function useAgentMemories({ agentId }: UseAgentMemoriesOptions): UseAgent
 
   const handleRefreshMemories = () => {
     if (!agentId || agentId < 0) return;
-    queryClient.invalidateQueries({ queryKey: queryKeys.agents.memories(agentId) });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.agents.memories(agentId),
+    });
   };
 
   return {

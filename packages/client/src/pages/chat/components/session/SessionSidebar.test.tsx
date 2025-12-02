@@ -113,7 +113,9 @@ describe('SessionSidebar', () => {
     );
 
     expect(screen.getByText('No sessions yet')).toBeInTheDocument();
-    expect(screen.getByText('Create a new session to start chatting')).toBeInTheDocument();
+    expect(
+      screen.getByText('Create a new session to start chatting')
+    ).toBeInTheDocument();
   });
 
   it('should show loading skeleton when loading', () => {
@@ -166,7 +168,9 @@ describe('SessionSidebar', () => {
     );
 
     mockSessions.forEach((session) => {
-      expect(screen.getByText(session.session_name || `Session ${session.id}`)).toBeInTheDocument();
+      expect(
+        screen.getByText(session.session_name || `Session ${session.id}`)
+      ).toBeInTheDocument();
     });
   });
 });

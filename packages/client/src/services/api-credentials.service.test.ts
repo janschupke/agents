@@ -33,7 +33,10 @@ describe('ApiCredentialsService', () => {
       const consoleErrorSpy = vi.spyOn(console, 'error');
       server.use(
         http.get(`${API_BASE_URL}/api/api-credentials/openai/check`, () => {
-          return HttpResponse.json({ message: 'Internal server error' }, { status: 500 });
+          return HttpResponse.json(
+            { message: 'Internal server error' },
+            { status: 500 }
+          );
         })
       );
 
@@ -49,29 +52,41 @@ describe('ApiCredentialsService', () => {
 
   describe('setOpenAIKey', () => {
     it('should set OpenAI key successfully', async () => {
-      await expect(ApiCredentialsService.setOpenAIKey('sk-test-key')).resolves.not.toThrow();
+      await expect(
+        ApiCredentialsService.setOpenAIKey('sk-test-key')
+      ).resolves.not.toThrow();
     });
 
     it('should throw error when setting key fails', async () => {
       server.use(
         http.post(`${API_BASE_URL}/api/api-credentials/openai`, () => {
-          return HttpResponse.json({ message: 'Invalid API key' }, { status: 400 });
+          return HttpResponse.json(
+            { message: 'Invalid API key' },
+            { status: 400 }
+          );
         })
       );
 
-      await expect(ApiCredentialsService.setOpenAIKey('invalid-key')).rejects.toThrow();
+      await expect(
+        ApiCredentialsService.setOpenAIKey('invalid-key')
+      ).rejects.toThrow();
     });
   });
 
   describe('deleteOpenAIKey', () => {
     it('should delete OpenAI key successfully', async () => {
-      await expect(ApiCredentialsService.deleteOpenAIKey()).resolves.not.toThrow();
+      await expect(
+        ApiCredentialsService.deleteOpenAIKey()
+      ).resolves.not.toThrow();
     });
 
     it('should throw error when deletion fails', async () => {
       server.use(
         http.delete(`${API_BASE_URL}/api/api-credentials/openai`, () => {
-          return HttpResponse.json({ message: 'Internal server error' }, { status: 500 });
+          return HttpResponse.json(
+            { message: 'Internal server error' },
+            { status: 500 }
+          );
         })
       );
 

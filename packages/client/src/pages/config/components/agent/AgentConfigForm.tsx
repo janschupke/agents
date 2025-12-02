@@ -5,7 +5,12 @@ import { useAgent } from '../../../../hooks/queries/use-agents';
 import { useAgentMemories as useAgentMemoriesQuery } from '../../../../hooks/queries/use-agents';
 import { useAgentForm } from '../../hooks/use-agent-form';
 import { useAgentMemories } from '../../hooks/use-agent-memories';
-import { FormButton, FormContainer, ButtonType, ButtonVariant } from '../../../../components/ui/form';
+import {
+  FormButton,
+  FormContainer,
+  ButtonType,
+  ButtonVariant,
+} from '../../../../components/ui/form';
 import { FadeIn } from '../../../../components/ui/animation';
 import {
   DescriptionField,
@@ -20,10 +25,17 @@ import MemoriesSection from './MemoriesSection';
 interface AgentConfigFormProps {
   agent: Agent | null;
   saving?: boolean;
-  onSaveClick: (agent: Agent, values: ReturnType<typeof useAgentForm>['values']) => Promise<void>;
+  onSaveClick: (
+    agent: Agent,
+    values: ReturnType<typeof useAgentForm>['values']
+  ) => Promise<void>;
 }
 
-export default function AgentConfigForm({ agent, saving = false, onSaveClick }: AgentConfigFormProps) {
+export default function AgentConfigForm({
+  agent,
+  saving = false,
+  onSaveClick,
+}: AgentConfigFormProps) {
   // Track agent ID changes to trigger fade-in animation
   const [fadeKey, setFadeKey] = useState(0);
   const previousAgentIdRef = useRef<number | null>(null);
@@ -40,18 +52,15 @@ export default function AgentConfigForm({ agent, saving = false, onSaveClick }: 
   }, [agent?.id]);
 
   // React Query hooks
-  const { data: agentData, isLoading: loadingAgent } = useAgent(agent?.id || null);
-  const { data: memories = [], isLoading: loadingMemories } = useAgentMemoriesQuery(agent?.id || null);
+  const { data: agentData, isLoading: loadingAgent } = useAgent(
+    agent?.id || null
+  );
+  const { data: memories = [], isLoading: loadingMemories } =
+    useAgentMemoriesQuery(agent?.id || null);
 
   // Form management hook
-  const {
-    values,
-    errors,
-    touched,
-    setValue,
-    setTouched,
-    validateAll,
-  } = useAgentForm({ agent, agentData: agentData || null });
+  const { values, errors, touched, setValue, setTouched, validateAll } =
+    useAgentForm({ agent, agentData: agentData || null });
 
   // Memory operations hook
   const {
@@ -79,7 +88,9 @@ export default function AgentConfigForm({ agent, saving = false, onSaveClick }: 
   if (!agent) {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
-        <div className="text-text-tertiary text-center text-sm">Select an agent to configure</div>
+        <div className="text-text-tertiary text-center text-sm">
+          Select an agent to configure
+        </div>
       </div>
     );
   }
@@ -95,7 +106,9 @@ export default function AgentConfigForm({ agent, saving = false, onSaveClick }: 
             loading={saving}
             disabled={!values.name.trim()}
             variant={ButtonVariant.PRIMARY}
-            tooltip={saving ? 'Saving...' : agent.id < 0 ? 'Create Agent' : 'Save'}
+            tooltip={
+              saving ? 'Saving...' : agent.id < 0 ? 'Create Agent' : 'Save'
+            }
           >
             {agent.id < 0 ? 'Create Agent' : 'Save'}
           </FormButton>
@@ -119,10 +132,22 @@ export default function AgentConfigForm({ agent, saving = false, onSaveClick }: 
                   onNameChange={(value) => setValue('name', value)}
                   onNameBlur={() => setTouched('name')}
                 />
-                <DescriptionField value={values.description} onChange={(val) => setValue('description', val)} />
-                <TemperatureField value={values.temperature} onChange={(val) => setValue('temperature', val)} />
-                <SystemPromptField value={values.systemPrompt} onChange={(val) => setValue('systemPrompt', val)} />
-                <BehaviorRulesField rules={values.behaviorRules} onChange={(rules) => setValue('behaviorRules', rules)} />
+                <DescriptionField
+                  value={values.description}
+                  onChange={(val) => setValue('description', val)}
+                />
+                <TemperatureField
+                  value={values.temperature}
+                  onChange={(val) => setValue('temperature', val)}
+                />
+                <SystemPromptField
+                  value={values.systemPrompt}
+                  onChange={(val) => setValue('systemPrompt', val)}
+                />
+                <BehaviorRulesField
+                  rules={values.behaviorRules}
+                  onChange={(rules) => setValue('behaviorRules', rules)}
+                />
 
                 <MemoriesSection
                   agentId={agent.id}

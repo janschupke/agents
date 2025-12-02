@@ -5,7 +5,10 @@ import { ChatService } from '../../services/chat.service';
 import { ChatHistoryResponse, Session } from '../../types/chat.types';
 import { queryKeys } from './query-keys';
 
-export function useChatHistory(agentId: number | null, sessionId?: number | null) {
+export function useChatHistory(
+  agentId: number | null,
+  sessionId?: number | null
+) {
   const { isSignedIn, isLoaded } = useAuth();
   const tokenReady = useTokenReady();
 
