@@ -1,0 +1,173 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* 
+     * Centralized theme variables
+     * Apps can override brand colors (primary, message colors, border-focus)
+     * by defining these CSS variables in their own CSS files
+     */
+
+    /* Primary colors - Default values (apps should override) */
+    --color-primary: 59 130 246; /* blue-500 - default, apps override */
+    --color-primary-hover: 37 99 235; /* blue-600 - default, apps override */
+    --color-primary-light: 96 165 250; /* blue-400 - default, apps override */
+
+    /* Background colors - Shared across all apps */
+    --color-background: 255 255 255; /* white */
+    --color-background-secondary: 249 250 251; /* gray-50 */
+    --color-background-tertiary: 243 244 246; /* gray-100 */
+
+    /* Text colors - Shared across all apps */
+    --color-text-primary: 17 24 39; /* gray-900 */
+    --color-text-secondary: 31 41 55; /* gray-800 */
+    --color-text-tertiary: 107 114 128; /* gray-500 */
+    --color-text-inverse: 255 255 255; /* white */
+
+    /* Border colors - Shared across all apps */
+    --color-border: 229 231 235; /* gray-200 */
+    --color-border-focus: 59 130 246; /* blue-500 - default, apps override */
+    --color-border-input: 209 213 219; /* gray-300 */
+
+    /* Message colors - Default values (apps should override) */
+    --color-message-user: 59 130 246; /* blue-500 - default, apps override */
+    --color-message-assistant: 243 244 246; /* gray-100 */
+    --color-message-user-text: 255 255 255; /* white */
+    --color-message-assistant-text: 17 24 39; /* gray-900 */
+
+    /* Disabled colors - Shared across all apps */
+    --color-disabled: 156 163 175; /* gray-400 */
+    --color-disabled-bg: 243 244 246; /* gray-100 */
+
+    /* Shadows - Shared across all apps */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md:
+      0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg:
+      0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+    /* Design system - unified heights */
+    --button-height: 2rem; /* 32px - h-8 */
+    --button-height-sm: 1.75rem; /* 28px - h-7 */
+    --sidebar-item-height: 2.5rem; /* 40px - compact */
+    --input-height: 2rem; /* 32px - h-8 */
+  }
+}
+
+@layer utilities {
+  @keyframes slide-in-right {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-in-right {
+    animation: slide-in-right 0.3s ease-out;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 200ms ease-in-out;
+  }
+
+  .transition-fade {
+    transition-property: opacity;
+    transition-timing-function: ease-in-out;
+    transition-duration: 200ms;
+  }
+
+  .transition-fade-fast {
+    transition-property: opacity;
+    transition-timing-function: ease-in-out;
+    transition-duration: 150ms;
+  }
+
+  @keyframes typing-dot-pulse {
+    0%,
+    100% {
+      opacity: 0.3;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.1);
+    }
+  }
+
+  .animate-typing-dot {
+    animation: typing-dot-pulse 1.4s ease-in-out infinite;
+  }
+
+  .animate-typing-dot-delay-1 {
+    animation-delay: 0s;
+  }
+
+  .animate-typing-dot-delay-2 {
+    animation-delay: 0.2s;
+  }
+
+  .animate-typing-dot-delay-3 {
+    animation-delay: 0.4s;
+  }
+}
+
+/* Markdown content styles */
+.markdown-content {
+  line-height: 1.6;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  line-height: 1.4;
+}
+
+.markdown-content code {
+  word-break: break-word;
+}
+
+.markdown-content pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.markdown-content pre code {
+  display: block;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  padding-left: 1.5rem;
+}
+
+.markdown-content li {
+  margin: 0.25rem 0;
+}
+
+.markdown-content table {
+  font-size: 0.875rem;
+}
+
+.markdown-content blockquote {
+  border-left-color: currentColor;
+}
