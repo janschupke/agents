@@ -2,6 +2,7 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiCredentialsRepository } from './api-credentials.repository';
 import { EncryptionService } from '../common/services/encryption.service';
 import { ApiCredentialsStatus } from '../common/interfaces/api-credentials.interface';
+import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
 
 @Injectable()
 export class ApiCredentialsService {
@@ -80,7 +81,7 @@ export class ApiCredentialsService {
 
   async getCredentialsStatus(userId: string): Promise<ApiCredentialsStatus[]> {
     const credentials = await this.repository.findByUserId(userId);
-    const providers = ['openai']; // Add more providers as needed
+    const providers = [MAGIC_STRINGS.OPENAI_PROVIDER]; // Add more providers as needed
 
     return providers.map((provider) => {
       const hasKey = credentials.some((c) => c.provider === provider);

@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import OpenAI from 'openai';
 import { config } from 'dotenv';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
@@ -7,6 +12,7 @@ config();
 
 @Injectable()
 export class OpenAIService {
+  private readonly logger = new Logger(OpenAIService.name);
   private readonly defaultOpenai: OpenAI | null;
 
   constructor() {
@@ -25,7 +31,7 @@ export class OpenAIService {
     if (this.defaultOpenai) {
       return this.defaultOpenai;
     }
-    throw new Error(
+    throw new BadRequestException(
       'No API key provided and OPENAI_API_KEY is not set in .env file'
     );
   }
@@ -42,21 +48,21 @@ export class OpenAIService {
       if (response.data && response.data.length > 0) {
         const embedding = response.data[0].embedding;
         if (embedding.length !== NUMERIC_CONSTANTS.EMBEDDING_DIMENSIONS) {
-          console.warn(
+          this.logger.warn(
             `Warning: Expected embedding dimension ${NUMERIC_CONSTANTS.EMBEDDING_DIMENSIONS}, got ${embedding.length}`
           );
         }
         return embedding;
       }
 
-      throw new Error('No embedding returned from OpenAI');
+      throw new InternalServerErrorException('No embedding returned from OpenAI');
     } catch (error) {
       const err = error as { message?: string };
-      console.error(
+      this.logger.error(
         'Error generating embedding:',
         err.message || 'Unknown error'
       );
-      throw new Error(
+      throw new InternalServerErrorException(
         `Failed to generate embedding: ${err.message || 'Unknown error'}`
       );
     }

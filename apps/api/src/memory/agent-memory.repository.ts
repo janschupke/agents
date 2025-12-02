@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AgentMemory } from '@prisma/client';
 
@@ -16,6 +21,8 @@ interface AgentMemoryWithVector {
 
 @Injectable()
 export class AgentMemoryRepository {
+  private readonly logger = new Logger(AgentMemoryRepository.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async create(
@@ -26,14 +33,14 @@ export class AgentMemoryRepository {
     vector?: number[]
   ): Promise<AgentMemory> {
     if (!vector || vector.length === 0) {
-      throw new Error('Vector is required for agent memory creation');
+      throw new BadRequestException('Vector is required for agent memory creation');
     }
 
-    if (vector.length !== 1536) {
-      console.warn(
-        `Warning: Vector length is ${vector.length}, expected 1536. Attempting to proceed...`
-      );
-    }
+      if (vector.length !== 1536) {
+        this.logger.warn(
+          `Warning: Vector length is ${vector.length}, expected 1536. Attempting to proceed...`
+        );
+      }
 
     const vectorString = `[${vector.join(',')}]`;
 
@@ -67,11 +74,13 @@ export class AgentMemoryRepository {
       );
 
       if (!result || result.length === 0) {
-        throw new Error('Failed to create agent memory: no result returned');
+        throw new InternalServerErrorException(
+          'Failed to create agent memory: no result returned'
+        );
       }
 
       const created = result[0];
-      console.log(
+      this.logger.log(
         `Successfully created agent memory ${created.id} for agent ${agentId}, user ${userId}`
       );
 
@@ -87,7 +96,7 @@ export class AgentMemoryRepository {
         updateCount: created.update_count,
       } as AgentMemory;
     } catch (error) {
-      console.error('Error creating agent memory:', error);
+      this.logger.error('Error creating agent memory:', error);
       throw error;
     }
   }
@@ -172,7 +181,7 @@ export class AgentMemoryRepository {
       );
 
       if (results && results.length > 0) {
-        console.log(
+        this.logger.log(
           `Found ${results.length} similar memories for agent ${agentId}, user ${userId}`
         );
         return results.map((r) => ({
@@ -190,7 +199,7 @@ export class AgentMemoryRepository {
 
       return [];
     } catch (error) {
-      console.error('Error finding similar memories:', error);
+      this.logger.error('Error finding similar memories:', error);
       return [];
     }
   }

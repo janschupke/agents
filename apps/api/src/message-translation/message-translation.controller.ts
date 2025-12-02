@@ -15,6 +15,7 @@ import { SessionRepository } from '../session/session.repository';
 import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
 import { API_ROUTES } from '../common/constants/api-routes.constants.js';
+import { ERROR_MESSAGES, MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
 
 @Controller(API_ROUTES.MESSAGES.BASE)
 export class MessageTranslationController {
@@ -58,7 +59,7 @@ export class MessageTranslationController {
   ): Promise<Record<number, string>> {
     const ids = messageIds
       .split(',')
-      .map((id) => parseInt(id.trim(), 10))
+      .map((id) => parseInt(id.trim(), MAGIC_STRINGS.PARSE_INT_BASE))
       .filter((id) => !isNaN(id));
 
     const translations =
@@ -87,7 +88,10 @@ export class MessageTranslationController {
     // Verify access
     const message = await this.messageRepository.findById(messageId);
     if (!message) {
-      throw new HttpException('Message not found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.MESSAGE_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
 
     const session = await this.sessionRepository.findByIdAndUserId(
@@ -95,7 +99,10 @@ export class MessageTranslationController {
       user.id
     );
     if (!session) {
-      throw new HttpException('Access denied', HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        ERROR_MESSAGES.ACCESS_DENIED,
+        HttpStatus.FORBIDDEN
+      );
     }
 
     const wordTranslations =
@@ -121,7 +128,10 @@ export class MessageTranslationController {
     // Verify access
     const message = await this.messageRepository.findById(messageId);
     if (!message) {
-      throw new HttpException('Message not found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.MESSAGE_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
 
     const session = await this.sessionRepository.findByIdAndUserId(
@@ -129,7 +139,10 @@ export class MessageTranslationController {
       user.id
     );
     if (!session) {
-      throw new HttpException('Access denied', HttpStatus.FORBIDDEN);
+      throw new HttpException(
+        ERROR_MESSAGES.ACCESS_DENIED,
+        HttpStatus.FORBIDDEN
+      );
     }
 
     const translation = await this.translationService

@@ -6,7 +6,11 @@ export class SessionResponseDto {
   createdAt!: Date;
 }
 
+import { IsOptional, IsString } from 'class-validator';
+
 export class UpdateSessionDto {
+  @IsOptional()
+  @IsString()
   session_name?: string;
 }
 

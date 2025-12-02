@@ -23,6 +23,7 @@ import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
 import { SuccessResponseDto } from '../common/dto/common.dto';
 import { API_ROUTES } from '../common/constants/api-routes.constants.js';
+import { ERROR_MESSAGES, MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
 
 @Controller(API_ROUTES.CHAT.BASE)
 export class ChatController {
@@ -33,18 +34,7 @@ export class ChatController {
     @Param('agentId', ParseIntPipe) agentId: number,
     @User() user: AuthenticatedUser
   ): Promise<SessionResponseDto[]> {
-    try {
-      return await this.chatService.getSessions(agentId, user.id);
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      const err = error as { message?: string };
-      throw new HttpException(
-        err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+    return await this.chatService.getSessions(agentId, user.id);
   }
 
   @Post(':agentId/sessions')
@@ -52,18 +42,7 @@ export class ChatController {
     @Param('agentId', ParseIntPipe) agentId: number,
     @User() user: AuthenticatedUser
   ): Promise<SessionResponseDto> {
-    try {
-      return await this.chatService.createSession(agentId, user.id);
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      const err = error as { message?: string };
-      throw new HttpException(
-        err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+    return await this.chatService.createSession(agentId, user.id);
   }
 
   @Get(':agentId')
@@ -72,23 +51,14 @@ export class ChatController {
     @User() user: AuthenticatedUser,
     @Query('sessionId') sessionId?: string
   ): Promise<ChatHistoryResponseDto> {
-    try {
-      const parsedSessionId = sessionId ? parseInt(sessionId, 10) : undefined;
-      return await this.chatService.getChatHistory(
-        agentId,
-        user.id,
-        parsedSessionId
-      );
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      const err = error as { message?: string };
-      throw new HttpException(
-        err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+    const parsedSessionId = sessionId
+      ? parseInt(sessionId, MAGIC_STRINGS.PARSE_INT_BASE)
+      : undefined;
+    return await this.chatService.getChatHistory(
+      agentId,
+      user.id,
+      parsedSessionId
+    );
   }
 
   @Post(':agentId')
@@ -98,34 +68,15 @@ export class ChatController {
     @User() user: AuthenticatedUser,
     @Query('sessionId') sessionId?: string
   ): Promise<SendMessageResponseDto> {
-    if (!body.message || typeof body.message !== 'string') {
-      throw new HttpException('Message is required', HttpStatus.BAD_REQUEST);
-    }
-
-    try {
-      const parsedSessionId = sessionId ? parseInt(sessionId, 10) : undefined;
-      return await this.chatService.sendMessage(
-        agentId,
-        user.id,
-        body.message,
-        parsedSessionId
-      );
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      const err = error as { message?: string; status?: number };
-      if (err.status === 401) {
-        throw new HttpException(
-          'Invalid API key. Please check your .env file.',
-          HttpStatus.UNAUTHORIZED
-        );
-      }
-      throw new HttpException(
-        err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+    const parsedSessionId = sessionId
+      ? parseInt(sessionId, MAGIC_STRINGS.PARSE_INT_BASE)
+      : undefined;
+    return await this.chatService.sendMessage(
+      agentId,
+      user.id,
+      body.message,
+      parsedSessionId
+    );
   }
 
   @Put(':agentId/sessions/:sessionId')
@@ -135,23 +86,12 @@ export class ChatController {
     @Body() body: UpdateSessionDto,
     @User() user: AuthenticatedUser
   ): Promise<SessionResponseDto> {
-    try {
-      return await this.chatService.updateSession(
-        agentId,
-        sessionId,
-        user.id,
-        body.session_name
-      );
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      const err = error as { message?: string };
-      throw new HttpException(
-        err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+    return await this.chatService.updateSession(
+      agentId,
+      sessionId,
+      user.id,
+      body.session_name
+    );
   }
 
   @Delete(':agentId/sessions/:sessionId')
@@ -160,18 +100,7 @@ export class ChatController {
     @Param('sessionId', ParseIntPipe) sessionId: number,
     @User() user: AuthenticatedUser
   ): Promise<SuccessResponseDto> {
-    try {
-      await this.chatService.deleteSession(agentId, sessionId, user.id);
-      return { success: true };
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      const err = error as { message?: string };
-      throw new HttpException(
-        err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+    await this.chatService.deleteSession(agentId, sessionId, user.id);
+    return { success: true };
   }
 }

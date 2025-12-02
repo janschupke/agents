@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { appConfig } from './config/app.config';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
@@ -37,6 +38,18 @@ async function bootstrap() {
   // Increase limit to 10MB to support base64-encoded images (5MB image = ~6.67MB base64)
   app.use(json({ limit: '10mb' }));
 
+  // Global validation pipe
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Strip properties that don't have decorators
+      forbidNonWhitelisted: true, // Throw error if non-whitelisted properties are present
+      transform: true, // Automatically transform payloads to DTO instances
+      transformOptions: {
+        enableImplicitConversion: true, // Enable implicit type conversion
+      },
+    })
+  );
+
   // Global exception filter
   app.useGlobalFilters(new AllExceptionsFilter());
 
@@ -45,7 +58,8 @@ async function bootstrap() {
   // It automatically syncs users to the database and attaches user info to requests
 
   await app.listen(appConfig.port);
-  console.log(`Server running on http://localhost:${appConfig.port}`);
+  const logger = new Logger('Bootstrap');
+  logger.log(`Server running on http://localhost:${appConfig.port}`);
 }
 
 bootstrap();

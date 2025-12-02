@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -18,14 +22,14 @@ export class EncryptionService {
   private getEncryptionKey(): Buffer {
     const key = process.env.ENCRYPTION_KEY;
     if (!key) {
-      throw new Error(
+      throw new InternalServerErrorException(
         'ENCRYPTION_KEY environment variable is required. Generate a 32-byte key using: openssl rand -base64 32'
       );
     }
     // Use the key directly if it's base64 encoded, or derive from it
     const keyBuffer = Buffer.from(key, 'base64');
     if (keyBuffer.length !== this.keyLength) {
-      throw new Error(
+      throw new InternalServerErrorException(
         `ENCRYPTION_KEY must be exactly ${this.keyLength} bytes (base64 encoded)`
       );
     }
@@ -37,7 +41,7 @@ export class EncryptionService {
    */
   encrypt(plaintext: string): string {
     if (!plaintext) {
-      throw new Error('Plaintext cannot be empty');
+      throw new BadRequestException('Plaintext cannot be empty');
     }
 
     const key = this.getEncryptionKey();
@@ -61,14 +65,14 @@ export class EncryptionService {
    */
   decrypt(encryptedData: string): string {
     if (!encryptedData) {
-      throw new Error('Encrypted data cannot be empty');
+      throw new BadRequestException('Encrypted data cannot be empty');
     }
 
     const key = this.getEncryptionKey();
     const data = Buffer.from(encryptedData, 'base64');
 
     if (data.length < this.encryptedPosition) {
-      throw new Error('Invalid encrypted data format');
+      throw new BadRequestException('Invalid encrypted data format');
     }
 
     const salt = data.subarray(0, this.saltLength);

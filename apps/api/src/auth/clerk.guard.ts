@@ -12,6 +12,7 @@ import { createClerkClient, verifyToken } from '@clerk/backend';
 import { appConfig } from '../config/app.config';
 import { UserService } from '../user/user.service';
 import { AuthenticatedUser } from '../common/types/auth.types';
+import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
 
 const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
@@ -51,7 +52,7 @@ export class ClerkGuard implements CanActivate {
         secretKey: appConfig.clerk.secretKey,
       });
     } else {
-      console.warn(
+      this.logger.warn(
         'CLERK_SECRET_KEY is not set. Authentication will be disabled.'
       );
     }
@@ -183,7 +184,8 @@ export class ClerkGuard implements CanActivate {
             | { roles?: string[] }
             | null
             | undefined;
-          const roles = publicMetadata?.roles || ['user'];
+          const roles =
+            publicMetadata?.roles || [MAGIC_STRINGS.DEFAULT_USER_ROLE];
 
           userData = {
             id: userId,
@@ -198,7 +200,7 @@ export class ClerkGuard implements CanActivate {
           // Cache the user data
           this.setCachedUser(userData);
         } catch (userError) {
-          console.error(`ClerkGuard.getUser ERROR for ${path}:`, userError);
+          this.logger.error(`ClerkGuard.getUser ERROR for ${path}:`, userError);
           throw new UnauthorizedException('Failed to fetch user information');
         }
       }
@@ -216,7 +218,7 @@ export class ClerkGuard implements CanActivate {
         });
       } catch (dbError) {
         // Log but don't fail - user can still proceed
-        console.error(`ClerkGuard.syncUser ERROR for ${path}:`, dbError);
+        this.logger.error(`ClerkGuard.syncUser ERROR for ${path}:`, dbError);
       }
 
       // Attach user info to request for use in controllers
@@ -234,7 +236,7 @@ export class ClerkGuard implements CanActivate {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      console.error(`ClerkGuard.canActivate ERROR for ${path}:`, error);
+      this.logger.error(`ClerkGuard.canActivate ERROR for ${path}:`, error);
       throw new UnauthorizedException('Authentication failed');
     }
   }

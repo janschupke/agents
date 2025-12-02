@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { ClerkWebhookService } from './clerk-webhook.service';
@@ -28,23 +29,19 @@ export class ClerkWebhookController {
     @Headers('svix-signature') svixSignature: string | undefined,
     @Req() req: Request & { rawBody?: Buffer; body?: Buffer }
   ): Promise<WebhookResponseDto> {
-    try {
-      // Get raw body from middleware (stored in req.rawBody or req.body for webhook routes)
-      const rawBody = req.rawBody || req.body;
-      if (!rawBody || !Buffer.isBuffer(rawBody)) {
-        throw new Error('Raw body not available or invalid');
-      }
-
-      await this.webhookService.handleWebhook({
-        svixId: svixId || '',
-        svixTimestamp: svixTimestamp || '',
-        svixSignature: svixSignature || '',
-        payload: rawBody,
-      });
-      return { received: true };
-    } catch (error) {
-      this.logger.error('Webhook handling failed:', error);
-      throw error;
+    // Get raw body from middleware (stored in req.rawBody or req.body for webhook routes)
+    const rawBody = req.rawBody || req.body;
+    if (!rawBody || !Buffer.isBuffer(rawBody)) {
+      this.logger.error('Raw body not available or invalid');
+      throw new BadRequestException('Raw body not available or invalid');
     }
+
+    await this.webhookService.handleWebhook({
+      svixId: svixId || '',
+      svixTimestamp: svixTimestamp || '',
+      svixSignature: svixSignature || '',
+      payload: rawBody,
+    });
+    return { received: true };
   }
 }

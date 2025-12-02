@@ -7,6 +7,7 @@ import { ApiCredentialsService } from '../api-credentials/api-credentials.servic
 import { WordTranslationService } from './word-translation.service';
 import { OPENAI_PROMPTS } from '../common/constants/openai-prompts.constants.js';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
+import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
 
 @Injectable()
 export class MessageTranslationService {
@@ -58,7 +59,10 @@ export class MessageTranslationService {
     );
 
     // Get user's API key
-    const apiKey = await this.apiCredentialsService.getApiKey(userId, 'openai');
+    const apiKey = await this.apiCredentialsService.getApiKey(
+      userId,
+      MAGIC_STRINGS.OPENAI_PROVIDER
+    );
     if (!apiKey) {
       throw new HttpException(
         'OpenAI API key is required. Please set your API key in your profile.',
@@ -227,7 +231,10 @@ export class MessageTranslationService {
     }
 
     // Get user's API key
-    const apiKey = await this.apiCredentialsService.getApiKey(userId, 'openai');
+    const apiKey = await this.apiCredentialsService.getApiKey(
+      userId,
+      MAGIC_STRINGS.OPENAI_PROVIDER
+    );
     if (!apiKey) {
       throw new HttpException(
         'OpenAI API key is required. Please set your API key in your profile.',

@@ -1,4 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChatSession } from '@prisma/client';
 
@@ -97,7 +100,7 @@ export class SessionRepository {
     // Verify the session belongs to the user before updating
     const session = await this.findByIdAndUserId(id, userId);
     if (!session) {
-      throw new Error('Session not found'); // Will be handled by service
+      throw new NotFoundException('Session not found');
     }
 
     return this.prisma.chatSession.update({

@@ -3,6 +3,7 @@ import { Webhook } from 'svix';
 import { appConfig } from '../config/app.config';
 import { UserService } from '../user/user.service';
 import { ClerkService } from '../auth/clerk.service';
+import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
 
 interface WebhookPayload {
   svixId: string;
@@ -118,7 +119,8 @@ export class ClerkWebhookService {
 
   private async handleUserCreated(data: ClerkWebhookEvent['data']) {
     // Extract roles from public metadata, default to ["user"] if not present
-    const roles = data.public_metadata?.roles || ['user'];
+    const roles =
+      data.public_metadata?.roles || [MAGIC_STRINGS.DEFAULT_USER_ROLE];
 
     // Create user in DB
     await this.userService.findOrCreate({
@@ -140,7 +142,8 @@ export class ClerkWebhookService {
 
   private async handleUserUpdated(data: ClerkWebhookEvent['data']) {
     // Extract roles from public metadata
-    const roles = data.public_metadata?.roles || ['user'];
+    const roles =
+      data.public_metadata?.roles || [MAGIC_STRINGS.DEFAULT_USER_ROLE];
 
     // Update user in DB
     await this.userService.update(data.id, {
@@ -184,7 +187,7 @@ export class ClerkWebhookService {
 
         // If user doesn't have roles, set default and update both Clerk and DB
         if (!roles || !Array.isArray(roles) || roles.length === 0) {
-          const defaultRoles = ['user'];
+          const defaultRoles = [MAGIC_STRINGS.DEFAULT_USER_ROLE];
 
           // Update Clerk
           await this.updateClerkRoles(userId, defaultRoles);

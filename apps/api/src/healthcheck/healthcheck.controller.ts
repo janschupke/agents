@@ -1,4 +1,4 @@
-import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { HealthcheckService } from './healthcheck.service';
 import { Public } from '../auth/clerk.guard';
 import { API_ROUTES } from '../common/constants/api-routes.constants.js';
@@ -10,17 +10,6 @@ export class HealthcheckController {
 
   @Get()
   async check() {
-    try {
-      return await this.healthcheckService.check();
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      const err = error as { message?: string };
-      throw new HttpException(
-        err.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+    return await this.healthcheckService.check();
   }
 }

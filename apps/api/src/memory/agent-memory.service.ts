@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { AgentMemoryRepository } from './agent-memory.repository';
 import { OpenAIService } from '../openai/openai.service';
 import { MEMORY_CONFIG } from '../common/constants/api.constants.js';
@@ -7,6 +7,8 @@ import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 
 @Injectable()
 export class AgentMemoryService {
+  private readonly logger = new Logger(AgentMemoryService.name);
+
   constructor(
     private readonly memoryRepository: AgentMemoryRepository,
     private readonly openaiService: OpenAIService
@@ -69,7 +71,7 @@ export class AgentMemoryService {
 
       return insights;
     } catch (error) {
-      console.error('Error extracting key insights:', error);
+      this.logger.error('Error extracting key insights:', error);
       return [];
     }
   }
@@ -85,7 +87,7 @@ export class AgentMemoryService {
     const insights = await this.extractKeyInsights(messages, apiKey);
 
     if (insights.length === 0) {
-      console.log('No insights extracted, skipping memory creation');
+      this.logger.log('No insights extracted, skipping memory creation');
       return;
     }
 
@@ -111,12 +113,12 @@ export class AgentMemoryService {
             context,
             embedding
           );
-          console.log(
+          this.logger.log(
             `Created memory for agent ${agentId}, user ${userId}: ${insight.substring(0, 50)}...`
           );
         }
       } catch (error) {
-        console.error('Error creating memory for insight:', error);
+        this.logger.error('Error creating memory for insight:', error);
         // Continue with other insights even if one fails
       }
     }
@@ -135,7 +137,7 @@ export class AgentMemoryService {
     userId: string,
     apiKey: string
   ): Promise<void> {
-    console.log(
+    this.logger.log(
       `Starting memory summarization for agent ${agentId}, user ${userId}`
     );
 
@@ -146,7 +148,7 @@ export class AgentMemoryService {
     );
 
     if (memories.length === 0) {
-      console.log('No memories to summarize');
+      this.logger.log('No memories to summarize');
       return;
     }
 
@@ -184,20 +186,20 @@ export class AgentMemoryService {
             const idsToDelete = group.map((m) => m.id);
             await this.memoryRepository.deleteMany(idsToDelete);
 
-            console.log(
+            this.logger.log(
               `Summarized ${group.length} memories into: ${summary.substring(0, 50)}...`
             );
           }
         }
       } catch (error) {
-        console.error('Error summarizing memory group:', error);
+        this.logger.error('Error summarizing memory group:', error);
         // Continue with other groups
       }
     }
 
     // Reset update count
     await this.memoryRepository.resetUpdateCount(agentId, userId);
-    console.log('Memory summarization completed');
+    this.logger.log('Memory summarization completed');
   }
 
   async getMemoriesForContext(
@@ -230,7 +232,7 @@ export class AgentMemoryService {
         return `${date} - ${memory.keyPoint}`;
       });
     } catch (error) {
-      console.error('Error retrieving memories for context:', error);
+      this.logger.error('Error retrieving memories for context:', error);
       return [];
     }
   }
@@ -345,7 +347,7 @@ export class AgentMemoryService {
 
       return response.trim().substring(0, MEMORY_CONFIG.MAX_MEMORY_LENGTH);
     } catch (error) {
-      console.error('Error summarizing memory group:', error);
+      this.logger.error('Error summarizing memory group:', error);
       return '';
     }
   }

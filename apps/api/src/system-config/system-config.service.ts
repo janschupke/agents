@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { SystemConfigRepository } from './system-config.repository';
 import { UpdateSystemConfigDto } from '../common/dto/system-config.dto';
 
 @Injectable()
 export class SystemConfigService {
+  private readonly logger = new Logger(SystemConfigService.name);
+
   constructor(
     private readonly systemConfigRepository: SystemConfigRepository
   ) {}
@@ -70,7 +72,7 @@ export class SystemConfigService {
         return [String(behaviorRules)];
       }
     } catch (error) {
-      console.error('Error parsing behavior rules:', error);
+      this.logger.error('Error parsing behavior rules:', error);
       return [];
     }
   }

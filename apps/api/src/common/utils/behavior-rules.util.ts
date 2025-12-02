@@ -3,7 +3,10 @@
  * Centralized to avoid duplication
  */
 
+import { Logger } from '@nestjs/common';
+
 export class BehaviorRulesUtil {
+  private static readonly logger = new Logger(BehaviorRulesUtil.name);
   /**
    * Parse behavior rules from various formats (JSON string, array, object)
    */
@@ -45,7 +48,7 @@ export class BehaviorRulesUtil {
         return [String(behaviorRules)];
       }
     } catch (error) {
-      console.error('Error parsing behavior rules:', error);
+      BehaviorRulesUtil.logger.error('Error parsing behavior rules:', error);
       return [];
     }
   }

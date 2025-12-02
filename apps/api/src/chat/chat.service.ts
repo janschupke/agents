@@ -1,4 +1,9 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
 import { AgentRepository } from '../agent/agent.repository';
 import { SessionRepository } from '../session/session.repository';
 import { MessageRepository } from '../message/message.repository';
@@ -12,6 +17,7 @@ import { MessageRole } from '../common/enums/message-role.enum';
 import { MEMORY_CONFIG } from '../common/constants/api.constants.js';
 import { BehaviorRulesUtil } from '../common/utils/behavior-rules.util.js';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
+import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
 import {
   SessionResponseDto,
   ChatHistoryResponseDto,
@@ -20,6 +26,8 @@ import {
 
 @Injectable()
 export class ChatService {
+  private readonly logger = new Logger(ChatService.name);
+
   constructor(
     private readonly agentRepository: AgentRepository,
     private readonly sessionRepository: SessionRepository,
@@ -202,7 +210,10 @@ export class ChatService {
     // User is automatically synced to DB by ClerkGuard
 
     // Check if user has API key
-    const apiKey = await this.apiCredentialsService.getApiKey(userId, 'openai');
+    const apiKey = await this.apiCredentialsService.getApiKey(
+      userId,
+      MAGIC_STRINGS.OPENAI_PROVIDER
+    );
     if (!apiKey) {
       throw new HttpException(
         'OpenAI API key is required. Please set your API key in your profile.',
@@ -255,12 +266,12 @@ export class ChatService {
         apiKey
       );
       if (relevantMemories.length > 0) {
-        console.log(
+        this.logger.log(
           `Found ${relevantMemories.length} relevant memories for agent ${agentId}`
         );
       }
     } catch (error) {
-      console.error('Error retrieving memories:', error);
+      this.logger.error('Error retrieving memories:', error);
       // Continue without memories if retrieval fails
     }
 
@@ -311,7 +322,7 @@ export class ChatService {
         systemBehaviorRules = BehaviorRulesUtil.parse(systemConfig.configValue);
       }
     } catch (error) {
-      console.error('Error loading system behavior rules:', error);
+      this.logger.error('Error loading system behavior rules:', error);
       // Continue without system rules if loading fails
     }
 
@@ -476,15 +487,15 @@ export class ChatService {
           this.agentMemoryService
             .summarizeMemories(agentId, userId, apiKey)
             .catch((error) => {
-              console.error('Error during memory summarization:', error);
+              this.logger.error('Error during memory summarization:', error);
             });
         }
 
-        console.log(
+        this.logger.log(
           `Saved memories for agent ${agentId}, session ${session.id} (${allMessages.length} messages)`
         );
       } catch (error) {
-        console.error('Error saving memories:', error);
+        this.logger.error('Error saving memories:', error);
         // Continue even if memory save fails
       }
     }
