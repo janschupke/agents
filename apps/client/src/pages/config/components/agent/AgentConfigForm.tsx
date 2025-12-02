@@ -1,17 +1,15 @@
 import { Agent } from '../../../../types/chat.types';
-import { PageHeader } from '@openai/ui';
+import { PageHeader, PageContent } from '@openai/ui';
 import { useAgent } from '../../../../hooks/queries/use-agents';
 import { useAgentMemories as useAgentMemoriesQuery } from '../../../../hooks/queries/use-agents';
 import { useAgentForm } from '../../hooks/use-agent-form';
 import { useAgentMemories } from '../../hooks/use-agent-memories';
-import { useFadeInOnChange } from '../../hooks/use-fade-in-on-change';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import {
   FormButton,
   FormContainer,
   ButtonType,
   ButtonVariant,
-  FadeIn,
 } from '@openai/ui';
 import {
   DescriptionField,
@@ -37,9 +35,6 @@ export default function AgentConfigForm({
   saving = false,
   onSaveClick,
 }: AgentConfigFormProps) {
-  // Track agent ID changes to trigger fade-in animation
-  const fadeKey = useFadeInOnChange(agent?.id);
-
   // React Query hooks
   const { data: agentData, isLoading: loadingAgent } = useAgent(
     agent?.id || null
@@ -78,19 +73,21 @@ export default function AgentConfigForm({
 
   if (!agent) {
     return (
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <>
         <PageHeader title={t('config.title')} />
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="text-text-tertiary text-center text-sm">
-            {t('config.selectAgent')}
+        <PageContent>
+          <div className="flex items-center justify-center h-full">
+            <div className="text-text-tertiary text-center text-sm">
+              {t('config.selectAgent')}
+            </div>
           </div>
-        </div>
-      </div>
+        </PageContent>
+      </>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <>
       <PageHeader
         title={t('config.title')}
         actions={
@@ -112,56 +109,54 @@ export default function AgentConfigForm({
           </FormButton>
         }
       />
-      <div className="flex-1 overflow-y-auto p-5">
+      <PageContent animateOnChange={agent?.id} enableAnimation={true}>
         <FormContainer saving={saving}>
           {loadingConfig ? (
             <AgentConfigFormSkeleton />
           ) : (
-            <FadeIn key={fadeKey}>
-              <div className="space-y-5">
-                <AgentNameAndAvatar
-                  avatarUrl={values.avatarUrl}
-                  name={values.name}
-                  nameError={errors.name ?? undefined}
-                  nameTouched={touched.name}
-                  saving={saving}
-                  autoFocus={agent.id < 0}
-                  onAvatarChange={(url) => setValue('avatarUrl', url)}
-                  onNameChange={(value) => setValue('name', value)}
-                  onNameBlur={() => setTouched('name')}
-                />
-                <DescriptionField
-                  value={values.description}
-                  onChange={(val) => setValue('description', val)}
-                />
-                <TemperatureField
-                  value={values.temperature}
-                  onChange={(val) => setValue('temperature', val)}
-                />
-                <SystemPromptField
-                  value={values.systemPrompt}
-                  onChange={(val) => setValue('systemPrompt', val)}
-                />
-                <BehaviorRulesField
-                  rules={values.behaviorRules}
-                  onChange={(rules) => setValue('behaviorRules', rules)}
-                />
+            <div className="space-y-5">
+              <AgentNameAndAvatar
+                avatarUrl={values.avatarUrl}
+                name={values.name}
+                nameError={errors.name ?? undefined}
+                nameTouched={touched.name}
+                saving={saving}
+                autoFocus={agent.id < 0}
+                onAvatarChange={(url) => setValue('avatarUrl', url)}
+                onNameChange={(value) => setValue('name', value)}
+                onNameBlur={() => setTouched('name')}
+              />
+              <DescriptionField
+                value={values.description}
+                onChange={(val) => setValue('description', val)}
+              />
+              <TemperatureField
+                value={values.temperature}
+                onChange={(val) => setValue('temperature', val)}
+              />
+              <SystemPromptField
+                value={values.systemPrompt}
+                onChange={(val) => setValue('systemPrompt', val)}
+              />
+              <BehaviorRulesField
+                rules={values.behaviorRules}
+                onChange={(rules) => setValue('behaviorRules', rules)}
+              />
 
-                <MemoriesSection
-                  agentId={agent.id}
-                  memories={memories}
-                  loading={loadingMemories}
-                  editingId={editingId}
-                  deletingId={deletingId}
-                  onEdit={handleEditMemory}
-                  onDelete={handleDeleteMemory}
-                  onRefresh={handleRefreshMemories}
-                />
-              </div>
-            </FadeIn>
+              <MemoriesSection
+                agentId={agent.id}
+                memories={memories}
+                loading={loadingMemories}
+                editingId={editingId}
+                deletingId={deletingId}
+                onEdit={handleEditMemory}
+                onDelete={handleDeleteMemory}
+                onRefresh={handleRefreshMemories}
+              />
+            </div>
           )}
         </FormContainer>
-      </div>
-    </div>
+      </PageContent>
+    </>
   );
 }

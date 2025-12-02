@@ -6,7 +6,8 @@ import { useChatAgentData } from './use-chat-agent-data';
 // Mock useSessionWithAgent
 const mockUseSessionWithAgent = vi.fn();
 vi.mock('./use-session-with-agent', () => ({
-  useSessionWithAgent: (sessionId: number | null) => mockUseSessionWithAgent(sessionId),
+  useSessionWithAgent: (sessionId: number | null) =>
+    mockUseSessionWithAgent(sessionId),
 }));
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -16,6 +17,12 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 describe('useChatAgentData', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Set default return value for useSessionWithAgent mock
+    mockUseSessionWithAgent.mockReturnValue({
+      agentId: null,
+      loading: false,
+      error: null,
+    });
   });
 
   it('should use propAgentId when provided', async () => {

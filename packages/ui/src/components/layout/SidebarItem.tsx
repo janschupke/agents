@@ -10,24 +10,55 @@ interface SidebarItemAction {
 
 interface SidebarItemProps {
   isSelected: boolean;
-  primaryText: string | ReactNode;
-  secondaryText?: string | ReactNode;
   onClick: () => void;
   actions?: SidebarItemAction[];
   className?: string;
+  // New API
+  title?: string | ReactNode;
+  description?: string | ReactNode;
+  children?: ReactNode;
+  // Legacy API (for backward compatibility)
+  primaryText?: string | ReactNode;
+  secondaryText?: string | ReactNode;
 }
 
 /**
- * Reusable sidebar list item with selection state and action buttons
+ * Reusable sidebar list item with selection state and action buttons.
+ * Supports both new API (title/description) and legacy API (primaryText/secondaryText) for backward compatibility.
+ * If children is provided, renders custom content instead of default title/description layout.
  */
 export default function SidebarItem({
   isSelected,
-  primaryText,
-  secondaryText,
   onClick,
   actions,
   className = '',
+  title,
+  description,
+  children,
+  // Legacy props for backward compatibility
+  primaryText,
+  secondaryText,
 }: SidebarItemProps) {
+  // Use new API if provided, otherwise fall back to legacy API
+  const displayTitle = title ?? primaryText;
+  const displayDescription = description ?? secondaryText;
+
+  // If children provided, render custom content
+  if (children) {
+    return (
+      <div
+        className={`group border-b border-border transition-colors ${
+          isSelected
+            ? 'bg-primary text-text-inverse'
+            : 'bg-background text-text-primary hover:bg-background-tertiary'
+        } ${className}`}
+      >
+        {children}
+      </div>
+    );
+  }
+
+  // Default rendering with title/description
   return (
     <div
       className={`group flex items-center border-b border-border transition-colors ${
@@ -42,14 +73,16 @@ export default function SidebarItem({
           isSelected ? 'text-text-inverse' : ''
         }`}
       >
-        <div className="text-sm font-medium truncate">{primaryText}</div>
-        {secondaryText && (
+        {displayTitle && (
+          <div className="text-sm font-medium truncate">{displayTitle}</div>
+        )}
+        {displayDescription && (
           <div
             className={`text-xs mt-0.5 truncate ${
               isSelected ? 'text-text-inverse opacity-80' : 'text-text-tertiary'
             }`}
           >
-            {secondaryText}
+            {displayDescription}
           </div>
         )}
       </button>

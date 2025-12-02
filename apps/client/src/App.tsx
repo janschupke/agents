@@ -1,11 +1,10 @@
-import { memo } from 'react';
+import { memo, useEffect, useState, ReactNode } from 'react';
 import {
   BrowserRouter,
   Routes,
   Route,
   Navigate,
   useLocation,
-  Link,
 } from 'react-router-dom';
 import { SignIn } from '@clerk/clerk-react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
@@ -13,73 +12,36 @@ import ChatRoute from './pages/chat/ChatRoute';
 import ConfigRoute from './pages/config/ConfigRoute';
 import { UserProfile } from './pages/profile';
 import { ROUTES } from './constants/routes.constants';
-import UserDropdown from './components/auth/UserDropdown';
-import {
-  Footer,
-  IconChat,
-  IconSettings,
-  Skeleton,
-  PageTransition,
-} from '@openai/ui';
+import TopNavigation from './components/layout/TopNavigation';
+import { Footer, Skeleton, PageContainer } from '@openai/ui';
 import { AppProvider } from './contexts/AppContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { QueryProvider } from './providers/QueryProvider';
 import { useApiKeyStatus } from './hooks/queries/use-user';
 
-// Memoized Header component to prevent re-renders
-const AppHeader = memo(function AppHeader() {
-  const { t: tCommon } = useTranslation(I18nNamespace.COMMON);
-  const { t: tClient } = useTranslation(I18nNamespace.CLIENT);
-  const location = useLocation();
-  const isActiveRoute = (path: string) => location.pathname === path;
-
-  return (
-    <header className="bg-background px-6 py-3 border-b border-border flex items-center justify-between">
-      <h1 className="text-xl font-semibold text-text-primary">
-        {tCommon('app.title')}
-      </h1>
-      <div className="flex items-center gap-2">
-        <div className="flex gap-1">
-          <Link
-            to={ROUTES.CHAT}
-            className={`h-8 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
-              isActiveRoute(ROUTES.CHAT) ||
-              location.pathname.startsWith('/chat/')
-                ? 'bg-primary text-text-inverse'
-                : 'bg-background text-text-primary hover:bg-background-secondary'
-            }`}
-            title={tClient('navigation.chat')}
-          >
-            <IconChat className="w-4 h-4" />
-            <span className="hidden sm:inline">
-              {tClient('navigation.chat')}
-            </span>
-          </Link>
-          <Link
-            to={ROUTES.CONFIG}
-            className={`h-8 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
-              isActiveRoute(ROUTES.CONFIG) ||
-              location.pathname.startsWith('/config/')
-                ? 'bg-primary text-text-inverse'
-                : 'bg-background text-text-primary hover:bg-background-secondary'
-            }`}
-            title={tClient('navigation.agentConfiguration')}
-          >
-            <IconSettings className="w-4 h-4" />
-            <span className="hidden sm:inline">
-              {tClient('navigation.config')}
-            </span>
-          </Link>
-        </div>
-        <UserDropdown />
-      </div>
-    </header>
-  );
-});
-
 // Memoized Footer component to prevent re-renders
 const AppFooter = memo(Footer);
+
+/**
+ * Route transition wrapper component.
+ * Animates the content area (Sidebar + Container) on route changes.
+ * TopNavigation and Footer remain static (outside this wrapper).
+ */
+function RouteTransitionWrapper({ children }: { children: ReactNode }) {
+  const location = useLocation();
+  const [routeKey, setRouteKey] = useState(0);
+
+  useEffect(() => {
+    setRouteKey((prev) => prev + 1);
+  }, [location.pathname]);
+
+  return (
+    <div key={routeKey} className="flex flex-1 overflow-hidden animate-fade-in">
+      {children}
+    </div>
+  );
+}
 
 function SignInPage() {
   const { t } = useTranslation(I18nNamespace.COMMON);
@@ -125,8 +87,8 @@ function AppContent() {
   // Show loading while checking API key
   if (loadingApiKey && location.pathname !== ROUTES.PROFILE) {
     return (
-      <div className="flex flex-col min-h-screen h-screen overflow-hidden">
-        <AppHeader />
+      <PageContainer>
+        <TopNavigation />
         <main className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
             <Skeleton className="w-8 h-8 rounded-full" />
@@ -134,7 +96,7 @@ function AppContent() {
           </div>
         </main>
         <AppFooter />
-      </div>
+      </PageContainer>
     );
   }
 
@@ -149,26 +111,24 @@ function AppContent() {
 
   // Authenticated layout with header, content, and footer
   return (
-    <div className="flex flex-col min-h-screen h-screen overflow-hidden bg-background">
-      <AppHeader />
-      <main className="flex-1 overflow-hidden">
-        <PageTransition>
-          <Routes>
-            <Route
-              path={ROUTES.ROOT}
-              element={<Navigate to={ROUTES.CHAT} replace />}
-            />
-            <Route path={ROUTES.CHAT} element={<ChatRoute />} />
-            <Route path="/chat/:sessionId" element={<ChatRoute />} />
-            <Route path={ROUTES.CONFIG} element={<ConfigRoute />} />
-            <Route path={ROUTES.CONFIG_NEW} element={<ConfigRoute />} />
-            <Route path="/config/:agentId" element={<ConfigRoute />} />
-            <Route path={ROUTES.PROFILE} element={<UserProfile />} />
-          </Routes>
-        </PageTransition>
-      </main>
+    <PageContainer>
+      <TopNavigation />
+      <RouteTransitionWrapper>
+        <Routes>
+          <Route
+            path={ROUTES.ROOT}
+            element={<Navigate to={ROUTES.CHAT} replace />}
+          />
+          <Route path={ROUTES.CHAT} element={<ChatRoute />} />
+          <Route path="/chat/:sessionId" element={<ChatRoute />} />
+          <Route path={ROUTES.CONFIG} element={<ConfigRoute />} />
+          <Route path={ROUTES.CONFIG_NEW} element={<ConfigRoute />} />
+          <Route path="/config/:agentId" element={<ConfigRoute />} />
+          <Route path={ROUTES.PROFILE} element={<UserProfile />} />
+        </Routes>
+      </RouteTransitionWrapper>
       <AppFooter />
-    </div>
+    </PageContainer>
   );
 }
 

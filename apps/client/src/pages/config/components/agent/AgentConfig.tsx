@@ -3,7 +3,13 @@ import { Agent } from '../../../../types/chat.types';
 import AgentSidebar from './AgentSidebar';
 import AgentConfigForm from './AgentConfigForm';
 import AgentConfigErrorState from './AgentConfigErrorState';
-import { PageContainer, PageHeader, Skeleton } from '@openai/ui';
+import {
+  Sidebar,
+  Container,
+  PageHeader,
+  PageContent,
+  Skeleton,
+} from '@openai/ui';
 import { useAgents } from '../../../../hooks/queries/use-agents';
 import { useAgentConfigData } from '../../hooks/use-agent-config-data';
 import { useAgentConfigNavigation } from '../../hooks/use-agent-config-navigation';
@@ -19,22 +25,24 @@ interface AgentConfigProps {
 }
 
 function AgentConfigLoadingState() {
+  const { t } = useTranslation(I18nNamespace.CLIENT);
+
   return (
-    <PageContainer>
-      <div className="flex h-full">
-        <div className="w-56 border-r border-border p-3">
+    <>
+      <Sidebar>
+        <div className="p-3">
           <Skeleton className="h-6 w-20 mb-3" />
         </div>
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <PageHeader title="Agent Configuration" />
-          <div className="flex-1 overflow-y-auto p-5">
-            <Skeleton className="h-8 w-48 mb-4" />
-            <Skeleton className="h-4 w-full mb-2" />
-            <Skeleton className="h-4 w-3/4 mb-4" />
-          </div>
-        </div>
-      </div>
-    </PageContainer>
+      </Sidebar>
+      <Container>
+        <PageHeader title={t('config.title')} />
+        <PageContent>
+          <Skeleton className="h-8 w-48 mb-4" />
+          <Skeleton className="h-4 w-full mb-2" />
+          <Skeleton className="h-4 w-3/4 mb-4" />
+        </PageContent>
+      </Container>
+    </>
   );
 }
 
@@ -119,8 +127,8 @@ export default function AgentConfig({
   const currentAgent = agent || null;
 
   return (
-    <PageContainer>
-      <div className="flex h-full">
+    <>
+      <Sidebar>
         <AgentSidebar
           agents={agents}
           currentAgentId={agentId}
@@ -129,22 +137,22 @@ export default function AgentConfig({
           onAgentDelete={handleDelete}
           loading={loadingAgents}
         />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Error state - show in page content */}
-          {propError || error ? (
-            <AgentConfigErrorState
-              message={propError || error || t('config.errors.agentNotFound')}
-            />
-          ) : (
-            <AgentConfigForm
-              agent={currentAgent}
-              saving={updateAgentMutation.isPending}
-              onSaveClick={handleSave}
-            />
-          )}
-        </div>
-      </div>
+      </Sidebar>
+      <Container>
+        {/* Error state - show in page content */}
+        {propError || error ? (
+          <AgentConfigErrorState
+            message={propError || error || t('config.errors.agentNotFound')}
+          />
+        ) : (
+          <AgentConfigForm
+            agent={currentAgent}
+            saving={updateAgentMutation.isPending}
+            onSaveClick={handleSave}
+          />
+        )}
+      </Container>
       {ConfirmDialog}
-    </PageContainer>
+    </>
   );
 }

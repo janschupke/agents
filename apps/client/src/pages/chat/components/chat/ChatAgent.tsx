@@ -10,8 +10,14 @@ import { useChatMessages } from '../../hooks/use-chat-messages';
 import { useChatScroll } from '../../hooks/use-chat-scroll';
 import SessionSidebar from '../session/SessionSidebar';
 import SessionNameModal from '../session/SessionNameModal';
-import { PageContainer, JsonModal } from '@openai/ui';
-import ChatHeader from './ChatHeader';
+import {
+  Sidebar,
+  Container,
+  PageHeader,
+  PageContent,
+  JsonModal,
+} from '@openai/ui';
+import AgentSelector from '../../../config/components/agent/AgentSelector';
 import ChatContent from './ChatContent';
 import ChatLoadingState from './ChatLoadingState';
 import ChatEmptyState from './ChatEmptyState';
@@ -131,8 +137,8 @@ function ChatAgentContent({
   }
 
   return (
-    <PageContainer>
-      <div className="flex h-full">
+    <>
+      <Sidebar>
         <SessionSidebar
           sessions={sessions}
           currentSessionId={currentSessionId}
@@ -142,8 +148,10 @@ function ChatAgentContent({
           onSessionEdit={openSessionNameModal}
           loading={sessionsLoading}
         />
-        <div className="flex flex-col flex-1 overflow-hidden">
-          <ChatHeader />
+      </Sidebar>
+      <Container>
+        <PageHeader title={t('chat.title')} actions={<AgentSelector />} />
+        <PageContent animateOnChange={currentSessionId} enableAnimation={true}>
           <ChatContent
             messages={messages}
             loading={loading}
@@ -156,8 +164,8 @@ function ChatAgentContent({
             onSubmit={handleSubmit}
             onShowJson={openJsonModal}
           />
-        </div>
-      </div>
+        </PageContent>
+      </Container>
       <JsonModal
         isOpen={jsonModal.isOpen}
         onClose={closeJsonModal}
@@ -178,7 +186,7 @@ function ChatAgentContent({
         />
       )}
       {ConfirmDialog}
-    </PageContainer>
+    </>
   );
 }
 

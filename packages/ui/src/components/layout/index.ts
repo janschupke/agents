@@ -9,3 +9,7 @@ export { default as SidebarItem } from './SidebarItem';
 export { default as Avatar } from './Avatar';
 export { default as SectionHeader } from './SectionHeader';
 export { default as Badge } from './Badge';
+export { default as MainTitle } from './MainTitle';
+export { default as PageTitle } from './PageTitle';
+export { default as Container } from './Container';
+export { default as PageContent } from './PageContent';

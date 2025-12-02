@@ -1,11 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { TestQueryProvider } from '../../../test/utils/test-query-provider';
+import { AuthProvider } from '../../../contexts/AuthContext';
 import { useChatRoute } from './use-chat-route';
-import { LocalStorageManager } from '../../../utils/localStorage';
-import { ChatService } from '../../../services/chat.service';
 import { AgentService } from '../../../services/agent.service';
 import { Agent } from '../../../types/chat.types';
+
+// Mock Clerk
+vi.mock('@clerk/clerk-react', () => ({
+  useUser: vi.fn(() => ({
+    isSignedIn: true,
+    isLoaded: true,
+  })),
+}));
 
 // Mock services
 vi.mock('../../../services/chat.service', () => ({
@@ -23,7 +30,8 @@ vi.mock('../../../services/agent.service', () => ({
 // Mock useSessionWithAgent
 const mockUseSessionWithAgent = vi.fn();
 vi.mock('./use-session-with-agent', () => ({
-  useSessionWithAgent: (sessionId: number | null) => mockUseSessionWithAgent(sessionId),
+  useSessionWithAgent: (sessionId: number | null) =>
+    mockUseSessionWithAgent(sessionId),
 }));
 
 // Mock localStorage
@@ -38,7 +46,9 @@ Object.defineProperty(window, 'localStorage', {
 });
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <TestQueryProvider>{children}</TestQueryProvider>
+  <TestQueryProvider>
+    <AuthProvider>{children}</AuthProvider>
+  </TestQueryProvider>
 );
 
 describe('useChatRoute', () => {

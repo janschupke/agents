@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import PageTitle from './PageTitle';
 
 interface PageHeaderProps {
   title: string;
@@ -19,7 +20,7 @@ export default function PageHeader({
     <div
       className={`px-5 py-3 bg-background border-b border-border flex items-center justify-between ${className}`}
     >
-      <h2 className="text-lg font-semibold text-text-secondary">{title}</h2>
+      <PageTitle>{title}</PageTitle>
       {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>
   );

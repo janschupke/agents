@@ -1,4 +1,4 @@
-import { PageHeader, EmptyState } from '@openai/ui';
+import { PageHeader, PageContent, EmptyState } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { ROUTES } from '../../../../constants/routes.constants';
 import { Link } from 'react-router-dom';
@@ -13,9 +13,9 @@ export default function AgentConfigErrorState({
   const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <>
       <PageHeader title={t('config.title')} />
-      <div className="flex-1 overflow-y-auto p-8">
+      <PageContent>
         <div className="flex flex-col items-center justify-center h-full">
           <EmptyState
             title={message}
@@ -32,7 +32,7 @@ export default function AgentConfigErrorState({
             }
           />
         </div>
-      </div>
-    </div>
+      </PageContent>
+    </>
   );
 }

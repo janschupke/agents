@@ -5,26 +5,33 @@ import NewAgentConfig from './components/agent/NewAgentConfig';
 import { useConfigRoute } from './hooks/use-config-route';
 import AgentConfigErrorState from './components/agent/AgentConfigErrorState';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { PageContainer, PageHeader } from '@openai/ui';
-import { Skeleton } from '@openai/ui';
+import {
+  Sidebar,
+  Container,
+  PageHeader,
+  PageContent,
+  Skeleton,
+} from '@openai/ui';
 
 function AgentConfigLoadingState() {
+  const { t } = useTranslation(I18nNamespace.CLIENT);
+
   return (
-    <PageContainer>
-      <div className="flex h-full">
-        <div className="w-56 border-r border-border p-3">
+    <>
+      <Sidebar>
+        <div className="p-3">
           <Skeleton className="h-6 w-20 mb-3" />
         </div>
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <PageHeader title="Agent Configuration" />
-          <div className="flex-1 overflow-y-auto p-5">
-            <Skeleton className="h-8 w-48 mb-4" />
-            <Skeleton className="h-4 w-full mb-2" />
-            <Skeleton className="h-4 w-3/4 mb-4" />
-          </div>
-        </div>
-      </div>
-    </PageContainer>
+      </Sidebar>
+      <Container>
+        <PageHeader title={t('config.title')} />
+        <PageContent>
+          <Skeleton className="h-8 w-48 mb-4" />
+          <Skeleton className="h-4 w-full mb-2" />
+          <Skeleton className="h-4 w-3/4 mb-4" />
+        </PageContent>
+      </Container>
+    </>
   );
 }
 

@@ -4,51 +4,117 @@
 
 This document outlines the refactoring plan to create a consistent, structured layout system for the client application. The goal is to establish clear component boundaries, eliminate redundant markup, and create reusable layout components.
 
+## Implementation Status
+
+### ✅ Completed: Routing Improvements
+
+**Routing has been fully implemented** according to `ROUTING_IMPROVEMENTS_PLAN.md`:
+- ✅ URL parameters in place: `/chat/:sessionId`, `/config/:agentId`, `/config/new`
+- ✅ `ChatRoute` and `ConfigRoute` components handle route logic
+- ✅ Navigation uses `useNavigate()` with route constants
+- ✅ URL is source of truth for agent/session IDs
+- ✅ Route constants defined in `apps/client/src/constants/routes.constants.ts`
+
+**Impact on Layout Refactoring**: The layout refactoring should work seamlessly with the existing routing structure. All navigation already uses route constants, so layout components just need to integrate with the existing route-based navigation.
+
+### 🔄 In Progress: Layout Refactoring
+
+**Status**: Not yet started - this document outlines what needs to be done.
+
+**What's Missing**:
+- Container component (to wrap PageHeader + PageContent)
+- PageContent component (scrollable content area with padding)
+- MainTitle component (h1 for app title)
+- PageTitle component (h2 for page titles)
+- TopNavigation component (extracted from AppHeader)
+- SidebarItem refactoring (primaryText/secondaryText → title/description)
+- PageHeader refactoring (use PageTitle component)
+- Page structure refactoring (use new layout components)
+- Animation integration (RouteTransitionWrapper, PageContent animations)
+
 ## Current State Analysis
 
+### Routing Implementation Status
+
+**✅ COMPLETED**: Routing improvements have been implemented according to `ROUTING_IMPROVEMENTS_PLAN.md`:
+
+- **Route Structure**: Nested routes with URL parameters are in place:
+  - `/chat` → Chat interface (no session - shows empty state or selects default)
+  - `/chat/:sessionId` → Chat interface with specific session
+  - `/config` → Agent config (no agent - shows empty state or selects default)
+  - `/config/:agentId` → Agent config for specific agent
+  - `/config/new` → New agent creation form
+  - `/profile` → User profile (unchanged)
+
+- **Route Components**: 
+  - `ChatRoute` (`apps/client/src/pages/chat/ChatRoute.tsx`): Handles chat route logic with sessionId param
+  - `ConfigRoute` (`apps/client/src/pages/config/ConfigRoute.tsx`): Handles config route logic with agentId param and `/config/new`
+  - Route constants defined in `apps/client/src/constants/routes.constants.ts`
+
+- **Navigation**: Components use `useNavigate()` and route constants for navigation instead of state management
+- **URL as Source of Truth**: Agent and session IDs come from URL parameters, not localStorage/context
+
 ### Existing Components
-- **PageContainer** (`packages/ui/src/components/layout/PageContainer.tsx`): Basic container, currently just a wrapper div
-- **PageHeader** (`packages/ui/src/components/layout/PageHeader.tsx`): Header component with title and actions, uses h2
-- **Sidebar** (`packages/ui/src/components/layout/Sidebar.tsx`): Sidebar container component
-- **SidebarHeader** (`packages/ui/src/components/layout/SidebarHeader.tsx`): Sidebar header with title and optional action button (e.g., plus button)
-- **SidebarItem** (`packages/ui/src/components/layout/SidebarItem.tsx`): Sidebar item with selection state
-- **AppHeader** (`apps/client/src/App.tsx`): Top navigation with app title and navigation links
-- **AppFooter** (`apps/client/src/App.tsx`): Footer component
-- **PageTransition** (`packages/ui/src/components/animation/PageTransition.tsx`): Wrapper component for route change animations
-- **FadeIn** (`packages/ui/src/components/animation/FadeIn.tsx`): Wrapper component for fade-in animations
-- **FadeTransition** (`packages/ui/src/components/animation/FadeTransition.tsx`): Wrapper component for conditional fade transitions
+
+**Layout Components (UI Package)**:
+- **PageContainer** (`packages/ui/src/components/layout/PageContainer.tsx`): ✅ Exists - Basic container, currently just a wrapper div
+- **PageHeader** (`packages/ui/src/components/layout/PageHeader.tsx`): ✅ Exists - Header component with title and actions, uses inline h2 (not PageTitle component)
+- **Sidebar** (`packages/ui/src/components/layout/Sidebar.tsx`): ✅ Exists - Sidebar container component
+- **SidebarHeader** (`packages/ui/src/components/layout/SidebarHeader.tsx`): ✅ Exists - Sidebar header with title and optional action button
+- **SidebarItem** (`packages/ui/src/components/layout/SidebarItem.tsx`): ✅ Exists - Sidebar item with selection state, uses `primaryText`/`secondaryText` (not `title`/`description`)
+
+**Layout Components (Missing)**:
+- **Container**: ❌ Not created - Should wrap PageHeader and PageContent
+- **PageContent**: ❌ Not created - Should be scrollable content area with padding
+- **MainTitle**: ❌ Not created - Should be h1 component for app title
+- **PageTitle**: ❌ Not created - Should be h2 component for page titles
+- **TopNavigation**: ❌ Not created - Currently embedded in App.tsx as AppHeader
+
+**Animation Components**:
+- **PageTransition** (`packages/ui/src/components/animation/PageTransition.tsx`): ✅ Exists - Wrapper component for route change animations (still used in App.tsx)
+- **FadeIn** (`packages/ui/src/components/animation/FadeIn.tsx`): ✅ Exists - Wrapper component for fade-in animations
+- **FadeTransition** (`packages/ui/src/components/animation/FadeTransition.tsx`): ✅ Exists - Wrapper component for conditional fade transitions
+
+**App-Level Components**:
+- **AppHeader** (`apps/client/src/App.tsx`): ✅ Exists - Top navigation with app title and navigation links (should be extracted to TopNavigation)
+- **AppFooter** (`apps/client/src/App.tsx`): ✅ Exists - Footer component
 
 ### Current Page Structures
 
 1. **ChatAgent** (`apps/client/src/pages/chat/components/chat/ChatAgent.tsx`):
+   - ✅ Uses route parameters: `sessionId` and `agentId` from URL via `ChatRoute`
    - Uses `PageContainer`
    - Has `SessionSidebar` on left
    - Content area with `ChatHeader` and `ChatContent`
-   - Inline flex layout with manual spacing
+   - Inline flex layout with manual spacing (`<div className="flex h-full">`)
+   - Navigation uses `useNavigate()` with route constants
 
 2. **AgentConfig** (`apps/client/src/pages/config/components/agent/AgentConfig.tsx`):
+   - ✅ Uses route parameters: `agentId` from URL via `ConfigRoute`
    - Uses `PageContainer`
    - Has `AgentSidebar` on left
-   - Content area with `AgentConfigForm`
-   - Inline flex layout with manual spacing
+   - Content area with `AgentConfigForm` (no PageHeader/PageContent structure)
+   - Inline flex layout with manual spacing (`<div className="flex h-full">`)
+   - Navigation uses `useNavigate()` with route constants
 
 3. **UserProfile** (`apps/client/src/pages/profile/components/UserProfile.tsx`):
    - Uses `PageContainer`
    - Uses `PageHeader` with title
-   - Content area with manual padding (`p-8`)
+   - Content area with manual padding (`p-8`) - should use `PageContent`
    - No sidebar
 
 ### Issues Identified
 
 1. **Inconsistent Structure**: Each page implements its own layout structure
 2. **Redundant Markup**: Extra divs with spacing/padding scattered throughout
-3. **No Unified Container**: No consistent Container component for content areas
-4. **Title Hierarchy**: MainTitle (h1) and PageTitle (h2) not extracted as components
-5. **Top Navigation**: Currently embedded in App.tsx, should be a separate component
-6. **SidebarItem**: Doesn't accept title, description, and action items as props (currently uses primaryText/secondaryText)
-7. **Layout Spacing**: Spacing/padding defined in multiple places instead of structural components
-8. **Animation Wrappers**: Transition animations implemented as wrapper components (PageTransition, FadeIn) instead of being built into structural components
-9. **SidebarHeader**: Already exists but not mentioned in architecture - should be part of Sidebar structure
+3. **No Unified Container**: No consistent Container component for content areas (needs to be created)
+4. **No PageContent Component**: Content areas use manual padding instead of PageContent component (needs to be created)
+5. **Title Hierarchy**: MainTitle (h1) and PageTitle (h2) not extracted as components (need to be created)
+6. **Top Navigation**: Currently embedded in App.tsx as AppHeader, should be extracted to TopNavigation component
+7. **SidebarItem**: Uses `primaryText`/`secondaryText` instead of `title`/`description` (needs refactoring)
+8. **Layout Spacing**: Spacing/padding defined in multiple places instead of structural components
+9. **Animation Wrappers**: PageTransition still used in App.tsx - should be integrated into layout structure
+10. **PageHeader**: Uses inline h2 instead of PageTitle component
 
 ## Target Architecture
 
@@ -254,7 +320,7 @@ interface ContentWrapperProps {
 - Contains PageHeader and PageContent
 - Handles overflow for scrollable content
 - No extra padding (only structural)
-- No route transition animation (handled by ContentWrapper)
+- **No route transition animation** (handled by RouteTransitionWrapper in App.tsx)
 
 **Props**:
 ```typescript
@@ -273,6 +339,13 @@ interface ContainerProps {
   </PageContent>
 </Container>
 ```
+
+**Note**: Route transitions are handled by `RouteTransitionWrapper` in App.tsx, which wraps both Sidebar and Container together. Container itself is purely structural.
+
+**Routing Integration**: 
+- `ChatRoute` and `ConfigRoute` already handle URL parameters and pass props to `ChatAgent` and `AgentConfig`
+- Layout refactoring should work with existing route component structure
+- Pages receive `sessionId`, `agentId`, `loading`, `error` props from route components
 
 #### 8. PageHeader
 **Location**: `packages/ui/src/components/layout/PageHeader.tsx` (existing, needs updates)
@@ -576,12 +649,13 @@ return (
    - Maintain backward compatibility during transition
 
 9. **Add Route Transition Animation Wrapper**
-   - Create wrapper div in App.tsx that contains Sidebar + Container
-   - Add route transition logic to this wrapper (using useLocation)
-   - This wrapper animates on route changes (top nav clicks)
-   - Animates the entire content area (Sidebar + Container together)
-   - TopNavigation and Footer remain static
-   - **Alternative**: Could create ContentWrapper component, but simpler to handle in App.tsx
+    - Create `RouteTransitionWrapper` component in App.tsx that contains Sidebar + Container
+    - Add route transition logic to this wrapper (using useLocation)
+    - This wrapper animates on route changes (top nav clicks)
+    - Animates the entire content area (Sidebar + Container together)
+    - TopNavigation and Footer remain static (outside the wrapper)
+    - Replace `PageTransition` wrapper with `RouteTransitionWrapper`
+    - **Note**: Routes already use URL parameters - wrapper should work with existing routing
 
 10. **Add Animation Support to PageContent**
     - Add `animateOnChange` prop (string | number | null)
@@ -592,33 +666,38 @@ return (
 ### Phase 3: Update App.tsx
 
 11. **Refactor App.tsx**
-    - Extract TopNavigation from AppHeader
+    - Extract TopNavigation from AppHeader (AppHeader → TopNavigation component)
     - Update AppContent to use new PageContainer structure
     - Ensure TopNavigation, Footer are part of PageContainer structure
-    - **Remove PageTransition wrapper**: Container now handles route transitions internally
-    - Remove `PageTransition` import and usage
-    - Wrap Routes in Container with `enableRouteTransition={true}`
+    - **Replace PageTransition wrapper**: Use RouteTransitionWrapper that animates Sidebar + Container together
+    - Keep existing route structure (already uses URL parameters: `/chat/:sessionId`, `/config/:agentId`, `/config/new`)
+    - Routes already use `ChatRoute` and `ConfigRoute` components - no changes needed to routing
 
 ### Phase 4: Refactor Pages
 
 12. **Refactor ChatAgent page**
-    - Remove inline layout divs
-    - Use Container with PageHeader and PageContent
-    - Update SessionSidebar to use new SidebarItem props
+    - ✅ Already uses route parameters (`sessionId` from URL via `ChatRoute`)
+    - ✅ Navigation already uses `useNavigate()` with route constants
+    - Remove inline layout divs (`<div className="flex h-full">`)
+    - Use Sidebar, Container, PageHeader, and PageContent components
+    - Update SessionSidebar to use new SidebarItem props (title/description instead of primaryText/secondaryText)
     - Remove manual padding/spacing divs
-    - **Animation migration**: Remove any FadeIn wrappers, use Container/PageContent animation props if needed
+    - **Animation migration**: Remove any FadeIn wrappers, use PageContent animation props if needed
+    - Note: ChatHeader should be replaced with PageHeader, or kept if it has chat-specific functionality
 
 13. **Refactor AgentConfig page**
-    - Remove inline layout divs
-    - Use Container with PageHeader and PageContent
-    - Update AgentSidebar to use new SidebarItem props
+    - ✅ Already uses route parameters (`agentId` from URL via `ConfigRoute`)
+    - ✅ Navigation already uses `useNavigate()` with route constants
+    - Remove inline layout divs (`<div className="flex h-full">`)
+    - Use Sidebar, Container, PageHeader, and PageContent components
+    - Update AgentSidebar to use new SidebarItem props (title/description instead of primaryText/secondaryText)
     - Remove manual padding/spacing divs
-    - Update AgentConfigForm to use PageHeader/PageContent structure
+    - Update AgentConfigForm to use PageContent structure (remove any internal padding)
     - **Animation migration**: 
-      - Remove `useFadeInOnChange` hook usage
-      - Remove `FadeIn` wrapper from AgentConfigForm
+      - Remove `useFadeInOnChange` hook usage (if still present)
+      - Remove `FadeIn` wrapper from AgentConfigForm (if still present)
       - Use `PageContent` with `animateOnChange={agent?.id}` and `enableAnimation={true}`
-      - This animates only PageContent when agent selection changes (sidebar click)
+      - This animates only PageContent when agent selection changes (sidebar click/navigation)
 
 14. **Refactor UserProfile page**
     - Remove manual padding div (`p-8`)
@@ -747,7 +826,8 @@ export default function Container({
   className = '',
 }: ContainerProps) {
   // Container is purely structural - no route transitions
-  // Route transitions handled by wrapper in App.tsx
+  // Route transitions handled by RouteTransitionWrapper in App.tsx
+  // Works with existing routing structure (ChatRoute, ConfigRoute)
   return (
     <div className={`flex flex-col flex-1 overflow-hidden ${className}`}>
       {children}
@@ -1031,7 +1111,7 @@ export default function SidebarItem({
 
 ### Example 1: UserProfile Page
 
-**Before**:
+**Current** (with routing):
 ```tsx
 <PageContainer>
   <div className="flex flex-col h-full overflow-hidden">
@@ -1043,7 +1123,7 @@ export default function SidebarItem({
 </PageContainer>
 ```
 
-**After**:
+**After** (with new layout components):
 ```tsx
 <PageContainer>
   <Container>
@@ -1057,19 +1137,26 @@ export default function SidebarItem({
 
 ### Example 2: AgentConfig Page
 
-**Before**:
+**Current** (with routing - uses URL params):
 ```tsx
 <PageContainer>
   <div className="flex h-full">
-    <AgentSidebar {...props} />
+    <AgentSidebar
+      agents={agents}
+      currentAgentId={agentId} // from URL params via ConfigRoute
+      onAgentSelect={handleAgentSelect} // navigates to /config/:agentId
+      onNewAgent={handleNewAgent} // navigates to /config/new
+      onAgentDelete={handleDelete}
+      loading={loadingAgents}
+    />
     <div className="flex-1 flex flex-col overflow-hidden">
-      <AgentConfigForm {...props} />
+      <AgentConfigForm agent={currentAgent} {...props} />
     </div>
   </div>
 </PageContainer>
 ```
 
-**After**:
+**After** (with new layout components):
 ```tsx
 <PageContainer>
   <Sidebar>
@@ -1086,11 +1173,19 @@ export default function SidebarItem({
 
 ### Example 3: ChatAgent Page
 
-**Before**:
+**Current** (with routing - uses URL params):
 ```tsx
 <PageContainer>
   <div className="flex h-full">
-    <SessionSidebar {...props} />
+    <SessionSidebar
+      sessions={sessions}
+      currentSessionId={currentSessionId} // from URL params via ChatRoute
+      onSessionSelect={handleSessionSelectWrapper} // navigates to /chat/:sessionId
+      onNewSession={handleNewSessionWrapper} // creates session and navigates
+      onSessionDelete={handleSessionDeleteWrapper}
+      onSessionEdit={openSessionNameModal}
+      loading={sessionsLoading}
+    />
     <div className="flex flex-col flex-1 overflow-hidden">
       <ChatHeader />
       <ChatContent {...props} />
@@ -1099,7 +1194,7 @@ export default function SidebarItem({
 </PageContainer>
 ```
 
-**After**:
+**After** (with new layout components):
 ```tsx
 <PageContainer>
   <Sidebar>
@@ -1162,20 +1257,28 @@ const fadeKey = useFadeInOnChange(agent?.id);
 
 ### Example 5: Animation Migration - App.tsx Route Transitions
 
-**Before** (with PageTransition wrapper):
+**Current** (with PageTransition wrapper and routing):
 ```tsx
-<main className="flex-1 overflow-hidden">
-  <PageTransition>
-    <Routes>
-      <Route path="/chat" element={<ChatAgent />} />
-      <Route path="/config" element={<AgentConfig />} />
-      <Route path="/profile" element={<UserProfile />} />
-    </Routes>
-  </PageTransition>
-</main>
+<div className="flex flex-col min-h-screen h-screen overflow-hidden bg-background">
+  <AppHeader />
+  <main className="flex-1 overflow-hidden">
+    <PageTransition>
+      <Routes>
+        <Route path={ROUTES.ROOT} element={<Navigate to={ROUTES.CHAT} replace />} />
+        <Route path={ROUTES.CHAT} element={<ChatRoute />} />
+        <Route path="/chat/:sessionId" element={<ChatRoute />} />
+        <Route path={ROUTES.CONFIG} element={<ConfigRoute />} />
+        <Route path={ROUTES.CONFIG_NEW} element={<ConfigRoute />} />
+        <Route path="/config/:agentId" element={<ConfigRoute />} />
+        <Route path={ROUTES.PROFILE} element={<UserProfile />} />
+      </Routes>
+    </PageTransition>
+  </main>
+  <AppFooter />
+</div>
 ```
 
-**After** (with route transition wrapper):
+**After** (with route transition wrapper and new layout components):
 ```tsx
 // In App.tsx
 function RouteTransitionWrapper({ children }: { children: ReactNode }) {
@@ -1205,9 +1308,13 @@ function RouteTransitionWrapper({ children }: { children: ReactNode }) {
       <PageHeader />
       <PageContent>
         <Routes>
-          <Route path="/chat" element={<ChatAgent />} />
-          <Route path="/config" element={<AgentConfig />} />
-          <Route path="/profile" element={<UserProfile />} />
+          <Route path={ROUTES.ROOT} element={<Navigate to={ROUTES.CHAT} replace />} />
+          <Route path={ROUTES.CHAT} element={<ChatRoute />} />
+          <Route path="/chat/:sessionId" element={<ChatRoute />} />
+          <Route path={ROUTES.CONFIG} element={<ConfigRoute />} />
+          <Route path={ROUTES.CONFIG_NEW} element={<ConfigRoute />} />
+          <Route path="/config/:agentId" element={<ConfigRoute />} />
+          <Route path={ROUTES.PROFILE} element={<UserProfile />} />
         </Routes>
       </PageContent>
     </Container>
@@ -1220,57 +1327,81 @@ function RouteTransitionWrapper({ children }: { children: ReactNode }) {
 - `RouteTransitionWrapper` animates on route changes (top nav clicks)
 - Animates the entire content area (Sidebar + Container together)
 - TopNavigation and Footer remain static (outside the animated wrapper)
+- Routes already use URL parameters (sessionId, agentId) - this is already implemented
 
 ## Notes and Considerations
 
-1. **Backward Compatibility**: During migration, maintain backward compatibility for SidebarItem (support both old and new prop names)
+1. **Routing Already Implemented**: 
+   - ✅ URL parameters are in place (`/chat/:sessionId`, `/config/:agentId`, `/config/new`)
+   - ✅ Navigation uses `useNavigate()` with route constants
+   - ✅ `ChatRoute` and `ConfigRoute` handle route logic
+   - Layout refactoring should work with existing routing structure
 
-2. **Spacing Strategy**: Only PageContent should have content padding. All other components should be structural only.
+2. **Backward Compatibility**: During migration, maintain backward compatibility for SidebarItem (support both old and new prop names during transition)
 
-3. **Grid Layout**: If needed for complex layouts, use CSS Grid within structural components, not extra wrapper divs.
+3. **Spacing Strategy**: Only PageContent should have content padding. All other components should be structural only.
 
-4. **App.tsx Integration**: Consider how TopNavigation and Footer integrate with PageContainer. Options:
+4. **Grid Layout**: If needed for complex layouts, use CSS Grid within structural components, not extra wrapper divs.
+
+5. **App.tsx Integration**: Consider how TopNavigation and Footer integrate with PageContainer. Options:
    - PageContainer includes them automatically
    - App.tsx structures them outside PageContainer
    - Use a layout context/provider
 
-5. **Responsive Design**: Ensure the new structure works on mobile/tablet. May need responsive variants.
+6. **Responsive Design**: Ensure the new structure works on mobile/tablet. May need responsive variants.
 
-6. **SidebarHeader**: Already correctly implemented with title and action button (plus button). No changes needed - just ensure it's properly documented and used consistently.
+7. **SidebarHeader**: Already correctly implemented with title and action button (plus button). No changes needed - just ensure it's properly documented and used consistently.
 
-7. **Animation Migration**: 
+8. **Animation Migration**: 
    - Keep `FadeTransition` for conditional rendering (not part of layout refactoring)
    - Keep `FadeIn` for individual list items if needed (e.g., chat messages)
-   - All route and content change animations should use built-in props on structural components
+   - Route transitions: Use RouteTransitionWrapper in App.tsx (replaces PageTransition)
+   - Content change animations: Use PageContent `animateOnChange` prop for sidebar item changes
 
-8. **Testing**: After refactoring, test:
-   - All pages render correctly
-   - Scrolling works in PageContent
-   - Sidebar interactions
-   - Navigation
-   - Route transition animations
-   - Content change animations (e.g., agent selection)
-   - Responsive breakpoints
+9. **Navigation Integration**: 
+   - Sidebar item clicks should navigate using route constants (already implemented)
+   - Agent selection: `navigate(ROUTES.CONFIG_AGENT(agentId))`
+   - Session selection: `navigate(ROUTES.CHAT_SESSION(sessionId))`
+   - New agent: `navigate(ROUTES.CONFIG_NEW)`
+
+10. **Testing**: After refactoring, test:
+    - All pages render correctly
+    - Scrolling works in PageContent
+    - Sidebar interactions (navigation to URL routes)
+    - Navigation (URL parameters update correctly)
+    - Route transition animations
+    - Content change animations (e.g., agent selection via URL change)
+    - Responsive breakpoints
+    - Browser back/forward buttons work correctly (routing already handles this)
 
 ## Success Criteria
 
-- [ ] All new components created and exported
+- [ ] All new components created and exported:
+  - [ ] Container component
+  - [ ] PageContent component
+  - [ ] MainTitle component
+  - [ ] PageTitle component
+  - [ ] TopNavigation component (extracted from AppHeader)
 - [ ] PageContainer has unified structure
-- [ ] TopNavigation extracted and uses MainTitle
+- [ ] TopNavigation extracted from AppHeader and uses MainTitle
 - [ ] All pages use Container/PageHeader/PageContent structure
-- [ ] SidebarItem supports title, description, actions, and custom content
+- [ ] SidebarItem supports title, description, actions, and custom content (refactored from primaryText/secondaryText)
 - [ ] SidebarHeader documented and remains as-is (already correctly implemented)
+- [ ] PageHeader uses PageTitle component (not inline h2)
 - [ ] No redundant spacing/padding divs
 - [ ] All pages refactored to new structure
+- [ ] **Routing integration verified**:
+  - [ ] Layout components work with existing URL parameters
+  - [ ] Navigation continues to use route constants
+  - [ ] Route transitions work with new layout structure
 - [ ] **Animation refactoring complete**:
-  - [ ] PageContainer has built-in route transition animation
-  - [ ] Container supports `animateOnChange` prop
-  - [ ] PageContent supports `animateOnChange` prop
-  - [ ] All PageTransition wrappers removed
-  - [ ] All FadeIn wrappers removed (where replaced by Container/PageContent)
-  - [ ] useFadeInOnChange hook removed (where replaced by Container animation)
-  - [ ] Route transitions work correctly
-  - [ ] Content change animations work correctly
+  - [ ] RouteTransitionWrapper replaces PageTransition in App.tsx
+  - [ ] PageContent supports `animateOnChange` prop for sidebar item changes
+  - [ ] All PageTransition wrappers removed (replaced by RouteTransitionWrapper)
+  - [ ] All FadeIn wrappers removed (where replaced by PageContent animation)
+  - [ ] useFadeInOnChange hook removed (where replaced by PageContent animation)
+  - [ ] Route transitions work correctly (top nav clicks)
+  - [ ] Content change animations work correctly (sidebar item clicks)
 - [ ] Tests pass
 - [ ] Visual regression testing passes
 - [ ] Animation testing passes (route transitions, content changes)

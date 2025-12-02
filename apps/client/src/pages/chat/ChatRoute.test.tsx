@@ -4,7 +4,6 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import ChatRoute from './ChatRoute';
 import { TestQueryProvider } from '../../test/utils/test-query-provider';
 import { ROUTES } from '../../constants/routes.constants';
-import { useChatRoute } from './hooks/use-chat-route';
 
 // Mock useChatRoute
 const mockUseChatRoute = vi.fn();
@@ -14,7 +13,13 @@ vi.mock('./hooks/use-chat-route', () => ({
 
 // Mock ChatAgent
 vi.mock('./components/chat/ChatAgent', () => ({
-  default: ({ sessionId, agentId }: { sessionId?: number; agentId?: number }) => (
+  default: ({
+    sessionId,
+    agentId,
+  }: {
+    sessionId?: number;
+    agentId?: number;
+  }) => (
     <div data-testid="chat-agent">
       ChatAgent - sessionId: {sessionId ?? 'none'}, agentId: {agentId ?? 'none'}
     </div>
@@ -36,7 +41,10 @@ vi.mock('./components/chat/ChatErrorState', () => ({
 // Mock useParams
 const mockUseParams = vi.fn(() => ({}));
 vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+  const actual =
+    await vi.importActual<typeof import('react-router-dom')>(
+      'react-router-dom'
+    );
   return {
     ...actual,
     useParams: () => mockUseParams(),
@@ -53,7 +61,13 @@ vi.mock('@openai/i18n', () => ({
   },
 }));
 
-const TestWrapper = ({ children, initialEntries = [ROUTES.CHAT] }: { children: React.ReactNode; initialEntries?: string[] }) => (
+const TestWrapper = ({
+  children,
+  initialEntries = [ROUTES.CHAT],
+}: {
+  children: React.ReactNode;
+  initialEntries?: string[];
+}) => (
   <MemoryRouter initialEntries={initialEntries}>
     <TestQueryProvider>
       <Routes>

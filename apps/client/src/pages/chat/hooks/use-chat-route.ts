@@ -13,8 +13,11 @@ export function useChatRoute(sessionId: string | undefined) {
       ? parseInt(sessionId, 10)
       : null;
 
-  const { agentId: agentIdFromSession, loading: loadingSession, error } =
-    useSessionWithAgent(parsedSessionId);
+  const {
+    agentId: agentIdFromSession,
+    loading: loadingSession,
+    error,
+  } = useSessionWithAgent(parsedSessionId);
 
   // Get last selected agent as fallback when no sessionId
   const lastSelectedAgentId = LocalStorageManager.getSelectedAgentIdChat();

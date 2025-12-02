@@ -58,8 +58,7 @@ export default function AgentSidebar({
             <SidebarItem
               key="new-agent"
               isSelected={true}
-              primaryText={t('config.createAgent') || 'New Agent'}
-              secondaryText={null}
+              title={t('config.createAgent') || 'New Agent'}
               onClick={() => {}}
             />
           )}
@@ -67,7 +66,7 @@ export default function AgentSidebar({
             <SidebarItem
               key={agent.id}
               isSelected={currentAgentId === agent.id && !isNewAgentSelected}
-              primaryText={
+              title={
                 <>
                   {agent.name}
                   {agent.id < 0 && (
@@ -75,7 +74,7 @@ export default function AgentSidebar({
                   )}
                 </>
               }
-              secondaryText={agent.description}
+              description={agent.description}
               onClick={() => onAgentSelect(agent.id)}
               actions={
                 onAgentDelete

@@ -48,8 +48,8 @@ export default function SessionItem({
   return (
     <SidebarItem
       isSelected={isSelected}
-      primaryText={formatSessionName(session)}
-      secondaryText={formatDate(session.createdAt)}
+      title={formatSessionName(session)}
+      description={formatDate(session.createdAt)}
       onClick={() => onSelect(session.id)}
       actions={actions.length > 0 ? actions : undefined}
     />
