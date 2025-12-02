@@ -1,4 +1,4 @@
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, useLocation } from 'react-router-dom';
 import { ROUTES } from '../../constants/routes.constants';
 import AgentConfig from './components/agent/AgentConfig';
 import NewAgentConfig from './components/agent/NewAgentConfig';
@@ -30,6 +30,7 @@ function AgentConfigLoadingState() {
 
 export default function ConfigRoute() {
   const { agentId } = useParams<{ agentId?: string }>();
+  const location = useLocation();
   const { t } = useTranslation(I18nNamespace.CLIENT);
   const { loading, error, lastSelectedAgentId } = useConfigRoute(agentId);
 
@@ -38,8 +39,8 @@ export default function ConfigRoute() {
     return <AgentConfigLoadingState />;
   }
 
-  // Handle new agent route
-  if (agentId === 'new') {
+  // Handle new agent route - check pathname since /config/new doesn't have a param
+  if (location.pathname === ROUTES.CONFIG_NEW || agentId === 'new') {
     return <NewAgentConfig />;
   }
 

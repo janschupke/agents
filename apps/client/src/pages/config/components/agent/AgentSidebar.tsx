@@ -8,6 +8,7 @@ import {
   SidebarContent,
   SidebarItem,
 } from '@openai/ui';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 interface AgentSidebarProps {
   agents: Agent[];
@@ -16,6 +17,7 @@ interface AgentSidebarProps {
   onNewAgent: () => void;
   loading?: boolean;
   onAgentDelete?: (agentId: number) => void;
+  isNewAgentRoute?: boolean;
 }
 
 export default function AgentSidebar({
@@ -25,7 +27,11 @@ export default function AgentSidebar({
   onNewAgent,
   loading = false,
   onAgentDelete,
+  isNewAgentRoute = false,
 }: AgentSidebarProps) {
+  const { t } = useTranslation(I18nNamespace.CLIENT);
+  const isNewAgentSelected = isNewAgentRoute || currentAgentId === -1;
+
   return (
     <Sidebar>
       <SidebarHeader
@@ -39,7 +45,7 @@ export default function AgentSidebar({
       />
       <SidebarContent
         loading={loading && agents.length === 0}
-        empty={!loading && agents.length === 0}
+        empty={!loading && agents.length === 0 && !isNewAgentSelected}
         loadingComponent={
           <div className="p-3">
             <SkeletonList count={5} />
@@ -48,10 +54,19 @@ export default function AgentSidebar({
         emptyMessage="No agents yet"
       >
         <div className="flex flex-col">
+          {isNewAgentSelected && (
+            <SidebarItem
+              key="new-agent"
+              isSelected={true}
+              primaryText={t('config.createAgent') || 'New Agent'}
+              secondaryText={null}
+              onClick={() => {}}
+            />
+          )}
           {agents.map((agent) => (
             <SidebarItem
               key={agent.id}
-              isSelected={currentAgentId === agent.id}
+              isSelected={currentAgentId === agent.id && !isNewAgentSelected}
               primaryText={
                 <>
                   {agent.name}

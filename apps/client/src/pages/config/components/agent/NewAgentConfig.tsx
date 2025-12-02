@@ -5,8 +5,11 @@ import { useNewAgentNavigation } from '../../hooks/use-new-agent-navigation';
 import { useUnsavedChangesWarning } from '../../../../hooks/use-unsaved-changes-warning';
 import { PageContainer } from '@openai/ui';
 import AgentConfigForm from './AgentConfigForm';
+import AgentSidebar from './AgentSidebar';
 import { Agent } from '../../../../types/chat.types';
 import { useAgentForm } from '../../hooks/use-agent-form';
+import { useAgents } from '../../../../hooks/queries/use-agents';
+import { useAgentConfigNavigation } from '../../hooks/use-agent-config-navigation';
 
 export default function NewAgentConfig() {
   const navigate = useNavigate();
@@ -18,6 +21,11 @@ export default function NewAgentConfig() {
     formData,
     navigate,
     confirm,
+  });
+
+  const { data: agents = [], isLoading: loadingAgents } = useAgents();
+  const { handleAgentSelect, handleNewAgent } = useAgentConfigNavigation({
+    navigate,
   });
 
   // Centralized unsaved changes warning
@@ -55,7 +63,14 @@ export default function NewAgentConfig() {
   return (
     <PageContainer>
       <div className="flex h-full">
-        <div className="w-56 border-r border-border" />
+        <AgentSidebar
+          agents={agents}
+          currentAgentId={null}
+          onAgentSelect={handleAgentSelect}
+          onNewAgent={handleNewAgent}
+          loading={loadingAgents}
+          isNewAgentRoute={true}
+        />
         <div className="flex-1 flex flex-col overflow-hidden">
           <AgentConfigForm
             agent={tempAgent}

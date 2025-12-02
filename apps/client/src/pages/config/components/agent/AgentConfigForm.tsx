@@ -78,9 +78,12 @@ export default function AgentConfigForm({
 
   if (!agent) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="text-text-tertiary text-center text-sm">
-          {t('config.selectAgent')}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <PageHeader title={t('config.title')} />
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-text-tertiary text-center text-sm">
+            {t('config.selectAgent')}
+          </div>
         </div>
       </div>
     );

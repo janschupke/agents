@@ -116,15 +116,6 @@ export default function AgentConfig({
     return <AgentConfigLoadingState />;
   }
 
-  // Error state - show in page content
-  if (propError || error) {
-    return (
-      <AgentConfigErrorState
-        message={propError || error || t('config.errors.agentNotFound')}
-      />
-    );
-  }
-
   const currentAgent = agent || null;
 
   return (
@@ -139,11 +130,18 @@ export default function AgentConfig({
           loading={loadingAgents}
         />
         <div className="flex-1 flex flex-col overflow-hidden">
-          <AgentConfigForm
-            agent={currentAgent}
-            saving={updateAgentMutation.isPending}
-            onSaveClick={handleSave}
-          />
+          {/* Error state - show in page content */}
+          {propError || error ? (
+            <AgentConfigErrorState
+              message={propError || error || t('config.errors.agentNotFound')}
+            />
+          ) : (
+            <AgentConfigForm
+              agent={currentAgent}
+              saving={updateAgentMutation.isPending}
+              onSaveClick={handleSave}
+            />
+          )}
         </div>
       </div>
       {ConfirmDialog}

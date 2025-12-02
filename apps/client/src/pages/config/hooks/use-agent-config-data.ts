@@ -21,10 +21,15 @@ export function useAgentConfigData({
 
   const { data: agent, isLoading, isError } = useAgent(parsedAgentId);
 
+  // Only treat as error if we have an agentId but the agent wasn't found
+  // If agentId is null, that's not an error - just means no agent is selected
+  const error =
+    parsedAgentId !== null && isError ? 'Agent not found' : null;
+
   return {
     agentId: parsedAgentId,
     agent,
     loading: isLoading,
-    error: isError ? 'Agent not found' : null,
+    error,
   };
 }

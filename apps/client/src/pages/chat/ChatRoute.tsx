@@ -23,7 +23,8 @@ export default function ChatRoute() {
   }
 
   if (!sessionId) {
-    return <ChatAgent />; // Handles empty state internally
+    // Pass agentId so ChatAgent doesn't show empty state when agents exist
+    return <ChatAgent agentId={agentId ?? undefined} />;
   }
 
   const parsedSessionId = parseInt(sessionId, 10);

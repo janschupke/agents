@@ -1,8 +1,11 @@
 import { useSessionWithAgent } from './use-session-with-agent';
+import { LocalStorageManager } from '../../../utils/localStorage';
+import { useAgents } from '../../../hooks/queries/use-agents';
 
 /**
  * Hook to handle chat route logic
  * Determines agentId from sessionId and handles loading/error states
+ * Falls back to last selected agent when no sessionId is provided
  */
 export function useChatRoute(sessionId: string | undefined) {
   const parsedSessionId =
@@ -10,7 +13,40 @@ export function useChatRoute(sessionId: string | undefined) {
       ? parseInt(sessionId, 10)
       : null;
 
-  const { agentId, loading, error } = useSessionWithAgent(parsedSessionId);
+  const { agentId: agentIdFromSession, loading: loadingSession, error } =
+    useSessionWithAgent(parsedSessionId);
+
+  // Get last selected agent as fallback when no sessionId
+  const lastSelectedAgentId = LocalStorageManager.getSelectedAgentIdChat();
+  const { data: agents = [], isLoading: loadingAgents } = useAgents();
+
+  // Determine effective agentId
+  let agentId: number | null = null;
+  let loading = loadingSession;
+
+  if (parsedSessionId) {
+    // If we have a sessionId, use agentId from session
+    agentId = agentIdFromSession;
+    loading = loadingSession;
+  } else {
+    // No sessionId - fall back to last selected agent or first available agent
+    loading = loadingAgents;
+    if (lastSelectedAgentId) {
+      // Check if last selected agent still exists
+      const agentExists = agents.some((a) => a.id === lastSelectedAgentId);
+      if (agentExists) {
+        agentId = lastSelectedAgentId;
+      } else if (agents.length > 0) {
+        // Last selected agent doesn't exist, use first available
+        agentId = agents[0].id;
+        LocalStorageManager.setSelectedAgentIdChat(agentId);
+      }
+    } else if (agents.length > 0) {
+      // No last selected, use first available
+      agentId = agents[0].id;
+      LocalStorageManager.setSelectedAgentIdChat(agentId);
+    }
+  }
 
   return {
     sessionId: parsedSessionId,
