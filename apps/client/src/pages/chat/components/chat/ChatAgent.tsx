@@ -49,12 +49,8 @@ function ChatAgentContent({
   });
 
   // Session and message management - use sessionId from URL/params
-  const {
-    currentSessionId,
-    sessions,
-    sessionsLoading,
-    handleSessionDelete,
-  } = useChatSession({ agentId, initialSessionId: sessionId });
+  const { currentSessionId, sessions, sessionsLoading, handleSessionDelete } =
+    useChatSession({ agentId, initialSessionId: sessionId });
 
   const {
     messages,
@@ -127,9 +123,7 @@ function ChatAgentContent({
   }
 
   if (sessionId && !agentId) {
-    return (
-      <ChatErrorState message={t('chat.errors.sessionNotFound')} />
-    );
+    return <ChatErrorState message={t('chat.errors.sessionNotFound')} />;
   }
 
   if (!agentId) {

@@ -44,7 +44,8 @@ const AppHeader = memo(function AppHeader() {
           <Link
             to={ROUTES.CHAT}
             className={`h-8 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
-              isActiveRoute(ROUTES.CHAT) || location.pathname.startsWith('/chat/')
+              isActiveRoute(ROUTES.CHAT) ||
+              location.pathname.startsWith('/chat/')
                 ? 'bg-primary text-text-inverse'
                 : 'bg-background text-text-primary hover:bg-background-secondary'
             }`}
@@ -58,7 +59,8 @@ const AppHeader = memo(function AppHeader() {
           <Link
             to={ROUTES.CONFIG}
             className={`h-8 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
-              isActiveRoute(ROUTES.CONFIG) || location.pathname.startsWith('/config/')
+              isActiveRoute(ROUTES.CONFIG) ||
+              location.pathname.startsWith('/config/')
                 ? 'bg-primary text-text-inverse'
                 : 'bg-background text-text-primary hover:bg-background-secondary'
             }`}
@@ -152,7 +154,10 @@ function AppContent() {
       <main className="flex-1 overflow-hidden">
         <PageTransition>
           <Routes>
-            <Route path={ROUTES.ROOT} element={<Navigate to={ROUTES.CHAT} replace />} />
+            <Route
+              path={ROUTES.ROOT}
+              element={<Navigate to={ROUTES.CHAT} replace />}
+            />
             <Route path={ROUTES.CHAT} element={<ChatRoute />} />
             <Route path="/chat/:sessionId" element={<ChatRoute />} />
             <Route path={ROUTES.CONFIG} element={<ConfigRoute />} />

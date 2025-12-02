@@ -54,10 +54,13 @@ export default function AgentConfig({
     urlAgentId,
   });
 
-  const { handleAgentSelect, handleNewAgent, handleSave: handleSaveNavigation } =
-    useAgentConfigNavigation({
-      navigate,
-    });
+  const {
+    handleAgentSelect,
+    handleNewAgent,
+    handleSave: handleSaveNavigation,
+  } = useAgentConfigNavigation({
+    navigate,
+  });
 
   const { data: agents = [], isLoading: loadingAgents } = useAgents();
   const updateAgentMutation = useUpdateAgent();

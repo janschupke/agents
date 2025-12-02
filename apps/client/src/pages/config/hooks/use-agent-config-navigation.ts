@@ -1,8 +1,7 @@
 import { useCallback } from 'react';
-import { useNavigate, NavigateFunction } from 'react-router-dom';
+import { NavigateFunction } from 'react-router-dom';
 import { ROUTES } from '../../../constants/routes.constants';
 import { LocalStorageManager } from '../../../utils/localStorage';
-import { Agent } from '../../../types/chat.types';
 
 interface UseAgentConfigNavigationOptions {
   navigate: NavigateFunction;
@@ -28,7 +27,7 @@ export function useAgentConfigNavigation({
   }, [navigate]);
 
   const handleSave = useCallback(
-    async (agent: Agent, savedAgentId: number) => {
+    async (_agent: unknown, savedAgentId: number) => {
       LocalStorageManager.setSelectedAgentIdConfig(savedAgentId);
       navigate(ROUTES.CONFIG_AGENT(savedAgentId), { replace: true });
     },

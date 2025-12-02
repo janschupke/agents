@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useConfirm } from '../../../../hooks/useConfirm';
 import { useNewAgentForm } from '../../hooks/use-new-agent-form';
 import { useNewAgentNavigation } from '../../hooks/use-new-agent-navigation';
@@ -10,13 +9,12 @@ import { Agent } from '../../../../types/chat.types';
 import { useAgentForm } from '../../hooks/use-agent-form';
 
 export default function NewAgentConfig() {
-  const { t } = useTranslation(I18nNamespace.CLIENT);
   const navigate = useNavigate();
   const { confirm, ConfirmDialog } = useConfirm();
 
   // Business logic moved to hooks
   const { formData, setFormData, hasUnsavedChanges } = useNewAgentForm();
-  const { handleSave, handleCancel } = useNewAgentNavigation({
+  const { handleSave } = useNewAgentNavigation({
     formData,
     navigate,
     confirm,
@@ -36,10 +34,9 @@ export default function NewAgentConfig() {
   };
 
   // Use agent form hook for form management
-  const { values, errors, touched, setValue, setTouched, validateAll } =
-    useAgentForm({ agent: tempAgent, agentData: null });
+  const { values } = useAgentForm({ agent: tempAgent, agentData: null });
 
-  const handleSaveClick = async (agent: Agent, formValues: typeof values) => {
+  const handleSaveClick = async (_agent: Agent, formValues: typeof values) => {
     // Update formData with values
     setFormData({
       name: formValues.name,

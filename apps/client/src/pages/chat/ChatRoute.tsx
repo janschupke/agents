@@ -18,9 +18,7 @@ export default function ChatRoute() {
 
   if (error || (sessionId && !agentId)) {
     return (
-      <ChatErrorState
-        message={error || t('chat.errors.sessionNotFound')}
-      />
+      <ChatErrorState message={error || t('chat.errors.sessionNotFound')} />
     );
   }
 
@@ -33,5 +31,7 @@ export default function ChatRoute() {
     return <Navigate to={ROUTES.CHAT} replace />;
   }
 
-  return <ChatAgent sessionId={parsedSessionId} agentId={agentId} />;
+  return (
+    <ChatAgent sessionId={parsedSessionId} agentId={agentId ?? undefined} />
+  );
 }

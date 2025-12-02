@@ -24,9 +24,11 @@ export function useChatAgentData({
 
   // If we have agentId from props, use it directly
   // Otherwise, derive it from session
-  const { agentId: sessionAgentId, loading, error } = useSessionWithAgent(
-    propAgentId ? null : sessionId
-  );
+  const {
+    agentId: sessionAgentId,
+    loading,
+    error,
+  } = useSessionWithAgent(propAgentId ? null : sessionId);
 
   const agentId = propAgentId || sessionAgentId;
 

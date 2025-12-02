@@ -14,11 +14,11 @@ import { LocalStorageManager } from '../../../../utils/localStorage';
 export default function AgentSelector() {
   const { t } = useTranslation(I18nNamespace.CLIENT);
   const { data: agents = [], isLoading: loadingAgents } = useAgents();
-  
+
   // Get agentId from URL or localStorage (for chat view)
   const lastSelectedAgentId = LocalStorageManager.getSelectedAgentIdChat();
   const selectedAgentId = lastSelectedAgentId; // For chat view, use last selected
-  
+
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 

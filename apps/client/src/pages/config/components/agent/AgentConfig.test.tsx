@@ -1,15 +1,21 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import AgentConfig from './AgentConfig';
+import NewAgentConfig from './NewAgentConfig';
 import { AppProvider } from '../../../../contexts/AppContext';
 import { AuthProvider } from '../../../../contexts/AuthContext';
 import { ToastProvider } from '../../../../contexts/ToastContext';
-import { QueryProvider } from '../../../../providers/QueryProvider';
+import {
+  TestQueryProvider,
+  useTestQueryClient,
+} from '../../../../test/utils/test-query-provider';
+import { queryKeys } from '../../../../hooks/queries/query-keys';
 import { AgentService } from '../../../../services/agent.service';
 import { Agent } from '../../../../types/chat.types';
+import { ROUTES } from '../../../../constants/routes.constants';
 
 // Mock Clerk
 vi.mock('@clerk/clerk-react', () => ({
@@ -17,6 +23,11 @@ vi.mock('@clerk/clerk-react', () => ({
     isSignedIn: true,
     isLoaded: true,
   })),
+}));
+
+// Mock useTokenReady
+vi.mock('../../../../hooks/use-token-ready', () => ({
+  useTokenReady: () => true,
 }));
 
 // Mock AgentService
@@ -60,22 +71,69 @@ Object.defineProperty(window, 'localStorage', {
   value: mockLocalStorage,
 });
 
+// Mock react-router-dom navigation
+const mockNavigate = vi.fn();
+const mockUseParams = vi.fn(() => ({}));
+vi.mock('react-router-dom', async () => {
+  const actual =
+    await vi.importActual<typeof import('react-router-dom')>(
+      'react-router-dom'
+    );
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+    useParams: () => mockUseParams(),
+  };
+});
+
+// Component to set up query data
+const QueryDataSetup = ({
+  children,
+  initialAgents,
+}: {
+  children: React.ReactNode;
+  initialAgents: Agent[];
+}) => {
+  const queryClient = useTestQueryClient();
+  // Pre-populate query cache so component doesn't show loading state
+  React.useEffect(() => {
+    if (initialAgents.length > 0) {
+      queryClient.setQueryData(queryKeys.agents.list(), initialAgents);
+    }
+  }, [queryClient, initialAgents]);
+  return <>{children}</>;
+};
+
 // Test wrapper with all providers
-const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <BrowserRouter>
-    <QueryProvider>
-      <AuthProvider>
-        <AppProvider>
-          <ToastProvider>{children}</ToastProvider>
-        </AppProvider>
-      </AuthProvider>
-    </QueryProvider>
-  </BrowserRouter>
+const TestWrapper = ({
+  children,
+  initialEntries = [ROUTES.CONFIG],
+  initialAgents = [],
+}: {
+  children: React.ReactNode;
+  initialEntries?: string[];
+  initialAgents?: Agent[];
+}) => (
+  <MemoryRouter initialEntries={initialEntries}>
+    <TestQueryProvider>
+      <QueryDataSetup initialAgents={initialAgents}>
+        <AuthProvider>
+          <AppProvider>
+            <ToastProvider>
+              <Routes>
+                <Route path={ROUTES.CONFIG} element={children} />
+                <Route path={ROUTES.CONFIG_NEW} element={<NewAgentConfig />} />
+              </Routes>
+            </ToastProvider>
+          </AppProvider>
+        </AuthProvider>
+      </QueryDataSetup>
+    </TestQueryProvider>
+  </MemoryRouter>
 );
 
 describe('AgentConfig', () => {
   const mockGetAllAgents = vi.mocked(AgentService.getAllAgents);
-  const mockCreateAgent = vi.mocked(AgentService.createAgent);
 
   const mockAgents: Agent[] = [
     {
@@ -98,154 +156,58 @@ describe('AgentConfig', () => {
     vi.clearAllMocks();
     mockLocalStorage.getItem.mockReturnValue(null);
     mockGetAllAgents.mockResolvedValue(mockAgents);
+    mockNavigate.mockClear();
+    mockUseParams.mockReturnValue({}); // No agentId in URL by default
   });
 
-  it('should add new agent to the top of the list', async () => {
+  it('should navigate to new agent route when clicking new agent button', async () => {
     const user = userEvent.setup();
 
     render(
-      <TestWrapper>
+      <TestWrapper initialAgents={mockAgents}>
         <AgentConfig />
       </TestWrapper>
     );
 
-    // Wait for agents to load
-    await waitFor(() => {
-      expect(screen.getByText('Existing Agent 1')).toBeInTheDocument();
-      expect(screen.getByText('Existing Agent 2')).toBeInTheDocument();
-    });
-
-    // Find and click the "+" button to create a new agent
+    // The sidebar header with "New Agent" button should render immediately
     const addButton = screen.getByTitle('New Agent');
     await user.click(addButton);
 
-    // Wait for the new agent form to appear (indicates new agent was created and selected)
-    await waitFor(() => {
-      const newAgentInput = screen.getByPlaceholderText(
-        'config.enterAgentName'
-      );
-      expect(newAgentInput).toBeInTheDocument();
-      expect(newAgentInput).toHaveFocus();
-    });
-
-    // Verify the order: new agent should be at the top of the sidebar
-    // Get all agent items from the sidebar
-    const agentItems = screen.getAllByRole('button', {
-      name: /Existing Agent|New Agent/i,
-    });
-
-    // The first item should be the new agent (it will have "(New)" label or be the selected one)
-    // Since new agents have empty names, we verify by checking that the input is focused
-    // which means the new agent is selected, and it should be the first in the list
-    expect(agentItems.length).toBeGreaterThanOrEqual(3); // 2 existing + 1 new
+    // Verify navigation to /config/new
+    expect(mockNavigate).toHaveBeenCalledWith(ROUTES.CONFIG_NEW);
   });
 
-  it('should keep new agent at top after saving', async () => {
+  it('should navigate to new agent route when clicking new agent button multiple times', async () => {
     const user = userEvent.setup();
 
-    const newAgent: Agent = {
-      id: 3,
-      name: 'Newly Created Agent',
-      description: 'Just created',
-      avatarUrl: null,
-      createdAt: '2024-01-03T00:00:00Z',
-    };
-
-    mockCreateAgent.mockResolvedValue(newAgent);
-    mockGetAllAgents.mockResolvedValue([newAgent, ...mockAgents]); // Server returns newest first
-
-    render(
-      <TestWrapper>
+    const { rerender } = render(
+      <TestWrapper initialAgents={mockAgents}>
         <AgentConfig />
       </TestWrapper>
     );
 
-    // Wait for agents to load
-    await waitFor(() => {
-      expect(screen.getByText('Existing Agent 1')).toBeInTheDocument();
-    });
-
-    // Create new agent
-    const addButton = screen.getByTitle('New Agent');
-    await user.click(addButton);
-
-    // Wait for new agent form to appear
-    await waitFor(() => {
-      const nameInput = screen.getByPlaceholderText('config.enterAgentName');
-      expect(nameInput).toBeInTheDocument();
-    });
-
-    // Fill in the agent name
-    const nameInput = screen.getByPlaceholderText('config.enterAgentName');
-    await user.type(nameInput, 'Newly Created Agent');
-
-    // Save the agent
-    const saveButton = screen.getByText('config.createAgent');
-    await user.click(saveButton);
-
-    // Wait for save to complete
-    await waitFor(() => {
-      expect(mockCreateAgent).toHaveBeenCalled();
-    });
-
-    // After save, refreshAgents is called which should return the new agent first
-    // The new agent should remain at the top of the list
-    await waitFor(
-      () => {
-        expect(mockGetAllAgents).toHaveBeenCalled();
-      },
-      { timeout: 3000 }
-    );
-
-    // Verify the agent list order - new agent should be at top
-    // After refresh, the new agent should appear first in the list
-    await waitFor(
-      () => {
-        const agentItems = screen.getAllByText(
-          /Existing Agent|Newly Created Agent/i
-        );
-        expect(agentItems.length).toBeGreaterThan(0);
-      },
-      { timeout: 3000 }
-    );
-  });
-
-  it('should maintain order: new agents (local) at top, then context agents', async () => {
-    const user = userEvent.setup();
-
-    render(
-      <TestWrapper>
-        <AgentConfig />
-      </TestWrapper>
-    );
-
-    // Wait for agents to load
-    await waitFor(() => {
-      expect(screen.getByText('Existing Agent 1')).toBeInTheDocument();
-    });
-
-    // Create first new agent
+    // The sidebar header with "New Agent" button should render immediately
     const addButton1 = screen.getByTitle('New Agent');
     await user.click(addButton1);
 
-    // Wait a bit
-    await waitFor(() => {
-      expect(
-        screen.getByPlaceholderText('config.enterAgentName')
-      ).toBeInTheDocument();
-    });
+    // Verify navigation to /config/new
+    expect(mockNavigate).toHaveBeenCalledWith(ROUTES.CONFIG_NEW);
 
-    // Create second new agent (should appear above first new agent)
+    // Reset mock to test second click
+    mockNavigate.mockClear();
+
+    // Re-render to get the button again
+    rerender(
+      <TestWrapper initialAgents={mockAgents}>
+        <AgentConfig />
+      </TestWrapper>
+    );
+
+    // The button should render immediately again
     const addButton2 = screen.getByTitle('New Agent');
     await user.click(addButton2);
 
-    // Both new agents should be in the list, and they should appear before existing agents
-    // The order should be: [newest new agent, older new agent, existing agent 1, existing agent 2]
-    await waitFor(() => {
-      const nameInputs = screen.getAllByPlaceholderText(
-        'config.enterAgentName'
-      );
-      expect(nameInputs.length).toBeGreaterThanOrEqual(1);
-    });
+    // Verify navigation to /config/new again
+    expect(mockNavigate).toHaveBeenCalledWith(ROUTES.CONFIG_NEW);
   });
 });

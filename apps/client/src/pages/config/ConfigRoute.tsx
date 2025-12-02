@@ -57,7 +57,11 @@ export default function ConfigRoute() {
   }
 
   if (error) {
-    return <AgentConfigErrorState message={error || t('config.errors.agentNotFound')} />;
+    return (
+      <AgentConfigErrorState
+        message={error || t('config.errors.agentNotFound')}
+      />
+    );
   }
 
   return <AgentConfig agentId={parsedAgentId} />;

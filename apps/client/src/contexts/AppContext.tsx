@@ -1,8 +1,4 @@
-import {
-  createContext,
-  useContext,
-  ReactNode,
-} from 'react';
+import { createContext, ReactNode } from 'react';
 
 interface AppContextValue {
   // AppContext simplified - agent and session IDs now come from URL
@@ -17,14 +13,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
-}
-
-function useAppContext() {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error('useAppContext must be used within an AppProvider');
-  }
-  return context;
 }
 
 // Note: useSelectedAgent and useSelectedSession removed

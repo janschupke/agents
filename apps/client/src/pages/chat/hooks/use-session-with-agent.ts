@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { queryKeys } from '../../../hooks/queries/query-keys';
 import { ChatService } from '../../../services/chat.service';
 import { useToast } from '../../../contexts/ToastContext';
@@ -22,13 +23,17 @@ export function useSessionWithAgent(sessionId: number | null) {
     queryKey: queryKeys.sessions.withAgent(sessionId!),
     queryFn: () => ChatService.getSessionWithAgent(sessionId!),
     enabled: sessionId !== null && sessionId > 0,
-    onError: (error: Error) => {
+  });
+
+  // Handle errors with useEffect (React Query v5 removed onError)
+  useEffect(() => {
+    if (isError && error) {
       showToast(
-        error.message || t('chat.errors.fetchSessionFailed'),
+        (error as Error)?.message || t('chat.errors.fetchSessionFailed'),
         'error'
       );
-    },
-  });
+    }
+  }, [isError, error, showToast, t]);
 
   return {
     session: data?.session,
