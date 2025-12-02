@@ -17,7 +17,7 @@ export function useSendMessage() {
       message: string;
       sessionId?: number;
     }) => ChatService.sendMessage(agentId, message, sessionId),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       // Invalidate chat history to refetch with new message
       queryClient.invalidateQueries({
         queryKey: queryKeys.chat.history(

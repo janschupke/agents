@@ -84,9 +84,7 @@ function SignInPage() {
           <h1 className="text-3xl font-bold text-text-primary mb-2">
             {t('app.welcome')}
           </h1>
-          <p className="text-text-secondary">
-            {t('app.signIn')}
-          </p>
+          <p className="text-text-secondary">{t('app.signIn')}</p>
         </div>
         <div className="bg-background border border-border p-6">
           <SignIn />

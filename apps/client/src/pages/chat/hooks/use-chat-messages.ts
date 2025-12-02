@@ -6,8 +6,6 @@ import {
 } from '../../../types/chat.types';
 import { useChatHistory } from '../../../hooks/queries/use-chat';
 import { useSendMessage } from '../../../hooks/mutations/use-chat-mutations';
-import { useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '../../../hooks/queries/query-keys';
 
 interface UseChatMessagesOptions {
   agentId: number | null;
@@ -29,7 +27,6 @@ export function useChatMessages({
   agentId,
   sessionId,
 }: UseChatMessagesOptions): UseChatMessagesReturn {
-  const queryClient = useQueryClient();
   const {
     data: chatHistory,
     isLoading: loadingChatHistory,

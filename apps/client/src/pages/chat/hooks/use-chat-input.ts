@@ -37,6 +37,7 @@ export function useChatInput({
       }, NUMERIC_CONSTANTS.UI_DEBOUNCE_DELAY);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [currentSessionId, messagesLoading, showChatPlaceholder]);
 
   const handleSubmit = async (e: React.FormEvent) => {

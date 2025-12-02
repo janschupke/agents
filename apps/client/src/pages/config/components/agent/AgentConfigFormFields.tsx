@@ -36,6 +36,7 @@ export function NameField({
     } else if (agentId !== undefined) {
       prevAgentIdRef.current = agentId;
     }
+    return undefined;
   }, [autoFocus, agentId]);
 
   return (
