@@ -5,18 +5,21 @@ interface PageContentProps {
   className?: string;
   animateOnChange?: string | number | null;
   enableAnimation?: boolean;
+  disableScroll?: boolean;
 }
 
 /**
  * Scrollable content area component.
  * Provides padding and overflow handling for page content.
  * Supports optional fade-in animation when animateOnChange value changes.
+ * When disableScroll is true, children manage their own scrolling (e.g., ChatContent).
  */
 export default function PageContent({ 
   children, 
   className = '',
   animateOnChange,
   enableAnimation = false,
+  disableScroll = false,
 }: PageContentProps) {
   const [animationKey, setAnimationKey] = useState(0);
   const previousValueRef = useRef(animateOnChange);
@@ -30,10 +33,14 @@ export default function PageContent({
     }
   }, [animateOnChange, enableAnimation]);
 
+  const scrollClasses = disableScroll 
+    ? 'flex flex-col flex-1 overflow-hidden' 
+    : 'flex-1 overflow-y-auto p-8';
+
   return (
     <div
       key={enableAnimation ? animationKey : undefined}
-      className={`flex-1 overflow-y-auto p-8 ${enableAnimation ? 'animate-fade-in' : ''} ${className}`}
+      className={`${scrollClasses} ${enableAnimation ? 'animate-fade-in' : ''} ${className}`}
     >
       {children}
     </div>

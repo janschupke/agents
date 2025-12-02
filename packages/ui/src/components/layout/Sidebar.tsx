@@ -25,7 +25,7 @@ export default function Sidebar({
 
   return (
     <div
-      className={`flex flex-col h-full bg-background-tertiary border-r border-border overflow-hidden ${widthClass} ${className}`}
+      className={`flex flex-col self-stretch bg-background-tertiary border-r border-border overflow-hidden ${widthClass} ${className}`}
       style={widthStyle}
     >
       {children}

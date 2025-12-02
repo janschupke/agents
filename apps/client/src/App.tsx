@@ -1,4 +1,4 @@
-import { memo, useEffect, useState, ReactNode } from 'react';
+import { memo, useEffect, useState, useRef, ReactNode } from 'react';
 import {
   BrowserRouter,
   Routes,
@@ -27,13 +27,29 @@ const AppFooter = memo(Footer);
  * Route transition wrapper component.
  * Animates the content area (Sidebar + Container) on route changes.
  * TopNavigation and Footer remain static (outside this wrapper).
+ * Uses flex row to contain Sidebar and Container side by side.
+ * Only animates on actual route changes (e.g., /chat to /config), not parameter changes.
  */
 function RouteTransitionWrapper({ children }: { children: ReactNode }) {
   const location = useLocation();
   const [routeKey, setRouteKey] = useState(0);
+  const previousBaseRouteRef = useRef<string>('');
 
   useEffect(() => {
-    setRouteKey((prev) => prev + 1);
+    // Extract base route by removing parameters (e.g., /chat/123 -> /chat)
+    const baseRoute = location.pathname
+      .replace(/\/chat\/\d+/, '/chat')
+      .replace(/\/config\/\d+/, '/config')
+      .replace(/\/config\/new/, '/config');
+
+    // Only animate if the base route actually changed (not just parameters)
+    if (
+      previousBaseRouteRef.current !== '' &&
+      baseRoute !== previousBaseRouteRef.current
+    ) {
+      setRouteKey((prev) => prev + 1);
+    }
+    previousBaseRouteRef.current = baseRoute;
   }, [location.pathname]);
 
   return (

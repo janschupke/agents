@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useRef, useState } from 'react';
 import { Agent } from '../../../../types/chat.types';
 import AgentSidebar from './AgentSidebar';
-import AgentConfigForm from './AgentConfigForm';
+import AgentConfigForm, { AgentConfigFormRef } from './AgentConfigForm';
 import AgentConfigErrorState from './AgentConfigErrorState';
 import {
   Sidebar,
@@ -9,6 +10,9 @@ import {
   PageHeader,
   PageContent,
   Skeleton,
+  FormButton,
+  ButtonType,
+  ButtonVariant,
 } from '@openai/ui';
 import { useAgents } from '../../../../hooks/queries/use-agents';
 import { useAgentConfigData } from '../../hooks/use-agent-config-data';
@@ -72,6 +76,14 @@ export default function AgentConfig({
 
   const { data: agents = [], isLoading: loadingAgents } = useAgents();
   const updateAgentMutation = useUpdateAgent();
+  const formRef = useRef<AgentConfigFormRef>(null);
+  const [canSave, setCanSave] = useState(false);
+
+  const handleSaveClick = async () => {
+    if (formRef.current) {
+      await formRef.current.save();
+    }
+  };
 
   const handleSave = async (agent: Agent, values: AgentFormValues) => {
     if (!agent || agent.id < 0) return;
@@ -145,11 +157,42 @@ export default function AgentConfig({
             message={propError || error || t('config.errors.agentNotFound')}
           />
         ) : (
-          <AgentConfigForm
-            agent={currentAgent}
-            saving={updateAgentMutation.isPending}
-            onSaveClick={handleSave}
-          />
+          <>
+            <PageHeader
+              title={t('config.title')}
+              actions={
+                currentAgent ? (
+                  <FormButton
+                    type={ButtonType.BUTTON}
+                    onClick={handleSaveClick}
+                    loading={updateAgentMutation.isPending}
+                    disabled={!canSave}
+                    variant={ButtonVariant.PRIMARY}
+                    tooltip={
+                      updateAgentMutation.isPending
+                        ? t('config.saving')
+                        : currentAgent.id < 0
+                          ? t('config.createAgent')
+                          : t('config.saveButton')
+                    }
+                  >
+                    {currentAgent.id < 0
+                      ? t('config.createAgent')
+                      : t('config.saveButton')}
+                  </FormButton>
+                ) : undefined
+              }
+            />
+            <PageContent animateOnChange={agentId} enableAnimation={true}>
+              <AgentConfigForm
+                ref={formRef}
+                agent={currentAgent}
+                saving={updateAgentMutation.isPending}
+                onSaveClick={handleSave}
+                onFormStateChange={setCanSave}
+              />
+            </PageContent>
+          </>
         )}
       </Container>
       {ConfirmDialog}

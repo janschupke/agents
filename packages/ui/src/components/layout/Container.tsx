@@ -10,13 +10,14 @@ interface ContainerProps {
  * Wraps PageHeader and PageContent components.
  * Purely structural - no padding, no animations.
  * Route transitions handled by RouteTransitionWrapper in App.tsx
+ * Uses self-stretch to fill available height in flex row layout.
  */
 export default function Container({ 
   children, 
   className = '',
 }: ContainerProps) {
   return (
-    <div className={`flex flex-col flex-1 overflow-hidden ${className}`}>
+    <div className={`flex flex-col flex-1 self-stretch overflow-hidden ${className}`}>
       {children}
     </div>
   );
