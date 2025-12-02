@@ -20,7 +20,27 @@ export const axiosInstance: AxiosInstance = axios.create({
 // Request interceptor - inject Clerk token
 axiosInstance.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    const token = await tokenProvider.getToken();
+    // Wait for token provider to be ready if it's not yet
+    if (!tokenProvider.isReady() && config.headers) {
+      // Wait up to 500ms for token provider to be set up
+      for (let i = 0; i < 10; i++) {
+        if (tokenProvider.isReady()) {
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+    }
+
+    // Try to get token, with retry logic for race conditions
+    let token = await tokenProvider.getToken();
+    
+    // If no token and token provider is ready, wait a bit and retry once
+    if (!token && tokenProvider.isReady() && config.headers) {
+      // Small delay to allow token to be fetched
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      token = await tokenProvider.getToken();
+    }
+    
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -34,7 +54,7 @@ axiosInstance.interceptors.request.use(
 // Response interceptor - handle errors
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
     const apiError: ApiError = {
       message: 'An unexpected error occurred',
       status: error.response?.status,
@@ -53,11 +73,12 @@ axiosInstance.interceptors.response.use(
 
     // Handle 401 errors
     if (error.response?.status === 401) {
-      const token = tokenProvider.getToken();
+      const token = await tokenProvider.getToken();
       if (!token) {
         apiError.message = 'Authentication required';
         apiError.expected = true;
       } else {
+        apiError.message = 'Authentication failed - token may be invalid or expired';
         apiError.expected = true;
       }
     }
@@ -67,4 +88,3 @@ axiosInstance.interceptors.response.use(
 );
 
 export default axiosInstance;
-

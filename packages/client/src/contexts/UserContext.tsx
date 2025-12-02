@@ -1,8 +1,7 @@
-import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { useUser as useUserQuery } from '../hooks/queries/use-user';
+import { createContext, useContext, ReactNode } from 'react';
+import { useUser as useUserQuery, useApiKeyStatus as useApiKeyStatusQuery } from '../hooks/queries/use-user';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../hooks/queries/query-keys';
-import { ApiCredentialsService } from '../services/api-credentials.service';
 import { User } from '../types/chat.types';
 
 interface UserContextValue {
@@ -21,39 +20,24 @@ const UserContext = createContext<UserContextValue | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const { data: userInfo, isLoading: loadingUser, refetch: refetchUser } = useUserQuery();
+  const { data: apiKeyData, isLoading: loadingApiKey, refetch: refetchApiKey } = useApiKeyStatusQuery();
   const queryClient = useQueryClient();
-  const [hasApiKey, setHasApiKey] = useState<boolean | null>(null);
-  const [loadingApiKey, setLoadingApiKey] = useState(false);
 
   const refreshUser = async () => {
     await refetchUser();
   };
 
   const refreshApiKey = async () => {
-    setLoadingApiKey(true);
-    try {
-      const hasKey = await ApiCredentialsService.hasOpenAIKey();
-      setHasApiKey(hasKey);
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.apiKey() });
-    } catch (error) {
-      console.error('Failed to load API key status:', error);
-      setHasApiKey(false);
-    } finally {
-      setLoadingApiKey(false);
-    }
+    await refetchApiKey();
+    // Invalidate to ensure fresh data
+    queryClient.invalidateQueries({ queryKey: queryKeys.user.apiKey() });
   };
-
-  // Load API key status on mount
-  useEffect(() => {
-    refreshApiKey();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const value: UserContextValue = {
     userInfo: userInfo || null,
     loadingUser,
     refreshUser,
-    hasApiKey,
+    hasApiKey: apiKeyData?.hasApiKey ?? null,
     loadingApiKey,
     refreshApiKey,
   };

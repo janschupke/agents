@@ -13,4 +13,3 @@ export default function ModalContent({ children, className = '' }: ModalContentP
     </div>
   );
 }
-

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUpdateApiKey, useDeleteApiKey } from '../../../hooks/mutations/use-user-mutations';
 import { queryKeys } from '../../../hooks/queries/query-keys';
+import { useApiKeyStatus } from '../../../contexts/UserContext';
 import { useConfirm } from '../../../hooks/useConfirm';
 import { useFormValidation } from '../../../hooks/use-form-validation';
 import { validationRules } from '../../../utils/validation';
@@ -34,29 +35,19 @@ export function useApiKey(): UseApiKeyReturn {
   const queryClient = useQueryClient();
   const updateApiKeyMutation = useUpdateApiKey();
   const deleteApiKeyMutation = useDeleteApiKey();
+  const { hasApiKey: contextHasApiKey, refreshApiKey } = useApiKeyStatus();
 
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
-  const [hasApiKey, setHasApiKey] = useState(false);
+  const hasApiKey = contextHasApiKey ?? false;
 
-  // Check API key status
+  // Update UI based on API key status from context
   useEffect(() => {
-    const checkApiKey = async () => {
-      try {
-        const { ApiCredentialsService } = await import('../../../services/api-credentials.service');
-        const hasKey = await ApiCredentialsService.hasOpenAIKey();
-        setHasApiKey(hasKey);
-        if (hasKey) {
-          setShowApiKeyInput(false);
-        } else {
-          setShowApiKeyInput(true);
-        }
-      } catch {
-        setHasApiKey(false);
-        setShowApiKeyInput(true);
-      }
-    };
-    checkApiKey();
-  }, []);
+    if (hasApiKey) {
+      setShowApiKeyInput(false);
+    } else {
+      setShowApiKeyInput(true);
+    }
+  }, [hasApiKey]);
 
   const validationSchema = {
     apiKey: [validationRules.required('API key is required')],
@@ -80,9 +71,10 @@ export function useApiKey(): UseApiKeyReturn {
 
     try {
       await updateApiKeyMutation.mutateAsync(values.apiKey);
-      setHasApiKey(true);
       setShowApiKeyInput(false);
       reset();
+      // Refresh API key status from context
+      await refreshApiKey();
       queryClient.invalidateQueries({ queryKey: queryKeys.user.apiKey() });
     } catch (error) {
       // Error is handled by mutation hook
@@ -105,9 +97,10 @@ export function useApiKey(): UseApiKeyReturn {
 
     try {
       await deleteApiKeyMutation.mutateAsync();
-      setHasApiKey(false);
       setShowApiKeyInput(true);
       reset();
+      // Refresh API key status from context
+      await refreshApiKey();
       queryClient.invalidateQueries({ queryKey: queryKeys.user.apiKey() });
     } catch (error) {
       // Error is handled by mutation hook

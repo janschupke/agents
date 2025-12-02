@@ -1,28 +1,34 @@
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '../../contexts/AuthContext';
+import { useTokenReady } from '../use-token-ready';
 import { UserService } from '../../services/user.service';
+import { ApiCredentialsService } from '../../services/api-credentials.service';
 import { User } from '../../types/chat.types';
 import { queryKeys } from './query-keys';
 
 export function useUser() {
+  const { isSignedIn, isLoaded } = useAuth();
+  const tokenReady = useTokenReady();
+
   return useQuery<User>({
     queryKey: queryKeys.user.me(),
     queryFn: () => UserService.getCurrentUser(),
+    enabled: isSignedIn && isLoaded && tokenReady, // Only fetch when auth is ready and token provider is set up
   });
 }
 
 export function useApiKeyStatus() {
+  const { isSignedIn, isLoaded } = useAuth();
+  const tokenReady = useTokenReady();
+
   return useQuery<{ hasApiKey: boolean }>({
     queryKey: queryKeys.user.apiKey(),
     queryFn: async () => {
-      // This would need to be implemented based on your API
-      // For now, returning a placeholder
-      try {
-        await UserService.getCurrentUser();
-        return { hasApiKey: true };
-      } catch {
-        return { hasApiKey: false };
-      }
+      const hasKey = await ApiCredentialsService.hasOpenAIKey();
+      return { hasApiKey: hasKey };
     },
+    enabled: isSignedIn && isLoaded && tokenReady, // Only fetch when auth is ready and token provider is set up
+    staleTime: 30000, // Cache for 30 seconds to avoid multiple calls
+    refetchOnWindowFocus: false, // Don't refetch on window focus to reduce calls
   });
 }
-
