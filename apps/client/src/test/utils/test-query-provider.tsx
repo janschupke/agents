@@ -33,6 +33,7 @@ export function TestQueryProvider({ children }: TestQueryProviderProps) {
 /**
  * Hook to get the QueryClient instance in tests
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useTestQueryClient(): QueryClient {
   const client = useContext(QueryClientContext);
   if (!client) {
