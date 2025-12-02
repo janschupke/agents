@@ -99,7 +99,7 @@ For testing with actual Clerk webhooks (recommended for integration testing):
 2. **Start your API:**
 
    ```bash
-   cd packages/api
+   cd apps/api
    pnpm dev
    ```
 

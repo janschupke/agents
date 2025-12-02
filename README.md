@@ -6,10 +6,13 @@ A fullstack monorepo with a NestJS API and React client for OpenAI chat function
 
 ```
 .
-├── packages/
+├── apps/
 │   ├── api/         # NestJS API
 │   ├── client/      # React + Vite client
 │   └── admin/       # Admin portal
+├── packages/
+│   ├── i18n/        # Internationalization package
+│   └── utils/       # Shared utilities package
 ├── pnpm-workspace.yaml
 └── package.json
 ```
@@ -40,7 +43,7 @@ docker-compose up -d
 
 4. Set up environment variables:
 
-Create `.env` file in `packages/api/`:
+Create `.env` file in `apps/api/`:
 
 **For local development with Docker:**
 ```
@@ -87,13 +90,13 @@ PORT=3001
 
 For a fresh database, use `prisma migrate deploy` (recommended for local Docker setup):
 ```bash
-cd packages/api
+cd apps/api
 pnpm prisma:migrate
 ```
 
 For development with shadow database (may fail if base tables don't exist):
 ```bash
-cd packages/api
+cd apps/api
 pnpm prisma:migrate:dev
 ```
 
@@ -102,12 +105,12 @@ pnpm prisma:migrate:dev
 6. Generate Prisma client:
 
 ```bash
-cd packages/api
+cd apps/api
 pnpm prisma:generate
 ```
 
 For client (optional, for production):
-Create `.env` file in `packages/client/`:
+Create `.env` file in `apps/client/`:
 
 ```
 VITE_API_URL=http://localhost:3001
@@ -126,7 +129,7 @@ Or run them separately:
 API:
 
 ```bash
-cd packages/api
+cd apps/api
 pnpm dev
 ```
 
@@ -135,7 +138,7 @@ Note: The API uses NestJS. Make sure you have `@nestjs/cli` installed globally o
 Client:
 
 ```bash
-cd packages/client
+cd apps/client
 pnpm dev
 ```
 
@@ -167,13 +170,13 @@ The API can be deployed to any Node.js hosting service (e.g., Railway, Render, F
 
 ### Client
 
-The client is configured for Vercel deployment. Simply connect your repository to Vercel and deploy the `packages/client` directory.
+The client is configured for Vercel deployment. Simply connect your repository to Vercel and deploy the `apps/client` directory.
 
 For Vercel, you may need to configure the API proxy in `vercel.json` to point to your API URL.
 
 ## Database
 
-The API uses Prisma for database access. The Prisma schema is located at `packages/api/prisma/schema.prisma`.
+The API uses Prisma for database access. The Prisma schema is located at `apps/api/prisma/schema.prisma`.
 
 ### Local Development with Docker
 
@@ -219,14 +222,14 @@ docker-compose down -v
 3. Run migrations:
 
 ```bash
-cd packages/api
+cd apps/api
 pnpm prisma:migrate:dev
 ```
 
 4. Generate the Prisma client:
 
 ```bash
-cd packages/api
+cd apps/api
 pnpm prisma:generate
 ```
 

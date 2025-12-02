@@ -78,8 +78,8 @@ kill <PID>
 ## Configuration
 
 Ports are configured in:
-- **API**: `packages/api/src/config/app.config.ts` (default: 3001)
-- **Client**: `packages/client/vite.config.ts` (default: 3000)
-- **Admin**: `packages/admin/vite.config.ts` (default: 3002)
+- **API**: `apps/api/src/config/app.config.ts` (default: 3001)
+- **Client**: `apps/client/vite.config.ts` (default: 3000)
+- **Admin**: `apps/admin/vite.config.ts` (default: 3002)
 
 To change ports, update the respective config files and ensure they don't conflict.

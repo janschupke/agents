@@ -24,11 +24,11 @@ jobs:
         with:
           filters: |
             api:
-              - 'packages/api/**'
+              - 'apps/api/**'
             admin:
-              - 'packages/admin/**'
+              - 'apps/admin/**'
             client:
-              - 'packages/client/**'
+              - 'apps/client/**'
 
   check-api:
     needs: detect-changes
@@ -68,13 +68,13 @@ jobs:
         run: pnpm --filter api test:run
 
       - name: Run typecheck
-        run: pnpm --filter api types
+        run: pnpm --filter api typecheck
 
       - name: Run ESLint
         run: pnpm --filter api lint
 
       - name: Run Prettier
-        run: pnpm --filter api prettier:check
+        run: pnpm --filter api format:check
 
       - name: Build
         run: pnpm --filter api build
