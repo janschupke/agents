@@ -1,5 +1,5 @@
 import { AgentMemory } from '../../../../types/chat.types';
-import { IconRefresh } from '@openai/ui';
+import { IconRefresh, SectionHeader } from '@openai/ui';
 import MemoriesList from './MemoriesList';
 
 interface MemoriesSectionProps {
@@ -28,23 +28,24 @@ export default function MemoriesSection({
 }: MemoriesSectionProps) {
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-base font-semibold text-text-secondary">
-          Memories
-        </h3>
-        {agentId > 0 && (
-          <button
-            onClick={onRefresh}
-            disabled={loading}
-            className="h-6 w-6 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Refresh memories"
-          >
-            <IconRefresh
-              className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`}
-            />
-          </button>
-        )}
-      </div>
+      <SectionHeader
+        title="Memories"
+        action={
+          agentId > 0
+            ? {
+                icon: (
+                  <IconRefresh
+                    className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`}
+                  />
+                ),
+                onClick: onRefresh,
+                disabled: loading,
+                tooltip: 'Refresh memories',
+              }
+            : undefined
+        }
+        className="mb-3"
+      />
       <MemoriesList
         memories={memories}
         loading={loading}

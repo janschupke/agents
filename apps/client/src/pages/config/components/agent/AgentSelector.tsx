@@ -1,9 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
-import { IconChevronDown } from '@openai/ui';
+import {
+  IconChevronDown,
+  Avatar,
+  Button,
+  ButtonVariant,
+  DropdownTransition,
+} from '@openai/ui';
 import { useAgents } from '../../../../hooks/queries/use-agents';
 import { useSelectedAgent } from '../../../../contexts/AppContext';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { DropdownTransition } from '@openai/ui';
 
 export default function AgentSelector() {
   const { t } = useTranslation(I18nNamespace.CLIENT);
@@ -46,58 +51,48 @@ export default function AgentSelector() {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button
+      <Button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 h-10 px-2 rounded-md hover:bg-background-tertiary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
-        aria-label={t('config.selectAgent')}
+        variant={ButtonVariant.ICON}
+        className="flex items-center gap-3 h-10 px-2 rounded-md"
+        tooltip={t('config.selectAgent')}
       >
-        {currentAgent?.avatarUrl ? (
-          <img
-            src={currentAgent.avatarUrl}
-            alt={currentAgent.name}
-            className="w-10 h-10 rounded-full object-cover border border-border"
-          />
-        ) : (
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-text-inverse text-sm font-semibold border border-border">
-            {displayName.charAt(0).toUpperCase()}
-          </div>
-        )}
+        <Avatar
+          src={currentAgent?.avatarUrl}
+          name={displayName}
+          size="md"
+        />
         <h2 className="text-lg font-semibold text-text-secondary">
           {displayName}
         </h2>
         <IconChevronDown
           className={`w-4 h-4 text-text-tertiary transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />
-      </button>
+      </Button>
 
       <DropdownTransition show={isOpen}>
         <div className="absolute left-0 mt-1 w-56 bg-background border border-border py-1 z-[100] max-h-64 overflow-y-auto">
           {agents.map((agent) => (
-            <button
+            <Button
               key={agent.id}
               onClick={() => handleAgentSelect(agent.id)}
-              className={`w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2 ${
+              variant={ButtonVariant.ICON}
+              className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 ${
                 agent.id === selectedAgentId
                   ? 'bg-primary text-text-inverse'
                   : 'text-text-primary hover:bg-background-tertiary'
               }`}
             >
-              {agent.avatarUrl ? (
-                <img
-                  src={agent.avatarUrl}
-                  alt={agent.name}
-                  className="w-5 h-5 rounded-full object-cover border border-border flex-shrink-0"
-                />
-              ) : (
-                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-text-inverse text-xs font-semibold border border-border flex-shrink-0">
-                  {agent.name.charAt(0).toUpperCase()}
-                </div>
-              )}
+              <Avatar
+                src={agent.avatarUrl}
+                name={agent.name}
+                size="sm"
+              />
               <span className="truncate">{agent.name}</span>
               {agent.id === selectedAgentId && (
                 <span className="ml-auto text-xs">✓</span>
               )}
-            </button>
+            </Button>
           ))}
         </div>
       </DropdownTransition>

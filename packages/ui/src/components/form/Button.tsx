@@ -7,7 +7,7 @@ interface ButtonProps {
   loading?: boolean;
   disabled?: boolean;
   children: React.ReactNode;
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent<HTMLButtonElement>) => void;
   variant?: ButtonVariant;
   tooltip?: string;
   className?: string;

@@ -6,6 +6,8 @@ import {
   Sidebar,
   SidebarHeader,
   SidebarContent,
+  SidebarItem,
+  Avatar,
   Button,
   ButtonVariant,
 } from '@openai/ui';
@@ -50,59 +52,32 @@ export default function AgentSidebar({
       >
         <div className="flex flex-col">
           {agents.map((agent) => (
-            <div
+            <SidebarItem
               key={agent.id}
-              className={`group flex items-center border-b border-border transition-colors ${
-                currentAgentId === agent.id
-                  ? 'bg-primary text-text-inverse'
-                  : 'bg-background text-text-primary hover:bg-background-tertiary'
-              }`}
-            >
-              <button
-                onClick={() => onAgentSelect(agent.id)}
-                className="flex-1 px-3 py-2 text-left transition-colors min-w-0 bg-transparent"
-              >
-                <div
-                  className={`text-sm font-medium truncate ${
-                    currentAgentId === agent.id ? 'text-text-inverse' : ''
-                  }`}
-                >
+              isSelected={currentAgentId === agent.id}
+              primaryText={
+                <>
                   {agent.name}
                   {agent.id < 0 && (
                     <span className="ml-1.5 text-xs opacity-70">(New)</span>
                   )}
-                </div>
-                {agent.description && (
-                  <div
-                    className={`text-xs mt-0.5 truncate ${
-                      currentAgentId === agent.id
-                        ? 'text-text-inverse opacity-80'
-                        : 'text-text-tertiary'
-                    }`}
-                  >
-                    {agent.description}
-                  </div>
-                )}
-              </button>
-              {onAgentDelete && (
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAgentDelete(agent.id);
-                  }}
-                  variant={ButtonVariant.SECONDARY}
-                  size="sm"
-                  className={`px-2 py-1 opacity-0 group-hover:opacity-100 bg-transparent ${
-                    currentAgentId === agent.id
-                      ? 'text-text-inverse hover:opacity-100'
-                      : 'text-text-tertiary hover:text-red-500'
-                  }`}
-                  tooltip={agent.id < 0 ? 'Cancel' : 'Delete agent'}
-                >
-                  <IconTrash className="w-4 h-4" />
-                </Button>
-              )}
-            </div>
+                </>
+              }
+              secondaryText={agent.description}
+              onClick={() => onAgentSelect(agent.id)}
+              actions={
+                onAgentDelete
+                  ? [
+                      {
+                        icon: <IconTrash className="w-4 h-4" />,
+                        onClick: () => onAgentDelete(agent.id),
+                        variant: 'danger' as const,
+                        tooltip: agent.id < 0 ? 'Cancel' : 'Delete agent',
+                      },
+                    ]
+                  : undefined
+              }
+            />
           ))}
         </div>
       </SidebarContent>

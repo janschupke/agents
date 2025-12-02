@@ -14,6 +14,8 @@ export function getButtonVariantStyles(variant: ButtonVariant): string {
     [ButtonVariant.SECONDARY]:
       'bg-background text-text-primary border border-border hover:bg-background-tertiary',
     [ButtonVariant.DANGER]: 'bg-red-600 text-white hover:bg-red-700',
+    [ButtonVariant.ICON]:
+      'bg-transparent text-text-tertiary hover:text-text-primary hover:bg-background-tertiary border-none',
   };
 
   return variantStyles[variant] || variantStyles[ButtonVariant.PRIMARY];

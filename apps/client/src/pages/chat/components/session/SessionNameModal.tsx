@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { IconClose, Input, Button, Card } from '@openai/ui';
+import { Input, Card, ModalHeader, ModalFooter } from '@openai/ui';
 import { NUMERIC_CONSTANTS } from '../../../../constants/numeric.constants';
 import { useUpdateSession } from '../../../../hooks/mutations/use-agent-mutations';
 import { useFormValidation } from '@openai/utils';
@@ -97,25 +97,16 @@ export default function SessionNameModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
       onClick={onClose}
     >
-      <Card
-        variant="elevated"
-        className="w-full max-w-md m-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-text-secondary">
-            {t('chat.editSessionName')}
-          </h2>
-          <Button
-            onClick={onClose}
-            variant={ButtonVariant.SECONDARY}
-            size="sm"
-            className="p-0"
-            tooltip={t('common.close')}
-          >
-            <IconClose className="w-5 h-5" />
-          </Button>
-        </div>
+      <div onClick={(e) => e.stopPropagation()}>
+        <Card
+          variant="elevated"
+          padding="none"
+          className="w-full max-w-md m-4"
+        >
+          <ModalHeader
+            title={t('chat.editSessionName')}
+            onClose={onClose}
+          />
         <div className="px-6 py-4">
           <FormContainer saving={saving} error={errorMessage}>
             <FormField
@@ -140,7 +131,7 @@ export default function SessionNameModal({
             </FormField>
           </FormContainer>
         </div>
-        <div className="px-6 py-4 border-t border-border flex justify-end gap-2">
+        <ModalFooter>
           <FormButton
             type={ButtonType.BUTTON}
             onClick={onClose}
@@ -159,8 +150,9 @@ export default function SessionNameModal({
           >
             {t('common.save')}
           </FormButton>
-        </div>
+        </ModalFooter>
       </Card>
+      </div>
     </div>
   );
 }

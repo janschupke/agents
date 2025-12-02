@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Button, ButtonVariant } from '../form';
 
-interface SidebarHeaderProps {
+interface SectionHeaderProps {
   title: string;
   action?: {
     icon: ReactNode;
@@ -13,18 +13,18 @@ interface SidebarHeaderProps {
 }
 
 /**
- * Sidebar header component with title and optional action button
+ * Section header component with title and optional action button
  */
-export default function SidebarHeader({
+export default function SectionHeader({
   title,
   action,
   className = '',
-}: SidebarHeaderProps) {
+}: SectionHeaderProps) {
   return (
     <div
-      className={`px-3 py-2.5 bg-background border-b border-border flex items-center justify-between ${className}`}
+      className={`flex items-center justify-between ${className}`}
     >
-      <h3 className="text-sm font-semibold text-text-secondary">{title}</h3>
+      <h3 className="text-base font-semibold text-text-secondary">{title}</h3>
       {action && (
         <Button
           onClick={action.onClick}

@@ -1,5 +1,5 @@
 import { Session } from '../../../../types/chat.types';
-import { IconTrash, IconPencil } from '@openai/ui';
+import { IconTrash, IconPencil, SidebarItem } from '@openai/ui';
 import { formatDate, formatTime } from '@openai/utils';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 
@@ -27,65 +27,31 @@ export default function SessionItem({
     return `${t('chat.session')} ${formatDate(session.createdAt)} ${formatTime(session.createdAt)}`;
   };
 
+  const actions = [];
+  if (onEdit) {
+    actions.push({
+      icon: <IconPencil className="w-4 h-4" />,
+      onClick: () => onEdit(session.id),
+      variant: 'default' as const,
+      tooltip: t('chat.editSessionNameTooltip'),
+    });
+  }
+  if (onDelete) {
+    actions.push({
+      icon: <IconTrash className="w-4 h-4" />,
+      onClick: () => onDelete(session.id),
+      variant: 'danger' as const,
+      tooltip: t('chat.deleteSessionTooltip'),
+    });
+  }
+
   return (
-    <div
-      className={`group flex items-center border-b border-border transition-colors ${
-        isSelected
-          ? 'bg-primary text-text-inverse'
-          : 'bg-background text-text-primary hover:bg-background-tertiary'
-      }`}
-    >
-      <button
-        onClick={() => onSelect(session.id)}
-        className={`flex-1 px-3 py-2 text-left transition-colors min-w-0 bg-transparent ${
-          isSelected ? 'text-text-inverse' : ''
-        }`}
-      >
-        <div className="text-sm font-medium truncate">
-          {formatSessionName(session)}
-        </div>
-        <div
-          className={`text-xs mt-0.5 ${
-            isSelected ? 'text-text-inverse opacity-80' : 'text-text-tertiary'
-          }`}
-        >
-          {formatDate(session.createdAt)}
-        </div>
-      </button>
-      <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-        {onEdit && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(session.id);
-            }}
-            className={`px-2 py-1 transition-colors bg-transparent ${
-              isSelected
-                ? 'text-text-inverse hover:opacity-80'
-                : 'text-text-tertiary hover:text-text-primary'
-            }`}
-            title={t('chat.editSessionNameTooltip')}
-          >
-            <IconPencil className="w-4 h-4" />
-          </button>
-        )}
-        {onDelete && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(session.id);
-            }}
-            className={`px-2 py-1 transition-colors bg-transparent ${
-              isSelected
-                ? 'text-text-inverse hover:opacity-100'
-                : 'text-text-tertiary hover:text-red-500'
-            }`}
-            title={t('chat.deleteSessionTooltip')}
-          >
-            <IconTrash className="w-4 h-4" />
-          </button>
-        )}
-      </div>
-    </div>
+    <SidebarItem
+      isSelected={isSelected}
+      primaryText={formatSessionName(session)}
+      secondaryText={formatDate(session.createdAt)}
+      onClick={() => onSelect(session.id)}
+      actions={actions.length > 0 ? actions : undefined}
+    />
   );
 }

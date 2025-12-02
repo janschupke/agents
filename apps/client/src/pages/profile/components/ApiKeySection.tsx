@@ -81,7 +81,7 @@ export default function ApiKeySection() {
               <Button
                 onClick={handleEditApiKey}
                 disabled={saving}
-                variant={ButtonVariant.SECONDARY}
+                variant={ButtonVariant.ICON}
                 size="sm"
                 className="w-8 p-0"
                 tooltip={t('profile.apiKey.editApiKey')}
@@ -91,9 +91,9 @@ export default function ApiKeySection() {
               <Button
                 onClick={handleDeleteApiKey}
                 disabled={saving}
-                variant={ButtonVariant.DANGER}
+                variant={ButtonVariant.ICON}
                 size="sm"
-                className="w-8 p-0"
+                className="w-8 p-0 hover:text-red-500"
                 tooltip={t('profile.apiKey.deleteApiKey')}
               >
                 <IconTrash className="w-4 h-4" />

@@ -136,7 +136,7 @@ export function BehaviorRulesField({
                 const newRules = rules.filter((_, i) => i !== index);
                 onChange(newRules);
               }}
-              variant={ButtonVariant.SECONDARY}
+              variant={ButtonVariant.ICON}
               size="sm"
               className="w-8 p-0"
               tooltip={t('config.removeRule')}

@@ -1,5 +1,12 @@
 import { Message, MessageRole } from '../../../../types/chat.types';
-import { IconSearch, IconTranslate, FadeTransition } from '@openai/ui';
+import {
+  IconSearch,
+  IconTranslate,
+  FadeTransition,
+  Button,
+  ButtonVariant,
+  Card,
+} from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import TranslatableMarkdownContent from '../markdown/TranslatableMarkdownContent';
 import MarkdownContent from '../markdown/MarkdownContent';
@@ -65,11 +72,13 @@ export default function MessageBubble({
           style={{ pointerEvents: 'auto' }}
         >
           {/* Translation button */}
-          <button
+          <Button
             onClick={handleTranslate}
             disabled={isTranslating || !messageId}
-            className="p-1 rounded hover:bg-black hover:bg-opacity-10 disabled:opacity-50 disabled:cursor-not-allowed"
-            title={
+            variant={ButtonVariant.ICON}
+            size="sm"
+            className="p-1"
+            tooltip={
               isTranslating
                 ? t('chat.translation.translating')
                 : hasTranslation
@@ -90,21 +99,22 @@ export default function MessageBubble({
                 }`}
               />
             )}
-          </button>
+          </Button>
 
           {/* JSON view button */}
           {hasRawData && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
+            <Button
+              onClick={() => {
                 if (message.role === MessageRole.USER) {
                   onShowJson(t('chat.openaiRequest'), message.rawRequest);
                 } else {
                   onShowJson(t('chat.openaiResponse'), message.rawResponse);
                 }
               }}
-              className="p-1 rounded hover:bg-black hover:bg-opacity-10"
-              title={
+              variant={ButtonVariant.ICON}
+              size="sm"
+              className="p-1"
+              tooltip={
                 message.role === MessageRole.USER
                   ? t('chat.message.viewRequestJson')
                   : t('chat.message.viewResponseJson')
@@ -117,7 +127,7 @@ export default function MessageBubble({
                     : 'text-message-assistant-text'
                 }`}
               />
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -125,14 +135,18 @@ export default function MessageBubble({
       {/* Translation bubble - appears below original message */}
       {translation && (
         <FadeTransition show={showTranslation}>
-          <div className="mt-2 px-3 py-2 rounded-lg break-words text-sm bg-background-secondary border border-border text-text-primary">
+          <Card
+            variant="outlined"
+            padding="sm"
+            className="mt-2 break-words text-sm bg-background-secondary"
+          >
             <div className="text-xs font-semibold mb-1 text-text-tertiary uppercase tracking-wide">
               {t('chat.translation.title')}
             </div>
             <div className="markdown-wrapper">
               <MarkdownContent content={translation} />
             </div>
-          </div>
+          </Card>
         </FadeTransition>
       )}
     </div>

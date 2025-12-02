@@ -5,3 +5,7 @@ export { default as Card } from './Card';
 export { default as Sidebar } from './Sidebar';
 export { default as SidebarHeader } from './SidebarHeader';
 export { default as SidebarContent } from './SidebarContent';
+export { default as SidebarItem } from './SidebarItem';
+export { default as Avatar } from './Avatar';
+export { default as SectionHeader } from './SectionHeader';
+export { default as Badge } from './Badge';
