@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useAgentForm } from './use-agent-form';
 import { Agent } from '../../../types/chat.types';
 
@@ -53,7 +53,7 @@ describe('useAgentForm', () => {
     expect(result.current.values).toEqual(mockValues);
   });
 
-  it('should initialize with agent values when agent and agentData provided', () => {
+  it('should initialize with agent values when agent and agentData provided', async () => {
     const mockAgent: Agent = {
       id: 1,
       name: 'Test Agent',
@@ -71,14 +71,26 @@ describe('useAgentForm', () => {
       },
     };
 
-    renderHook(() =>
-      useAgentForm({
-        agent: mockAgent,
-        agentData: mockAgentData,
-      })
+    // Start with null, then update to trigger useEffect
+    const { rerender } = renderHook(
+      ({ agent, agentData }) =>
+        useAgentForm({
+          agent,
+          agentData,
+        }),
+      {
+        initialProps: { agent: null, agentData: null },
+      }
     );
 
-    expect(mockSetValue).toHaveBeenCalledWith('name', 'Test Agent');
+    // Update to trigger useEffect
+    rerender({ agent: mockAgent, agentData: mockAgentData });
+
+    // Wait for useEffect to run
+    await waitFor(() => {
+      expect(mockSetValue).toHaveBeenCalledWith('name', 'Test Agent');
+    });
+
     expect(mockSetValue).toHaveBeenCalledWith('description', 'Test Description');
     expect(mockSetValue).toHaveBeenCalledWith(
       'avatarUrl',
@@ -92,7 +104,7 @@ describe('useAgentForm', () => {
     ]);
   });
 
-  it('should initialize with new agent values when agent.id < 0', () => {
+  it('should initialize with new agent values when agent.id < 0', async () => {
     const mockNewAgent: Agent = {
       id: -1,
       name: 'New Agent',
@@ -101,21 +113,33 @@ describe('useAgentForm', () => {
       createdAt: '2024-01-01T00:00:00.000Z',
     };
 
-    renderHook(() =>
-      useAgentForm({
-        agent: mockNewAgent,
-        agentData: null,
-      })
+    // Start with null, then update to trigger useEffect
+    const { rerender } = renderHook(
+      ({ agent, agentData }) =>
+        useAgentForm({
+          agent,
+          agentData,
+        }),
+      {
+        initialProps: { agent: null, agentData: null },
+      }
     );
 
-    expect(mockSetValue).toHaveBeenCalledWith('name', 'New Agent');
+    // Update to trigger useEffect
+    rerender({ agent: mockNewAgent, agentData: null });
+
+    // Wait for useEffect to run
+    await waitFor(() => {
+      expect(mockSetValue).toHaveBeenCalledWith('name', 'New Agent');
+    });
+
     expect(mockSetValue).toHaveBeenCalledWith('description', 'New Description');
     expect(mockSetValue).toHaveBeenCalledWith('temperature', 0.7);
     expect(mockSetValue).toHaveBeenCalledWith('systemPrompt', '');
     expect(mockSetValue).toHaveBeenCalledWith('behaviorRules', []);
   });
 
-  it('should use default temperature when not provided in configs', () => {
+  it('should use default temperature when not provided in configs', async () => {
     const mockAgent: Agent = {
       id: 1,
       name: 'Test Agent',
@@ -129,17 +153,28 @@ describe('useAgentForm', () => {
       configs: {},
     };
 
-    renderHook(() =>
-      useAgentForm({
-        agent: mockAgent,
-        agentData: mockAgentData,
-      })
+    // Start with null, then update to trigger useEffect
+    const { rerender } = renderHook(
+      ({ agent, agentData }) =>
+        useAgentForm({
+          agent,
+          agentData,
+        }),
+      {
+        initialProps: { agent: null, agentData: null },
+      }
     );
 
-    expect(mockSetValue).toHaveBeenCalledWith('temperature', 0.7);
+    // Update to trigger useEffect
+    rerender({ agent: mockAgent, agentData: mockAgentData });
+
+    // Wait for useEffect to run
+    await waitFor(() => {
+      expect(mockSetValue).toHaveBeenCalledWith('temperature', 0.7);
+    });
   });
 
-  it('should handle empty description', () => {
+  it('should handle empty description', async () => {
     const mockAgent: Agent = {
       id: 1,
       name: 'Test Agent',
@@ -153,14 +188,25 @@ describe('useAgentForm', () => {
       configs: {},
     };
 
-    renderHook(() =>
-      useAgentForm({
-        agent: mockAgent,
-        agentData: mockAgentData,
-      })
+    // Start with null, then update to trigger useEffect
+    const { rerender } = renderHook(
+      ({ agent, agentData }) =>
+        useAgentForm({
+          agent,
+          agentData,
+        }),
+      {
+        initialProps: { agent: null, agentData: null },
+      }
     );
 
-    expect(mockSetValue).toHaveBeenCalledWith('description', '');
+    // Update to trigger useEffect
+    rerender({ agent: mockAgent, agentData: mockAgentData });
+
+    // Wait for useEffect to run
+    await waitFor(() => {
+      expect(mockSetValue).toHaveBeenCalledWith('description', '');
+    });
   });
 
   it('should update form when agent ID changes', () => {

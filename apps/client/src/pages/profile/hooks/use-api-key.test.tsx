@@ -45,14 +45,23 @@ vi.mock('../../../hooks/queries/use-user', () => ({
 }));
 
 // Mock useFormValidation
-const mockSetValue = vi.fn();
+let mockApiKeyValue = '';
+const mockSetValue = vi.fn((field: string, value: string) => {
+  if (field === 'apiKey') {
+    mockApiKeyValue = value;
+  }
+});
 const mockSetTouched = vi.fn();
 const mockValidateAll = vi.fn(() => ({ isValid: true, errors: {} }));
-const mockReset = vi.fn();
+const mockReset = vi.fn(() => {
+  mockApiKeyValue = '';
+});
 
 vi.mock('@openai/utils', () => ({
   useFormValidation: () => ({
-    values: { apiKey: '' },
+    get values() {
+      return { apiKey: mockApiKeyValue };
+    },
     errors: {},
     touched: {},
     setValue: mockSetValue,
@@ -74,6 +83,7 @@ describe('useApiKey', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockApiKeyData.hasApiKey = false;
+    mockApiKeyValue = '';
   });
 
   it('should initialize with showApiKeyInput true when no API key', () => {
@@ -96,17 +106,28 @@ describe('useApiKey', () => {
     mockValidateAll.mockReturnValue({ isValid: true, errors: {} });
     mockUpdateApiKey.mockResolvedValue(undefined);
 
-    const { result } = renderHook(() => useApiKey(), { wrapper });
+    const { result, rerender } = renderHook(() => useApiKey(), { wrapper });
 
+    // Set the value using the hook's setValue - this updates mockApiKeyValue
     act(() => {
       result.current.setValue('apiKey', 'sk-test-key');
     });
+
+    // Force a re-render to get updated values
+    rerender();
+
+    // Verify the value was set in our mock
+    expect(mockApiKeyValue).toBe('sk-test-key');
+    // The values should reflect the change after rerender
+    expect(result.current.values.apiKey).toBe('sk-test-key');
 
     await act(async () => {
       await result.current.handleSaveApiKey();
     });
 
     expect(mockValidateAll).toHaveBeenCalled();
+    // The mutation should be called with the value from values.apiKey
+    // Since our mock getter returns mockApiKeyValue, it should work
     expect(mockUpdateApiKey).toHaveBeenCalledWith('sk-test-key');
     expect(mockRefetchApiKey).toHaveBeenCalled();
     expect(result.current.showApiKeyInput).toBe(false);

@@ -141,6 +141,9 @@ describe('useChatInput', () => {
   });
 
   it('should focus input when session changes', async () => {
+    // Use real timers for this test since fake timers are causing issues
+    vi.useRealTimers();
+
     const { rerender } = renderHook(
       ({ currentSessionId }) =>
         useChatInput({
@@ -157,14 +160,16 @@ describe('useChatInput', () => {
     // Change session
     rerender({ currentSessionId: 1 });
 
-    // Fast-forward timers
-    act(() => {
-      vi.advanceTimersByTime(NUMERIC_CONSTANTS.UI_DEBOUNCE_DELAY);
-    });
+    // Wait for the debounce delay plus a small buffer
+    await waitFor(
+      () => {
+        expect(mockFocus).toHaveBeenCalled();
+      },
+      { timeout: NUMERIC_CONSTANTS.UI_DEBOUNCE_DELAY + 100 }
+    );
 
-    await waitFor(() => {
-      expect(mockFocus).toHaveBeenCalled();
-    });
+    // Restore fake timers
+    vi.useFakeTimers();
   });
 
   it('should not focus input when messages are loading', () => {
@@ -215,6 +220,9 @@ describe('useChatInput', () => {
       })
     );
 
+    // Verify result is not null before using it
+    expect(result.current).not.toBeNull();
+    
     act(() => {
       result.current.setInput('Hello');
     });

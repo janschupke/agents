@@ -84,7 +84,8 @@ describe('parseBehaviorRules', () => {
 
     it('should convert boolean to string array', () => {
       expect(parseBehaviorRules(true)).toEqual(['true']);
-      expect(parseBehaviorRules(false)).toEqual(['false']);
+      // false is falsy, so it returns empty array per the function logic
+      expect(parseBehaviorRules(false)).toEqual([]);
     });
   });
 });

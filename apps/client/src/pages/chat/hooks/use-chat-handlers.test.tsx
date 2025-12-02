@@ -15,7 +15,10 @@ vi.mock('../../../hooks/useConfirm', () => ({
 
 // Mock formatDate
 vi.mock('@openai/utils', () => ({
-  formatDate: (date: Date) => date.toISOString().split('T')[0],
+  formatDate: (date: Date | string) => {
+    const d = typeof date === 'string' ? new Date(date) : date;
+    return d.toISOString().split('T')[0];
+  },
 }));
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
