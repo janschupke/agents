@@ -4,14 +4,14 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import ChatBot from './ChatBot';
-import { ChatService } from '../../../services/chat.service';
-import { AuthProvider } from '../../../contexts/AuthContext';
-import { AppProvider } from '../../../contexts/AppContext';
-import { UserProvider } from '../../../contexts/UserContext';
-import { BotProvider } from '../../../contexts/BotContext';
-import { ChatProvider } from '../../../contexts/ChatContext';
-import { ToastProvider } from '../../../contexts/ToastContext';
-import { MessageRole } from '../../../types/chat.types';
+import { ChatService } from '../../../../services/chat.service';
+import { AuthProvider } from '../../../../contexts/AuthContext';
+import { AppProvider } from '../../../../contexts/AppContext';
+import { UserProvider } from '../../../../contexts/UserContext';
+import { BotProvider } from '../../../../contexts/BotContext';
+import { ChatProvider } from '../../../../contexts/ChatContext';
+import { ToastProvider } from '../../../../contexts/ToastContext';
+import { MessageRole } from '../../../../types/chat.types';
 
 // Mock Clerk
 vi.mock('@clerk/clerk-react', () => ({
@@ -22,7 +22,7 @@ vi.mock('@clerk/clerk-react', () => ({
 }));
 
 // Mock the ChatService
-vi.mock('../../services/chat.service', () => ({
+vi.mock('../../../../services/chat.service', () => ({
   ChatService: {
     getChatHistory: vi.fn(),
     sendMessage: vi.fn(),
@@ -31,7 +31,7 @@ vi.mock('../../services/chat.service', () => ({
 }));
 
 // Mock BotService
-vi.mock('../../services/bot.service', () => ({
+vi.mock('../../../../services/bot.service', () => ({
   BotService: {
     getAllBots: vi
       .fn()
@@ -40,14 +40,14 @@ vi.mock('../../services/bot.service', () => ({
 }));
 
 // Mock UserService
-vi.mock('../../services/user.service', () => ({
+vi.mock('../../../../services/user.service', () => ({
   UserService: {
     getCurrentUser: vi.fn().mockResolvedValue({ id: '1', email: 'test@example.com' }),
   },
 }));
 
 // Mock ApiCredentialsService
-vi.mock('../../services/api-credentials.service', () => ({
+vi.mock('../../../../services/api-credentials.service', () => ({
   ApiCredentialsService: {
     hasOpenAIKey: vi.fn().mockResolvedValue(true),
   },

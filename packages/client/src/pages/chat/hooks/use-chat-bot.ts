@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { useSelectedBot } from '../../../../contexts/AppContext';
-import { useBots } from '../../../../hooks/queries/use-bots.js';
+import { useSelectedBot } from '../../../contexts/AppContext';
+import { useBots } from '../../../hooks/queries/use-bots.js';
 
 interface UseChatBotOptions {
   propBotId?: number;

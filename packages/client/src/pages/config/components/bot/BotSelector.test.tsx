@@ -3,9 +3,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import BotSelector from './BotSelector';
-import { BotProvider } from '../../../contexts/BotContext';
-import { AppProvider } from '../../../contexts/AppContext';
-import { AuthProvider } from '../../../contexts/AuthContext';
+import { BotProvider } from '../../../../contexts/BotContext';
+import { AppProvider } from '../../../../contexts/AppContext';
+import { AuthProvider } from '../../../../contexts/AuthContext';
+import { QueryProvider } from '../../../../providers/QueryProvider';
 
 // Mock Clerk
 vi.mock('@clerk/clerk-react', () => ({
@@ -16,7 +17,7 @@ vi.mock('@clerk/clerk-react', () => ({
 }));
 
 // Mock BotService
-vi.mock('../../services/bot.service', () => ({
+vi.mock('../../../../services/bot.service', () => ({
   BotService: {
     getAllBots: vi.fn().mockResolvedValue([
       { id: 1, name: 'Bot 1', description: 'Description 1', createdAt: '2024-01-01' },
@@ -26,7 +27,7 @@ vi.mock('../../services/bot.service', () => ({
 }));
 
 // Mock ChatService
-vi.mock('../../services/chat.service', () => ({
+vi.mock('../../../../services/chat.service', () => ({
   ChatService: {
     getSessions: vi.fn().mockResolvedValue([]),
   },
@@ -34,11 +35,13 @@ vi.mock('../../services/chat.service', () => ({
 
 // Test wrapper
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <AuthProvider>
-    <AppProvider>
-      <BotProvider>{children}</BotProvider>
-    </AppProvider>
-  </AuthProvider>
+  <QueryProvider>
+    <AuthProvider>
+      <AppProvider>
+        <BotProvider>{children}</BotProvider>
+      </AppProvider>
+    </AuthProvider>
+  </QueryProvider>
 );
 
 // Helper to wait for bots to load

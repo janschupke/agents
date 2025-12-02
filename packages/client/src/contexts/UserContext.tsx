@@ -3,10 +3,11 @@ import { useUser as useUserQuery } from '../hooks/queries/use-user.js';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../hooks/queries/query-keys.js';
 import { ApiCredentialsService } from '../services/api-credentials.service.js';
+import { User } from '../types/chat.types.js';
 
 interface UserContextValue {
   // User data
-  userInfo: any;
+  userInfo: User | null;
   loadingUser: boolean;
   refreshUser: () => Promise<void>;
 

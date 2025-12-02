@@ -22,7 +22,7 @@ interface UseFileUploadReturn {
  * Hook for file upload functionality with validation and base64 conversion
  */
 export function useFileUpload({
-  accept = 'image/*',
+  accept: _accept = 'image/*', // eslint-disable-line @typescript-eslint/no-unused-vars
   maxSizeMB = 5,
   onChange,
 }: UseFileUploadOptions): UseFileUploadReturn {

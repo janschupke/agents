@@ -34,7 +34,7 @@ describe('ApiManager', () => {
       const result = await apiManager.get('/api/test');
 
       expect(result).toEqual(mockResponse);
-      expect(axiosInstance.get).toHaveBeenCalledWith('/api/test', undefined);
+      expect(axiosInstance.get).toHaveBeenCalledWith('/api/test', {});
     });
 
     it('should handle query parameters', async () => {
@@ -65,7 +65,7 @@ describe('ApiManager', () => {
       const result = await apiManager.post('/api/test', requestData);
 
       expect(result).toEqual(mockResponse);
-      expect(axiosInstance.post).toHaveBeenCalledWith('/api/test', requestData, undefined);
+      expect(axiosInstance.post).toHaveBeenCalledWith('/api/test', requestData, {});
     });
   });
 

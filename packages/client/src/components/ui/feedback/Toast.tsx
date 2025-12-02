@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { IconClose } from './Icons';
-import { NUMERIC_CONSTANTS } from '../../constants/numeric.constants.js';
+import { IconClose } from '../Icons';
+import { NUMERIC_CONSTANTS } from '../../../constants/numeric.constants.js';
 
 export type ToastType = 'success' | 'error' | 'info';
 

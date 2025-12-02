@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { ValidationSchema, validateField, validateAll, ValidationResult } from '../utils/validation.js';
 
-export interface UseFormValidationReturn<T extends Record<string, any>> {
+export interface UseFormValidationReturn<T extends Record<string, unknown>> {
   values: T;
   errors: Record<keyof T, string | null>;
   touched: Record<keyof T, boolean>;
@@ -13,7 +13,7 @@ export interface UseFormValidationReturn<T extends Record<string, any>> {
   isValid: boolean;
 }
 
-export function useFormValidation<T extends Record<string, any>>(
+export function useFormValidation<T extends Record<string, unknown>>(
   schema: ValidationSchema<T>,
   initialValues: T
 ): UseFormValidationReturn<T> {

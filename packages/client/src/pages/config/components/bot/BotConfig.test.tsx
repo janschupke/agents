@@ -4,13 +4,14 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import BotConfig from './BotConfig';
-import { BotProvider } from '../../../contexts/BotContext';
-import { AppProvider } from '../../../contexts/AppContext';
-import { AuthProvider } from '../../../contexts/AuthContext';
-import { UserProvider } from '../../../contexts/UserContext';
-import { ToastProvider } from '../../../contexts/ToastContext';
-import { BotService } from '../../../services/bot.service';
-import { Bot } from '../../../types/chat.types';
+import { BotProvider } from '../../../../contexts/BotContext';
+import { AppProvider } from '../../../../contexts/AppContext';
+import { AuthProvider } from '../../../../contexts/AuthContext';
+import { UserProvider } from '../../../../contexts/UserContext';
+import { ToastProvider } from '../../../../contexts/ToastContext';
+import { QueryProvider } from '../../../../providers/QueryProvider';
+import { BotService } from '../../../../services/bot.service';
+import { Bot } from '../../../../types/chat.types';
 
 // Mock Clerk
 vi.mock('@clerk/clerk-react', () => ({
@@ -21,7 +22,7 @@ vi.mock('@clerk/clerk-react', () => ({
 }));
 
 // Mock BotService
-vi.mock('../../services/bot.service', () => ({
+vi.mock('../../../../services/bot.service', () => ({
   BotService: {
     getAllBots: vi.fn(),
     getBot: vi.fn(() => Promise.resolve({
@@ -42,7 +43,7 @@ vi.mock('../../services/bot.service', () => ({
 }));
 
 // Mock ChatService
-vi.mock('../../services/chat.service', () => ({
+vi.mock('../../../../services/chat.service', () => ({
   ChatService: {
     getSessions: vi.fn(() => Promise.resolve([])),
   },
@@ -62,15 +63,17 @@ Object.defineProperty(window, 'localStorage', {
 // Test wrapper with all providers
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <BrowserRouter>
-    <AuthProvider>
-      <AppProvider>
-        <UserProvider>
-          <BotProvider>
-            <ToastProvider>{children}</ToastProvider>
-          </BotProvider>
-        </UserProvider>
-      </AppProvider>
-    </AuthProvider>
+    <QueryProvider>
+      <AuthProvider>
+        <AppProvider>
+          <UserProvider>
+            <BotProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </BotProvider>
+          </UserProvider>
+        </AppProvider>
+      </AuthProvider>
+    </QueryProvider>
   </BrowserRouter>
 );
 

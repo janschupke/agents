@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Bot } from '../../../types/chat.types.js';
 import { useCreateBot, useUpdateBot, useDeleteBot } from '../../../hooks/mutations/use-bot-mutations.js';
 import { useQueryClient } from '@tanstack/react-query';

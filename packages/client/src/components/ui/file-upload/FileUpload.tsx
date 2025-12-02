@@ -1,4 +1,4 @@
-import { IconImage, IconUpload } from '../../Icons';
+import { IconImage, IconUpload } from '../Icons';
 import { useFileUpload } from './hooks/use-file-upload';
 import DragDropArea from './components/DragDropArea';
 

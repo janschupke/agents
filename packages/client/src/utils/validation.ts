@@ -1,9 +1,9 @@
-export type ValidationRule<T = any> = {
+export type ValidationRule<T = unknown> = {
   validate: (value: T) => boolean;
   message: string;
 };
 
-export type ValidationSchema<T extends Record<string, any>> = {
+export type ValidationSchema<T extends Record<string, unknown>> = {
   [K in keyof T]?: ValidationRule<T[K]>[];
 };
 
@@ -13,7 +13,7 @@ export interface ValidationResult {
 }
 
 export interface FieldValidationState {
-  value: any;
+  value: unknown;
   touched: boolean;
   error: string | null;
   isValidating: boolean;
@@ -39,7 +39,7 @@ export function validateField<T>(value: T, rules?: ValidationRule<T>[]): string 
 /**
  * Validate all fields in a form
  */
-export function validateAll<T extends Record<string, any>>(
+export function validateAll<T extends Record<string, unknown>>(
   formData: T,
   schema: ValidationSchema<T>
 ): ValidationResult {

@@ -1,4 +1,4 @@
-import { IconClose } from '../../../Icons';
+import { IconClose } from '../../Icons';
 
 interface ModalHeaderProps {
   title: string;
