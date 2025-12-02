@@ -1,4 +1,4 @@
-import { IconTrash, IconPlus } from '../../../../components/ui/Icons';
+import { IconTrash, IconPlus } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 interface DescriptionFieldProps {

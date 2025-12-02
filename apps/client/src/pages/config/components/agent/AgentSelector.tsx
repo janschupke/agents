@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { IconChevronDown } from '../../../../components/ui/Icons';
+import { IconChevronDown } from '@openai/ui';
 import { useAgents } from '../../../../hooks/queries/use-agents';
 import { useSelectedAgent } from '../../../../contexts/AppContext';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { DropdownTransition } from '../../../../components/ui/animation';
+import { DropdownTransition } from '@openai/ui';
 
 export default function AgentSelector() {
   const { t } = useTranslation(I18nNamespace.CLIENT);

@@ -4,42 +4,16 @@
 
 @layer base {
   :root {
-    /* Primary colors - Orange (toned down) */
+    /* Primary colors - Orange (toned down) - Client brand colors */
     --color-primary: 234 88 12; /* orange-600 */
     --color-primary-hover: 194 65 12; /* orange-700 */
     --color-primary-light: 249 115 22; /* orange-500 */
 
-    /* Background colors - Grayscale */
-    --color-background: 255 255 255; /* white */
-    --color-background-secondary: 249 250 251; /* gray-50 */
-    --color-background-tertiary: 243 244 246; /* gray-100 */
-
-    /* Text colors - Grayscale */
-    --color-text-primary: 17 24 39; /* gray-900 */
-    --color-text-secondary: 31 41 55; /* gray-800 */
-    --color-text-tertiary: 107 114 128; /* gray-500 */
-    --color-text-inverse: 255 255 255; /* white */
-
-    /* Border colors - Grayscale */
-    --color-border: 229 231 235; /* gray-200 */
+    /* Border focus - Orange */
     --color-border-focus: 234 88 12; /* orange-600 */
-    --color-border-input: 209 213 219; /* gray-300 */
 
-    /* Message colors - Orange for user, grayscale for assistant */
+    /* Message colors - Orange for user */
     --color-message-user: 234 88 12; /* orange-600 */
-    --color-message-assistant: 243 244 246; /* gray-100 */
-    --color-message-user-text: 255 255 255; /* white */
-    --color-message-assistant-text: 17 24 39; /* gray-900 */
-
-    /* State colors - Grayscale */
-    --color-disabled: 156 163 175; /* gray-400 */
-    --color-disabled-bg: 243 244 246; /* gray-100 */
-
-    /* Design system - unified heights */
-    --button-height: 2rem; /* 32px - h-8 */
-    --button-height-sm: 1.75rem; /* 28px - h-7 */
-    --sidebar-item-height: 2.5rem; /* 40px - compact */
-    --input-height: 2rem; /* 32px - h-8 */
   }
 
   body {
@@ -51,120 +25,4 @@
   #root {
     @apply min-h-screen flex flex-col;
   }
-}
-
-@layer utilities {
-  @keyframes slide-in-right {
-    from {
-      transform: translateX(100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-
-  .animate-slide-in-right {
-    animation: slide-in-right 0.3s ease-out;
-  }
-
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  .animate-fade-in {
-    animation: fade-in 200ms ease-in-out;
-  }
-
-  .transition-fade {
-    transition-property: opacity;
-    transition-timing-function: ease-in-out;
-    transition-duration: 200ms;
-  }
-
-  .transition-fade-fast {
-    transition-property: opacity;
-    transition-timing-function: ease-in-out;
-    transition-duration: 150ms;
-  }
-
-  @keyframes typing-dot-pulse {
-    0%,
-    100% {
-      opacity: 0.3;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.7;
-      transform: scale(1.1);
-    }
-  }
-
-  .animate-typing-dot {
-    animation: typing-dot-pulse 1.4s ease-in-out infinite;
-  }
-
-  .animate-typing-dot-delay-1 {
-    animation-delay: 0s;
-  }
-
-  .animate-typing-dot-delay-2 {
-    animation-delay: 0.2s;
-  }
-
-  .animate-typing-dot-delay-3 {
-    animation-delay: 0.4s;
-  }
-}
-
-/* Markdown content styles */
-.markdown-content {
-  line-height: 1.6;
-}
-
-.markdown-content h1,
-.markdown-content h2,
-.markdown-content h3,
-.markdown-content h4,
-.markdown-content h5,
-.markdown-content h6 {
-  line-height: 1.4;
-}
-
-.markdown-content code {
-  word-break: break-word;
-}
-
-.markdown-content pre {
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-.markdown-content pre code {
-  display: block;
-  white-space: pre;
-  overflow-x: auto;
-}
-
-.markdown-content ul,
-.markdown-content ol {
-  padding-left: 1.5rem;
-}
-
-.markdown-content li {
-  margin: 0.25rem 0;
-}
-
-.markdown-content table {
-  font-size: 0.875rem;
-}
-
-.markdown-content blockquote {
-  border-left-color: currentColor;
 }

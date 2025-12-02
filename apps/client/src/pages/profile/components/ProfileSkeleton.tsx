@@ -1,4 +1,4 @@
-import { Skeleton } from '../../../components/ui/feedback';
+import { Skeleton } from '@openai/ui';
 
 /**
  * Loading skeleton for user profile page

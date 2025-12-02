@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { Agent } from '../../../../types/chat.types';
-import { PageHeader } from '../../../../components/ui/layout';
+import { PageHeader } from '@openai/ui';
 import { useAgent } from '../../../../hooks/queries/use-agents';
 import { useAgentMemories as useAgentMemoriesQuery } from '../../../../hooks/queries/use-agents';
 import { useAgentForm } from '../../hooks/use-agent-form';
@@ -11,8 +11,8 @@ import {
   FormContainer,
   ButtonType,
   ButtonVariant,
-} from '../../../../components/ui/form';
-import { FadeIn } from '../../../../components/ui/animation';
+  FadeIn,
+} from '@openai/ui';
 import {
   DescriptionField,
   TemperatureField,

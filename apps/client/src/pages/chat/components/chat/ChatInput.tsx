@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react';
-import { IconSend } from '../../../../components/ui/Icons';
+import { IconSend } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 interface ChatInputProps {

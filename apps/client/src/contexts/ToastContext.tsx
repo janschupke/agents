@@ -5,7 +5,7 @@ import {
   useCallback,
   ReactNode,
 } from 'react';
-import { Toast } from '../components/ui/feedback';
+import { Toast } from '@openai/ui';
 
 type ToastType = 'success' | 'error' | 'info';
 

@@ -1,9 +1,8 @@
 import { Message, MessageRole } from '../../../../types/chat.types';
-import { IconSearch, IconTranslate } from '../../../../components/ui/Icons';
+import { IconSearch, IconTranslate, FadeTransition } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import TranslatableMarkdownContent from '../markdown/TranslatableMarkdownContent';
 import MarkdownContent from '../markdown/MarkdownContent';
-import { FadeTransition } from '../../../../components/ui/animation';
 import { useMessageTranslation } from '../../hooks/use-message-translation';
 
 interface MessageBubbleProps {

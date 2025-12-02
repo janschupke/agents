@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { IconClose } from '../../../../components/ui/Icons';
+import { IconClose } from '@openai/ui';
 import { NUMERIC_CONSTANTS } from '../../../../constants/numeric.constants';
 import { useUpdateSession } from '../../../../hooks/mutations/use-agent-mutations';
 import { useFormValidation } from '@openai/utils';
@@ -9,7 +9,7 @@ import {
   FormContainer,
   ButtonType,
   ButtonVariant,
-} from '../../../../components/ui/form';
+} from '@openai/ui';
 
 interface SessionNameModalProps {
   isOpen: boolean;

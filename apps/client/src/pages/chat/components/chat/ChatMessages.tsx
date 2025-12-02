@@ -1,8 +1,6 @@
 import { Message, MessageRole } from '../../../../types/chat.types';
 import MessageBubble from './MessageBubble';
-import { IconChat } from '../../../../components/ui/Icons';
-import { FadeIn } from '../../../../components/ui/animation';
-import { TypingIndicator } from '../../../../components/ui/feedback';
+import { IconChat, FadeIn, TypingIndicator } from '@openai/ui';
 import { useRef, useEffect } from 'react';
 
 interface ChatMessagesProps {

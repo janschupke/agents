@@ -1,6 +1,5 @@
 import { Session } from '../../../../types/chat.types';
-import { IconPlus } from '../../../../components/ui/Icons';
-import { SkeletonList } from '../../../../components/ui/feedback';
+import { IconPlus, SkeletonList } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import SessionItem from './SessionItem';
 

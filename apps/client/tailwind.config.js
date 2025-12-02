@@ -1,11 +1,14 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}',
+    '../../packages/ui/src/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {
+      // Theme is centralized in @openai/ui package
+      // Colors use CSS variables defined in base.css
       colors: {
         primary: {
           DEFAULT: 'rgb(var(--color-primary) / <alpha-value>)',
@@ -32,7 +35,8 @@ export default {
           user: 'rgb(var(--color-message-user) / <alpha-value>)',
           assistant: 'rgb(var(--color-message-assistant) / <alpha-value>)',
           'user-text': 'rgb(var(--color-message-user-text) / <alpha-value>)',
-          'assistant-text': 'rgb(var(--color-message-assistant-text) / <alpha-value>)',
+          'assistant-text':
+            'rgb(var(--color-message-assistant-text) / <alpha-value>)',
         },
         disabled: {
           DEFAULT: 'rgb(var(--color-disabled) / <alpha-value>)',
@@ -49,9 +53,9 @@ export default {
         'fade-out': '150ms',
       },
       transitionTimingFunction: {
-        'fade': 'ease-in-out',
+        fade: 'ease-in-out',
       },
     },
   },
   plugins: [],
-}
+};

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Agent } from '../../../../types/chat.types';
 import AgentSidebar from './AgentSidebar';
 import AgentConfigForm from './AgentConfigForm';
-import { PageContainer } from '../../../../components/ui/layout';
+import { PageContainer } from '@openai/ui';
 import { useAgents } from '../../../../hooks/queries/use-agents';
 import { useAgentSelection } from '../../hooks/use-agent-selection';
 import { useAgentConfigOperations } from '../../hooks/use-agent-config-operations';

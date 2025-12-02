@@ -1,5 +1,5 @@
 import { Session } from '../../../../types/chat.types';
-import { IconTrash, IconPencil } from '../../../../components/ui/Icons';
+import { IconTrash, IconPencil } from '@openai/ui';
 import { formatDate, formatTime } from '@openai/utils';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 

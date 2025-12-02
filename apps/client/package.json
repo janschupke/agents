@@ -21,6 +21,7 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.53.8",
     "@openai/i18n": "workspace:*",
+    "@openai/ui": "workspace:*",
     "@openai/utils": "workspace:*",
     "@tanstack/react-query": "^5.90.11",
     "react": "^18.2.0",

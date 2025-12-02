@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ConfirmModal } from '../components/ui/modal';
+import { ConfirmModal } from '@openai/ui';
 
 interface ConfirmOptions {
   title?: string;

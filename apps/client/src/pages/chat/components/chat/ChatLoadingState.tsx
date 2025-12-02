@@ -1,4 +1,4 @@
-import { PageContainer } from '../../../../components/ui/layout';
+import { PageContainer } from '@openai/ui';
 import {
   Skeleton,
   SkeletonList,

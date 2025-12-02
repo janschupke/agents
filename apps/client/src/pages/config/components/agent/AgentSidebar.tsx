@@ -1,6 +1,5 @@
 import { Agent } from '../../../../types/chat.types';
-import { IconPlus, IconTrash } from '../../../../components/ui/Icons';
-import { SkeletonList } from '../../../../components/ui/feedback';
+import { IconPlus, IconTrash, SkeletonList } from '@openai/ui';
 
 interface AgentSidebarProps {
   agents: Agent[];

@@ -1,4 +1,4 @@
-import { PageContainer, PageHeader } from '../../../components/ui/layout';
+import { PageContainer, PageHeader } from '@openai/ui';
 import { useUserDisplay } from '../hooks/use-user-display';
 import ProfileHeader from './ProfileHeader';
 import UserDetails from './UserDetails';

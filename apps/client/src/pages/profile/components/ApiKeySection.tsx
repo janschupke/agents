@@ -3,14 +3,14 @@ import {
   IconTrash,
   IconClose,
   IconCheck,
-} from '../../../components/ui/Icons';
+} from '@openai/ui';
 import {
   FormButton,
   FormContainer,
   ValidatedInput,
   ButtonType,
   ButtonVariant,
-} from '../../../components/ui/form';
+} from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useApiKey } from '../hooks/use-api-key';
 

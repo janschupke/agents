@@ -1,5 +1,5 @@
 import { AgentMemory } from '../../../../types/chat.types';
-import { IconRefresh } from '../../../../components/ui/Icons';
+import { IconRefresh } from '@openai/ui';
 import MemoriesList from './MemoriesList';
 
 interface MemoriesSectionProps {

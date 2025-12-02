@@ -1,4 +1,4 @@
-import { IconChat } from '../../../../components/ui/Icons';
+import { IconChat } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 export default function ChatPlaceholder() {
