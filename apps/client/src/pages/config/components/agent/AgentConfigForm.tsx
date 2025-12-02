@@ -87,7 +87,7 @@ export default function AgentConfigForm({
   };
 
   const { t } = useTranslation(I18nNamespace.CLIENT);
-  
+
   if (!agent) {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
@@ -110,7 +110,11 @@ export default function AgentConfigForm({
             disabled={!values.name.trim()}
             variant={ButtonVariant.PRIMARY}
             tooltip={
-              saving ? t('config.saving') : agent.id < 0 ? t('config.createAgent') : t('config.saveButton')
+              saving
+                ? t('config.saving')
+                : agent.id < 0
+                  ? t('config.createAgent')
+                  : t('config.saveButton')
             }
           >
             {agent.id < 0 ? t('config.createAgent') : t('config.saveButton')}

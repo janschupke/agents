@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import { useAgentForm } from './use-agent-form';
 import { Agent } from '../../../types/chat.types';
 
@@ -72,7 +72,10 @@ describe('useAgentForm', () => {
     };
 
     // Start with null, then update to trigger useEffect
-    const { rerender } = renderHook(
+    const { rerender } = renderHook<
+      ReturnType<typeof useAgentForm>,
+      { agent: Agent | null; agentData: Agent | null }
+    >(
       ({ agent, agentData }) =>
         useAgentForm({
           agent,
@@ -91,13 +94,19 @@ describe('useAgentForm', () => {
       expect(mockSetValue).toHaveBeenCalledWith('name', 'Test Agent');
     });
 
-    expect(mockSetValue).toHaveBeenCalledWith('description', 'Test Description');
+    expect(mockSetValue).toHaveBeenCalledWith(
+      'description',
+      'Test Description'
+    );
     expect(mockSetValue).toHaveBeenCalledWith(
       'avatarUrl',
       'https://example.com/avatar.png'
     );
     expect(mockSetValue).toHaveBeenCalledWith('temperature', 0.8);
-    expect(mockSetValue).toHaveBeenCalledWith('systemPrompt', 'You are helpful');
+    expect(mockSetValue).toHaveBeenCalledWith(
+      'systemPrompt',
+      'You are helpful'
+    );
     expect(mockSetValue).toHaveBeenCalledWith('behaviorRules', [
       'Rule 1',
       'Rule 2',
@@ -114,7 +123,10 @@ describe('useAgentForm', () => {
     };
 
     // Start with null, then update to trigger useEffect
-    const { rerender } = renderHook(
+    const { rerender } = renderHook<
+      ReturnType<typeof useAgentForm>,
+      { agent: Agent | null; agentData: Agent | null }
+    >(
       ({ agent, agentData }) =>
         useAgentForm({
           agent,
@@ -154,7 +166,10 @@ describe('useAgentForm', () => {
     };
 
     // Start with null, then update to trigger useEffect
-    const { rerender } = renderHook(
+    const { rerender } = renderHook<
+      ReturnType<typeof useAgentForm>,
+      { agent: Agent | null; agentData: Agent | null }
+    >(
       ({ agent, agentData }) =>
         useAgentForm({
           agent,
@@ -189,7 +204,10 @@ describe('useAgentForm', () => {
     };
 
     // Start with null, then update to trigger useEffect
-    const { rerender } = renderHook(
+    const { rerender } = renderHook<
+      ReturnType<typeof useAgentForm>,
+      { agent: Agent | null; agentData: Agent | null }
+    >(
       ({ agent, agentData }) =>
         useAgentForm({
           agent,
@@ -272,7 +290,10 @@ describe('useAgentForm', () => {
       createdAt: '2024-01-01T00:00:00.000Z',
     };
 
-    const { rerender } = renderHook(
+    const { rerender } = renderHook<
+      ReturnType<typeof useAgentForm>,
+      { agent: Agent | null; agentData: Agent | null }
+    >(
       ({ agent, agentData }) =>
         useAgentForm({
           agent,

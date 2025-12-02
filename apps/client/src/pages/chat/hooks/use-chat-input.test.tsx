@@ -21,7 +21,7 @@ vi.mock('react', async () => {
 });
 
 describe('useChatInput', () => {
-  const mockSendMessage = vi.fn(async (message: string) => {
+  const mockSendMessage = vi.fn(async (_message: string) => {
     return {
       response: 'Response',
       session: { id: 1, session_name: 'Session 1' },
@@ -144,7 +144,10 @@ describe('useChatInput', () => {
     // Use real timers for this test since fake timers are causing issues
     vi.useRealTimers();
 
-    const { rerender } = renderHook(
+    const { rerender } = renderHook<
+      ReturnType<typeof useChatInput>,
+      { currentSessionId: number | null }
+    >(
       ({ currentSessionId }) =>
         useChatInput({
           currentSessionId,
@@ -222,7 +225,7 @@ describe('useChatInput', () => {
 
     // Verify result is not null before using it
     expect(result.current).not.toBeNull();
-    
+
     act(() => {
       result.current.setInput('Hello');
     });

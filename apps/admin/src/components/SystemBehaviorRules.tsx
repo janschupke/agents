@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { useSystemRules, useUpdateSystemRules } from '../hooks/queries/use-system-rules';
+import {
+  useSystemRules,
+  useUpdateSystemRules,
+} from '../hooks/queries/use-system-rules';
 import { IconTrash, IconPlus } from './ui/Icons';
 
 export default function SystemBehaviorRules() {
@@ -45,7 +48,9 @@ export default function SystemBehaviorRules() {
         ? null // 404 is expected when no rules are set
         : ('message' in queryError && queryError.message) ||
           tAdmin('systemRules.error')
-      : updateMutation.error && typeof updateMutation.error === 'object' && 'message' in updateMutation.error
+      : updateMutation.error &&
+          typeof updateMutation.error === 'object' &&
+          'message' in updateMutation.error
         ? (updateMutation.error.message as string)
         : updateMutation.isError
           ? tAdmin('systemRules.error')
@@ -108,7 +113,9 @@ export default function SystemBehaviorRules() {
                 value={rule}
                 onChange={(e) => handleRuleChange(index, e.target.value)}
                 className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus"
-                placeholder={tAdmin('systemRules.rulePlaceholder', { index: (index + 1).toString() })}
+                placeholder={tAdmin('systemRules.rulePlaceholder', {
+                  index: (index + 1).toString(),
+                })}
               />
               <button
                 type="button"

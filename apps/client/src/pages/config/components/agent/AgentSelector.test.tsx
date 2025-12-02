@@ -183,7 +183,9 @@ describe('AgentSelector', () => {
     await waitFor(
       () => {
         // Should show button (either with agent name or "Select Agent")
-        const button = screen.getByRole('button', { name: /config\.selectAgent/i });
+        const button = screen.getByRole('button', {
+          name: /config\.selectAgent/i,
+        });
         expect(button).toBeInTheDocument();
       },
       { timeout: 3000 }

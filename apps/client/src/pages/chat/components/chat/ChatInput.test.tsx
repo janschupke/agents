@@ -20,10 +20,10 @@ describe('ChatInput', () => {
       />
     );
 
+    expect(screen.getByPlaceholderText('chat.placeholder')).toBeInTheDocument();
     expect(
-      screen.getByPlaceholderText('chat.placeholder')
+      screen.getByRole('button', { name: /chat\.send/i })
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /chat\.send/i })).toBeInTheDocument();
   });
 
   it('should update input value when typing', async () => {
@@ -59,7 +59,9 @@ describe('ChatInput', () => {
       />
     );
 
-    const form = screen.getByRole('button', { name: /chat\.send/i }).closest('form');
+    const form = screen
+      .getByRole('button', { name: /chat\.send/i })
+      .closest('form');
     if (form) {
       await user.click(screen.getByRole('button', { name: /chat\.send/i }));
       expect(handleSubmit).toHaveBeenCalledTimes(1);

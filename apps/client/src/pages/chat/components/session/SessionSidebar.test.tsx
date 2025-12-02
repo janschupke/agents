@@ -113,9 +113,7 @@ describe('SessionSidebar', () => {
     );
 
     expect(screen.getByText('chat.noSessions')).toBeInTheDocument();
-    expect(
-      screen.getByText('chat.createNewSession')
-    ).toBeInTheDocument();
+    expect(screen.getByText('chat.createNewSession')).toBeInTheDocument();
   });
 
   it('should show loading skeleton when loading', () => {

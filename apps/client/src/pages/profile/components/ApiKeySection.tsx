@@ -46,7 +46,8 @@ export default function ApiKeySection() {
           {!hasApiKey && (
             <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
               <p className="text-sm text-yellow-800">
-                <strong>{t('profile.apiKey.requiredLabel')}</strong> {t('profile.apiKey.requiredMessage')}{' '}
+                <strong>{t('profile.apiKey.requiredLabel')}</strong>{' '}
+                {t('profile.apiKey.requiredMessage')}{' '}
                 <a
                   href="https://platform.openai.com/api-keys"
                   target="_blank"
@@ -119,7 +120,11 @@ export default function ApiKeySection() {
                   loading={saving}
                   disabled={saving || !values.apiKey.trim()}
                   variant={ButtonVariant.PRIMARY}
-                  tooltip={saving ? t('profile.apiKey.saving') : t('profile.apiKey.saveTooltip')}
+                  tooltip={
+                    saving
+                      ? t('profile.apiKey.saving')
+                      : t('profile.apiKey.saveTooltip')
+                  }
                 >
                   <IconCheck className="w-4 h-4" />
                 </FormButton>

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient } from '@tanstack/react-query';
 import { TestQueryProvider } from '../../test/utils/test-query-provider';
 import {
   useCreateAgent,
@@ -15,9 +14,6 @@ import {
 import { AgentService } from '../../services/agent.service';
 import { ChatService } from '../../services/chat.service';
 import { MemoryService } from '../../services/memory.service';
-import { http, HttpResponse } from 'msw';
-import { server } from '../../test/mocks/server';
-import { API_BASE_URL } from '../../constants/api.constants';
 
 // Mock ToastContext
 const mockShowToast = vi.fn();
@@ -35,16 +31,8 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe('use-agent-mutations', () => {
-  let queryClient: QueryClient;
-
   beforeEach(() => {
     vi.clearAllMocks();
-    queryClient = new QueryClient({
-      defaultOptions: {
-        queries: { retry: false },
-        mutations: { retry: false },
-      },
-    });
   });
 
   describe('useCreateAgent', () => {

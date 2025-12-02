@@ -9,7 +9,7 @@ interface UserListProps {
 
 export default function UserList({ users, loading }: UserListProps) {
   const { t } = useTranslation(I18nNamespace.ADMIN);
-  
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -57,12 +57,20 @@ export default function UserList({ users, loading }: UserListProps) {
                     {user.imageUrl ? (
                       <img
                         src={user.imageUrl}
-                        alt={user.firstName || user.email || t('users.columns.user')}
+                        alt={
+                          user.firstName ||
+                          user.email ||
+                          t('users.columns.user')
+                        }
                         className="w-10 h-10 rounded-full"
                       />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-text-inverse font-semibold">
-                        {(user.firstName || user.email || t('users.columns.user'))
+                        {(
+                          user.firstName ||
+                          user.email ||
+                          t('users.columns.user')
+                        )
                           .charAt(0)
                           .toUpperCase()}
                       </div>

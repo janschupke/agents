@@ -24,7 +24,9 @@ describe('use-user-mutations', () => {
 
   describe('useUpdateApiKey', () => {
     it('should update API key and show success toast', async () => {
-      vi.mocked(ApiCredentialsService.setOpenAIKey).mockResolvedValue(undefined);
+      vi.mocked(ApiCredentialsService.setOpenAIKey).mockResolvedValue(
+        undefined
+      );
 
       const { result } = renderHook(() => useUpdateApiKey(), { wrapper });
 
@@ -57,7 +59,9 @@ describe('use-user-mutations', () => {
 
   describe('useDeleteApiKey', () => {
     it('should delete API key and show success toast', async () => {
-      vi.mocked(ApiCredentialsService.deleteOpenAIKey).mockResolvedValue(undefined);
+      vi.mocked(ApiCredentialsService.deleteOpenAIKey).mockResolvedValue(
+        undefined
+      );
 
       const { result } = renderHook(() => useDeleteApiKey(), { wrapper });
 

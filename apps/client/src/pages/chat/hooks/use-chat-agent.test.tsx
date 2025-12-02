@@ -95,7 +95,7 @@ describe('useChatAgent', () => {
 
   it('should return loading state', () => {
     mockUseAgents.mockReturnValue({
-      data: undefined,
+      data: undefined as unknown as typeof mockAgents,
       isLoading: true,
     });
 

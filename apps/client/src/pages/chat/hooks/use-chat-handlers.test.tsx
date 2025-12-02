@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { TestQueryProvider } from '../../../test/utils/test-query-provider';
 import { useChatHandlers } from './use-chat-handlers';
 import { Session, ChatHistoryResponse } from '../../../types/chat.types';
@@ -52,7 +52,7 @@ describe('useChatHandlers', () => {
     messages: [],
   };
 
-  const mockHandleSessionSelect = vi.fn(async (sessionId: number) => {
+  const mockHandleSessionSelect = vi.fn(async (_sessionId: number) => {
     return mockChatHistory;
   });
 
@@ -141,7 +141,10 @@ describe('useChatHandlers', () => {
       cancelText: 'Cancel',
       confirmVariant: 'danger',
     });
-    expect(mockHandleSessionDelete).toHaveBeenCalledWith(1, expect.any(Function));
+    expect(mockHandleSessionDelete).toHaveBeenCalledWith(
+      1,
+      expect.any(Function)
+    );
   });
 
   it('should not delete session when confirmation is cancelled', async () => {

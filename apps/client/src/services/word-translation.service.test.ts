@@ -23,12 +23,9 @@ describe('WordTranslationService', () => {
       };
 
       server.use(
-        http.get(
-          `${API_BASE_URL}/api/messages/1/word-translations`,
-          () => {
-            return HttpResponse.json(mockWordTranslations);
-          }
-        )
+        http.get(`${API_BASE_URL}/api/messages/1/word-translations`, () => {
+          return HttpResponse.json(mockWordTranslations);
+        })
       );
 
       const result = await WordTranslationService.getWordTranslations(1);
@@ -42,15 +39,12 @@ describe('WordTranslationService', () => {
 
     it('should throw error when fetch fails', async () => {
       server.use(
-        http.get(
-          `${API_BASE_URL}/api/messages/1/word-translations`,
-          () => {
-            return HttpResponse.json(
-              { message: 'Internal server error' },
-              { status: 500 }
-            );
-          }
-        )
+        http.get(`${API_BASE_URL}/api/messages/1/word-translations`, () => {
+          return HttpResponse.json(
+            { message: 'Internal server error' },
+            { status: 500 }
+          );
+        })
       );
 
       await expect(

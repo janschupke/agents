@@ -65,7 +65,11 @@ describe('use-chat-mutations', () => {
         message: 'Hello',
       });
 
-      expect(ChatService.sendMessage).toHaveBeenCalledWith(1, 'Hello', undefined);
+      expect(ChatService.sendMessage).toHaveBeenCalledWith(
+        1,
+        'Hello',
+        undefined
+      );
     });
 
     it('should show error toast on failure', async () => {

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { server } from '../test/mocks/server';
 import { apiClient } from './api-client';
@@ -24,18 +24,39 @@ describe('ApiClient', () => {
     it('should build URL with relative endpoint', () => {
       apiClient.setBaseURL('https://api.example.com');
       // Access private method via type assertion for testing
-      const url = (apiClient as unknown as { buildURL: (endpoint: string, params?: Record<string, string | number | boolean>) => string }).buildURL('/api/test');
+      const url = (
+        apiClient as unknown as {
+          buildURL: (
+            endpoint: string,
+            params?: Record<string, string | number | boolean>
+          ) => string;
+        }
+      ).buildURL('/api/test');
       expect(url).toBe('https://api.example.com/api/test');
     });
 
     it('should build URL with absolute endpoint', () => {
-      const url = (apiClient as unknown as { buildURL: (endpoint: string, params?: Record<string, string | number | boolean>) => string }).buildURL('https://external.com/api');
+      const url = (
+        apiClient as unknown as {
+          buildURL: (
+            endpoint: string,
+            params?: Record<string, string | number | boolean>
+          ) => string;
+        }
+      ).buildURL('https://external.com/api');
       expect(url).toBe('https://external.com/api');
     });
 
     it('should build URL with query parameters', () => {
       apiClient.setBaseURL('https://api.example.com');
-      const url = (apiClient as unknown as { buildURL: (endpoint: string, params?: Record<string, string | number | boolean>) => string }).buildURL('/api/test', { foo: 'bar', num: 123, bool: true });
+      const url = (
+        apiClient as unknown as {
+          buildURL: (
+            endpoint: string,
+            params?: Record<string, string | number | boolean>
+          ) => string;
+        }
+      ).buildURL('/api/test', { foo: 'bar', num: 123, bool: true });
       expect(url).toContain('foo=bar');
       expect(url).toContain('num=123');
       expect(url).toContain('bool=true');
@@ -43,19 +64,44 @@ describe('ApiClient', () => {
 
     it('should handle baseURL with trailing slash', () => {
       apiClient.setBaseURL('https://api.example.com/');
-      const url = (apiClient as unknown as { buildURL: (endpoint: string, params?: Record<string, string | number | boolean>) => string }).buildURL('/api/test');
+      const url = (
+        apiClient as unknown as {
+          buildURL: (
+            endpoint: string,
+            params?: Record<string, string | number | boolean>
+          ) => string;
+        }
+      ).buildURL('/api/test');
       expect(url).toBe('https://api.example.com/api/test');
     });
 
     it('should handle endpoint without leading slash', () => {
       apiClient.setBaseURL('https://api.example.com');
-      const url = (apiClient as unknown as { buildURL: (endpoint: string, params?: Record<string, string | number | boolean>) => string }).buildURL('api/test');
+      const url = (
+        apiClient as unknown as {
+          buildURL: (
+            endpoint: string,
+            params?: Record<string, string | number | boolean>
+          ) => string;
+        }
+      ).buildURL('api/test');
       expect(url).toBe('https://api.example.com/api/test');
     });
 
     it('should skip undefined and null params', () => {
       apiClient.setBaseURL('https://api.example.com');
-      const url = (apiClient as unknown as { buildURL: (endpoint: string, params?: Record<string, string | number | boolean>) => string }).buildURL('/api/test', { foo: 'bar', undefined: undefined as unknown as string, null: null as unknown as string });
+      const url = (
+        apiClient as unknown as {
+          buildURL: (
+            endpoint: string,
+            params?: Record<string, string | number | boolean>
+          ) => string;
+        }
+      ).buildURL('/api/test', {
+        foo: 'bar',
+        undefined: undefined as unknown as string,
+        null: null as unknown as string,
+      });
       expect(url).toContain('foo=bar');
       expect(url).not.toContain('undefined');
       expect(url).not.toContain('null');
@@ -65,7 +111,7 @@ describe('ApiClient', () => {
   describe('getAuthToken', () => {
     it('should get token from token provider when ready', async () => {
       tokenProvider.setTokenGetter(async () => 'test-token');
-      
+
       server.use(
         http.get(`${API_BASE_URL}/api/test`, ({ request }) => {
           const authHeader = request.headers.get('Authorization');
@@ -91,7 +137,7 @@ describe('ApiClient', () => {
 
     it('should use currentToken as fallback', async () => {
       tokenProvider.setToken('fallback-token');
-      
+
       server.use(
         http.get(`${API_BASE_URL}/api/test`, ({ request }) => {
           const authHeader = request.headers.get('Authorization');
@@ -135,7 +181,7 @@ describe('ApiClient', () => {
     it('should make POST request with data successfully', async () => {
       const mockData = { id: 1, name: 'Created' };
       const requestData = { name: 'Test' };
-      
+
       server.use(
         http.post(`${API_BASE_URL}/api/test`, async ({ request }) => {
           const body = await request.json();
@@ -144,7 +190,10 @@ describe('ApiClient', () => {
         })
       );
 
-      const result = await apiClient.post<typeof mockData>('/api/test', requestData);
+      const result = await apiClient.post<typeof mockData>(
+        '/api/test',
+        requestData
+      );
       expect(result).toEqual(mockData);
     });
 
@@ -164,7 +213,7 @@ describe('ApiClient', () => {
     it('should make PUT request with data successfully', async () => {
       const mockData = { id: 1, name: 'Updated' };
       const requestData = { name: 'Updated' };
-      
+
       server.use(
         http.put(`${API_BASE_URL}/api/test/1`, async ({ request }) => {
           const body = await request.json();
@@ -173,7 +222,10 @@ describe('ApiClient', () => {
         })
       );
 
-      const result = await apiClient.put<typeof mockData>('/api/test/1', requestData);
+      const result = await apiClient.put<typeof mockData>(
+        '/api/test/1',
+        requestData
+      );
       expect(result).toEqual(mockData);
     });
   });
@@ -182,7 +234,7 @@ describe('ApiClient', () => {
     it('should make PATCH request with data successfully', async () => {
       const mockData = { id: 1, name: 'Patched' };
       const requestData = { name: 'Patched' };
-      
+
       server.use(
         http.patch(`${API_BASE_URL}/api/test/1`, async ({ request }) => {
           const body = await request.json();
@@ -191,7 +243,10 @@ describe('ApiClient', () => {
         })
       );
 
-      const result = await apiClient.patch<typeof mockData>('/api/test/1', requestData);
+      const result = await apiClient.patch<typeof mockData>(
+        '/api/test/1',
+        requestData
+      );
       expect(result).toEqual(mockData);
     });
   });
@@ -241,10 +296,7 @@ describe('ApiClient', () => {
     it('should handle 404 Not Found error', async () => {
       server.use(
         http.get(`${API_BASE_URL}/api/test`, () => {
-          return HttpResponse.json(
-            { message: 'Not found' },
-            { status: 404 }
-          );
+          return HttpResponse.json({ message: 'Not found' }, { status: 404 });
         })
       );
 
@@ -295,10 +347,7 @@ describe('ApiClient', () => {
     it('should skip error handling when skipErrorHandling is true', async () => {
       server.use(
         http.get(`${API_BASE_URL}/api/test`, () => {
-          return HttpResponse.json(
-            { message: 'Error' },
-            { status: 500 }
-          );
+          return HttpResponse.json({ message: 'Error' }, { status: 500 });
         })
       );
 
@@ -374,9 +423,13 @@ describe('ApiClient', () => {
         })
       );
 
-      await apiClient.post('/api/test', { data: 'test' }, {
-        headers: { 'Content-Type': 'text/plain' },
-      });
+      await apiClient.post(
+        '/api/test',
+        { data: 'test' },
+        {
+          headers: { 'Content-Type': 'text/plain' },
+        }
+      );
     });
   });
 });

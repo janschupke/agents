@@ -24,11 +24,13 @@ export default function SessionSidebar({
   loading = false,
 }: SessionSidebarProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
-  
+
   return (
     <div className="flex flex-col w-56 h-full bg-background-tertiary border-r border-border overflow-hidden">
       <div className="px-3 py-2.5 bg-background border-b border-border flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-text-secondary">{t('chat.sessions')}</h3>
+        <h3 className="text-sm font-semibold text-text-secondary">
+          {t('chat.sessions')}
+        </h3>
         <button
           onClick={onNewSession}
           disabled={loading}

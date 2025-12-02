@@ -55,12 +55,9 @@ describe('TranslationService', () => {
       };
 
       server.use(
-        http.post(
-          `${API_BASE_URL}/api/messages/1/translate-with-words`,
-          () => {
-            return HttpResponse.json(mockResponse);
-          }
-        )
+        http.post(`${API_BASE_URL}/api/messages/1/translate-with-words`, () => {
+          return HttpResponse.json(mockResponse);
+        })
       );
 
       const result = await TranslationService.translateMessageWithWords(1);
@@ -75,15 +72,12 @@ describe('TranslationService', () => {
 
     it('should throw error when translation with words fails', async () => {
       server.use(
-        http.post(
-          `${API_BASE_URL}/api/messages/1/translate-with-words`,
-          () => {
-            return HttpResponse.json(
-              { message: 'Translation failed' },
-              { status: 500 }
-            );
-          }
-        )
+        http.post(`${API_BASE_URL}/api/messages/1/translate-with-words`, () => {
+          return HttpResponse.json(
+            { message: 'Translation failed' },
+            { status: 500 }
+          );
+        })
       );
 
       await expect(
@@ -103,10 +97,13 @@ describe('TranslationService', () => {
       server.use(
         http.get(`${API_BASE_URL}/api/messages/translations`, ({ request }) => {
           const url = new URL(request.url);
-          const messageIds = url.searchParams.get('messageIds')?.split(',') || [];
+          const messageIds =
+            url.searchParams.get('messageIds')?.split(',') || [];
           const result: Record<number, string> = {};
           messageIds.forEach((id) => {
-            result[Number(id)] = mockTranslations[Number(id) as keyof typeof mockTranslations] || '';
+            result[Number(id)] =
+              mockTranslations[Number(id) as keyof typeof mockTranslations] ||
+              '';
           });
           return HttpResponse.json(result);
         })

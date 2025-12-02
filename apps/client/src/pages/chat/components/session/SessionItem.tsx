@@ -19,7 +19,7 @@ export default function SessionItem({
   onEdit,
 }: SessionItemProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
-  
+
   const formatSessionName = (session: Session): string => {
     if (session.session_name) {
       return session.session_name;

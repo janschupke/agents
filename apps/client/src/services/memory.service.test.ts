@@ -108,13 +108,16 @@ describe('MemoryService', () => {
       };
 
       server.use(
-        http.put(`${API_BASE_URL}/api/agents/1/memories/1`, async ({ request }) => {
-          const body = (await request.json()) as { keyPoint: string };
-          return HttpResponse.json({
-            ...updatedMemory,
-            keyPoint: body.keyPoint,
-          });
-        })
+        http.put(
+          `${API_BASE_URL}/api/agents/1/memories/1`,
+          async ({ request }) => {
+            const body = (await request.json()) as { keyPoint: string };
+            return HttpResponse.json({
+              ...updatedMemory,
+              keyPoint: body.keyPoint,
+            });
+          }
+        )
       );
 
       const result = await MemoryService.updateMemory(1, 1, 'Updated memory');

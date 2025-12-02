@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { TestQueryProvider } from '../../../test/utils/test-query-provider';
 import { useApiKey } from './use-api-key';
 
@@ -232,7 +232,7 @@ describe('useApiKey', () => {
     mockUseUpdateApiKey.mockReturnValue({
       mutateAsync: mockUpdateApiKey,
       isPending: false,
-      error,
+      error: error as unknown as null,
     });
 
     const { result } = renderHook(() => useApiKey(), { wrapper });

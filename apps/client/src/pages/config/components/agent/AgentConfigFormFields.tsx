@@ -8,7 +8,7 @@ interface DescriptionFieldProps {
 
 export function DescriptionField({ value, onChange }: DescriptionFieldProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
-  
+
   return (
     <div>
       <label
@@ -36,14 +36,15 @@ interface TemperatureFieldProps {
 
 export function TemperatureField({ value, onChange }: TemperatureFieldProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
-  
+
   return (
     <div>
       <label
         htmlFor="agent-temperature"
         className="block text-sm font-medium text-text-secondary mb-1.5"
       >
-        {t('config.temperature')}: <span className="font-mono">{value.toFixed(2)}</span>
+        {t('config.temperature')}:{' '}
+        <span className="font-mono">{value.toFixed(2)}</span>
       </label>
       <div className="relative">
         <input
@@ -76,7 +77,7 @@ interface SystemPromptFieldProps {
 
 export function SystemPromptField({ value, onChange }: SystemPromptFieldProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
-  
+
   return (
     <div>
       <label
@@ -110,7 +111,7 @@ export function BehaviorRulesField({
   onChange,
 }: BehaviorRulesFieldProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
-  
+
   return (
     <div>
       <label className="block text-sm font-medium text-text-secondary mb-1.5">
@@ -128,7 +129,9 @@ export function BehaviorRulesField({
                 onChange(newRules);
               }}
               className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus"
-              placeholder={t('config.rulePlaceholder', { index: (index + 1).toString() })}
+              placeholder={t('config.rulePlaceholder', {
+                index: (index + 1).toString(),
+              })}
             />
             <button
               type="button"

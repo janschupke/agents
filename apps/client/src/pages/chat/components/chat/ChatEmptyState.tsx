@@ -3,7 +3,7 @@ import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 export default function ChatEmptyState() {
   const { t } = useTranslation(I18nNamespace.CLIENT);
-  
+
   return (
     <PageContainer>
       <div className="flex h-full items-center justify-center">

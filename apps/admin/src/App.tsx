@@ -18,12 +18,12 @@ function App() {
   // Determine error message from query error
   const error =
     userError && typeof userError === 'object' && 'status' in userError
-      ? (userError.status === 403
-          ? t('app.adminRoleRequired')
-          : userError.status === 401
-            ? t('app.pleaseSignInToContinue')
-            : ('message' in userError && userError.message) ||
-              t('app.failedToLoadUserData'))
+      ? userError.status === 403
+        ? t('app.adminRoleRequired')
+        : userError.status === 401
+          ? t('app.pleaseSignInToContinue')
+          : ('message' in userError && userError.message) ||
+            t('app.failedToLoadUserData')
       : null;
 
   if (!isLoaded) {

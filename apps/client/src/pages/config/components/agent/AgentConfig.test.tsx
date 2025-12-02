@@ -121,7 +121,9 @@ describe('AgentConfig', () => {
 
     // Wait for the new agent form to appear (indicates new agent was created and selected)
     await waitFor(() => {
-      const newAgentInput = screen.getByPlaceholderText('config.enterAgentName');
+      const newAgentInput = screen.getByPlaceholderText(
+        'config.enterAgentName'
+      );
       expect(newAgentInput).toBeInTheDocument();
       expect(newAgentInput).toHaveFocus();
     });
@@ -240,7 +242,9 @@ describe('AgentConfig', () => {
     // Both new agents should be in the list, and they should appear before existing agents
     // The order should be: [newest new agent, older new agent, existing agent 1, existing agent 2]
     await waitFor(() => {
-      const nameInputs = screen.getAllByPlaceholderText('config.enterAgentName');
+      const nameInputs = screen.getAllByPlaceholderText(
+        'config.enterAgentName'
+      );
       expect(nameInputs.length).toBeGreaterThanOrEqual(1);
     });
   });

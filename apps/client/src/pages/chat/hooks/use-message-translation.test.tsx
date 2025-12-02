@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useMessageTranslation } from './use-message-translation';
-import { MessageRole } from '../../../types/chat.types';
+import { MessageRole, Message } from '../../../types/chat.types';
 import { TranslationService } from '../../../services/translation.service';
 import { WordTranslationService } from '../../../services/word-translation.service';
 
@@ -10,14 +10,14 @@ vi.mock('../../../services/translation.service');
 vi.mock('../../../services/word-translation.service');
 
 describe('useMessageTranslation', () => {
-  const mockUserMessage: any = {
+  const mockUserMessage: Message = {
     id: 1,
     role: MessageRole.USER,
     content: 'Hola',
     translation: undefined,
   };
 
-  const mockAssistantMessage: any = {
+  const mockAssistantMessage: Message = {
     id: 2,
     role: MessageRole.ASSISTANT,
     content: 'Hola, ¿cómo estás?',
@@ -126,14 +126,12 @@ describe('useMessageTranslation', () => {
       ],
     };
 
-    vi.mocked(
-      TranslationService.translateMessageWithWords
-    ).mockResolvedValue(mockResponse);
-    
+    vi.mocked(TranslationService.translateMessageWithWords).mockResolvedValue(
+      mockResponse
+    );
+
     // Mock getMessageTranslations to return a promise that resolves
-    vi.mocked(
-      WordTranslationService.getMessageTranslations
-    ).mockResolvedValue({
+    vi.mocked(WordTranslationService.getMessageTranslations).mockResolvedValue({
       translation: undefined,
       wordTranslations: [],
     });
@@ -147,9 +145,7 @@ describe('useMessageTranslation', () => {
 
     // Wait for initial effect to complete
     await waitFor(() => {
-      expect(
-        WordTranslationService.getMessageTranslations
-      ).toHaveBeenCalled();
+      expect(WordTranslationService.getMessageTranslations).toHaveBeenCalled();
     });
 
     await act(async () => {
@@ -162,9 +158,9 @@ describe('useMessageTranslation', () => {
       expect(result.current.showTranslation).toBe(true);
     });
 
-    expect(
-      TranslationService.translateMessageWithWords
-    ).toHaveBeenCalledWith(2);
+    expect(TranslationService.translateMessageWithWords).toHaveBeenCalledWith(
+      2
+    );
   });
 
   it('should toggle translation display if already translated', async () => {
@@ -229,9 +225,9 @@ describe('useMessageTranslation', () => {
       wordTranslations: undefined,
     };
 
-    vi.mocked(
-      WordTranslationService.getMessageTranslations
-    ).mockResolvedValue(mockResponse);
+    vi.mocked(WordTranslationService.getMessageTranslations).mockResolvedValue(
+      mockResponse
+    );
 
     renderHook(() =>
       useMessageTranslation({
@@ -270,15 +266,18 @@ describe('useMessageTranslation', () => {
       await result.current.handleTranslate();
     });
 
-    await waitFor(() => {
-      expect(result.current.isTranslating).toBe(false);
-    }, { timeout: 1000 });
+    await waitFor(
+      () => {
+        expect(result.current.isTranslating).toBe(false);
+      },
+      { timeout: 1000 }
+    );
 
     // Verify error was handled gracefully - translation state should not be updated on error
     // The translation should remain undefined (not set to the message's original translation)
     expect(result.current.translation).toBeUndefined();
     expect(result.current.showTranslation).toBe(false);
-    
+
     // The error should be logged in the catch block (line 114 of use-message-translation.ts)
     // Note: In test environment, console.error might be suppressed, so we just verify graceful handling
     // In a real scenario, the error would be logged to console

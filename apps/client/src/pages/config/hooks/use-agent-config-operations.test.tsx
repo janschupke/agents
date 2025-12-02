@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { TestQueryProvider } from '../../../test/utils/test-query-provider';
 import { useAgentConfigOperations } from './use-agent-config-operations';
 import { Agent } from '../../../types/chat.types';

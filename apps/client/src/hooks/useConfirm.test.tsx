@@ -1,10 +1,28 @@
 import { describe, it, expect, vi } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useConfirm } from './useConfirm';
+import type { ReactElement } from 'react';
+
+interface ConfirmModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  confirmVariant?: 'danger' | 'primary';
+}
 
 // Mock ConfirmModal component
 vi.mock('../components/ui/modal', () => ({
-  ConfirmModal: ({ isOpen, onConfirm, onClose, title, message }: any) => {
+  ConfirmModal: ({
+    isOpen,
+    onConfirm,
+    onClose,
+    title,
+    message,
+  }: ConfirmModalProps) => {
     if (!isOpen) return null;
     return (
       <div data-testid="confirm-modal">
@@ -42,7 +60,8 @@ describe('useConfirm', () => {
     // Resolve the promise by clicking confirm
     act(() => {
       // Simulate clicking confirm button
-      const modal = result.current.ConfirmDialog as any;
+      const modal = result.current
+        .ConfirmDialog as ReactElement<ConfirmModalProps> | null;
       if (modal && modal.props.onConfirm) {
         modal.props.onConfirm();
       }
@@ -65,7 +84,8 @@ describe('useConfirm', () => {
 
     // Resolve the promise by clicking cancel
     act(() => {
-      const modal = result.current.ConfirmDialog as any;
+      const modal = result.current
+        .ConfirmDialog as ReactElement<ConfirmModalProps> | null;
       if (modal && modal.props.onClose) {
         modal.props.onClose();
       }
@@ -85,7 +105,8 @@ describe('useConfirm', () => {
       });
     });
 
-    const modal = result.current.ConfirmDialog as any;
+    const modal = result.current
+      .ConfirmDialog as ReactElement<ConfirmModalProps> | null;
     expect(modal?.props.title).toBe('Confirm');
   });
 
@@ -100,7 +121,8 @@ describe('useConfirm', () => {
       });
     });
 
-    const modal = result.current.ConfirmDialog as any;
+    const modal = result.current
+      .ConfirmDialog as ReactElement<ConfirmModalProps> | null;
     expect(modal?.props.confirmText).toBe('Delete');
     expect(modal?.props.cancelText).toBe('Keep');
   });
@@ -115,7 +137,8 @@ describe('useConfirm', () => {
       });
     });
 
-    const modal = result.current.ConfirmDialog as any;
+    const modal = result.current
+      .ConfirmDialog as ReactElement<ConfirmModalProps> | null;
     expect(modal?.props.confirmVariant).toBe('danger');
   });
 });

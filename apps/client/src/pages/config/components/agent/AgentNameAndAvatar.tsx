@@ -29,7 +29,7 @@ export default function AgentNameAndAvatar({
   onNameBlur,
 }: AgentNameAndAvatarProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
-  
+
   return (
     <div className="flex items-start gap-4">
       <AvatarPicker value={avatarUrl} onChange={onAvatarChange} />

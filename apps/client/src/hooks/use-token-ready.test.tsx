@@ -8,7 +8,6 @@ const mockAuth = {
   isSignedIn: true,
   isLoaded: true,
 };
-const mockSetAuth = vi.fn();
 vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => mockAuth,
 }));

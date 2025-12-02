@@ -47,10 +47,7 @@ describe('use-chat', () => {
 
       vi.mocked(ChatService.getChatHistory).mockResolvedValue(mockChatHistory);
 
-      const { result } = renderHook(
-        () => useChatHistory(1, 1),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useChatHistory(1, 1), { wrapper });
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
@@ -73,10 +70,7 @@ describe('use-chat', () => {
 
       vi.mocked(ChatService.getChatHistory).mockResolvedValue(mockChatHistory);
 
-      const { result } = renderHook(
-        () => useChatHistory(1, null),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useChatHistory(1, null), { wrapper });
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
@@ -86,10 +80,9 @@ describe('use-chat', () => {
     });
 
     it('should not fetch when agentId is null', () => {
-      const { result } = renderHook(
-        () => useChatHistory(null, null),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useChatHistory(null, null), {
+        wrapper,
+      });
 
       expect(result.current.isFetching).toBe(false);
       expect(ChatService.getChatHistory).not.toHaveBeenCalled();
@@ -99,10 +92,7 @@ describe('use-chat', () => {
       mockAuth.isSignedIn = false;
       mockAuth.isLoaded = true;
 
-      const { result } = renderHook(
-        () => useChatHistory(1, 1),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useChatHistory(1, 1), { wrapper });
 
       expect(result.current.isFetching).toBe(false);
       expect(ChatService.getChatHistory).not.toHaveBeenCalled();

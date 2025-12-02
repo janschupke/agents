@@ -46,8 +46,11 @@ export const handlers = [
   }),
 
   // Update system behavior rules
-  http.put(`${API_BASE}/api/system-config/behavior-rules`, async ({ request }) => {
-    const body = await request.json();
-    return HttpResponse.json({ rules: (body as { rules: string[] }).rules });
-  }),
+  http.put(
+    `${API_BASE}/api/system-config/behavior-rules`,
+    async ({ request }) => {
+      const body = await request.json();
+      return HttpResponse.json({ rules: (body as { rules: string[] }).rules });
+    }
+  ),
 ];

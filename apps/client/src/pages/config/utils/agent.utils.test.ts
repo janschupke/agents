@@ -52,7 +52,12 @@ describe('parseBehaviorRules', () => {
 
     it('should convert array of mixed types to strings', () => {
       const input = ['Rule 1', 2, true, null];
-      expect(parseBehaviorRules(input)).toEqual(['Rule 1', '2', 'true', 'null']);
+      expect(parseBehaviorRules(input)).toEqual([
+        'Rule 1',
+        '2',
+        'true',
+        'null',
+      ]);
     });
 
     it('should handle empty array', () => {
