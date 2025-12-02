@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   IconChevronDown,
   Avatar,
@@ -10,14 +11,16 @@ import { useAgents } from '../../../../hooks/queries/use-agents';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useClickOutside } from '../../hooks/ui/use-click-outside';
 import { LocalStorageManager } from '../../../../utils/localStorage';
+import { ROUTES, isChatRoute } from '../../../../constants/routes.constants';
 
 export default function AgentSelector() {
   const { t } = useTranslation(I18nNamespace.CLIENT);
+  const navigate = useNavigate();
+  const location = useLocation();
   const { data: agents = [], isLoading: loadingAgents } = useAgents();
 
-  // Get agentId from URL or localStorage (for chat view)
-  const lastSelectedAgentId = LocalStorageManager.getSelectedAgentIdChat();
-  const selectedAgentId = lastSelectedAgentId; // For chat view, use last selected
+  // Get agentId from localStorage (for chat view)
+  const selectedAgentId = LocalStorageManager.getSelectedAgentIdChat();
 
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -30,9 +33,17 @@ export default function AgentSelector() {
 
   const handleAgentSelect = (agentId: number) => {
     LocalStorageManager.setSelectedAgentIdChat(agentId);
-    // If we're in chat, navigate to chat with the agent's first session or create new
-    // For now, just update localStorage - the chat will pick it up
     setIsOpen(false);
+    
+    // If we're on a chat route, navigate to /chat to force ChatRoute to re-read agentId
+    // This ensures the sidebar refreshes with sessions for the new agent
+    // Using replace: false ensures React Router treats it as a navigation even if already on /chat
+    if (isChatRoute(location.pathname)) {
+      // Navigate away and back to force re-render, or use a state-based approach
+      // The simplest: navigate to /chat which will cause ChatRoute to re-run useChatRoute
+      // and read the new agentId from localStorage
+      navigate(ROUTES.CHAT, { replace: true, state: { agentChanged: Date.now() } });
+    }
   };
 
   if (loadingAgents || agents.length === 0) {

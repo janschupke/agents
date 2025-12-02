@@ -6,8 +6,10 @@ import { useAgents } from '../../../hooks/queries/use-agents';
  * Hook to handle chat route logic
  * Determines agentId from sessionId and handles loading/error states
  * Falls back to last selected agent when no sessionId is provided
+ * @param sessionId - Session ID from URL params
+ * @param forceRefresh - Optional value that when changed forces a re-read of localStorage
  */
-export function useChatRoute(sessionId: string | undefined) {
+export function useChatRoute(sessionId: string | undefined, forceRefresh?: unknown) {
   const parsedSessionId =
     sessionId && !isNaN(parseInt(sessionId, 10))
       ? parseInt(sessionId, 10)
@@ -20,6 +22,9 @@ export function useChatRoute(sessionId: string | undefined) {
   } = useSessionWithAgent(parsedSessionId);
 
   // Get last selected agent as fallback when no sessionId
+  // forceRefresh is used to trigger re-read of localStorage when agent changes
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _ = forceRefresh; // Include to force re-run when agent changes
   const lastSelectedAgentId = LocalStorageManager.getSelectedAgentIdChat();
   const { data: agents = [], isLoading: loadingAgents } = useAgents();
 

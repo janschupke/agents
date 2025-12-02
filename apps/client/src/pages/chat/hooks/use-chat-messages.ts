@@ -38,13 +38,13 @@ export function useChatMessages({
   const isInitialLoadRef = useRef(true);
   const loadingSessionIdRef = useRef<number | null>(null);
 
-  // Clear messages immediately when sessionId changes
+  // Clear messages immediately when sessionId or agentId changes
   useEffect(() => {
     if (sessionId !== loadingSessionIdRef.current) {
       setMessages([]);
       loadingSessionIdRef.current = sessionId;
     }
-  }, [sessionId]);
+  }, [sessionId, agentId]);
 
   // Update messages from chat history
   useEffect(() => {

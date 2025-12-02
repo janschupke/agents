@@ -49,11 +49,12 @@ export function useChatSession({
   const pendingNewSessionIdRef = useRef<number | null>(null);
 
   // Update sessionId when initialSessionId changes (from URL)
+  // Only use initialSessionId if agentId is available (prevents using old session with new agent)
   useEffect(() => {
-    if (initialSessionId !== undefined) {
+    if (initialSessionId !== undefined && agentId !== null) {
       setCurrentSessionId(initialSessionId);
     }
-  }, [initialSessionId]);
+  }, [initialSessionId, agentId]);
 
   // Auto-select most recent session when sessions first load or when agent changes
   // Only if no initialSessionId is provided
@@ -100,9 +101,12 @@ export function useChatSession({
   }, [agentId, sessionsLoading, sessions, currentSessionId, initialSessionId]);
 
   // Reset initialization flag and pending session when agent changes
+  // Also clear currentSessionId since it belongs to the old agent
   useEffect(() => {
     sessionsInitializedRef.current = false;
     pendingNewSessionIdRef.current = null;
+    // Clear sessionId when agent changes - the old session doesn't belong to the new agent
+    setCurrentSessionId(null);
   }, [agentId]);
 
   // Prefetch chat history when session changes
