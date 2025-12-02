@@ -3,6 +3,23 @@ import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { server } from './mocks/server';
 import { tokenProvider } from '../services/token-provider';
+import { mockUseTranslation } from './mocks/i18n';
+
+// Mock i18n to return keys instead of translations
+vi.mock('@openai/i18n', () => ({
+  useTranslation: () => mockUseTranslation(),
+  I18nNamespace: {
+    COMMON: 'common',
+    CLIENT: 'client',
+    ADMIN: 'admin',
+    API: 'api',
+  },
+  initI18n: vi.fn(),
+  i18n: {
+    language: 'en',
+    changeLanguage: vi.fn(),
+  },
+}));
 
 // Extend Vitest's expect with jest-dom matchers
 expect.extend(matchers);

@@ -21,9 +21,9 @@ describe('ChatInput', () => {
     );
 
     expect(
-      screen.getByPlaceholderText('Type your message...')
+      screen.getByPlaceholderText('chat.placeholder')
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /send/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /chat\.send/i })).toBeInTheDocument();
   });
 
   it('should update input value when typing', async () => {
@@ -39,7 +39,7 @@ describe('ChatInput', () => {
       />
     );
 
-    const input = screen.getByPlaceholderText('Type your message...');
+    const input = screen.getByPlaceholderText('chat.placeholder');
     await user.type(input, 'Hello');
 
     expect(handleInputChange).toHaveBeenCalledTimes(5); // Once for each character
@@ -59,9 +59,9 @@ describe('ChatInput', () => {
       />
     );
 
-    const form = screen.getByRole('button', { name: /send/i }).closest('form');
+    const form = screen.getByRole('button', { name: /chat\.send/i }).closest('form');
     if (form) {
-      await user.click(screen.getByRole('button', { name: /send/i }));
+      await user.click(screen.getByRole('button', { name: /chat\.send/i }));
       expect(handleSubmit).toHaveBeenCalledTimes(1);
     }
   });
@@ -79,7 +79,7 @@ describe('ChatInput', () => {
       />
     );
 
-    const input = screen.getByPlaceholderText('Type your message...');
+    const input = screen.getByPlaceholderText('chat.placeholder');
     await user.type(input, '{Enter}');
 
     expect(handleSubmit).toHaveBeenCalledTimes(1);
@@ -97,7 +97,7 @@ describe('ChatInput', () => {
       />
     );
 
-    const sendButton = screen.getByRole('button', { name: /send/i });
+    const sendButton = screen.getByRole('button', { name: /chat\.send/i });
     expect(sendButton).toBeDisabled();
   });
 
@@ -113,7 +113,7 @@ describe('ChatInput', () => {
       />
     );
 
-    const sendButton = screen.getByRole('button', { name: /send/i });
+    const sendButton = screen.getByRole('button', { name: /chat\.send/i });
     expect(sendButton).toBeDisabled();
   });
 
@@ -129,7 +129,7 @@ describe('ChatInput', () => {
       />
     );
 
-    const sendButton = screen.getByRole('button', { name: /send/i });
+    const sendButton = screen.getByRole('button', { name: /chat\.send/i });
     expect(sendButton).not.toBeDisabled();
   });
 
@@ -146,8 +146,8 @@ describe('ChatInput', () => {
       />
     );
 
-    const input = screen.getByPlaceholderText('Type your message...');
-    const sendButton = screen.getByRole('button', { name: /send/i });
+    const input = screen.getByPlaceholderText('chat.placeholder');
+    const sendButton = screen.getByRole('button', { name: /chat\.send/i });
 
     expect(input).toBeDisabled();
     expect(sendButton).toBeDisabled();
@@ -166,7 +166,7 @@ describe('ChatInput', () => {
     );
 
     const input = screen.getByPlaceholderText(
-      'Type your message...'
+      'chat.placeholder'
     ) as HTMLInputElement;
     expect(input.value).toBe('Current message');
   });

@@ -819,3 +819,4 @@ const loadChatHistory = useCallback(
 - Consider using a cheaper model (like `gpt-4o-mini`) for translations to reduce costs
 
 
+

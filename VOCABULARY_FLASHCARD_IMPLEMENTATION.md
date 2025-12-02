@@ -1744,3 +1744,4 @@ Add to the existing CSS:
 - **Scalability**: For large vocabulary lists, consider implementing virtual scrolling in the management view
 
 
+
