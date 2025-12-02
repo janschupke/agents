@@ -61,7 +61,6 @@ export class SessionRepository {
         agent_id: number;
         session_name: string | null;
         created_at: Date;
-        updated_at: Date;
         last_message_at: Date | null;
       }>
     >(
@@ -71,7 +70,6 @@ export class SessionRepository {
         cs.agent_id,
         cs.session_name,
         cs.created_at,
-        cs.updated_at,
         (
           SELECT MAX(m.created_at)
           FROM messages m
@@ -95,7 +93,6 @@ export class SessionRepository {
       agentId: row.agent_id,
       sessionName: row.session_name,
       createdAt: row.created_at,
-      updatedAt: row.updated_at,
     }));
   }
 

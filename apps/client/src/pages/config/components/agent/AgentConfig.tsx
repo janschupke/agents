@@ -54,14 +54,19 @@ export default function AgentConfig() {
     // Note: handleSave already handles localAgents cleanup and currentAgentId update
   };
 
-  const currentAgent = agents.find((a) => a.id === currentAgentId) || null;
+  // Determine values based on loading state
+  const sidebarAgents = loadingAgents ? [] : agents;
+  const sidebarAgentId = loadingAgents ? null : currentAgentId;
+  const currentAgent = loadingAgents
+    ? null
+    : agents.find((a) => a.id === currentAgentId) || null;
 
   return (
     <PageContainer>
       <div className="flex h-full">
         <AgentSidebar
-          agents={agents}
-          currentAgentId={currentAgentId}
+          agents={sidebarAgents}
+          currentAgentId={sidebarAgentId}
           onAgentSelect={handleAgentSelect}
           onNewAgent={handleNewAgent}
           onAgentDelete={handleDelete}
