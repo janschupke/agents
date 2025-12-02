@@ -1,6 +1,5 @@
-import PageContainer from '../../../components/ui/PageContainer';
-import PageHeader from '../../../components/ui/PageHeader';
-import LoadingWrapper from '../../../components/ui/LoadingWrapper.js';
+import { PageContainer, PageHeader } from '../../../components/ui/layout';
+import { LoadingWrapper } from '../../../components/ui/feedback';
 import { useUserDisplay } from '../hooks/use-user-display.js';
 import ProfileHeader from './ProfileHeader';
 import UserDetails from './UserDetails';

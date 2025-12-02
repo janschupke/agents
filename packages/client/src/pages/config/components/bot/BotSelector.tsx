@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { IconChevronDown } from '../../../../components/ui/Icons';
 import { useBots } from '../../../contexts/BotContext';
 import { useSelectedBot } from '../../../contexts/AppContext';
-import DropdownTransition from '../../../../components/ui/DropdownTransition.js';
+import { DropdownTransition } from '../../../../components/ui/animation';
 
 export default function BotSelector() {
   const { bots, loadingBots } = useBots();

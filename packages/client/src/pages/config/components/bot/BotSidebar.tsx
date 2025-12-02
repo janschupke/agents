@@ -1,6 +1,6 @@
 import { Bot } from '../../../types/chat.types.js';
 import { IconPlus, IconTrash } from '../../../../components/ui/Icons';
-import { SkeletonList } from '../../../../components/ui/Skeleton';
+import { SkeletonList } from '../../../../components/ui/feedback';
 
 interface BotSidebarProps {
   bots: Bot[];

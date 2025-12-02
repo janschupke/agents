@@ -1,8 +1,5 @@
 import { IconPencil, IconTrash, IconClose, IconCheck } from '../../../../components/ui/Icons';
-import FormButton from '../../../../components/ui/FormButton.js';
-import FormContainer from '../../../../components/ui/FormContainer.js';
-import ValidatedInput from '../../../../components/ui/ValidatedInput.js';
-import { ButtonType, ButtonVariant } from '../../../../components/ui/form-types.js';
+import { FormButton, FormContainer, ValidatedInput, ButtonType, ButtonVariant } from '../../../../components/ui/form';
 import { useApiKey, ApiKeyFormValues } from '../hooks/use-api-key.js';
 
 /**

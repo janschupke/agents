@@ -1,7 +1,6 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import FadeIn from './FadeIn.js';
+import FadeIn from './FadeIn';
 
 interface PageTransitionProps {
   children: ReactNode;

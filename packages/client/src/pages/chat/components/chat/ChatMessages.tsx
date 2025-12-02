@@ -1,8 +1,8 @@
 import { Message, MessageRole } from '../../../types/chat.types.js';
 import MessageBubble from './MessageBubble';
-import { Skeleton } from '../../../../components/ui/Skeleton';
+import { Skeleton } from '../../../../components/ui/feedback';
 import { IconChat } from '../../../../components/ui/Icons';
-import FadeIn from '../../../../components/ui/FadeIn.js';
+import { FadeIn } from '../../../../components/ui/animation';
 import { useRef, useEffect } from 'react';
 
 interface ChatMessagesProps {

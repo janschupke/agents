@@ -1,5 +1,5 @@
-import AvatarPicker from '../../../../components/ui/AvatarPicker.js';
-import ValidatedInput from '../../../../components/ui/ValidatedInput.js';
+import { AvatarPicker } from '../../../../components/ui/file-upload';
+import { ValidatedInput } from '../../../../components/ui/form';
 
 interface BotNameAndAvatarProps {
   avatarUrl: string | null;

@@ -1,5 +1,5 @@
-import PageContainer from '../../../../components/ui/PageContainer';
-import { Skeleton, SkeletonList, SkeletonMessage } from '../../../../components/ui/Skeleton';
+import { PageContainer } from '../../../../components/ui/layout';
+import { Skeleton, SkeletonList, SkeletonMessage } from '../../../../components/ui/feedback';
 
 export default function ChatLoadingState() {
   return (

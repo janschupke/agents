@@ -2,7 +2,7 @@ import { Message, MessageRole } from '../../../types/chat.types.js';
 import { IconSearch, IconTranslate } from '../../../../components/ui/Icons';
 import TranslatableMarkdownContent from '../markdown/TranslatableMarkdownContent';
 import MarkdownContent from '../markdown/MarkdownContent';
-import FadeTransition from '../../../../components/ui/FadeTransition.js';
+import { FadeTransition } from '../../../../components/ui/animation';
 import { useMessageTranslation } from '../../hooks/useMessageTranslation';
 
 interface MessageBubbleProps {

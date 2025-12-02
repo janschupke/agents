@@ -9,13 +9,13 @@ import { useChatMessages } from '../../hooks/useChatMessages';
 import { useChatScroll } from '../../hooks/useChatScroll';
 import SessionSidebar from '../session/SessionSidebar.js';
 import SessionNameModal from '../session/SessionNameModal.js';
-import PageContainer from '../../../../components/ui/PageContainer.js';
-import JsonModal from '../../../../components/ui/JsonModal.js';
+import { PageContainer } from '../../../../components/ui/layout';
+import { JsonModal } from '../../../../components/ui/modal';
 import ChatHeader from './ChatHeader';
 import ChatContent from './ChatContent';
 import ChatLoadingState from './ChatLoadingState';
 import ChatEmptyState from './ChatEmptyState';
-import LoadingWrapper from '../../../../components/ui/LoadingWrapper.js';
+import { LoadingWrapper } from '../../../../components/ui/feedback';
 
 function ChatBotContent({ botId: propBotId }: ChatBotProps) {
   const { ConfirmDialog } = useConfirm();

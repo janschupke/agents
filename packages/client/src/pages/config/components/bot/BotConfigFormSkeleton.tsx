@@ -1,4 +1,4 @@
-import { Skeleton } from '../../../../components/ui/Skeleton';
+import { Skeleton } from '../../../../components/ui/feedback';
 
 /**
  * Loading skeleton for bot configuration form

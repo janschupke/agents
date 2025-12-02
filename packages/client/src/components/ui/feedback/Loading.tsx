@@ -1,4 +1,5 @@
-import { IconLoader } from './Icons.js';
+import React from 'react';
+import { IconLoader } from '../Icons.js';
 
 interface LoadingProps {
   variant?: 'full-page' | 'inline' | 'button';

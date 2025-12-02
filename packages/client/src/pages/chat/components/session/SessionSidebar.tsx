@@ -1,6 +1,6 @@
 import { Session } from '../../../types/chat.types.js';
 import { IconPlus } from '../../../../components/ui/Icons';
-import { SkeletonList } from '../../../../components/ui/Skeleton';
+import { SkeletonList } from '../../../../components/ui/feedback';
 import SessionItem from './SessionItem';
 
 interface SessionSidebarProps {

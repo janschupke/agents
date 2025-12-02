@@ -7,6 +7,9 @@ interface ValidatedInputProps extends React.InputHTMLAttributes<HTMLInputElement
   showError?: boolean;
 }
 
+/**
+ * Input component with validation error display
+ */
 export default function ValidatedInput({
   error,
   touched = false,

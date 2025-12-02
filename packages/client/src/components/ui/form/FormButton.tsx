@@ -1,5 +1,6 @@
 import { ButtonType, ButtonVariant } from './form-types.js';
-import { IconLoader } from './Icons.js';
+import { IconLoader } from '../Icons.js';
+import { getButtonVariantStyles } from './hooks/use-button-variant';
 
 interface FormButtonProps {
   type?: ButtonType;
@@ -23,13 +24,7 @@ export default function FormButton({
   className = '',
 }: FormButtonProps) {
   const isDisabled = disabled || loading;
-
-  const variantStyles = {
-    [ButtonVariant.PRIMARY]: 'bg-primary text-text-inverse hover:bg-primary-hover',
-    [ButtonVariant.SECONDARY]: 'bg-background text-text-primary border border-border hover:bg-background-tertiary',
-    [ButtonVariant.DANGER]: 'bg-red-600 text-white hover:bg-red-700',
-  };
-
+  const variantStyles = getButtonVariantStyles(variant);
   const disabledStyles = isDisabled
     ? 'opacity-50 cursor-not-allowed'
     : 'cursor-pointer transition-colors';
@@ -40,7 +35,7 @@ export default function FormButton({
       onClick={onClick}
       disabled={isDisabled}
       title={tooltip || (loading ? 'Loading...' : undefined)}
-      className={`h-8 px-4 rounded-md text-sm font-medium flex items-center justify-center gap-2 ${variantStyles[variant]} ${disabledStyles} ${className}`}
+      className={`h-8 px-4 rounded-md text-sm font-medium flex items-center justify-center gap-2 ${variantStyles} ${disabledStyles} ${className}`}
     >
       {loading && <IconLoader className="w-4 h-4 animate-spin" />}
       {children}

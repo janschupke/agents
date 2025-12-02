@@ -1,4 +1,4 @@
-import PageContainer from '../../../../components/ui/PageContainer';
+import { PageContainer } from '../../../../components/ui/layout';
 
 export default function ChatEmptyState() {
   return (

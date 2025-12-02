@@ -1,12 +1,10 @@
 import { Bot } from '../../../../types/chat.types.js';
-import PageHeader from '../../../../components/ui/PageHeader.js';
+import { PageHeader } from '../../../../components/ui/layout';
 import { useBot } from '../../../../hooks/queries/use-bots.js';
 import { useBotMemories as useBotMemoriesQuery } from '../../../../hooks/queries/use-bots.js';
 import { useBotForm } from '../../hooks/use-bot-form.js';
 import { useBotMemories } from '../../hooks/use-bot-memories.js';
-import FormButton from '../../../../components/ui/FormButton.js';
-import FormContainer from '../../../../components/ui/FormContainer.js';
-import { ButtonType, ButtonVariant } from '../../../../components/ui/form-types.js';
+import { FormButton, FormContainer, ButtonType, ButtonVariant } from '../../../../components/ui/form';
 import {
   DescriptionField,
   TemperatureField,

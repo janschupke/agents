@@ -3,9 +3,7 @@ import { IconClose } from '../../../../components/ui/Icons';
 import { NUMERIC_CONSTANTS } from '../../../constants/numeric.constants.js';
 import { useUpdateSession } from '../../../../hooks/mutations/use-bot-mutations.js';
 import { useFormValidation } from '../../../../hooks/use-form-validation.js';
-import FormButton from '../../../../components/ui/FormButton.js';
-import FormContainer from '../../../../components/ui/FormContainer.js';
-import { ButtonType, ButtonVariant } from '../../../../components/ui/form-types.js';
+import { FormButton, FormContainer, ButtonType, ButtonVariant } from '../../../../components/ui/form';
 
 interface SessionNameModalProps {
   isOpen: boolean;
