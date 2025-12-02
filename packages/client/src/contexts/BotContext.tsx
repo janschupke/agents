@@ -1,8 +1,8 @@
 import { createContext, useContext, ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useBots as useBotsQuery } from '../hooks/queries/use-bots.js';
-import { queryKeys } from '../hooks/queries/query-keys.js';
-import { Bot, Session } from '../types/chat.types.js';
+import { useBots as useBotsQuery } from '../hooks/queries/use-bots';
+import { queryKeys } from '../hooks/queries/query-keys';
+import { Bot, Session } from '../types/chat.types';
 
 interface BotContextValue {
   // Bots data

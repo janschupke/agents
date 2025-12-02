@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { apiManager } from './api-manager.js';
-import axiosInstance from './axios-instance.js';
+import { apiManager } from './api-manager';
+import axiosInstance from './axios-instance';
 
 // Mock axios
-vi.mock('./axios-instance.js', () => {
+vi.mock('./axios-instance', () => {
   const mockAxiosInstance = {
     get: vi.fn(),
     post: vi.fn(),

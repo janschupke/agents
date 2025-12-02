@@ -1,6 +1,6 @@
 import { IconPencil, IconTrash, IconClose, IconCheck } from '../../../../components/ui/Icons';
 import { FormButton, FormContainer, ValidatedInput, ButtonType, ButtonVariant } from '../../../../components/ui/form';
-import { useApiKey } from '../hooks/use-api-key.js';
+import { useApiKey } from '../hooks/use-api-key';
 
 /**
  * API Key management section component

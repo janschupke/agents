@@ -1,6 +1,6 @@
-import { apiManager } from './api-manager.js';
-import { API_ENDPOINTS } from '../constants/api.constants.js';
-import { AgentMemory } from '../types/chat.types.js';
+import { apiManager } from './api-manager';
+import { API_ENDPOINTS } from '../constants/api.constants';
+import { AgentMemory } from '../types/chat.types';
 
 export class MemoryService {
   /**

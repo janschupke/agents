@@ -1,4 +1,4 @@
-import { User } from '../../../../types/chat.types.js';
+import { User } from '../../../../types/chat.types';
 
 interface UserDetailsProps {
   user: User;

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { tokenProvider } from './token-provider.js';
+import { tokenProvider } from './token-provider';
 
 describe('tokenProvider', () => {
   beforeEach(() => {

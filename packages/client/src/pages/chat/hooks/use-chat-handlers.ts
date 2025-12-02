@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useConfirm } from '../../../hooks/useConfirm';
-import { queryKeys } from '../../../hooks/queries/query-keys.js';
-import { Session } from '../../../types/chat.types.js';
+import { queryKeys } from '../../../hooks/queries/query-keys';
+import { Session } from '../../../types/chat.types';
 
 interface UseChatHandlersOptions {
   botId: number | null;

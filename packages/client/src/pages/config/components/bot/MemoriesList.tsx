@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { AgentMemory } from '../../../../types/chat.types.js';
+import { AgentMemory } from '../../../../types/chat.types';
 import { IconClose, IconEdit } from '../../../../components/ui/Icons';
 import { SkeletonList } from '../../../../components/ui/feedback';
-import { formatRelativeDate } from '../../../../utils/date.utils.js';
+import { formatRelativeDate } from '../../../../utils/date.utils';
 
 interface MemoriesListProps {
   memories: AgentMemory[];

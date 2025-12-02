@@ -1,5 +1,5 @@
 import { AxiosRequestConfig } from 'axios';
-import axiosInstance, { ApiError } from './axios-instance.js';
+import axiosInstance, { ApiError } from './axios-instance';
 
 export interface ApiRequestOptions extends Omit<AxiosRequestConfig, 'url' | 'method'> {
   skipErrorHandling?: boolean;

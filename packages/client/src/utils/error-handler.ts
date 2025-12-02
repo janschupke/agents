@@ -1,4 +1,4 @@
-import { ApiError } from '../services/axios-instance.js';
+import { ApiError } from '../services/axios-instance';
 
 export type ErrorType = 'network' | 'validation' | 'server' | 'authentication' | 'unknown';
 

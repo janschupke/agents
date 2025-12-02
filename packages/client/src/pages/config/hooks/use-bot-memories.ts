@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useUpdateMemory, useDeleteMemory } from '../../../hooks/mutations/use-bot-mutations.js';
-import { queryKeys } from '../../../hooks/queries/query-keys.js';
+import { useUpdateMemory, useDeleteMemory } from '../../../hooks/mutations/use-bot-mutations';
+import { queryKeys } from '../../../hooks/queries/query-keys';
 import { useConfirm } from '../../../hooks/useConfirm';
 
 interface UseBotMemoriesOptions {

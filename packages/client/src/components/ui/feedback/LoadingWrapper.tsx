@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import Loading from './Loading.js';
+import Loading from './Loading';
 
 interface LoadingWrapperProps {
   isLoading: boolean;

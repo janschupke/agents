@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconLoader } from '../Icons.js';
+import { IconLoader } from '../Icons';
 
 interface LoadingProps {
   variant?: 'full-page' | 'inline' | 'button';

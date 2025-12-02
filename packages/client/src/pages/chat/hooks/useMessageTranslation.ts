@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Message, MessageRole } from '../../../types/chat.types.js';
-import { TranslationService } from '../../../services/translation.service.js';
-import { WordTranslationService } from '../../../services/word-translation.service.js';
+import { Message, MessageRole } from '../../../types/chat.types';
+import { TranslationService } from '../../../services/translation.service';
+import { WordTranslationService } from '../../../services/word-translation.service';
 
 interface UseMessageTranslationOptions {
   message: Message;
@@ -12,7 +12,7 @@ interface UseMessageTranslationReturn {
   isTranslating: boolean;
   showTranslation: boolean;
   translation: string | undefined;
-  wordTranslations: import('../types/chat.types.js').WordTranslation[] | undefined;
+  wordTranslations: import('../types/chat.types').WordTranslation[] | undefined;
   handleTranslate: (e?: React.MouseEvent) => Promise<void>;
   setShowTranslation: (show: boolean) => void;
 }

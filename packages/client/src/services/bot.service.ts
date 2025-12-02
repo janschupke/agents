@@ -1,6 +1,6 @@
-import { apiManager } from './api-manager.js';
-import { API_ENDPOINTS } from '../constants/api.constants.js';
-import { Bot, CreateBotRequest, UpdateBotRequest } from '../types/chat.types.js';
+import { apiManager } from './api-manager';
+import { API_ENDPOINTS } from '../constants/api.constants';
+import { Bot, CreateBotRequest, UpdateBotRequest } from '../types/chat.types';
 
 export class BotService {
   /**

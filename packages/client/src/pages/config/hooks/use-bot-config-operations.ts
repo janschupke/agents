@@ -1,9 +1,9 @@
-import { Bot } from '../../../types/chat.types.js';
-import { useCreateBot, useUpdateBot, useDeleteBot } from '../../../hooks/mutations/use-bot-mutations.js';
+import { Bot } from '../../../types/chat.types';
+import { useCreateBot, useUpdateBot, useDeleteBot } from '../../../hooks/mutations/use-bot-mutations';
 import { useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '../../../hooks/queries/query-keys.js';
+import { queryKeys } from '../../../hooks/queries/query-keys';
 import { useConfirm } from '../../../hooks/useConfirm';
-import { BotFormValues } from './use-bot-form.js';
+import { BotFormValues } from './use-bot-form';
 
 // Temporary bot ID for new bots (negative to indicate not saved)
 let tempBotIdCounter = -1;

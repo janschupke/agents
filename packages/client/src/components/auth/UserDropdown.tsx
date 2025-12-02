@@ -3,7 +3,7 @@ import { useUser, SignOutButton } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { IconUser, IconLogout, IconChevronDown } from '../ui/Icons';
 import { useUserInfo } from '../../contexts/UserContext';
-import DropdownTransition from '../ui/DropdownTransition.js';
+import DropdownTransition from '../ui/DropdownTransition';
 
 export default function UserDropdown() {
   const { userInfo } = useUserInfo();

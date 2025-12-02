@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { NUMERIC_CONSTANTS } from '../../../../constants/numeric.constants.js';
+import { NUMERIC_CONSTANTS } from '../../../../constants/numeric.constants';
 import { ChatInputRef } from '../components/chat/ChatInput';
 
 interface UseChatInputOptions {

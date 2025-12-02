@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { BotService } from '../../services/bot.service.js';
-import { ChatService } from '../../services/chat.service.js';
-import { MemoryService } from '../../services/memory.service.js';
-import { CreateBotRequest, UpdateBotRequest } from '../../types/chat.types.js';
-import { queryKeys } from '../queries/query-keys.js';
-import { useToast } from '../../contexts/ToastContext.js';
+import { BotService } from '../../services/bot.service';
+import { ChatService } from '../../services/chat.service';
+import { MemoryService } from '../../services/memory.service';
+import { CreateBotRequest, UpdateBotRequest } from '../../types/chat.types';
+import { queryKeys } from '../queries/query-keys';
+import { useToast } from '../../contexts/ToastContext';
 
 export function useCreateBot() {
   const queryClient = useQueryClient();

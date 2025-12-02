@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Bot } from '../../../../types/chat.types.js';
-import BotSidebar from './BotSidebar.js';
-import BotConfigForm from './BotConfigForm.js';
+import { Bot } from '../../../../types/chat.types';
+import BotSidebar from './BotSidebar';
+import BotConfigForm from './BotConfigForm';
 import { PageContainer } from '../../../../components/ui/layout';
-import { useBots } from '../../../../hooks/queries/use-bots.js';
-import { useBotSelection } from '../../hooks/use-bot-selection.js';
-import { useBotConfigOperations } from '../../hooks/use-bot-config-operations.js';
+import { useBots } from '../../../../hooks/queries/use-bots';
+import { useBotSelection } from '../../hooks/use-bot-selection';
+import { useBotConfigOperations } from '../../hooks/use-bot-config-operations';
 import { LoadingWrapper } from '../../../../components/ui/feedback';
 
 export default function BotConfig() {

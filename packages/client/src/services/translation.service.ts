@@ -1,6 +1,6 @@
-import { apiManager } from './api-manager.js';
-import { WordTranslation } from '../types/chat.types.js';
-import { API_ENDPOINTS } from '../constants/api.constants.js';
+import { apiManager } from './api-manager';
+import { WordTranslation } from '../types/chat.types';
+import { API_ENDPOINTS } from '../constants/api.constants';
 
 export class TranslationService {
   /**

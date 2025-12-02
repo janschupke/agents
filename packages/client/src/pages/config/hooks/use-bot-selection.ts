@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bot } from '../../../types/chat.types.js';
+import { Bot } from '../../../types/chat.types';
 import { LocalStorageManager } from '../../../utils/localStorage';
 
 interface UseBotSelectionOptions {

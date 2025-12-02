@@ -1,5 +1,5 @@
-import { apiManager } from './api-manager.js';
-import { API_ENDPOINTS } from '../constants/api.constants.js';
+import { apiManager } from './api-manager';
+import { API_ENDPOINTS } from '../constants/api.constants';
 
 export class ApiCredentialsService {
   /**

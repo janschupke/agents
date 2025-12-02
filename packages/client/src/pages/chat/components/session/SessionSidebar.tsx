@@ -1,4 +1,4 @@
-import { Session } from '../../../types/chat.types.js';
+import { Session } from '../../../types/chat.types';
 import { IconPlus } from '../../../../components/ui/Icons';
 import { SkeletonList } from '../../../../components/ui/feedback';
 import SessionItem from './SessionItem';

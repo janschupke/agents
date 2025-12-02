@@ -1,4 +1,4 @@
-import { Message } from '../../../../types/chat.types.js';
+import { Message } from '../../../../types/chat.types';
 import ChatMessages from './ChatMessages';
 import ChatInput, { ChatInputRef } from './ChatInput';
 import ChatPlaceholder from './ChatPlaceholder';

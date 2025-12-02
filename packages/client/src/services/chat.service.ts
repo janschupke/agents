@@ -1,11 +1,11 @@
-import { apiManager } from './api-manager.js';
-import { API_ENDPOINTS } from '../constants/api.constants.js';
+import { apiManager } from './api-manager';
+import { API_ENDPOINTS } from '../constants/api.constants';
 import {
   ChatHistoryResponse,
   SendMessageRequest,
   SendMessageResponse,
   Session,
-} from '../types/chat.types.js';
+} from '../types/chat.types';
 
 export class ChatService {
   /**

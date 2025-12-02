@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChatService } from '../../services/chat.service.js';
-import { queryKeys } from '../queries/query-keys.js';
-import { useToast } from '../../contexts/ToastContext.js';
+import { ChatService } from '../../services/chat.service';
+import { queryKeys } from '../queries/query-keys';
+import { useToast } from '../../contexts/ToastContext';
 
 export function useSendMessage() {
   const queryClient = useQueryClient();

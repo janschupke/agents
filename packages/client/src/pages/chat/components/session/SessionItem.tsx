@@ -1,4 +1,4 @@
-import { Session } from '../../../types/chat.types.js';
+import { Session } from '../../../types/chat.types';
 import { IconTrash, IconPencil } from '../../../../components/ui/Icons';
 
 interface SessionItemProps {

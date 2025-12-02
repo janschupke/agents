@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { ValidationSchema, validateField, validateAll, ValidationResult } from '../utils/validation.js';
+import { ValidationSchema, validateField, validateAll, ValidationResult } from '../utils/validation';
 
 export interface UseFormValidationReturn<T extends Record<string, unknown>> {
   values: T;

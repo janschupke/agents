@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { ChatService } from '../../services/chat.service.js';
-import { ChatHistoryResponse, Session } from '../../types/chat.types.js';
-import { queryKeys } from './query-keys.js';
+import { ChatService } from '../../services/chat.service';
+import { ChatHistoryResponse, Session } from '../../types/chat.types';
+import { queryKeys } from './query-keys';
 
 export function useChatHistory(botId: number | null, sessionId?: number | null) {
   return useQuery<ChatHistoryResponse>({

@@ -1,6 +1,6 @@
 import { useUser } from '@clerk/clerk-react';
-import { useUser as useUserQuery } from '../../../hooks/queries/use-user.js';
-import { User } from '../../../types/chat.types.js';
+import { useUser as useUserQuery } from '../../../hooks/queries/use-user';
+import { User } from '../../../types/chat.types';
 
 interface UseUserDisplayReturn {
   displayUser: User;

@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ApiCredentialsService } from './api-credentials.service.js';
-import { apiManager } from './api-manager.js';
+import { ApiCredentialsService } from './api-credentials.service';
+import { apiManager } from './api-manager';
 
 // Mock ApiManager
-vi.mock('./api-manager.js', () => ({
+vi.mock('./api-manager', () => ({
   apiManager: {
     get: vi.fn(),
     post: vi.fn(),

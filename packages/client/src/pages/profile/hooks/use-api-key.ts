@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useUpdateApiKey, useDeleteApiKey } from '../../../hooks/mutations/use-user-mutations.js';
-import { queryKeys } from '../../../hooks/queries/query-keys.js';
+import { useUpdateApiKey, useDeleteApiKey } from '../../../hooks/mutations/use-user-mutations';
+import { queryKeys } from '../../../hooks/queries/query-keys';
 import { useConfirm } from '../../../hooks/useConfirm';
-import { useFormValidation } from '../../../hooks/use-form-validation.js';
-import { validationRules } from '../../../utils/validation.js';
+import { useFormValidation } from '../../../hooks/use-form-validation';
+import { validationRules } from '../../../utils/validation';
 
 export interface ApiKeyFormValues {
   apiKey: string;
@@ -42,7 +42,7 @@ export function useApiKey(): UseApiKeyReturn {
   useEffect(() => {
     const checkApiKey = async () => {
       try {
-        const { ApiCredentialsService } = await import('../../../services/api-credentials.service.js');
+        const { ApiCredentialsService } = await import('../../../services/api-credentials.service');
         const hasKey = await ApiCredentialsService.hasOpenAIKey();
         setHasApiKey(hasKey);
         if (hasKey) {

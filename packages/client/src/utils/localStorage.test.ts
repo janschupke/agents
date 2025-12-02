@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { LocalStorageManager } from './localStorage.js';
+import { LocalStorageManager } from './localStorage';
 
 // Mock localStorage
 const localStorageMock = (() => {

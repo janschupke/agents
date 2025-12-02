@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ChatService } from './chat.service.js';
-import { ChatHistoryResponse, SendMessageResponse, MessageRole } from '../types/chat.types.js';
-import { apiManager } from './api-manager.js';
+import { ChatService } from './chat.service';
+import { ChatHistoryResponse, SendMessageResponse, MessageRole } from '../types/chat.types';
+import { apiManager } from './api-manager';
 
 // Mock ApiManager
-vi.mock('./api-manager.js', () => ({
+vi.mock('./api-manager', () => ({
   apiManager: {
     get: vi.fn(),
     post: vi.fn(),

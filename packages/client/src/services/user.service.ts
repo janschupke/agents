@@ -1,6 +1,6 @@
-import { apiManager } from './api-manager.js';
-import { API_ENDPOINTS } from '../constants/api.constants.js';
-import { User } from '../types/chat.types.js';
+import { apiManager } from './api-manager';
+import { API_ENDPOINTS } from '../constants/api.constants';
+import { User } from '../types/chat.types';
 
 export class UserService {
   /**

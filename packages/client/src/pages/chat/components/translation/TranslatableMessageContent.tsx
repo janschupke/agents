@@ -1,4 +1,4 @@
-import { WordTranslation, MessageRole } from '../../../types/chat.types.js';
+import { WordTranslation, MessageRole } from '../../../types/chat.types';
 import WordTooltip from './WordTooltip';
 import MarkdownContent from '../markdown/MarkdownContent';
 

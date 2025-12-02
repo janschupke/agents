@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Message, MessageRole } from '../../../types/chat.types.js';
-import { useChatHistory } from '../../../hooks/queries/use-chat.ts';
-import { useSendMessage } from '../../../hooks/mutations/use-chat-mutations.js';
+import { Message, MessageRole } from '../../../types/chat.types';
+import { useChatHistory } from '../../../hooks/queries/use-chat';
+import { useSendMessage } from '../../../hooks/mutations/use-chat-mutations';
 import { useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '../../../hooks/queries/query-keys.js';
+import { queryKeys } from '../../../hooks/queries/query-keys';
 
 interface UseChatMessagesOptions {
   botId: number | null;

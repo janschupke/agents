@@ -1,4 +1,4 @@
-import { Bot } from '../../../types/chat.types.js';
+import { Bot } from '../../../types/chat.types';
 import { IconPlus, IconTrash } from '../../../../components/ui/Icons';
 import { SkeletonList } from '../../../../components/ui/feedback';
 

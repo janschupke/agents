@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ApiCredentialsService } from '../../services/api-credentials.service.js';
-import { queryKeys } from '../queries/query-keys.js';
-import { useToast } from '../../contexts/ToastContext.js';
+import { ApiCredentialsService } from '../../services/api-credentials.service';
+import { queryKeys } from '../queries/query-keys';
+import { useToast } from '../../contexts/ToastContext';
 
 export function useUpdateApiKey() {
   const queryClient = useQueryClient();

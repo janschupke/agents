@@ -1,5 +1,5 @@
-import { ButtonType, ButtonVariant } from './form-types.js';
-import { IconLoader } from '../Icons.js';
+import { ButtonType, ButtonVariant } from './form-types';
+import { IconLoader } from '../Icons';
 import { getButtonVariantStyles } from './hooks/use-button-variant';
 
 interface FormButtonProps {

@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { BotService } from '../../services/bot.service.js';
-import { ChatService } from '../../services/chat.service.js';
-import { MemoryService } from '../../services/memory.service.js';
-import { Bot, Session, AgentMemory } from '../../types/chat.types.js';
-import { queryKeys } from './query-keys.js';
+import { BotService } from '../../services/bot.service';
+import { ChatService } from '../../services/chat.service';
+import { MemoryService } from '../../services/memory.service';
+import { Bot, Session, AgentMemory } from '../../types/chat.types';
+import { queryKeys } from './query-keys';
 
 export function useBots() {
   return useQuery<Bot[]>({

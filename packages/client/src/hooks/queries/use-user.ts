@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { UserService } from '../../services/user.service.js';
-import { User } from '../../types/chat.types.js';
-import { queryKeys } from './query-keys.js';
+import { UserService } from '../../services/user.service';
+import { User } from '../../types/chat.types';
+import { queryKeys } from './query-keys';
 
 export function useUser() {
   return useQuery<User>({

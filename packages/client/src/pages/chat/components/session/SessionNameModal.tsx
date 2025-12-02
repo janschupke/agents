@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { IconClose } from '../../../../components/ui/Icons';
-import { NUMERIC_CONSTANTS } from '../../../constants/numeric.constants.js';
-import { useUpdateSession } from '../../../../hooks/mutations/use-bot-mutations.js';
-import { useFormValidation } from '../../../../hooks/use-form-validation.js';
+import { NUMERIC_CONSTANTS } from '../../../constants/numeric.constants';
+import { useUpdateSession } from '../../../../hooks/mutations/use-bot-mutations';
+import { useFormValidation } from '../../../../hooks/use-form-validation';
 import { FormButton, FormContainer, ButtonType, ButtonVariant } from '../../../../components/ui/form';
 
 interface SessionNameModalProps {

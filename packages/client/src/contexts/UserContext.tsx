@@ -1,9 +1,9 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { useUser as useUserQuery } from '../hooks/queries/use-user.js';
+import { useUser as useUserQuery } from '../hooks/queries/use-user';
 import { useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '../hooks/queries/query-keys.js';
-import { ApiCredentialsService } from '../services/api-credentials.service.js';
-import { User } from '../types/chat.types.js';
+import { queryKeys } from '../hooks/queries/query-keys';
+import { ApiCredentialsService } from '../services/api-credentials.service';
+import { User } from '../types/chat.types';
 
 interface UserContextValue {
   // User data

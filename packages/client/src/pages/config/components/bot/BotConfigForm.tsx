@@ -1,9 +1,9 @@
-import { Bot } from '../../../../types/chat.types.js';
+import { Bot } from '../../../../types/chat.types';
 import { PageHeader } from '../../../../components/ui/layout';
-import { useBot } from '../../../../hooks/queries/use-bots.js';
-import { useBotMemories as useBotMemoriesQuery } from '../../../../hooks/queries/use-bots.js';
-import { useBotForm } from '../../hooks/use-bot-form.js';
-import { useBotMemories } from '../../hooks/use-bot-memories.js';
+import { useBot } from '../../../../hooks/queries/use-bots';
+import { useBotMemories as useBotMemoriesQuery } from '../../../../hooks/queries/use-bots';
+import { useBotForm } from '../../hooks/use-bot-form';
+import { useBotMemories } from '../../hooks/use-bot-memories';
 import { FormButton, FormContainer, ButtonType, ButtonVariant } from '../../../../components/ui/form';
 import {
   DescriptionField,

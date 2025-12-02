@@ -1,8 +1,8 @@
 import { useEffect, useMemo } from 'react';
-import { Bot } from '../../../types/chat.types.js';
-import { useFormValidation } from '../../../hooks/use-form-validation.js';
-import { validationRules } from '../../../utils/validation.js';
-import { parseBehaviorRules } from '../utils/bot.utils.js';
+import { Bot } from '../../../types/chat.types';
+import { useFormValidation } from '../../../hooks/use-form-validation';
+import { validationRules } from '../../../utils/validation';
+import { parseBehaviorRules } from '../utils/bot.utils';
 
 export interface BotFormValues {
   name: string;

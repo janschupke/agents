@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ChatService } from '../../../services/chat.service.js';
-import { Message, MessageRole, Session } from '../../../types/chat.types.js';
-import { useChatContext } from '../../../contexts/ChatContext.js';
-import { NUMERIC_CONSTANTS } from '../../../constants/numeric.constants.js';
-import { WordTranslationService } from '../../../services/word-translation.service.js';
+import { ChatService } from '../../../services/chat.service';
+import { Message, MessageRole, Session } from '../../../types/chat.types';
+import { useChatContext } from '../../../contexts/ChatContext';
+import { NUMERIC_CONSTANTS } from '../../../constants/numeric.constants';
+import { WordTranslationService } from '../../../services/word-translation.service';
 
 interface UseChatOptions {
   botId?: number;

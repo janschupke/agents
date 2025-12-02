@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
-import { API_BASE_URL } from '../constants/api.constants.js';
-import { tokenProvider } from './token-provider.js';
+import { API_BASE_URL } from '../constants/api.constants';
+import { tokenProvider } from './token-provider';
 
 export interface ApiError {
   message: string;
