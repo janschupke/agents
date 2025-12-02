@@ -85,6 +85,21 @@ export class OpenAIService {
   /**
    * Helper method for common OpenAI chat completion pattern
    * Centralizes the pattern used across multiple services
+   * 
+   * This method automatically limits conversation history to the last 6 messages
+   * (3 user messages and 3 assistant responses) to provide context while managing
+   * token usage. Only user and assistant messages from the history are included;
+   * system messages are excluded from the history limit.
+   * 
+   * @param apiKey - OpenAI API key
+   * @param options - Chat completion options
+   * @param options.model - Model to use
+   * @param options.systemMessage - System message/prompt (always included)
+   * @param options.userMessage - Current user message (always included)
+   * @param options.conversationHistory - Optional array of previous messages (role, content).
+   *                                      Only the last 6 messages (3 user + 3 assistant) will be used as context.
+   * @param options.temperature - Optional temperature setting
+   * @param options.maxTokens - Optional max tokens setting
    */
   async createChatCompletion(
     apiKey: string,
@@ -92,24 +107,47 @@ export class OpenAIService {
       model: string;
       systemMessage: string;
       userMessage: string;
+      conversationHistory?: Array<{ role: string; content: string }>;
       temperature?: number;
       maxTokens?: number;
     }
   ): Promise<string> {
     try {
       const openai = this.getClient(apiKey);
+      
+      // Build messages array with system message, limited conversation history, and current user message
+      const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+        {
+          role: 'system',
+          content: options.systemMessage,
+        },
+      ];
+
+      // Filter and limit conversation history to last 6 messages (3 user + 3 assistant)
+      // Only include user and assistant messages, exclude system messages from history
+      if (options.conversationHistory && options.conversationHistory.length > 0) {
+        // Filter to only user and assistant messages, preserving order
+        const userAndAssistantMessages = options.conversationHistory.filter(
+          (msg) => msg.role === 'user' || msg.role === 'assistant'
+        ) as Array<{ role: 'user' | 'assistant'; content: string }>;
+
+        // Take only the last 6 messages (3 user-assistant pairs)
+        const limitedHistory = userAndAssistantMessages.slice(-6);
+
+        if (limitedHistory.length > 0) {
+          messages.push(...limitedHistory);
+        }
+      }
+
+      // Add current user message
+      messages.push({
+        role: 'user',
+        content: options.userMessage,
+      });
+
       const completion = await openai.chat.completions.create({
         model: options.model,
-        messages: [
-          {
-            role: 'system',
-            content: options.systemMessage,
-          },
-          {
-            role: 'user',
-            content: options.userMessage,
-          },
-        ],
+        messages: messages as Parameters<typeof openai.chat.completions.create>[0]['messages'],
         temperature:
           options.temperature ?? NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE,
         max_tokens: options.maxTokens,

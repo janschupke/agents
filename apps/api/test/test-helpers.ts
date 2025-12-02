@@ -63,6 +63,7 @@ export class MockOpenAIService {
       model: string;
       systemMessage: string;
       userMessage: string;
+      conversationHistory?: Array<{ role: string; content: string }>;
       temperature?: number;
       maxTokens?: number;
     }
