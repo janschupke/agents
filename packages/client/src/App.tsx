@@ -11,11 +11,9 @@ import { Skeleton } from './components/ui/feedback';
 import { PageTransition } from './components/ui/animation';
 import { AppProvider } from './contexts/AppContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { UserProvider, useApiKeyStatus } from './contexts/UserContext';
-import { BotProvider } from './contexts/BotContext';
-import { ChatProvider } from './contexts/ChatContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { QueryProvider } from './providers/QueryProvider';
+import { useApiKeyStatus } from './hooks/queries/use-user';
 
 // Memoized Header component to prevent re-renders
 const AppHeader = memo(function AppHeader() {
@@ -79,7 +77,8 @@ function SignInPage() {
 
 function AppContent() {
   const { isSignedIn, isLoaded } = useAuth();
-  const { hasApiKey, loadingApiKey } = useApiKeyStatus();
+  const { data: apiKeyData, isLoading: loadingApiKey } = useApiKeyStatus();
+  const hasApiKey = apiKeyData?.hasApiKey ?? null;
   const location = useLocation();
 
   // Show sign-in page when not signed in
@@ -144,15 +143,9 @@ function App() {
       <AuthProvider>
         <QueryProvider>
           <AppProvider>
-            <UserProvider>
-              <BotProvider>
-                <ChatProvider>
-                  <ToastProvider>
-                    <AppContent />
-                  </ToastProvider>
-                </ChatProvider>
-              </BotProvider>
-            </UserProvider>
+            <ToastProvider>
+              <AppContent />
+            </ToastProvider>
           </AppProvider>
         </QueryProvider>
       </AuthProvider>

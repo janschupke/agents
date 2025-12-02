@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { IconChevronDown } from '../../../../components/ui/Icons';
-import { useBots } from '../../../../contexts/BotContext';
+import { useBots } from '../../../../hooks/queries/use-bots';
 import { useSelectedBot } from '../../../../contexts/AppContext';
 import { DropdownTransition } from '../../../../components/ui/animation';
 
 export default function BotSelector() {
-  const { bots, loadingBots } = useBots();
+  const { data: bots = [], isLoading: loadingBots } = useBots();
   const { selectedBotId, setSelectedBotId } = useSelectedBot();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);

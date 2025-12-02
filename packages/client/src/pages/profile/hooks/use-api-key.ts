@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUpdateApiKey, useDeleteApiKey } from '../../../hooks/mutations/use-user-mutations';
 import { queryKeys } from '../../../hooks/queries/query-keys';
-import { useApiKeyStatus } from '../../../contexts/UserContext';
+import { useApiKeyStatus } from '../../../hooks/queries/use-user';
 import { useConfirm } from '../../../hooks/useConfirm';
 import { useFormValidation } from '../../../hooks/use-form-validation';
 import { validationRules } from '../../../utils/validation';
@@ -35,10 +35,10 @@ export function useApiKey(): UseApiKeyReturn {
   const queryClient = useQueryClient();
   const updateApiKeyMutation = useUpdateApiKey();
   const deleteApiKeyMutation = useDeleteApiKey();
-  const { hasApiKey: contextHasApiKey, refreshApiKey } = useApiKeyStatus();
+  const { data: apiKeyData, refetch: refetchApiKey } = useApiKeyStatus();
+  const hasApiKey = apiKeyData?.hasApiKey ?? false;
 
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
-  const hasApiKey = contextHasApiKey ?? false;
 
   // Update UI based on API key status from context
   useEffect(() => {
@@ -73,8 +73,8 @@ export function useApiKey(): UseApiKeyReturn {
       await updateApiKeyMutation.mutateAsync(values.apiKey);
       setShowApiKeyInput(false);
       reset();
-      // Refresh API key status from context
-      await refreshApiKey();
+      // Refresh API key status
+      await refetchApiKey();
       queryClient.invalidateQueries({ queryKey: queryKeys.user.apiKey() });
     } catch (error) {
       // Error is handled by mutation hook
@@ -99,8 +99,8 @@ export function useApiKey(): UseApiKeyReturn {
       await deleteApiKeyMutation.mutateAsync();
       setShowApiKeyInput(true);
       reset();
-      // Refresh API key status from context
-      await refreshApiKey();
+      // Refresh API key status
+      await refetchApiKey();
       queryClient.invalidateQueries({ queryKey: queryKeys.user.apiKey() });
     } catch (error) {
       // Error is handled by mutation hook
