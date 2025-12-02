@@ -1,56 +1,33 @@
 import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, waitFor, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import ChatBot from './ChatBot';
-import { ChatService } from '../../../../services/chat.service';
 import { AuthProvider } from '../../../../contexts/AuthContext';
 import { AppProvider } from '../../../../contexts/AppContext';
-import { UserProvider } from '../../../../contexts/UserContext';
-import { BotProvider } from '../../../../contexts/BotContext';
-import { ChatProvider } from '../../../../contexts/ChatContext';
 import { ToastProvider } from '../../../../contexts/ToastContext';
+import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
 import { MessageRole } from '../../../../types/chat.types';
+import { server } from '../../../../test/mocks/server';
+import { http, HttpResponse } from 'msw';
+import { API_BASE_URL } from '../../../../constants/api.constants';
 
 // Mock Clerk
 vi.mock('@clerk/clerk-react', () => ({
   useUser: vi.fn(() => ({
     isSignedIn: true,
     isLoaded: true,
+    user: {
+      id: 'user_123',
+      emailAddresses: [{ emailAddress: 'test@example.com' }],
+    },
   })),
-}));
-
-// Mock the ChatService
-vi.mock('../../../../services/chat.service', () => ({
-  ChatService: {
-    getChatHistory: vi.fn(),
-    sendMessage: vi.fn(),
-    getSessions: vi.fn().mockResolvedValue([{ id: 1, session_name: 'Session 1', bot_id: 1 }]),
-  },
-}));
-
-// Mock BotService
-vi.mock('../../../../services/bot.service', () => ({
-  BotService: {
-    getAllBots: vi
-      .fn()
-      .mockResolvedValue([{ id: 1, name: 'Test Bot', description: 'Test Description' }]),
-  },
-}));
-
-// Mock UserService
-vi.mock('../../../../services/user.service', () => ({
-  UserService: {
-    getCurrentUser: vi.fn().mockResolvedValue({ id: '1', email: 'test@example.com' }),
-  },
-}));
-
-// Mock ApiCredentialsService
-vi.mock('../../../../services/api-credentials.service', () => ({
-  ApiCredentialsService: {
-    hasOpenAIKey: vi.fn().mockResolvedValue(true),
-  },
+  useAuth: vi.fn(() => ({
+    getToken: vi.fn().mockResolvedValue('mock-token'),
+    isSignedIn: true,
+    isLoaded: true,
+  })),
 }));
 
 // Mock scrollIntoView for jsdom
@@ -63,40 +40,80 @@ Object.defineProperty(Element.prototype, 'scrollIntoView', {
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <BrowserRouter>
     <AuthProvider>
-      <AppProvider>
-        <UserProvider>
-          <BotProvider>
-            <ChatProvider>
-              <ToastProvider>{children}</ToastProvider>
-            </ChatProvider>
-          </BotProvider>
-        </UserProvider>
-      </AppProvider>
+      <TestQueryProvider>
+        <AppProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </AppProvider>
+      </TestQueryProvider>
     </AuthProvider>
   </BrowserRouter>
 );
 
 describe('ChatBot', () => {
-  const mockGetChatHistory = vi.mocked(ChatService.getChatHistory);
-  const mockSendMessage = vi.mocked(ChatService.sendMessage);
-
   beforeEach(() => {
-    vi.clearAllMocks();
+    // Set up MSW handlers for these tests
+    server.use(
+      http.get(`${API_BASE_URL}/api/bots`, () => {
+        return HttpResponse.json([
+          {
+            id: 1,
+            name: 'Test Bot',
+            description: 'Test Description',
+            avatarUrl: null,
+            createdAt: '2024-01-01T00:00:00.000Z',
+          },
+        ]);
+      }),
+      http.get(`${API_BASE_URL}/api/bots/1`, () => {
+        return HttpResponse.json({
+          id: 1,
+          name: 'Test Bot',
+          description: 'Test Description',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        });
+      }),
+      http.get(`${API_BASE_URL}/api/chat/1/sessions`, () => {
+        return HttpResponse.json([
+          { id: 1, session_name: 'Session 1', bot_id: 1 },
+        ]);
+      }),
+      http.get(`${API_BASE_URL}/api/user/me`, () => {
+        return HttpResponse.json({
+          id: 'user_123',
+          email: 'test@example.com',
+          firstName: 'Test',
+          lastName: 'User',
+        });
+      }),
+      http.get(`${API_BASE_URL}/api/api-credentials/openai/check`, () => {
+        return HttpResponse.json({ hasKey: true });
+      })
+    );
+  });
+
+  afterEach(() => {
+    // Ensure cleanup happens
+    cleanup();
   });
 
   it('should render chat bot with bot name', async () => {
-    mockGetChatHistory.mockResolvedValue({
-      bot: {
-        id: 1,
-        name: 'Test Bot',
-        description: 'Test Description',
-      },
-      session: {
-        id: 1,
-        session_name: 'Session 1',
-      },
-      messages: [],
-    });
+    server.use(
+      http.get(`${API_BASE_URL}/api/chat/1`, () => {
+        return HttpResponse.json({
+          bot: {
+            id: 1,
+            name: 'Test Bot',
+            description: 'Test Description',
+          },
+          session: {
+            id: 1,
+            session_name: 'Session 1',
+          },
+          messages: [],
+        });
+      })
+    );
 
     render(
       <TestWrapper>
@@ -106,24 +123,46 @@ describe('ChatBot', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Test Bot')).toBeInTheDocument();
-    });
+    }, { timeout: 1000 });
   });
 
   it('should display messages from chat history', async () => {
     const user = userEvent.setup();
-    const mockSession = { id: 1, session_name: 'Session 1', bot_id: 1 };
-    mockGetChatHistory.mockResolvedValue({
-      bot: {
-        id: 1,
-        name: 'Test Bot',
-        description: 'Test Description',
-      },
-      session: mockSession,
-      messages: [
-        { role: MessageRole.USER, content: 'Hello' },
-        { role: MessageRole.ASSISTANT, content: 'Hi there!' },
-      ],
-    });
+    
+    server.use(
+      http.get(`${API_BASE_URL}/api/chat/1`, ({ request }) => {
+        const url = new URL(request.url);
+        const sessionId = url.searchParams.get('sessionId');
+        
+        if (sessionId === '1') {
+          return HttpResponse.json({
+            bot: {
+              id: 1,
+              name: 'Test Bot',
+              description: 'Test Description',
+            },
+            session: {
+              id: 1,
+              session_name: 'Session 1',
+            },
+            messages: [
+              { id: 1, role: MessageRole.USER, content: 'Hello', createdAt: new Date().toISOString() },
+              { id: 2, role: MessageRole.ASSISTANT, content: 'Hi there!', createdAt: new Date().toISOString() },
+            ],
+          });
+        }
+        
+        return HttpResponse.json({
+          bot: {
+            id: 1,
+            name: 'Test Bot',
+            description: 'Test Description',
+          },
+          session: null,
+          messages: [],
+        });
+      })
+    );
 
     render(
       <TestWrapper>
@@ -134,13 +173,13 @@ describe('ChatBot', () => {
     // Wait for bot to load
     await waitFor(() => {
       expect(screen.getByText('Test Bot')).toBeInTheDocument();
-    });
+    }, { timeout: 1000 });
 
     // Click on the session in the sidebar to select it
     await waitFor(() => {
       const sessionButton = screen.getByText('Session 1');
       expect(sessionButton).toBeInTheDocument();
-    });
+    }, { timeout: 1000 });
 
     const sessionButton = screen.getByText('Session 1');
     await user.click(sessionButton);
@@ -151,27 +190,62 @@ describe('ChatBot', () => {
         expect(screen.getByText('Hello')).toBeInTheDocument();
         expect(screen.getByText('Hi there!')).toBeInTheDocument();
       },
-      { timeout: 3000 }
+      { timeout: 1000 }
     );
   });
 
   it('should send message when form is submitted', async () => {
     const user = userEvent.setup();
-    const mockSession = { id: 1, session_name: 'Session 1', bot_id: 1 };
-    mockGetChatHistory.mockResolvedValue({
-      bot: {
-        id: 1,
-        name: 'Test Bot',
-        description: 'Test Description',
-      },
-      session: mockSession,
-      messages: [],
-    });
-
-    mockSendMessage.mockResolvedValue({
-      response: 'Test response',
-      session: mockSession,
-    });
+    
+    let messageCount = 0;
+    
+    server.use(
+      http.get(`${API_BASE_URL}/api/chat/1`, ({ request }) => {
+        const url = new URL(request.url);
+        const sessionId = url.searchParams.get('sessionId');
+        
+        if (sessionId === '1') {
+          return HttpResponse.json({
+            bot: {
+              id: 1,
+              name: 'Test Bot',
+              description: 'Test Description',
+            },
+            session: {
+              id: 1,
+              session_name: 'Session 1',
+            },
+            messages: messageCount > 0 ? [
+              { id: 1, role: MessageRole.USER, content: 'Test message', createdAt: new Date().toISOString() },
+              { id: 2, role: MessageRole.ASSISTANT, content: 'Test response', createdAt: new Date().toISOString() },
+            ] : [],
+          });
+        }
+        
+        return HttpResponse.json({
+          bot: {
+            id: 1,
+            name: 'Test Bot',
+            description: 'Test Description',
+          },
+          session: null,
+          messages: [],
+        });
+      }),
+      http.post(`${API_BASE_URL}/api/chat/1`, async ({ request }) => {
+        messageCount++;
+        const body = await request.json() as { message: string };
+        return HttpResponse.json({
+          response: 'Test response',
+          session: {
+            id: 1,
+            session_name: 'Session 1',
+          },
+          userMessageId: 1,
+          assistantMessageId: 2,
+        });
+      })
+    );
 
     render(
       <TestWrapper>
@@ -182,13 +256,13 @@ describe('ChatBot', () => {
     // Wait for bot to load
     await waitFor(() => {
       expect(screen.getByText('Test Bot')).toBeInTheDocument();
-    });
+    }, { timeout: 1000 });
 
     // Click on the session in the sidebar to select it
     await waitFor(() => {
       const sessionButton = screen.getByText('Session 1');
       expect(sessionButton).toBeInTheDocument();
-    });
+    }, { timeout: 1000 });
 
     const sessionButton = screen.getByText('Session 1');
     await user.click(sessionButton);
@@ -196,38 +270,64 @@ describe('ChatBot', () => {
     // Wait for chat input to appear after session is selected
     await waitFor(
       () => {
-        expect(screen.getByPlaceholderText('Type your message...')).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/type your message/i)).toBeInTheDocument();
       },
-      { timeout: 3000 }
+      { timeout: 1000 }
     );
 
-    const input = screen.getByPlaceholderText('Type your message...');
+    const input = screen.getByPlaceholderText(/type your message/i);
     const sendButton = screen.getByRole('button', { name: /send/i });
 
     await user.type(input, 'Test message');
     await user.click(sendButton);
 
-    await waitFor(() => {
-      expect(mockSendMessage).toHaveBeenCalledWith(1, 'Test message', 1);
-    });
+    // Wait for the message to appear
+    await waitFor(
+      () => {
+        expect(screen.getByText('Test message')).toBeInTheDocument();
+      },
+      { timeout: 1000 }
+    );
   });
 
   it('should filter out system messages', async () => {
     const user = userEvent.setup();
-    const mockSession = { id: 1, session_name: 'Session 1', bot_id: 1 };
-    mockGetChatHistory.mockResolvedValue({
-      bot: {
-        id: 1,
-        name: 'Test Bot',
-        description: 'Test Description',
-      },
-      session: mockSession,
-      messages: [
-        { role: MessageRole.SYSTEM, content: 'System message' },
-        { role: MessageRole.USER, content: 'User message' },
-        { role: MessageRole.ASSISTANT, content: 'Assistant message' },
-      ],
-    });
+    
+    server.use(
+      http.get(`${API_BASE_URL}/api/chat/1`, ({ request }) => {
+        const url = new URL(request.url);
+        const sessionId = url.searchParams.get('sessionId');
+        
+        if (sessionId === '1') {
+          return HttpResponse.json({
+            bot: {
+              id: 1,
+              name: 'Test Bot',
+              description: 'Test Description',
+            },
+            session: {
+              id: 1,
+              session_name: 'Session 1',
+            },
+            messages: [
+              { id: 1, role: MessageRole.SYSTEM, content: 'System message', createdAt: new Date().toISOString() },
+              { id: 2, role: MessageRole.USER, content: 'User message', createdAt: new Date().toISOString() },
+              { id: 3, role: MessageRole.ASSISTANT, content: 'Assistant message', createdAt: new Date().toISOString() },
+            ],
+          });
+        }
+        
+        return HttpResponse.json({
+          bot: {
+            id: 1,
+            name: 'Test Bot',
+            description: 'Test Description',
+          },
+          session: null,
+          messages: [],
+        });
+      })
+    );
 
     render(
       <TestWrapper>
@@ -238,13 +338,13 @@ describe('ChatBot', () => {
     // Wait for bot to load
     await waitFor(() => {
       expect(screen.getByText('Test Bot')).toBeInTheDocument();
-    });
+    }, { timeout: 1000 });
 
     // Click on the session in the sidebar to select it
     await waitFor(() => {
       const sessionButton = screen.getByText('Session 1');
       expect(sessionButton).toBeInTheDocument();
-    });
+    }, { timeout: 1000 });
 
     const sessionButton = screen.getByText('Session 1');
     await user.click(sessionButton);
@@ -256,7 +356,7 @@ describe('ChatBot', () => {
         expect(screen.getByText('User message')).toBeInTheDocument();
         expect(screen.getByText('Assistant message')).toBeInTheDocument();
       },
-      { timeout: 3000 }
+      { timeout: 1000 }
     );
   });
 });

@@ -1,4 +1,4 @@
-import { ApiError } from '../services/axios-instance';
+import { ApiError } from '../services/api-client';
 
 export type ErrorType = 'network' | 'validation' | 'server' | 'authentication' | 'unknown';
 
@@ -77,4 +77,3 @@ export function isExpectedError(error: unknown): boolean {
   }
   return false;
 }
-

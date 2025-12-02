@@ -1,55 +1,30 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
+import { http, HttpResponse } from 'msw';
+import { server } from '../test/mocks/server';
 import { BotService } from './bot.service';
 import { Bot, CreateBotRequest, UpdateBotRequest } from '../types/chat.types';
-import { apiManager } from './api-manager';
-
-// Mock ApiManager
-vi.mock('./api-manager', () => ({
-  apiManager: {
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    delete: vi.fn(),
-  },
-}));
+import { API_BASE_URL } from '../constants/api.constants';
 
 describe('BotService', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
 
   describe('getAllBots', () => {
     it('should fetch all bots successfully', async () => {
-      const mockBots: Bot[] = [
-        {
-          id: 1,
-          name: 'Test Bot 1',
-          description: 'Description 1',
-          avatarUrl: null,
-          createdAt: '2024-01-01',
-        },
-        {
-          id: 2,
-          name: 'Test Bot 2',
-          description: 'Description 2',
-          avatarUrl: null,
-          createdAt: '2024-01-02',
-        },
-      ];
-
-      vi.mocked(apiManager.get).mockResolvedValueOnce(mockBots);
-
       const result = await BotService.getAllBots();
 
-      expect(result).toEqual(mockBots);
-      expect(apiManager.get).toHaveBeenCalledWith('/api/bots');
+      expect(result).toHaveLength(2);
+      expect(result[0]).toMatchObject({
+        id: 1,
+        name: 'Test Bot 1',
+        description: 'Test Description 1',
+      });
     });
 
     it('should throw error when fetch fails', async () => {
-      vi.mocked(apiManager.get).mockRejectedValueOnce({
-        message: 'Internal server error',
-        status: 500,
-      });
+      server.use(
+        http.get(`${API_BASE_URL}/api/bots`, () => {
+          return HttpResponse.json({ message: 'Internal server error' }, { status: 500 });
+        })
+      );
 
       await expect(BotService.getAllBots()).rejects.toThrow();
     });
@@ -57,27 +32,21 @@ describe('BotService', () => {
 
   describe('getBot', () => {
     it('should fetch a bot by ID successfully', async () => {
-      const mockBot: Bot = {
-        id: 1,
-        name: 'Test Bot',
-        description: 'Test Description',
-        avatarUrl: null,
-        createdAt: '2024-01-01',
-      };
-
-      vi.mocked(apiManager.get).mockResolvedValueOnce(mockBot);
-
       const result = await BotService.getBot(1);
 
-      expect(result).toEqual(mockBot);
-      expect(apiManager.get).toHaveBeenCalledWith('/api/bots/1');
+      expect(result).toMatchObject({
+        id: 1,
+        name: 'Test Bot 1',
+        description: 'Test Description 1',
+      });
     });
 
     it('should throw error when bot not found', async () => {
-      vi.mocked(apiManager.get).mockRejectedValueOnce({
-        message: 'Not found',
-        status: 404,
-      });
+      server.use(
+        http.get(`${API_BASE_URL}/api/bots/999`, () => {
+          return HttpResponse.json({ message: 'Bot not found' }, { status: 404 });
+        })
+      );
 
       await expect(BotService.getBot(999)).rejects.toThrow();
     });
@@ -95,20 +64,13 @@ describe('BotService', () => {
         },
       };
 
-      const mockBot: Bot = {
-        id: 1,
-        name: 'New Bot',
-        description: 'New Description',
-        avatarUrl: null,
-        createdAt: '2024-01-01',
-      };
-
-      vi.mocked(apiManager.post).mockResolvedValueOnce(mockBot);
-
       const result = await BotService.createBot(createData);
 
-      expect(result).toEqual(mockBot);
-      expect(apiManager.post).toHaveBeenCalledWith('/api/bots', createData);
+      expect(result).toMatchObject({
+        name: 'New Bot',
+        description: 'New Description',
+      });
+      expect(result.id).toBeGreaterThan(0);
     });
 
     it('should throw error when creation fails', async () => {
@@ -116,10 +78,11 @@ describe('BotService', () => {
         name: 'New Bot',
       };
 
-      vi.mocked(apiManager.post).mockRejectedValueOnce({
-        message: 'Validation error',
-        status: 400,
-      });
+      server.use(
+        http.post(`${API_BASE_URL}/api/bots`, () => {
+          return HttpResponse.json({ message: 'Validation error' }, { status: 400 });
+        })
+      );
 
       await expect(BotService.createBot(createData)).rejects.toThrow();
     });
@@ -132,20 +95,13 @@ describe('BotService', () => {
         description: 'Updated Description',
       };
 
-      const mockBot: Bot = {
+      const result = await BotService.updateBot(1, updateData);
+
+      expect(result).toMatchObject({
         id: 1,
         name: 'Updated Bot',
         description: 'Updated Description',
-        avatarUrl: null,
-        createdAt: '2024-01-01',
-      };
-
-      vi.mocked(apiManager.put).mockResolvedValueOnce(mockBot);
-
-      const result = await BotService.updateBot(1, updateData);
-
-      expect(result).toEqual(mockBot);
-      expect(apiManager.put).toHaveBeenCalledWith('/api/bots/1', updateData);
+      });
     });
 
     it('should throw error when update fails', async () => {
@@ -153,10 +109,11 @@ describe('BotService', () => {
         name: 'Updated Bot',
       };
 
-      vi.mocked(apiManager.put).mockRejectedValueOnce({
-        message: 'Not found',
-        status: 404,
-      });
+      server.use(
+        http.put(`${API_BASE_URL}/api/bots/999`, () => {
+          return HttpResponse.json({ message: 'Bot not found' }, { status: 404 });
+        })
+      );
 
       await expect(BotService.updateBot(999, updateData)).rejects.toThrow();
     });

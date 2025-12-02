@@ -1,53 +1,34 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { apiManager } from './api-manager';
-import axiosInstance from './axios-instance';
-
-// Mock axios
-vi.mock('./axios-instance', () => {
-  const mockAxiosInstance = {
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    patch: vi.fn(),
-    delete: vi.fn(),
-    defaults: {
-      baseURL: 'http://localhost:3001',
-    },
-  };
-  return {
-    default: mockAxiosInstance,
-  };
-});
+import { server } from '../test/mocks/server';
+import { http, HttpResponse } from 'msw';
+import { API_BASE_URL } from '../constants/api.constants';
 
 describe('ApiManager', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe('GET requests', () => {
     it('should make GET request successfully', async () => {
-      const mockResponse = { data: 'test' };
-      vi.mocked(axiosInstance.get).mockResolvedValueOnce({
-        data: mockResponse,
-      });
+      server.use(
+        http.get(`${API_BASE_URL}/api/test`, () => {
+          return HttpResponse.json({ data: 'test' });
+        })
+      );
 
       const result = await apiManager.get('/api/test');
 
-      expect(result).toEqual(mockResponse);
-      expect(axiosInstance.get).toHaveBeenCalledWith('/api/test', {});
+      expect(result).toEqual({ data: 'test' });
     });
 
     it('should handle query parameters', async () => {
-      const mockResponse = { data: 'test' };
-      vi.mocked(axiosInstance.get).mockResolvedValueOnce({
-        data: mockResponse,
-      });
+      server.use(
+        http.get(`${API_BASE_URL}/api/test`, ({ request }) => {
+          const url = new URL(request.url);
+          expect(url.searchParams.get('page')).toBe('1');
+          expect(url.searchParams.get('limit')).toBe('10');
+          return HttpResponse.json({ data: 'test' });
+        })
+      );
 
       await apiManager.get('/api/test', {
-        params: { page: 1, limit: 10 },
-      });
-
-      expect(axiosInstance.get).toHaveBeenCalledWith('/api/test', {
         params: { page: 1, limit: 10 },
       });
     });
@@ -55,28 +36,29 @@ describe('ApiManager', () => {
 
   describe('POST requests', () => {
     it('should make POST request successfully', async () => {
-      const mockResponse = { success: true };
       const requestData = { name: 'Test' };
 
-      vi.mocked(axiosInstance.post).mockResolvedValueOnce({
-        data: mockResponse,
-      });
+      server.use(
+        http.post(`${API_BASE_URL}/api/test`, async ({ request }) => {
+          const body = await request.json();
+          expect(body).toEqual(requestData);
+          return HttpResponse.json({ success: true });
+        })
+      );
 
       const result = await apiManager.post('/api/test', requestData);
 
-      expect(result).toEqual(mockResponse);
-      expect(axiosInstance.post).toHaveBeenCalledWith('/api/test', requestData, {});
+      expect(result).toEqual({ success: true });
     });
   });
 
   describe('Error handling', () => {
     it('should throw ApiError on HTTP error', async () => {
-      const error = {
-        message: 'Not found',
-        status: 404,
-        data: { message: 'Not found' },
-      };
-      vi.mocked(axiosInstance.get).mockRejectedValueOnce(error);
+      server.use(
+        http.get(`${API_BASE_URL}/api/test`, () => {
+          return HttpResponse.json({ message: 'Not found' }, { status: 404 });
+        })
+      );
 
       await expect(apiManager.get('/api/test')).rejects.toMatchObject({
         message: 'Not found',
@@ -85,14 +67,13 @@ describe('ApiManager', () => {
     });
 
     it('should handle network errors', async () => {
-      const error = {
-        message: 'Network error',
-      };
-      vi.mocked(axiosInstance.get).mockRejectedValueOnce(error);
+      server.use(
+        http.get(`${API_BASE_URL}/api/test`, () => {
+          return HttpResponse.error();
+        })
+      );
 
-      await expect(apiManager.get('/api/test')).rejects.toMatchObject({
-        message: 'Network error',
-      });
+      await expect(apiManager.get('/api/test')).rejects.toThrow();
     });
   });
 

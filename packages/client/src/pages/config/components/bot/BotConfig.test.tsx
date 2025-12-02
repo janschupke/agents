@@ -4,10 +4,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import BotConfig from './BotConfig';
-import { BotProvider } from '../../../../contexts/BotContext';
 import { AppProvider } from '../../../../contexts/AppContext';
 import { AuthProvider } from '../../../../contexts/AuthContext';
-import { UserProvider } from '../../../../contexts/UserContext';
 import { ToastProvider } from '../../../../contexts/ToastContext';
 import { QueryProvider } from '../../../../providers/QueryProvider';
 import { BotService } from '../../../../services/bot.service';
@@ -66,11 +64,7 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryProvider>
       <AuthProvider>
         <AppProvider>
-          <UserProvider>
-            <BotProvider>
-              <ToastProvider>{children}</ToastProvider>
-            </BotProvider>
-          </UserProvider>
+          <ToastProvider>{children}</ToastProvider>
         </AppProvider>
       </AuthProvider>
     </QueryProvider>

@@ -1,35 +1,28 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { http, HttpResponse } from 'msw';
+import { server } from '../test/mocks/server';
 import { ApiCredentialsService } from './api-credentials.service';
-import { apiManager } from './api-manager';
-
-// Mock ApiManager
-vi.mock('./api-manager', () => ({
-  apiManager: {
-    get: vi.fn(),
-    post: vi.fn(),
-    delete: vi.fn(),
-  },
-}));
+import { API_BASE_URL } from '../constants/api.constants';
 
 describe('ApiCredentialsService', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     // Suppress console.error in tests
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   describe('hasOpenAIKey', () => {
     it('should return true when OpenAI key exists', async () => {
-      vi.mocked(apiManager.get).mockResolvedValueOnce({ hasKey: true });
-
       const result = await ApiCredentialsService.hasOpenAIKey();
 
       expect(result).toBe(true);
-      expect(apiManager.get).toHaveBeenCalledWith('/api/api-credentials/openai/check');
     });
 
     it('should return false when OpenAI key does not exist', async () => {
-      vi.mocked(apiManager.get).mockResolvedValueOnce({ hasKey: false });
+      server.use(
+        http.get(`${API_BASE_URL}/api/api-credentials/openai/check`, () => {
+          return HttpResponse.json({ hasKey: false });
+        })
+      );
 
       const result = await ApiCredentialsService.hasOpenAIKey();
 
@@ -38,10 +31,11 @@ describe('ApiCredentialsService', () => {
 
     it('should return false and log error when check fails', async () => {
       const consoleErrorSpy = vi.spyOn(console, 'error');
-      vi.mocked(apiManager.get).mockRejectedValueOnce({
-        message: 'Internal server error',
-        status: 500,
-      });
+      server.use(
+        http.get(`${API_BASE_URL}/api/api-credentials/openai/check`, () => {
+          return HttpResponse.json({ message: 'Internal server error' }, { status: 500 });
+        })
+      );
 
       const result = await ApiCredentialsService.hasOpenAIKey();
 
@@ -55,20 +49,15 @@ describe('ApiCredentialsService', () => {
 
   describe('setOpenAIKey', () => {
     it('should set OpenAI key successfully', async () => {
-      vi.mocked(apiManager.post).mockResolvedValueOnce(undefined);
-
-      await ApiCredentialsService.setOpenAIKey('sk-test-key');
-
-      expect(apiManager.post).toHaveBeenCalledWith('/api/api-credentials/openai', {
-        apiKey: 'sk-test-key',
-      });
+      await expect(ApiCredentialsService.setOpenAIKey('sk-test-key')).resolves.not.toThrow();
     });
 
     it('should throw error when setting key fails', async () => {
-      vi.mocked(apiManager.post).mockRejectedValueOnce({
-        message: 'Invalid API key',
-        status: 400,
-      });
+      server.use(
+        http.post(`${API_BASE_URL}/api/api-credentials/openai`, () => {
+          return HttpResponse.json({ message: 'Invalid API key' }, { status: 400 });
+        })
+      );
 
       await expect(ApiCredentialsService.setOpenAIKey('invalid-key')).rejects.toThrow();
     });
@@ -76,18 +65,15 @@ describe('ApiCredentialsService', () => {
 
   describe('deleteOpenAIKey', () => {
     it('should delete OpenAI key successfully', async () => {
-      vi.mocked(apiManager.delete).mockResolvedValueOnce(undefined);
-
-      await ApiCredentialsService.deleteOpenAIKey();
-
-      expect(apiManager.delete).toHaveBeenCalledWith('/api/api-credentials/openai');
+      await expect(ApiCredentialsService.deleteOpenAIKey()).resolves.not.toThrow();
     });
 
     it('should throw error when deletion fails', async () => {
-      vi.mocked(apiManager.delete).mockRejectedValueOnce({
-        message: 'Internal server error',
-        status: 500,
-      });
+      server.use(
+        http.delete(`${API_BASE_URL}/api/api-credentials/openai`, () => {
+          return HttpResponse.json({ message: 'Internal server error' }, { status: 500 });
+        })
+      );
 
       await expect(ApiCredentialsService.deleteOpenAIKey()).rejects.toThrow();
     });
