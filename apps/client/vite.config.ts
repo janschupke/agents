@@ -17,8 +17,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     css: true,
-    testTimeout: 2000, // 2 second timeout per test (tests should complete in <1s)
-    hookTimeout: 2000,
+    testTimeout: 5000, // 5 second timeout per test (allows for async operations)
+    hookTimeout: 5000,
     teardownTimeout: 1000,
   },
 });

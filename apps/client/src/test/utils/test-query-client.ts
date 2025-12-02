@@ -16,6 +16,12 @@ export function createTestQueryClient() {
         refetchOnMount: true, // Allow refetch on mount so queries run in tests
         refetchOnReconnect: false,
         networkMode: 'always', // Don't wait for network status
+        // Fast query execution for tests
+        structuralSharing: false, // Disable structural sharing for faster tests
+        // Reduce query cache time for faster tests
+        cacheTime: 0, // Legacy name for gcTime, keep for compatibility
+        // Ensure queries run immediately when enabled
+        refetchInterval: false,
       },
       mutations: {
         retry: false,
