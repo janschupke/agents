@@ -39,7 +39,7 @@ export interface ChatHistoryResponse {
   session: {
     id: number;
     session_name: string | null;
-  };
+  } | null;
   messages: Message[];
 }
 

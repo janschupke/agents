@@ -101,7 +101,7 @@ export class ChatService {
       throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
     }
 
-    // Get or create session
+    // Get session (don't create - session creation only happens in sendMessage)
     let session;
     if (sessionId) {
       session = await this.sessionRepository.findByIdAndUserId(
@@ -112,12 +112,22 @@ export class ChatService {
         throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
       }
     } else {
+      // If no sessionId provided, find latest session but don't create one
       session = await this.sessionRepository.findLatestByAgentId(
         agentId,
         userId
       );
+      // If no session exists, return empty history instead of creating one
       if (!session) {
-        session = await this.sessionRepository.create(userId, agentId);
+        return {
+          agent: {
+            id: agent.id,
+            name: agent.name,
+            description: agent.description,
+          },
+          session: null,
+          messages: [],
+        };
       }
     }
 

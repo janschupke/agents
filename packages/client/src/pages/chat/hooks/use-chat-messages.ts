@@ -51,12 +51,18 @@ export function useChatMessages({
 
   // Update messages from chat history
   useEffect(() => {
-    if (chatHistory && agentId && sessionId) {
-      const historySessionId = chatHistory.session?.id;
-      // Only update messages if the history matches the current session
-      if (historySessionId === sessionId && chatHistory.messages) {
-        setMessages(chatHistory.messages);
-        loadingSessionIdRef.current = sessionId;
+    if (chatHistory && agentId) {
+      if (sessionId) {
+        const historySessionId = chatHistory.session?.id;
+        // Only update messages if the history matches the current session
+        if (historySessionId === sessionId && chatHistory.messages) {
+          setMessages(chatHistory.messages);
+          loadingSessionIdRef.current = sessionId;
+        }
+      } else {
+        // No sessionId - use messages from history (will be empty if no session exists)
+        setMessages(chatHistory.messages || []);
+        loadingSessionIdRef.current = null;
       }
     } else if (!sessionId) {
       setMessages([]);

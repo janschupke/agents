@@ -33,7 +33,7 @@ export class ChatHistoryResponseDto {
   session: {
     id: number;
     session_name: string | null;
-  };
+  } | null;
   messages: MessageResponseDto[];
 }
 
