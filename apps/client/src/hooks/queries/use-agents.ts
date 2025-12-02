@@ -22,10 +22,13 @@ export function useAgent(agentId: number | null) {
   const { isSignedIn, isLoaded } = useAuth();
   const tokenReady = useTokenReady();
 
+  // Don't fetch if agentId is null or negative (temporary/unsaved agent)
+  const isValidAgentId = agentId !== null && agentId > 0;
+
   return useQuery<Agent>({
     queryKey: queryKeys.agents.detail(agentId!),
     queryFn: () => AgentService.getAgent(agentId!),
-    enabled: agentId !== null && isSignedIn && isLoaded && tokenReady,
+    enabled: isValidAgentId && isSignedIn && isLoaded && tokenReady,
   });
 }
 
@@ -33,10 +36,13 @@ export function useAgentSessions(agentId: number | null) {
   const { isSignedIn, isLoaded } = useAuth();
   const tokenReady = useTokenReady();
 
+  // Don't fetch if agentId is null or negative (temporary/unsaved agent)
+  const isValidAgentId = agentId !== null && agentId > 0;
+
   return useQuery<Session[]>({
     queryKey: queryKeys.agents.sessions(agentId!),
     queryFn: () => ChatService.getSessions(agentId!),
-    enabled: agentId !== null && isSignedIn && isLoaded && tokenReady,
+    enabled: isValidAgentId && isSignedIn && isLoaded && tokenReady,
   });
 }
 
@@ -44,9 +50,12 @@ export function useAgentMemories(agentId: number | null) {
   const { isSignedIn, isLoaded } = useAuth();
   const tokenReady = useTokenReady();
 
+  // Don't fetch if agentId is null or negative (temporary/unsaved agent)
+  const isValidAgentId = agentId !== null && agentId > 0;
+
   return useQuery<AgentMemory[]>({
     queryKey: queryKeys.agents.memories(agentId!),
     queryFn: () => MemoryService.getMemories(agentId!),
-    enabled: agentId !== null && isSignedIn && isLoaded && tokenReady,
+    enabled: isValidAgentId && isSignedIn && isLoaded && tokenReady,
   });
 }

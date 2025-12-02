@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Agent } from '../../../../types/chat.types';
 import AgentSidebar from './AgentSidebar';
 import AgentConfigForm from './AgentConfigForm';
@@ -10,6 +10,7 @@ import { useAgentConfigOperations } from '../../hooks/use-agent-config-operation
 export default function AgentConfig() {
   const { data: contextAgents = [], isLoading: loadingAgents } = useAgents();
   const [localAgents, setLocalAgents] = useState<Agent[]>([]);
+  const hasAutoOpenedRef = useRef(false);
 
   // Agent selection management
   const { currentAgentId, setCurrentAgentId, agents } = useAgentSelection({
@@ -27,6 +28,30 @@ export default function AgentConfig() {
       currentAgentId,
       setCurrentAgentId,
     });
+
+  // Auto-open new agent form when there are no agents
+  useEffect(() => {
+    if (loadingAgents) {
+      return;
+    }
+
+    // Use the merged agents array from the selection hook for consistency
+    const hasNoAgents = agents.length === 0;
+    const currentAgentExists = currentAgentId !== null && agents.some((a) => a.id === currentAgentId);
+    
+    // If there are no agents, clear any invalid selection and reset the ref
+    if (hasNoAgents && currentAgentId !== null && !currentAgentExists) {
+      setCurrentAgentId(null);
+      hasAutoOpenedRef.current = false;
+      return;
+    }
+    
+    // Auto-open form when there are no agents and none is selected (or selected agent doesn't exist)
+    if (hasNoAgents && (currentAgentId === null || !currentAgentExists) && !hasAutoOpenedRef.current) {
+      hasAutoOpenedRef.current = true;
+      handleNewAgent();
+    }
+  }, [loadingAgents, agents, currentAgentId, setCurrentAgentId, handleNewAgent]);
 
   const handleAgentSelect = (agentId: number) => {
     // Validate agent exists before selecting
