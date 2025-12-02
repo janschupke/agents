@@ -4,6 +4,7 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { appConfig } from './config/app.config';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
+import { DelayInterceptor } from './common/interceptors/delay.interceptor';
 import { json, raw } from 'express';
 import { Request, Response, NextFunction } from 'express';
 
@@ -52,6 +53,9 @@ async function bootstrap() {
 
   // Global exception filter
   app.useGlobalFilters(new AllExceptionsFilter());
+
+  // Global delay interceptor (only works in dev mode)
+  app.useGlobalInterceptors(new DelayInterceptor());
 
   // ClerkGuard is applied globally via APP_GUARD in AppModule
   // It enforces authentication for all routes except those marked with @Public()

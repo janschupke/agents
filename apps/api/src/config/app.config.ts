@@ -19,4 +19,8 @@ export const appConfig = {
     secretKey: process.env.CLERK_SECRET_KEY || '',
     webhookSecret: process.env.CLERK_WEBHOOK_SECRET || '',
   },
+  delay: {
+    enabled: process.env.API_DELAY_ENABLED === 'true',
+    ms: parseInt(process.env.API_DELAY_MS || '0', 10),
+  },
 } as const;
