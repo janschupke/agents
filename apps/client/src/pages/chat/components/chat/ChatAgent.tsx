@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useConfirm } from '../../../../hooks/useConfirm';
+import { useAutoNavigateToItem } from '../../../../hooks/use-auto-navigate-to-item';
 import { useChatAgentData } from '../../hooks/use-chat-agent-data';
 import { useChatAgentNavigation } from '../../hooks/use-chat-agent-navigation';
 import { useChatModals } from '../../hooks/use-chat-modals';
@@ -23,6 +24,7 @@ import ChatLoadingState from './ChatLoadingState';
 import ChatEmptyState from './ChatEmptyState';
 import ChatErrorState from './ChatErrorState';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
+import { ROUTES } from '../../../../constants/routes.constants';
 
 interface ChatAgentContentProps {
   sessionId?: number;
@@ -55,8 +57,20 @@ function ChatAgentContent({
   });
 
   // Session and message management - use sessionId from URL/params
+  // Convert null to undefined so useChatSession can properly detect when to auto-select
   const { currentSessionId, sessions, sessionsLoading, handleSessionDelete } =
-    useChatSession({ agentId, initialSessionId: sessionId });
+    useChatSession({ agentId, initialSessionId: sessionId ?? undefined });
+
+  // Auto-navigate to most recent session when accessing /chat without sessionId
+  // and sessions exist for the selected agent
+  useAutoNavigateToItem({
+    baseRoute: ROUTES.CHAT,
+    selectedItemId: currentSessionId,
+    buildTargetRoute: ROUTES.CHAT_SESSION,
+    isLoading: sessionsLoading,
+    resetDependencies: [agentId],
+    shouldNavigate: () => agentId !== null,
+  });
 
   const {
     messages,
