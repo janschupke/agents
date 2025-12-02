@@ -8,6 +8,8 @@ import {
   Body,
   ParseIntPipe,
   Query,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import {
@@ -66,15 +68,40 @@ export class ChatController {
     @User() user: AuthenticatedUser,
     @Query('sessionId') sessionId?: string
   ): Promise<SendMessageResponseDto> {
+    if (
+      !body.message ||
+      typeof body.message !== 'string' ||
+      body.message.trim().length === 0
+    ) {
+      throw new HttpException('Message is required', HttpStatus.BAD_REQUEST);
+    }
     const parsedSessionId = sessionId
       ? parseInt(sessionId, MAGIC_STRINGS.PARSE_INT_BASE)
       : undefined;
-    return await this.chatService.sendMessage(
-      agentId,
-      user.id,
-      body.message,
-      parsedSessionId
-    );
+    try {
+      return await this.chatService.sendMessage(
+        agentId,
+        user.id,
+        body.message,
+        parsedSessionId
+      );
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      // Handle API key errors
+      const errorObj = error as { message?: string; status?: number };
+      if (errorObj.message?.includes('API key') || errorObj.status === 401) {
+        throw new HttpException(
+          'Invalid API key. Please check your .env file.',
+          HttpStatus.UNAUTHORIZED
+        );
+      }
+      throw new HttpException(
+        errorObj.message || 'Unknown error',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   @Put(':agentId/sessions/:sessionId')

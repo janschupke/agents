@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
 import { MessageTranslationService } from './message-translation.service';
 import { MessageTranslationRepository } from './message-translation.repository';
 import { MessageRepository } from '../message/message.repository';
@@ -7,7 +7,12 @@ import { SessionRepository } from '../session/session.repository';
 import { OpenAIService } from '../openai/openai.service';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
 import { WordTranslationService } from './word-translation.service';
-import { ERROR_MESSAGES, MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
+import {
+  ERROR_MESSAGES,
+  MAGIC_STRINGS,
+} from '../common/constants/error-messages.constants.js';
+import OpenAI from 'openai';
+import { Message } from '@prisma/client';
 
 describe('MessageTranslationService', () => {
   let service: MessageTranslationService;
@@ -100,12 +105,16 @@ describe('MessageTranslationService', () => {
         createdAt: new Date(),
       };
 
-      translationRepository.findByMessageId.mockResolvedValue(existingTranslation);
+      translationRepository.findByMessageId.mockResolvedValue(
+        existingTranslation
+      );
 
       const result = await service.translateMessage(messageId, userId);
 
       expect(result).toEqual({ translation: 'Existing translation' });
-      expect(translationRepository.findByMessageId).toHaveBeenCalledWith(messageId);
+      expect(translationRepository.findByMessageId).toHaveBeenCalledWith(
+        messageId
+      );
       expect(messageRepository.findById).not.toHaveBeenCalled();
     });
 
@@ -132,6 +141,9 @@ describe('MessageTranslationService', () => {
         sessionId: 1,
         role: 'user',
         content: 'Test message',
+        metadata: null,
+        rawRequest: null,
+        rawResponse: null,
         createdAt: new Date(),
       };
 
@@ -155,6 +167,9 @@ describe('MessageTranslationService', () => {
         sessionId: 1,
         role: 'user',
         content: 'Test message',
+        metadata: null,
+        rawRequest: null,
+        rawResponse: null,
         createdAt: new Date(),
       };
       const session = {
@@ -169,6 +184,7 @@ describe('MessageTranslationService', () => {
       translationRepository.findByMessageId.mockResolvedValue(null);
       messageRepository.findById.mockResolvedValue(message);
       sessionRepository.findByIdAndUserId.mockResolvedValue(session);
+      messageRepository.findAllBySessionId.mockResolvedValue([message]);
       apiCredentialsService.getApiKey.mockResolvedValue(null);
 
       await expect(service.translateMessage(messageId, userId)).rejects.toThrow(
@@ -188,6 +204,9 @@ describe('MessageTranslationService', () => {
         sessionId: 1,
         role: 'user',
         content: 'Bonjour',
+        metadata: null,
+        rawRequest: null,
+        rawResponse: null,
         createdAt: new Date(),
       };
       const session = {
@@ -218,8 +237,12 @@ describe('MessageTranslationService', () => {
       messageRepository.findById.mockResolvedValue(message);
       sessionRepository.findByIdAndUserId.mockResolvedValue(session);
       apiCredentialsService.getApiKey.mockResolvedValue(apiKey);
-      openaiService.getClient.mockReturnValue(mockOpenAIClient as any);
-      messageRepository.findAllBySessionId.mockResolvedValue([message]);
+      openaiService.getClient.mockReturnValue(
+        mockOpenAIClient as unknown as OpenAI
+      );
+      messageRepository.findAllBySessionId.mockResolvedValue([
+        message as Message,
+      ]);
       translationRepository.create.mockResolvedValue({
         id: 1,
         messageId,
@@ -230,7 +253,10 @@ describe('MessageTranslationService', () => {
       const result = await service.translateMessage(messageId, userId);
 
       expect(result).toEqual({ translation: 'Hello' });
-      expect(translationRepository.create).toHaveBeenCalledWith(messageId, 'Hello');
+      expect(translationRepository.create).toHaveBeenCalledWith(
+        messageId,
+        'Hello'
+      );
       expect(apiCredentialsService.getApiKey).toHaveBeenCalledWith(
         userId,
         MAGIC_STRINGS.OPENAI_PROVIDER
@@ -250,8 +276,18 @@ describe('MessageTranslationService', () => {
     it('should return translations map for message IDs', async () => {
       const messageIds = [1, 2, 3];
       const translations = [
-        { id: 1, messageId: 1, translation: 'Translation 1', createdAt: new Date() },
-        { id: 2, messageId: 2, translation: 'Translation 2', createdAt: new Date() },
+        {
+          id: 1,
+          messageId: 1,
+          translation: 'Translation 1',
+          createdAt: new Date(),
+        },
+        {
+          id: 2,
+          messageId: 2,
+          translation: 'Translation 2',
+          createdAt: new Date(),
+        },
       ];
 
       translationRepository.findByMessageIds.mockResolvedValue(translations);
@@ -261,7 +297,9 @@ describe('MessageTranslationService', () => {
       expect(result.size).toBe(2);
       expect(result.get(1)).toBe('Translation 1');
       expect(result.get(2)).toBe('Translation 2');
-      expect(translationRepository.findByMessageIds).toHaveBeenCalledWith(messageIds);
+      expect(translationRepository.findByMessageIds).toHaveBeenCalledWith(
+        messageIds
+      );
     });
   });
 
@@ -291,6 +329,9 @@ describe('MessageTranslationService', () => {
         sessionId: 1,
         role: 'assistant',
         content: 'Bonjour',
+        metadata: null,
+        rawRequest: null,
+        rawResponse: null,
         createdAt: new Date(),
       };
       const session = {
@@ -304,7 +345,9 @@ describe('MessageTranslationService', () => {
 
       messageRepository.findById.mockResolvedValue(message);
       sessionRepository.findByIdAndUserId.mockResolvedValue(session);
-      translationRepository.findByMessageId.mockResolvedValue(existingTranslation);
+      translationRepository.findByMessageId.mockResolvedValue(
+        existingTranslation
+      );
       wordTranslationService.getWordTranslationsForMessage.mockResolvedValue(
         wordTranslations
       );
@@ -315,7 +358,9 @@ describe('MessageTranslationService', () => {
         translation: 'Full translation',
         wordTranslations,
       });
-      expect(wordTranslationService.translateWordsInMessage).not.toHaveBeenCalled();
+      expect(
+        wordTranslationService.translateWordsInMessage
+      ).not.toHaveBeenCalled();
     });
 
     it('should throw error if message not found', async () => {
@@ -341,6 +386,9 @@ describe('MessageTranslationService', () => {
         sessionId: 1,
         role: 'assistant',
         content: 'Bonjour',
+        metadata: null,
+        rawRequest: null,
+        rawResponse: null,
         createdAt: new Date(),
       };
       const session = {
@@ -371,9 +419,13 @@ describe('MessageTranslationService', () => {
       messageRepository.findById.mockResolvedValue(message);
       sessionRepository.findByIdAndUserId.mockResolvedValue(session);
       translationRepository.findByMessageId.mockResolvedValue(null);
-      wordTranslationService.getWordTranslationsForMessage.mockResolvedValue([]);
+      wordTranslationService.getWordTranslationsForMessage.mockResolvedValue(
+        []
+      );
       apiCredentialsService.getApiKey.mockResolvedValue(apiKey);
-      wordTranslationService.translateWordsInMessage.mockResolvedValue(undefined);
+      wordTranslationService.translateWordsInMessage.mockResolvedValue(
+        undefined
+      );
       translationRepository.findByMessageId
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce(newTranslation);
@@ -387,11 +439,9 @@ describe('MessageTranslationService', () => {
         translation: 'Hello',
         wordTranslations,
       });
-      expect(wordTranslationService.translateWordsInMessage).toHaveBeenCalledWith(
-        messageId,
-        'Bonjour',
-        apiKey
-      );
+      expect(
+        wordTranslationService.translateWordsInMessage
+      ).toHaveBeenCalledWith(messageId, 'Bonjour', apiKey);
     });
   });
 });

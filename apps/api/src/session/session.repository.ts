@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChatSession } from '@prisma/client';
 
@@ -50,7 +47,6 @@ export class SessionRepository {
     const sessions = await this.findAllByAgentId(agentId, userId);
     return sessions.length > 0 ? sessions[0] : null;
   }
-
 
   async findAllByAgentId(
     agentId: number,

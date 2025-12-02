@@ -55,7 +55,9 @@ export class OpenAIService {
         return embedding;
       }
 
-      throw new InternalServerErrorException('No embedding returned from OpenAI');
+      throw new InternalServerErrorException(
+        'No embedding returned from OpenAI'
+      );
     } catch (error) {
       const err = error as { message?: string };
       this.logger.error(
@@ -108,7 +110,8 @@ export class OpenAIService {
             content: options.userMessage,
           },
         ],
-        temperature: options.temperature ?? NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE,
+        temperature:
+          options.temperature ?? NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE,
         max_tokens: options.maxTokens,
       });
 

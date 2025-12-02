@@ -16,7 +16,10 @@ import { AgentMemoryRepository } from './agent-memory.repository';
 import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
-import { ERROR_MESSAGES, MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
+import {
+  ERROR_MESSAGES,
+  MAGIC_STRINGS,
+} from '../common/constants/error-messages.constants.js';
 
 interface AgentMemoryResponse {
   id: number;
@@ -127,10 +130,7 @@ export class AgentMemoryController {
       );
     }
 
-    const updated = await this.memoryRepository.update(
-      memoryId,
-      body.keyPoint
-    );
+    const updated = await this.memoryRepository.update(memoryId, body.keyPoint);
 
     return {
       id: updated.id,

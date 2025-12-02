@@ -2,7 +2,10 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiCredentialsRepository } from './api-credentials.repository';
 import { EncryptionService } from '../common/services/encryption.service';
 import { ApiCredentialsStatus } from '../common/interfaces/api-credentials.interface';
-import { MAGIC_STRINGS, ERROR_MESSAGES } from '../common/constants/error-messages.constants.js';
+import {
+  MAGIC_STRINGS,
+  ERROR_MESSAGES,
+} from '../common/constants/error-messages.constants.js';
 
 @Injectable()
 export class ApiCredentialsService {
@@ -73,7 +76,10 @@ export class ApiCredentialsService {
       provider
     );
     if (!credential) {
-      throw new HttpException(ERROR_MESSAGES.API_KEY_NOT_FOUND, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.API_KEY_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
 
     await this.repository.delete(userId, provider);

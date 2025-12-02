@@ -26,7 +26,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       message = exception.getResponse();
     } else if (exception instanceof Error) {
       // Handle specific error types
-      if (exception.message.includes('API key') || exception.message.includes('401')) {
+      if (
+        exception.message.includes('API key') ||
+        exception.message.includes('401')
+      ) {
         status = HttpStatus.UNAUTHORIZED;
         message = ERROR_MESSAGES.INVALID_API_KEY;
       } else {

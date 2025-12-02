@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { AgentRepository } from '../agent/agent.repository';
 import { SessionRepository } from './session.repository';
 import { SessionResponseDto } from '../common/dto/chat.dto';
@@ -25,7 +21,10 @@ export class SessionService {
       userId
     );
     if (!agent) {
-      throw new HttpException(ERROR_MESSAGES.AGENT_NOT_FOUND, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.AGENT_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
 
     // Get all sessions for this agent and user
@@ -53,7 +52,10 @@ export class SessionService {
       userId
     );
     if (!agent) {
-      throw new HttpException(ERROR_MESSAGES.AGENT_NOT_FOUND, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.AGENT_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
 
     // Create new session
@@ -75,7 +77,10 @@ export class SessionService {
     // Verify the agent belongs to the user
     const agent = await this.agentRepository.findByIdAndUserId(agentId, userId);
     if (!agent) {
-      throw new HttpException(ERROR_MESSAGES.AGENT_NOT_FOUND, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.AGENT_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
 
     // Verify the session belongs to the agent and user
@@ -84,7 +89,10 @@ export class SessionService {
       userId
     );
     if (!session) {
-      throw new HttpException(ERROR_MESSAGES.SESSION_NOT_FOUND, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.SESSION_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
 
     if (session.agentId !== agentId) {
@@ -116,7 +124,10 @@ export class SessionService {
     // Verify the agent belongs to the user
     const agent = await this.agentRepository.findByIdAndUserId(agentId, userId);
     if (!agent) {
-      throw new HttpException(ERROR_MESSAGES.AGENT_NOT_FOUND, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.AGENT_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
 
     // Verify the session belongs to the agent and user
@@ -125,7 +136,10 @@ export class SessionService {
       userId
     );
     if (!session) {
-      throw new HttpException(ERROR_MESSAGES.SESSION_NOT_FOUND, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.SESSION_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
 
     if (session.agentId !== agentId) {

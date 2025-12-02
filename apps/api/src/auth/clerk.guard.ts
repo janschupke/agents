@@ -186,8 +186,9 @@ export class ClerkGuard implements CanActivate {
             | { roles?: string[] }
             | null
             | undefined;
-          const roles =
-            publicMetadata?.roles || [MAGIC_STRINGS.DEFAULT_USER_ROLE];
+          const roles = publicMetadata?.roles || [
+            MAGIC_STRINGS.DEFAULT_USER_ROLE,
+          ];
 
           userData = {
             id: userId,

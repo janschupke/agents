@@ -14,12 +14,18 @@ export class AgentService {
   async findById(id: number, userId: string): Promise<AgentResponse> {
     const agent = await this.agentRepository.findByIdWithConfig(id, userId);
     if (!agent) {
-      throw new HttpException(ERROR_MESSAGES.AGENT_NOT_FOUND, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.AGENT_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
     // Convert AgentWithConfig to AgentResponse
     const agentResponse = await this.agentRepository.findById(id);
     if (!agentResponse) {
-      throw new HttpException(ERROR_MESSAGES.AGENT_NOT_FOUND, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.AGENT_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
     return {
       ...agentResponse,
@@ -37,7 +43,10 @@ export class AgentService {
     // User is automatically synced to DB by ClerkGuard
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      throw new HttpException(ERROR_MESSAGES.AGENT_NAME_REQUIRED, HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        ERROR_MESSAGES.AGENT_NAME_REQUIRED,
+        HttpStatus.BAD_REQUEST
+      );
     }
 
     const existingAgent = await this.agentRepository.findByName(name, userId);
@@ -73,11 +82,17 @@ export class AgentService {
   ): Promise<AgentResponse> {
     const agent = await this.agentRepository.findByIdAndUserId(id, userId);
     if (!agent) {
-      throw new HttpException(ERROR_MESSAGES.AGENT_NOT_FOUND, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.AGENT_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      throw new HttpException(ERROR_MESSAGES.AGENT_NAME_REQUIRED, HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        ERROR_MESSAGES.AGENT_NAME_REQUIRED,
+        HttpStatus.BAD_REQUEST
+      );
     }
 
     // Check if name is being changed and if it conflicts with another agent
@@ -99,7 +114,10 @@ export class AgentService {
       avatarUrl
     );
     if (!updated) {
-      throw new HttpException(ERROR_MESSAGES.AGENT_NOT_FOUND, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.AGENT_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
 
     // Update configs if provided
@@ -113,7 +131,10 @@ export class AgentService {
   async delete(id: number, userId: string): Promise<void> {
     const agent = await this.agentRepository.findByIdAndUserId(id, userId);
     if (!agent) {
-      throw new HttpException(ERROR_MESSAGES.AGENT_NOT_FOUND, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.AGENT_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
 
     // Delete the agent - Prisma will cascade delete all related data (sessions, messages, configs, memories)

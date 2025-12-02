@@ -235,7 +235,9 @@ describe('UserController', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const loggerSpy = jest
+        .spyOn(controller['logger'], 'warn')
+        .mockImplementation();
 
       mockClerkService.updateUserRoles.mockRejectedValue(
         new Error('Clerk error')
@@ -246,8 +248,8 @@ describe('UserController', () => {
       const result = await controller.getCurrentUser(userWithoutRoles);
 
       expect(result).toBeDefined();
-      expect(consoleSpy).toHaveBeenCalled();
-      consoleSpy.mockRestore();
+      expect(loggerSpy).toHaveBeenCalled();
+      loggerSpy.mockRestore();
     });
 
     it('should throw HttpException on service error', async () => {

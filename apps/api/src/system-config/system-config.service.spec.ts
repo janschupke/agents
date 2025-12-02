@@ -37,7 +37,9 @@ describe('SystemConfigService', () => {
       const result = await service.getBehaviorRules();
 
       expect(result).toEqual([]);
-      expect(systemConfigRepository.findByKey).toHaveBeenCalledWith('behavior_rules');
+      expect(systemConfigRepository.findByKey).toHaveBeenCalledWith(
+        'behavior_rules'
+      );
     });
 
     it('should parse array of rules', async () => {
@@ -185,7 +187,9 @@ describe('SystemConfigService', () => {
 
       await service.updateConfigs(configs);
 
-      expect(systemConfigRepository.updateConfigs).toHaveBeenCalledWith(configs);
+      expect(systemConfigRepository.updateConfigs).toHaveBeenCalledWith(
+        configs
+      );
     });
   });
 });

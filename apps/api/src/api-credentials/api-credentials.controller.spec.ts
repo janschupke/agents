@@ -43,9 +43,7 @@ describe('ApiCredentialsController', () => {
 
   describe('getCredentialsStatus', () => {
     it('should return credentials status', async () => {
-      const credentials = [
-        { provider: 'openai', hasKey: true },
-      ];
+      const credentials = [{ provider: 'openai', hasKey: true }];
 
       apiCredentialsService.getCredentialsStatus.mockResolvedValue(credentials);
 

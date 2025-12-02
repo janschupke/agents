@@ -36,14 +36,16 @@ export class AgentMemoryRepository {
     vector?: number[]
   ): Promise<AgentMemory> {
     if (!vector || vector.length === 0) {
-      throw new BadRequestException('Vector is required for agent memory creation');
+      throw new BadRequestException(
+        'Vector is required for agent memory creation'
+      );
     }
 
-      if (vector.length !== this.VECTOR_DIMENSION) {
-        this.logger.warn(
-          `Warning: Vector length is ${vector.length}, expected ${this.VECTOR_DIMENSION}. Attempting to proceed...`
-        );
-      }
+    if (vector.length !== this.VECTOR_DIMENSION) {
+      this.logger.warn(
+        `Warning: Vector length is ${vector.length}, expected ${this.VECTOR_DIMENSION}. Attempting to proceed...`
+      );
+    }
 
     const vectorString = `[${vector.join(',')}]`;
 

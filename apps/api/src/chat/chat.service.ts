@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  HttpException,
-  HttpStatus,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { AgentRepository } from '../agent/agent.repository';
 import { SessionRepository } from '../session/session.repository';
 import { SessionService } from '../session/session.service';
@@ -15,10 +10,16 @@ import { SystemConfigRepository } from '../system-config/system-config.repositor
 import { MessageTranslationService } from '../message-translation/message-translation.service';
 import { WordTranslationService } from '../message-translation/word-translation.service';
 import { MessageRole } from '../common/enums/message-role.enum';
-import { MEMORY_CONFIG, OPENAI_MODELS } from '../common/constants/api.constants.js';
+import {
+  MEMORY_CONFIG,
+  OPENAI_MODELS,
+} from '../common/constants/api.constants.js';
 import { BehaviorRulesUtil } from '../common/utils/behavior-rules.util.js';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
-import { MAGIC_STRINGS, ERROR_MESSAGES } from '../common/constants/error-messages.constants.js';
+import {
+  MAGIC_STRINGS,
+  ERROR_MESSAGES,
+} from '../common/constants/error-messages.constants.js';
 import {
   SessionResponseDto,
   ChatHistoryResponseDto,
@@ -62,13 +63,21 @@ export class ChatService {
   private async validateAgentAccess(
     agentId: number,
     userId: string
-  ): Promise<{ id: number; name: string; description: string | null; configs: Record<string, unknown> }> {
+  ): Promise<{
+    id: number;
+    name: string;
+    description: string | null;
+    configs: Record<string, unknown>;
+  }> {
     const agent = await this.agentRepository.findByIdWithConfig(
       agentId,
       userId
     );
     if (!agent) {
-      throw new HttpException(ERROR_MESSAGES.AGENT_NOT_FOUND, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.AGENT_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
     return agent;
   }
@@ -86,7 +95,10 @@ export class ChatService {
       userId
     );
     if (!session || session.agentId !== agentId) {
-      throw new HttpException(ERROR_MESSAGES.SESSION_NOT_FOUND, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.SESSION_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
     return session;
   }
@@ -259,7 +271,9 @@ export class ChatService {
         .map((m, i) => `${i + 1}. ${m}`)
         .join('\n\n')}`;
 
-      const systemMessages = messagesForAPI.filter((m) => m.role === MessageRole.SYSTEM);
+      const systemMessages = messagesForAPI.filter(
+        (m) => m.role === MessageRole.SYSTEM
+      );
       const nonSystemMessages = messagesForAPI.filter(
         (m) => m.role !== MessageRole.SYSTEM
       );
@@ -310,7 +324,8 @@ export class ChatService {
         if (
           !messagesForAPI.some(
             (m) =>
-              m.role === MessageRole.SYSTEM && m.content === systemBehaviorRulesMessage
+              m.role === MessageRole.SYSTEM &&
+              m.content === systemBehaviorRulesMessage
           )
         ) {
           // Add system behavior rules after system prompt but before agent-specific rules
@@ -350,7 +365,9 @@ export class ChatService {
           // Check if behavior rules are already present (exact match)
           if (
             !messagesForAPI.some(
-              (m) => m.role === MessageRole.SYSTEM && m.content === behaviorRulesMessage
+              (m) =>
+                m.role === MessageRole.SYSTEM &&
+                m.content === behaviorRulesMessage
             )
           ) {
             // Add behavior rules after system prompt but before other system messages
@@ -494,7 +511,12 @@ export class ChatService {
     userId: string,
     sessionName?: string
   ): Promise<SessionResponseDto> {
-    return this.sessionService.updateSession(agentId, sessionId, userId, sessionName);
+    return this.sessionService.updateSession(
+      agentId,
+      sessionId,
+      userId,
+      sessionName
+    );
   }
 
   async deleteSession(

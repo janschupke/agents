@@ -147,7 +147,9 @@ describe('OpenAIService', () => {
       const apiKey = 'test-api-key';
       const text = 'test text';
       const mockEmbedding = new Array(1000).fill(0.1); // Wrong dimension
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'warn')
+        .mockImplementation();
 
       mockOpenAIClient = {
         embeddings: {
@@ -172,11 +174,11 @@ describe('OpenAIService', () => {
       const result = await service.generateEmbedding(text, apiKey);
 
       expect(result).toEqual(mockEmbedding);
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(loggerSpy).toHaveBeenCalledWith(
         'Warning: Expected embedding dimension 1536, got 1000'
       );
 
-      consoleSpy.mockRestore();
+      loggerSpy.mockRestore();
     });
   });
 

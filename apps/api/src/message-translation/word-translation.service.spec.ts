@@ -3,6 +3,7 @@ import { WordTranslationService } from './word-translation.service';
 import { MessageWordTranslationRepository } from './message-word-translation.repository';
 import { OpenAIService } from '../openai/openai.service';
 import { MessageTranslationRepository } from './message-translation.repository';
+import OpenAI from 'openai';
 
 describe('WordTranslationService', () => {
   let service: WordTranslationService;
@@ -60,7 +61,11 @@ describe('WordTranslationService', () => {
 
       wordTranslationRepository.existsForMessage.mockResolvedValue(true);
 
-      await service.translateWordsInMessage(messageId, messageContent, 'api-key');
+      await service.translateWordsInMessage(
+        messageId,
+        messageContent,
+        'api-key'
+      );
 
       expect(wordTranslationRepository.existsForMessage).toHaveBeenCalledWith(
         messageId
@@ -99,8 +104,10 @@ describe('WordTranslationService', () => {
       };
 
       wordTranslationRepository.existsForMessage.mockResolvedValue(false);
-      openaiService.getClient.mockReturnValue(mockOpenAIClient as any);
-      wordTranslationRepository.createMany.mockResolvedValue(undefined);
+      openaiService.getClient.mockReturnValue(
+        mockOpenAIClient as unknown as OpenAI
+      );
+      wordTranslationRepository.createMany.mockResolvedValue({ count: 3 });
       translationRepository.findByMessageId.mockResolvedValue(null);
       translationRepository.create.mockResolvedValue({
         id: 1,
@@ -149,9 +156,13 @@ describe('WordTranslationService', () => {
       };
 
       wordTranslationRepository.existsForMessage.mockResolvedValue(false);
-      openaiService.getClient.mockReturnValue(mockOpenAIClient as any);
-      wordTranslationRepository.createMany.mockResolvedValue(undefined);
-      translationRepository.findByMessageId.mockResolvedValue(existingTranslation);
+      openaiService.getClient.mockReturnValue(
+        mockOpenAIClient as unknown as OpenAI
+      );
+      wordTranslationRepository.createMany.mockResolvedValue({ count: 3 });
+      translationRepository.findByMessageId.mockResolvedValue(
+        existingTranslation
+      );
 
       await service.translateWordsInMessage(messageId, messageContent, apiKey);
 
@@ -174,7 +185,7 @@ describe('WordTranslationService', () => {
                 {
                   message: {
                     content: JSON.stringify({
-                      wordTranslations: mockWordTranslations,
+                      words: mockWordTranslations,
                       fullTranslation: null,
                     }),
                   },
@@ -186,8 +197,10 @@ describe('WordTranslationService', () => {
       };
 
       wordTranslationRepository.existsForMessage.mockResolvedValue(false);
-      openaiService.getClient.mockReturnValue(mockOpenAIClient as any);
-      wordTranslationRepository.createMany.mockResolvedValue(undefined);
+      openaiService.getClient.mockReturnValue(
+        mockOpenAIClient as unknown as OpenAI
+      );
+      wordTranslationRepository.createMany.mockResolvedValue({ count: 1 });
       translationRepository.findByMessageId.mockResolvedValue(null);
       translationRepository.create.mockResolvedValue({
         id: 1,
@@ -198,14 +211,17 @@ describe('WordTranslationService', () => {
 
       await service.translateWordsInMessage(messageId, messageContent, apiKey);
 
-      expect(translationRepository.create).toHaveBeenCalledWith(messageId, 'Hello');
+      expect(translationRepository.create).toHaveBeenCalledWith(
+        messageId,
+        'Hello'
+      );
     });
   });
 
   describe('getWordTranslationsForMessage', () => {
     it('should return word translations for a message', async () => {
       const messageId = 1;
-      const wordTranslations = [
+      const dbWordTranslations = [
         {
           id: 1,
           messageId,
@@ -215,12 +231,21 @@ describe('WordTranslationService', () => {
           createdAt: new Date(),
         },
       ];
+      const expectedResult = [
+        {
+          originalWord: 'Bonjour',
+          translation: 'Hello',
+          sentenceContext: 'Bonjour',
+        },
+      ];
 
-      wordTranslationRepository.findByMessageId.mockResolvedValue(wordTranslations);
+      wordTranslationRepository.findByMessageId.mockResolvedValue(
+        dbWordTranslations
+      );
 
       const result = await service.getWordTranslationsForMessage(messageId);
 
-      expect(result).toEqual(wordTranslations);
+      expect(result).toEqual(expectedResult);
       expect(wordTranslationRepository.findByMessageId).toHaveBeenCalledWith(
         messageId
       );
@@ -229,11 +254,15 @@ describe('WordTranslationService', () => {
 
   describe('getWordTranslationsForMessages', () => {
     it('should return empty array for empty message IDs', async () => {
+      wordTranslationRepository.findByMessageIds.mockResolvedValue([]);
+
       const result = await service.getWordTranslationsForMessages([]);
 
       expect(result).toBeInstanceOf(Map);
       expect(result.size).toBe(0);
-      expect(wordTranslationRepository.findByMessageIds).not.toHaveBeenCalled();
+      expect(wordTranslationRepository.findByMessageIds).toHaveBeenCalledWith(
+        []
+      );
     });
 
     it('should return word translations map for multiple messages', async () => {
@@ -257,7 +286,9 @@ describe('WordTranslationService', () => {
         },
       ];
 
-      wordTranslationRepository.findByMessageIds.mockResolvedValue(wordTranslations);
+      wordTranslationRepository.findByMessageIds.mockResolvedValue(
+        wordTranslations
+      );
 
       const result = await service.getWordTranslationsForMessages(messageIds);
 

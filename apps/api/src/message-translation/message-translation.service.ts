@@ -7,7 +7,10 @@ import { ApiCredentialsService } from '../api-credentials/api-credentials.servic
 import { WordTranslationService } from './word-translation.service';
 import { OPENAI_PROMPTS } from '../common/constants/openai-prompts.constants.js';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
-import { MAGIC_STRINGS, ERROR_MESSAGES } from '../common/constants/error-messages.constants.js';
+import {
+  MAGIC_STRINGS,
+  ERROR_MESSAGES,
+} from '../common/constants/error-messages.constants.js';
 import { OPENAI_MODELS } from '../common/constants/api.constants.js';
 
 @Injectable()
@@ -38,7 +41,10 @@ export class MessageTranslationService {
     // Get the message
     const message = await this.messageRepository.findById(messageId);
     if (!message) {
-      throw new HttpException(ERROR_MESSAGES.MESSAGE_NOT_FOUND, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.MESSAGE_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
 
     // Verify user has access to this message's session
@@ -201,7 +207,10 @@ export class MessageTranslationService {
     // Get the message
     const message = await this.messageRepository.findById(messageId);
     if (!message) {
-      throw new HttpException(ERROR_MESSAGES.MESSAGE_NOT_FOUND, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        ERROR_MESSAGES.MESSAGE_NOT_FOUND,
+        HttpStatus.NOT_FOUND
+      );
     }
 
     // Verify user has access to this message's session

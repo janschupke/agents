@@ -119,8 +119,9 @@ export class ClerkWebhookService {
 
   private async handleUserCreated(data: ClerkWebhookEvent['data']) {
     // Extract roles from public metadata, default to ["user"] if not present
-    const roles =
-      data.public_metadata?.roles || [MAGIC_STRINGS.DEFAULT_USER_ROLE];
+    const roles = data.public_metadata?.roles || [
+      MAGIC_STRINGS.DEFAULT_USER_ROLE,
+    ];
 
     // Create user in DB
     await this.userService.findOrCreate({
@@ -142,8 +143,9 @@ export class ClerkWebhookService {
 
   private async handleUserUpdated(data: ClerkWebhookEvent['data']) {
     // Extract roles from public metadata
-    const roles =
-      data.public_metadata?.roles || [MAGIC_STRINGS.DEFAULT_USER_ROLE];
+    const roles = data.public_metadata?.roles || [
+      MAGIC_STRINGS.DEFAULT_USER_ROLE,
+    ];
 
     // Update user in DB
     await this.userService.update(data.id, {

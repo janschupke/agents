@@ -15,7 +15,10 @@ import { SessionRepository } from '../session/session.repository';
 import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
 import { API_ROUTES } from '../common/constants/api-routes.constants.js';
-import { ERROR_MESSAGES, MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
+import {
+  ERROR_MESSAGES,
+  MAGIC_STRINGS,
+} from '../common/constants/error-messages.constants.js';
 
 @Controller(API_ROUTES.MESSAGES.BASE)
 export class MessageTranslationController {

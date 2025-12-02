@@ -65,8 +65,9 @@ export class UserController {
 
     // Get fresh user data with roles from DB
     const dbUser = await this.userService.findById(user.id);
-    const dbRoles =
-      (dbUser.roles as string[]) || [MAGIC_STRINGS.DEFAULT_USER_ROLE];
+    const dbRoles = (dbUser.roles as string[]) || [
+      MAGIC_STRINGS.DEFAULT_USER_ROLE,
+    ];
 
     return {
       id: dbUser.id,

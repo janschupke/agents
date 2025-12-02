@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
 import { MessageTranslationController } from './message-translation.controller';
 import { MessageTranslationService } from './message-translation.service';
 import { WordTranslationService } from './word-translation.service';
@@ -32,8 +32,12 @@ describe('MessageTranslationController', () => {
     findByIdAndUserId: jest.fn(),
   };
 
-  const mockUser: { id: string; roles: string[] } = {
+  const mockUser = {
     id: 'user-1',
+    email: 'test@example.com',
+    firstName: 'Test',
+    lastName: 'User',
+    imageUrl: null,
     roles: ['user'],
   };
 
@@ -137,9 +141,9 @@ describe('MessageTranslationController', () => {
         2: 'Translation 2',
         3: 'Translation 3',
       });
-      expect(translationService.getTranslationsForMessages).toHaveBeenCalledWith([
-        1, 2, 3,
-      ]);
+      expect(
+        translationService.getTranslationsForMessages
+      ).toHaveBeenCalledWith([1, 2, 3]);
     });
 
     it('should filter out invalid IDs', async () => {
@@ -159,9 +163,9 @@ describe('MessageTranslationController', () => {
         1: 'Translation 1',
         2: 'Translation 2',
       });
-      expect(translationService.getTranslationsForMessages).toHaveBeenCalledWith([
-        1, 2,
-      ]);
+      expect(
+        translationService.getTranslationsForMessages
+      ).toHaveBeenCalledWith([1, 2]);
     });
   });
 
@@ -173,6 +177,9 @@ describe('MessageTranslationController', () => {
         sessionId: 1,
         role: 'assistant',
         content: 'Bonjour',
+        metadata: null,
+        rawRequest: null,
+        rawResponse: null,
         createdAt: new Date(),
       };
       const session = {
@@ -204,7 +211,10 @@ describe('MessageTranslationController', () => {
 
       expect(result).toEqual({ wordTranslations });
       expect(messageRepository.findById).toHaveBeenCalledWith(messageId);
-      expect(sessionRepository.findByIdAndUserId).toHaveBeenCalledWith(1, 'user-1');
+      expect(sessionRepository.findByIdAndUserId).toHaveBeenCalledWith(
+        1,
+        'user-1'
+      );
     });
 
     it('should throw error if message not found', async () => {
@@ -227,6 +237,9 @@ describe('MessageTranslationController', () => {
         sessionId: 1,
         role: 'assistant',
         content: 'Bonjour',
+        metadata: null,
+        rawRequest: null,
+        rawResponse: null,
         createdAt: new Date(),
       };
 
@@ -250,6 +263,9 @@ describe('MessageTranslationController', () => {
         sessionId: 1,
         role: 'assistant',
         content: 'Bonjour',
+        metadata: null,
+        rawRequest: null,
+        rawResponse: null,
         createdAt: new Date(),
       };
       const session = {
@@ -281,7 +297,10 @@ describe('MessageTranslationController', () => {
         wordTranslations
       );
 
-      const result = await controller.getMessageTranslations(messageId, mockUser);
+      const result = await controller.getMessageTranslations(
+        messageId,
+        mockUser
+      );
 
       expect(result).toEqual({
         translation: 'Hello',
@@ -296,6 +315,9 @@ describe('MessageTranslationController', () => {
         sessionId: 1,
         role: 'assistant',
         content: 'Bonjour',
+        metadata: null,
+        rawRequest: null,
+        rawResponse: null,
         createdAt: new Date(),
       };
       const session = {
@@ -307,7 +329,14 @@ describe('MessageTranslationController', () => {
         updatedAt: new Date(),
       };
       const translationsMap = new Map();
-      const wordTranslations = [];
+      const wordTranslations: Array<{
+        id: number;
+        messageId: number;
+        originalWord: string;
+        translation: string;
+        sentenceContext: string;
+        createdAt: Date;
+      }> = [];
 
       messageRepository.findById.mockResolvedValue(message);
       sessionRepository.findByIdAndUserId.mockResolvedValue(session);
@@ -318,7 +347,10 @@ describe('MessageTranslationController', () => {
         wordTranslations
       );
 
-      const result = await controller.getMessageTranslations(messageId, mockUser);
+      const result = await controller.getMessageTranslations(
+        messageId,
+        mockUser
+      );
 
       expect(result).toEqual({
         translation: undefined,

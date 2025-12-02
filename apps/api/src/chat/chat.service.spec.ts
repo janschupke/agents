@@ -3,6 +3,7 @@ import { HttpException } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { AgentRepository } from '../agent/agent.repository';
 import { SessionRepository } from '../session/session.repository';
+import { SessionService } from '../session/session.service';
 import { MessageRepository } from '../message/message.repository';
 import { AgentMemoryService } from '../memory/agent-memory.service';
 import { AgentMemoryRepository } from '../memory/agent-memory.repository';
@@ -24,6 +25,13 @@ describe('ChatService', () => {
   const mockSessionRepository = {
     findLatestByAgentId: jest.fn(),
     create: jest.fn(),
+  };
+
+  const mockSessionService = {
+    getSessions: jest.fn(),
+    createSession: jest.fn(),
+    updateSession: jest.fn(),
+    deleteSession: jest.fn(),
   };
 
   const mockMessageRepository = {
@@ -82,6 +90,10 @@ describe('ChatService', () => {
         {
           provide: SessionRepository,
           useValue: mockSessionRepository,
+        },
+        {
+          provide: SessionService,
+          useValue: mockSessionService,
         },
         {
           provide: MessageRepository,

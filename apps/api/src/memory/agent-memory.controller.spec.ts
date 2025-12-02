@@ -1,10 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
 import { AgentMemoryController } from './agent-memory.controller';
 import { AgentMemoryService } from './agent-memory.service';
 import { AgentMemoryRepository } from './agent-memory.repository';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
-import { ERROR_MESSAGES, MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
+import {
+  ERROR_MESSAGES,
+  MAGIC_STRINGS,
+} from '../common/constants/error-messages.constants.js';
 
 describe('AgentMemoryController', () => {
   let controller: AgentMemoryController;
@@ -26,8 +29,12 @@ describe('AgentMemoryController', () => {
     getApiKey: jest.fn(),
   };
 
-  const mockUser: { id: string; roles: string[] } = {
+  const mockUser = {
     id: 'user-1',
+    email: 'test@example.com',
+    firstName: 'Test',
+    lastName: 'User',
+    imageUrl: null,
     roles: ['user'],
   };
 

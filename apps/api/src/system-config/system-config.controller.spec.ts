@@ -53,7 +53,9 @@ describe('SystemConfigController', () => {
       const result = await controller.updateBehaviorRules(dto);
 
       expect(result).toEqual({ rules });
-      expect(systemConfigService.updateBehaviorRules).toHaveBeenCalledWith(rules);
+      expect(systemConfigService.updateBehaviorRules).toHaveBeenCalledWith(
+        rules
+      );
     });
   });
 

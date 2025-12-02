@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AgentMemoryRepository } from './agent-memory.repository';
 import { OpenAIService } from '../openai/openai.service';
-import { MEMORY_CONFIG, OPENAI_MODELS } from '../common/constants/api.constants.js';
+import {
+  MEMORY_CONFIG,
+  OPENAI_MODELS,
+} from '../common/constants/api.constants.js';
 import { OPENAI_PROMPTS } from '../common/constants/openai-prompts.constants.js';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 

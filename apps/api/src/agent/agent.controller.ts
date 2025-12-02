@@ -7,6 +7,8 @@ import {
   Param,
   Body,
   ParseIntPipe,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { AgentService } from './agent.service';
 import { User } from '../auth/decorators/user.decorator';
@@ -25,7 +27,17 @@ export class AgentController {
   async getAllAgents(
     @User() user: AuthenticatedUser
   ): Promise<AgentResponse[]> {
-    return await this.agentService.findAll(user.id);
+    try {
+      return await this.agentService.findAll(user.id);
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Unknown error',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   @Get(':id')

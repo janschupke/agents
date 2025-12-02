@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { AgentRepository } from '../agent/agent.repository';
 import { SessionRepository } from './session.repository';

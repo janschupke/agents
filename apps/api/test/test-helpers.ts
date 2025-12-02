@@ -43,8 +43,8 @@ export class MockOpenAIService {
     },
   };
 
-  getClient(_apiKey?: string) {
-    return this.mockClient as any;
+  getClient(_apiKey?: string): typeof this.mockClient {
+    return this.mockClient;
   }
 
   async generateEmbedding(_text: string, _apiKey?: string): Promise<number[]> {
@@ -161,12 +161,17 @@ export function authenticatedRequest(
   const baseRequest = request(app.getHttpServer());
   
   // Create a wrapper object that proxies HTTP methods
-  const wrapper: any = {};
+  type HttpMethod = 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head' | 'options';
+  type RequestWrapper = {
+    [K in HttpMethod]: (url: string, ...args: unknown[]) => ReturnType<typeof baseRequest[HttpMethod]>;
+  };
+  
+  const wrapper = {} as RequestWrapper;
   
   // Proxy all HTTP methods
-  ['get', 'post', 'put', 'delete', 'patch', 'head', 'options'].forEach(method => {
-    wrapper[method] = function(url: string, ...args: any[]) {
-      const test = (baseRequest as any)[method](url, ...args);
+  (['get', 'post', 'put', 'delete', 'patch', 'head', 'options'] as HttpMethod[]).forEach(method => {
+    wrapper[method] = function(url: string, ...args: unknown[]) {
+      const test = (baseRequest[method] as (url: string, ...args: unknown[]) => ReturnType<typeof baseRequest[HttpMethod]>)(url, ...args);
       return test.set('Authorization', authHeader);
     };
   });
