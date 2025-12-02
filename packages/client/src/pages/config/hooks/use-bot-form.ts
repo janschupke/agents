@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Bot } from '../../../types/chat.types';
 import { useFormValidation } from '../../../hooks/use-form-validation';
 import { validationRules } from '../../../utils/validation';
@@ -80,8 +80,26 @@ export function useBotForm({ bot, botData }: UseBotFormOptions): UseBotFormRetur
     reset,
   } = useFormValidation<BotFormValues>(validationSchema, initialValues);
 
+  // Track previous bot/botData IDs to prevent unnecessary updates
+  const prevBotIdRef = useRef<number | null>(bot?.id ?? null);
+  const prevBotDataIdRef = useRef<number | null>(botData?.id ?? null);
+
   // Update form when bot or botData changes
   useEffect(() => {
+    const currentBotId = bot?.id ?? null;
+    const currentBotDataId = botData?.id ?? null;
+
+    // Only update if bot or botData ID actually changed
+    if (
+      prevBotIdRef.current === currentBotId &&
+      prevBotDataIdRef.current === currentBotDataId
+    ) {
+      return;
+    }
+
+    prevBotIdRef.current = currentBotId;
+    prevBotDataIdRef.current = currentBotDataId;
+
     if (bot && botData) {
       const config = botData.configs || {};
       setValue('name', bot.name);
@@ -100,7 +118,10 @@ export function useBotForm({ bot, botData }: UseBotFormOptions): UseBotFormRetur
     } else {
       reset();
     }
-  }, [bot, botData, setValue, reset]);
+    // Note: setValue and reset are intentionally excluded from deps to prevent infinite loops
+    // They are stable enough for this use case (only called when bot/botData IDs change)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bot?.id, botData?.id]);
 
   return {
     values,

@@ -25,11 +25,14 @@ export function useFormValidation<T extends Record<string, unknown>>(
     <K extends keyof T>(field: K, value: T[K]) => {
       setValues((prev) => ({ ...prev, [field]: value }));
       // Clear error when user starts typing
-      if (errors[field]) {
-        setErrors((prev) => ({ ...prev, [field]: null }));
-      }
+      setErrors((prev) => {
+        if (prev[field]) {
+          return { ...prev, [field]: null };
+        }
+        return prev;
+      });
     },
-    [errors]
+    []
   );
 
   const setTouched = useCallback((field: keyof T, isTouched = true) => {
