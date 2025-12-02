@@ -1,0 +1,149 @@
+import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useUpdateApiKey, useDeleteApiKey } from '../../../hooks/mutations/use-user-mutations.js';
+import { queryKeys } from '../../../hooks/queries/query-keys.js';
+import { useConfirm } from '../../../hooks/useConfirm';
+import { useFormValidation } from '../../../hooks/use-form-validation.js';
+import { validationRules } from '../../../utils/validation.js';
+
+export interface ApiKeyFormValues {
+  apiKey: string;
+}
+
+interface UseApiKeyReturn {
+  showApiKeyInput: boolean;
+  hasApiKey: boolean;
+  values: ApiKeyFormValues;
+  errors: Partial<Record<keyof ApiKeyFormValues, string>>;
+  touched: Partial<Record<keyof ApiKeyFormValues, boolean>>;
+  saving: boolean;
+  errorMessage: string | null;
+  setValue: (field: keyof ApiKeyFormValues, value: string) => void;
+  setTouched: (field: keyof ApiKeyFormValues) => void;
+  handleSaveApiKey: () => Promise<void>;
+  handleDeleteApiKey: () => Promise<void>;
+  handleEditApiKey: () => void;
+  handleCancelEdit: () => void;
+}
+
+/**
+ * Manages API key state and operations
+ */
+export function useApiKey(): UseApiKeyReturn {
+  const { confirm } = useConfirm();
+  const queryClient = useQueryClient();
+  const updateApiKeyMutation = useUpdateApiKey();
+  const deleteApiKeyMutation = useDeleteApiKey();
+
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+  const [hasApiKey, setHasApiKey] = useState(false);
+
+  // Check API key status
+  useEffect(() => {
+    const checkApiKey = async () => {
+      try {
+        const { ApiCredentialsService } = await import('../../../services/api-credentials.service.js');
+        const hasKey = await ApiCredentialsService.hasOpenAIKey();
+        setHasApiKey(hasKey);
+        if (hasKey) {
+          setShowApiKeyInput(false);
+        } else {
+          setShowApiKeyInput(true);
+        }
+      } catch {
+        setHasApiKey(false);
+        setShowApiKeyInput(true);
+      }
+    };
+    checkApiKey();
+  }, []);
+
+  const validationSchema = {
+    apiKey: [validationRules.required('API key is required')],
+  };
+
+  const {
+    values,
+    errors,
+    touched,
+    setValue,
+    setTouched,
+    validateAll,
+    reset,
+  } = useFormValidation<ApiKeyFormValues>(validationSchema, { apiKey: '' });
+
+  const handleSaveApiKey = async () => {
+    const validation = validateAll();
+    if (!validation.isValid) {
+      return;
+    }
+
+    try {
+      await updateApiKeyMutation.mutateAsync(values.apiKey);
+      setHasApiKey(true);
+      setShowApiKeyInput(false);
+      reset();
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.apiKey() });
+    } catch (error) {
+      // Error is handled by mutation hook
+      console.error('Failed to save API key:', error);
+    }
+  };
+
+  const handleDeleteApiKey = async () => {
+    const confirmed = await confirm({
+      title: 'Delete API Key',
+      message: 'Are you sure you want to delete your API key? You will need to set it again to use the chat.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      confirmVariant: 'danger',
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteApiKeyMutation.mutateAsync();
+      setHasApiKey(false);
+      setShowApiKeyInput(true);
+      reset();
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.apiKey() });
+    } catch (error) {
+      // Error is handled by mutation hook
+      console.error('Failed to delete API key:', error);
+    }
+  };
+
+  const handleEditApiKey = () => {
+    setShowApiKeyInput(true);
+    reset();
+  };
+
+  const handleCancelEdit = () => {
+    setShowApiKeyInput(false);
+    reset();
+  };
+
+  const saving = updateApiKeyMutation.isPending || deleteApiKeyMutation.isPending;
+  const formError = updateApiKeyMutation.error || deleteApiKeyMutation.error;
+  const errorMessage = formError && typeof formError === 'object' && 'message' in formError
+    ? (formError as { message: string }).message
+    : null;
+
+  return {
+    showApiKeyInput,
+    hasApiKey,
+    values,
+    errors,
+    touched,
+    saving,
+    errorMessage,
+    setValue,
+    setTouched,
+    handleSaveApiKey,
+    handleDeleteApiKey,
+    handleEditApiKey,
+    handleCancelEdit,
+  };
+}
