@@ -61,7 +61,8 @@ export default function ChatMessages({
     <>
       {filteredMessages.map((message, index) => {
         const isNew = isNewMessage(index);
-        const messageKey = message.id || index;
+        // Ensure unique keys: use id if available, otherwise use index with prefix to avoid collisions
+        const messageKey = message.id != null ? `msg-${message.id}` : `msg-temp-${index}`;
         const positioningClasses = `flex flex-col max-w-[80%] ${message.role === MessageRole.USER ? 'self-end' : 'self-start'}`;
 
         // Only animate new messages

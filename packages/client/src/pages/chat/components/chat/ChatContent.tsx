@@ -41,7 +41,7 @@ export default function ChatContent({
             <ChatMessages
               key={sessionId || 'no-session'}
               messages={messages}
-              loading={loading && messages.length === 0}
+              loading={loading}
               onShowJson={onShowJson}
               sessionId={sessionId}
             />
