@@ -17,18 +17,15 @@ const errorFilters = [
   /\[Nest\].*ERROR \[ClerkService\]/,
 ];
 
-const warnFilters = [
-  /Webhook verification failed/,
-  /Invalid signature/,
-];
+const warnFilters = [/Webhook verification failed/, /Invalid signature/];
 
 // Override console.error to filter expected errors
 console.error = (...args: unknown[]) => {
   const message = args.join(' ');
-  
+
   // Check if this error should be filtered
   const shouldFilter = errorFilters.some((pattern) => pattern.test(message));
-  
+
   if (!shouldFilter) {
     originalError(...args);
   }
@@ -37,10 +34,10 @@ console.error = (...args: unknown[]) => {
 // Override console.warn to filter expected warnings
 console.warn = (...args: unknown[]) => {
   const message = args.join(' ');
-  
+
   // Check if this warning should be filtered
   const shouldFilter = warnFilters.some((pattern) => pattern.test(message));
-  
+
   if (!shouldFilter) {
     originalWarn(...args);
   }
@@ -54,10 +51,10 @@ console.warn = (...args: unknown[]) => {
   cb?: (err?: Error | null) => void
 ) => {
   const message = typeof chunk === 'string' ? chunk : chunk.toString();
-  
+
   // Check if this stderr output should be filtered
   const shouldFilter = errorFilters.some((pattern) => pattern.test(message));
-  
+
   if (!shouldFilter) {
     // Handle different overloads
     if (typeof encodingOrCb === 'function') {
@@ -71,13 +68,13 @@ console.warn = (...args: unknown[]) => {
     }
     return originalStderrWrite(chunk);
   }
-  
+
   // If filtered, call callback if provided
   if (typeof encodingOrCb === 'function') {
     encodingOrCb();
   } else if (cb) {
     cb();
   }
-  
+
   return true;
 };

@@ -1,7 +1,5 @@
 import { NUMERIC_CONSTANTS } from './numeric.constants.js';
 
-const API_PREFIX = 'api';
-
 export const DEFAULT_AGENT_CONFIG = {
   model: 'gpt-4o-mini',
   temperature: NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE,

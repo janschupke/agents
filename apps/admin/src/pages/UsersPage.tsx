@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { UserService } from '../services/user.service';
 import { User } from '../types/user.types';
@@ -10,11 +10,7 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -30,7 +26,11 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   if (loading) {
     return (

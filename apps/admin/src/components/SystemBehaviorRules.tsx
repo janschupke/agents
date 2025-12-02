@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { systemConfigService } from '../services/system-config.service';
 import { IconTrash, IconPlus } from './ui/Icons';
@@ -12,11 +12,7 @@ export default function SystemBehaviorRules() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  useEffect(() => {
-    loadRules();
-  }, []);
-
-  const loadRules = async () => {
+  const loadRules = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -33,7 +29,11 @@ export default function SystemBehaviorRules() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tAdmin]);
+
+  useEffect(() => {
+    loadRules();
+  }, [loadRules]);
 
   const handleSave = async () => {
     setSaving(true);

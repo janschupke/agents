@@ -8,31 +8,7 @@ export function Skeleton({ className = '' }: { className?: string }) {
   );
 }
 
-function SkeletonText({
-  lines = 1,
-  className = '',
-}: {
-  lines?: number;
-  className?: string;
-}) {
-  return (
-    <div className={className}>
-      {Array.from({ length: lines }, (_, i) => (
-        <Skeleton key={i} className="h-4 mb-2" />
-      ))}
-    </div>
-  );
-}
-
-function SkeletonButton({ className = '' }: { className?: string }) {
-  return <Skeleton className={`h-8 rounded-md ${className}`} />;
-}
-
-function SkeletonSidebarItem({
-  className = '',
-}: {
-  className?: string;
-}) {
+function SkeletonSidebarItem({ className = '' }: { className?: string }) {
   return (
     <div className={`flex items-center gap-3 p-2 ${className}`}>
       <Skeleton className="w-8 h-8 rounded" />

@@ -69,8 +69,3 @@ export function useSelectedAgent() {
   const { selectedAgentId, setSelectedAgentId } = useAppContext();
   return { selectedAgentId, setSelectedAgentId };
 }
-
-function useSelectedSession() {
-  const { selectedSessionId, setSelectedSessionId } = useAppContext();
-  return { selectedSessionId, setSelectedSessionId };
-}

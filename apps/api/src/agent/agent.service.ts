@@ -4,9 +4,7 @@ import { AgentResponse } from '../common/interfaces/agent.interface';
 
 @Injectable()
 export class AgentService {
-  constructor(
-    private readonly agentRepository: AgentRepository
-  ) {}
+  constructor(private readonly agentRepository: AgentRepository) {}
 
   async findAll(userId: string): Promise<AgentResponse[]> {
     return this.agentRepository.findAll(userId);

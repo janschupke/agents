@@ -22,9 +22,9 @@ function App() {
         checkAdminAccess();
       }, 200);
       return () => clearTimeout(timer);
-    } else {
-      setUserInfo(null);
     }
+    setUserInfo(null);
+    return undefined;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSignedIn, isLoaded]);
 
@@ -71,9 +71,7 @@ function App() {
           <h1 className="text-2xl font-semibold text-text-secondary mb-2">
             {t('app.title')}
           </h1>
-          <p className="text-text-tertiary mb-6">
-            {t('app.pleaseSignIn')}
-          </p>
+          <p className="text-text-tertiary mb-6">{t('app.pleaseSignIn')}</p>
           <SignInButton mode="modal">
             <button className="w-full px-4 py-2 bg-primary text-text-inverse rounded-md text-sm font-medium hover:bg-primary-hover transition-colors">
               {t('app.signIn')}

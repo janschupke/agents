@@ -6,7 +6,3 @@ export interface AuthenticatedUser {
   imageUrl: string | null;
   roles: string[];
 }
-
-interface AuthenticatedRequest {
-  user?: AuthenticatedUser;
-}

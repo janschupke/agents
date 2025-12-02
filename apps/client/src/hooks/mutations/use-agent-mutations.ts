@@ -201,21 +201,3 @@ export function useDeleteMemory() {
     },
   });
 }
-
-function useSummarizeMemories() {
-  const queryClient = useQueryClient();
-  const { showToast } = useToast();
-
-  return useMutation({
-    mutationFn: (agentId: number) => MemoryService.summarizeMemories(agentId),
-    onSuccess: (_, agentId) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.agents.memories(agentId),
-      });
-      showToast('Memories summarized successfully', 'success');
-    },
-    onError: (error: { message?: string }) => {
-      showToast(error.message || 'Failed to summarize memories', 'error');
-    },
-  });
-}

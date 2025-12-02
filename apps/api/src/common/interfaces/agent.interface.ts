@@ -6,14 +6,6 @@ export interface AgentWithConfig {
   configs: Record<string, unknown>;
 }
 
-interface AgentConfig {
-  temperature?: number;
-  system_prompt?: string;
-  behavior_rules?: string | string[] | { rules: string[] };
-  model?: string;
-  max_tokens?: number;
-}
-
 export interface AgentResponse {
   id: number;
   userId: string;
@@ -22,11 +14,4 @@ export interface AgentResponse {
   avatarUrl: string | null;
   createdAt: Date;
   configs?: Record<string, unknown>;
-}
-
-interface EmbeddingResponse {
-  id: number;
-  sessionId: number;
-  chunk: string;
-  createdAt: Date;
 }
