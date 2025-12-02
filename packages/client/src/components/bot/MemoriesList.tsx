@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AgentMemory } from '../../types/chat.types.js';
 import { IconClose, IconEdit } from '../ui/Icons';
 import { SkeletonList } from '../ui/Skeleton';
+import { formatRelativeDate } from '../../utils/date.utils.js';
 
 interface MemoriesListProps {
   memories: AgentMemory[];
@@ -12,27 +13,6 @@ interface MemoriesListProps {
   onDelete: (memoryId: number) => void;
   onRefresh: () => void;
   botId: number;
-}
-
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffTime = Math.abs(now.getTime() - date.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) {
-    return 'Today';
-  } else if (diffDays === 1) {
-    return 'Yesterday';
-  } else if (diffDays < 7) {
-    return `${diffDays} days ago`;
-  } else {
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  }
 }
 
 export default function MemoriesList({
@@ -100,7 +80,7 @@ export default function MemoriesList({
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <div className="text-xs text-text-tertiary mb-1">
-                {formatDate(memory.createdAt)}
+                {formatRelativeDate(memory.createdAt)}
                 {memory.context?.sessionName && (
                   <> • Session: {memory.context.sessionName}</>
                 )}
