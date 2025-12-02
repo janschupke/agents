@@ -1,6 +1,6 @@
 // Icon components for consistent UI
 
-export function IconPlus({ className = 'w-4 h-4' }: { className?: string }) {
+function IconPlus({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -18,7 +18,7 @@ export function IconPlus({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconChat({ className = 'w-4 h-4' }: { className?: string }) {
+function IconChat({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -36,7 +36,7 @@ export function IconChat({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconSettings({
+function IconSettings({
   className = 'w-4 h-4',
 }: {
   className?: string;
@@ -82,7 +82,7 @@ export function IconClose({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconSend({ className = 'w-4 h-4' }: { className?: string }) {
+function IconSend({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -158,7 +158,7 @@ export function IconChevronDown({
   );
 }
 
-export function IconSearch({ className = 'w-4 h-4' }: { className?: string }) {
+function IconSearch({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -176,7 +176,7 @@ export function IconSearch({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconRefresh({ className = 'w-4 h-4' }: { className?: string }) {
+function IconRefresh({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -194,7 +194,7 @@ export function IconRefresh({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconTrash({ className = 'w-4 h-4' }: { className?: string }) {
+function IconTrash({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -212,7 +212,7 @@ export function IconTrash({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconPencil({ className = 'w-4 h-4' }: { className?: string }) {
+function IconPencil({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -230,7 +230,7 @@ export function IconPencil({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconCheck({ className = 'w-4 h-4' }: { className?: string }) {
+function IconCheck({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -248,7 +248,7 @@ export function IconCheck({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconTranslate({
+function IconTranslate({
   className = 'w-4 h-4',
 }: {
   className?: string;
@@ -270,7 +270,7 @@ export function IconTranslate({
   );
 }
 
-export function IconEdit({ className = 'w-4 h-4' }: { className?: string }) {
+function IconEdit({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -306,7 +306,7 @@ export function IconUpload({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconLoader({ className = 'w-4 h-4' }: { className?: string }) {
+function IconLoader({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg
       className={className}

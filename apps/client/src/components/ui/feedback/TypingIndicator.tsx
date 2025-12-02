@@ -6,7 +6,7 @@ interface TypingIndicatorProps {
 /**
  * Reusable typing indicator component with animated pulsating dots
  */
-export default function TypingIndicator({
+function TypingIndicator({
   className = '',
   dotClassName = '',
 }: TypingIndicatorProps) {

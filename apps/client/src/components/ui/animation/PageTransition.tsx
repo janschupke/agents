@@ -10,7 +10,7 @@ interface PageTransitionProps {
  * Wrapper component that applies fade-in animation when the route changes
  * Only fades in, no fade-out to avoid flickering
  */
-export default function PageTransition({ children }: PageTransitionProps) {
+function PageTransition({ children }: PageTransitionProps) {
   const location = useLocation();
   const [key, setKey] = useState(0);
 

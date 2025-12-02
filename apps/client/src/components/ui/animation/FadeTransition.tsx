@@ -11,7 +11,7 @@ interface FadeTransitionProps {
  * Wrapper component that conditionally shows/hides children with fade transition
  * Always renders children to allow smooth transitions
  */
-export default function FadeTransition({
+function FadeTransition({
   show,
   children,
   className = '',

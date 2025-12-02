@@ -11,7 +11,7 @@ interface ToastProps {
   duration?: number;
 }
 
-export default function Toast({
+function Toast({
   message,
   type,
   onClose,
