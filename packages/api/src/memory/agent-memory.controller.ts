@@ -16,7 +16,6 @@ import { AgentMemoryRepository } from './agent-memory.repository';
 import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
-import { API_ROUTES } from '../common/constants/api-routes.constants.js';
 
 export interface AgentMemoryResponse {
   id: number;
@@ -49,7 +48,7 @@ export class AgentMemoryController {
     @Param('agentId', ParseIntPipe) agentId: number,
     @User() user: AuthenticatedUser,
     @Query('limit') limit?: string,
-    @Query('offset') offset?: string
+    @Query('offset') _offset?: string
   ): Promise<AgentMemoryResponse[]> {
     try {
       const memories = await this.memoryRepository.findAllByAgentId(

@@ -51,7 +51,12 @@ export class AgentService {
       );
     }
 
-    const agent = await this.agentRepository.create(userId, name, description, avatarUrl);
+    const agent = await this.agentRepository.create(
+      userId,
+      name,
+      description,
+      avatarUrl
+    );
 
     // Set configs if provided
     if (configs) {

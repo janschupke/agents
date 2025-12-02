@@ -22,7 +22,9 @@ export class BehaviorRulesUtil {
             'rules' in parsed &&
             Array.isArray((parsed as { rules: unknown }).rules)
           ) {
-            return (parsed as { rules: unknown[] }).rules.map((r: unknown) => String(r));
+            return (parsed as { rules: unknown[] }).rules.map((r: unknown) =>
+              String(r)
+            );
           } else {
             return [String(parsed)];
           }
@@ -63,7 +65,9 @@ export class BehaviorRulesUtil {
    */
   static formatSystemRules(rules: string[]): string {
     const formatted = this.format(rules);
-    return formatted.length > 0 ? `System Behavior Rules (Required):\n${formatted}` : '';
+    return formatted.length > 0
+      ? `System Behavior Rules (Required):\n${formatted}`
+      : '';
   }
 
   /**

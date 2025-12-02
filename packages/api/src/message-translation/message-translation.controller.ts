@@ -39,30 +39,37 @@ export class MessageTranslationController {
     @User() user: AuthenticatedUser
   ): Promise<{
     translation: string;
-    wordTranslations: Array<{ originalWord: string; translation: string; sentenceContext?: string }>;
+    wordTranslations: Array<{
+      originalWord: string;
+      translation: string;
+      sentenceContext?: string;
+    }>;
   }> {
-    return this.translationService.translateMessageWithWords(messageId, user.id);
+    return this.translationService.translateMessageWithWords(
+      messageId,
+      user.id
+    );
   }
 
   @Get('translations')
   async getTranslations(
     @Query('messageIds') messageIds: string, // Comma-separated IDs
-    @User() user: AuthenticatedUser
+    @User() _user: AuthenticatedUser
   ): Promise<Record<number, string>> {
     const ids = messageIds
       .split(',')
       .map((id) => parseInt(id.trim(), 10))
       .filter((id) => !isNaN(id));
-    
+
     const translations =
       await this.translationService.getTranslationsForMessages(ids);
-    
+
     // Convert Map to object
     const result: Record<number, string> = {};
     translations.forEach((translation, messageId) => {
       result[messageId] = translation;
     });
-    
+
     return result;
   }
 
@@ -70,7 +77,13 @@ export class MessageTranslationController {
   async getWordTranslations(
     @Param('messageId', ParseIntPipe) messageId: number,
     @User() user: AuthenticatedUser
-  ): Promise<{ wordTranslations: Array<{ originalWord: string; translation: string; sentenceContext?: string }> }> {
+  ): Promise<{
+    wordTranslations: Array<{
+      originalWord: string;
+      translation: string;
+      sentenceContext?: string;
+    }>;
+  }> {
     // Verify access
     const message = await this.messageRepository.findById(messageId);
     if (!message) {
@@ -86,7 +99,9 @@ export class MessageTranslationController {
     }
 
     const wordTranslations =
-      await this.wordTranslationService.getWordTranslationsForMessage(messageId);
+      await this.wordTranslationService.getWordTranslationsForMessage(
+        messageId
+      );
 
     return { wordTranslations };
   }
@@ -97,7 +112,11 @@ export class MessageTranslationController {
     @User() user: AuthenticatedUser
   ): Promise<{
     translation?: string;
-    wordTranslations: Array<{ originalWord: string; translation: string; sentenceContext?: string }>;
+    wordTranslations: Array<{
+      originalWord: string;
+      translation: string;
+      sentenceContext?: string;
+    }>;
   }> {
     // Verify access
     const message = await this.messageRepository.findById(messageId);
@@ -119,7 +138,9 @@ export class MessageTranslationController {
       .catch(() => undefined);
 
     const wordTranslations =
-      await this.wordTranslationService.getWordTranslationsForMessage(messageId);
+      await this.wordTranslationService.getWordTranslationsForMessage(
+        messageId
+      );
 
     return {
       translation,

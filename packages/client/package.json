@@ -16,7 +16,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "test:run": "vitest run",
-    "check": "pnpm typecheck && pnpm test && pnpm lint:check && pnpm format:check && pnpm build"
+    "check": "pnpm typecheck && pnpm test && pnpm lint && pnpm format && pnpm build"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.53.8",

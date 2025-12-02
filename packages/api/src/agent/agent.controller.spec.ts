@@ -143,6 +143,7 @@ describe('AgentController', () => {
         mockUser.id,
         createDto.name,
         createDto.description,
+        undefined, // avatarUrl
         expect.objectContaining({
           temperature: createDto.configs.temperature,
           system_prompt: createDto.configs.system_prompt,
@@ -166,7 +167,8 @@ describe('AgentController', () => {
         mockUser.id,
         createDto.name,
         createDto.description,
-        undefined
+        undefined, // avatarUrl
+        undefined // configs
       );
     });
 
@@ -209,6 +211,7 @@ describe('AgentController', () => {
         mockUser.id,
         updateDto.name,
         updateDto.description,
+        undefined, // avatarUrl
         expect.objectContaining({
           temperature: updateDto.configs.temperature,
         })

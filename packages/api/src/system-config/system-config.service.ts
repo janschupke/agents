@@ -1,6 +1,6 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { SystemConfigRepository } from './system-config.repository';
-import { SystemConfigDto, UpdateSystemConfigDto } from '../common/dto/system-config.dto';
+import { UpdateSystemConfigDto } from '../common/dto/system-config.dto';
 
 @Injectable()
 export class SystemConfigService {
@@ -9,7 +9,8 @@ export class SystemConfigService {
   ) {}
 
   async getBehaviorRules(): Promise<string[]> {
-    const config = await this.systemConfigRepository.findByKey('behavior_rules');
+    const config =
+      await this.systemConfigRepository.findByKey('behavior_rules');
     if (!config) {
       return [];
     }
@@ -26,7 +27,9 @@ export class SystemConfigService {
   }
 
   async updateConfigs(configs: UpdateSystemConfigDto): Promise<void> {
-    await this.systemConfigRepository.updateConfigs(configs as Record<string, unknown>);
+    await this.systemConfigRepository.updateConfigs(
+      configs as Record<string, unknown>
+    );
   }
 
   private parseBehaviorRules(behaviorRules: unknown): string[] {
@@ -44,7 +47,9 @@ export class SystemConfigService {
             'rules' in parsed &&
             Array.isArray((parsed as { rules: unknown }).rules)
           ) {
-            return (parsed as { rules: unknown[] }).rules.map((r: unknown) => String(r));
+            return (parsed as { rules: unknown[] }).rules.map((r: unknown) =>
+              String(r)
+            );
           } else {
             return [String(parsed)];
           }

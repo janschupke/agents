@@ -64,24 +64,32 @@ describe('ClerkService', () => {
     });
 
     it('should handle missing Clerk client gracefully', async () => {
-      // Create a service without Clerk client
-      const serviceWithoutClient = new ClerkService();
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-      // Mock appConfig to not have secretKey
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const appConfigModule = require('../config/app.config');
-      jest.spyOn(appConfigModule, 'appConfig', 'get').mockReturnValue({
-        clerk: {
-          secretKey: null,
+      // Create a service without Clerk client by creating a new instance with mocked config
+      jest.resetModules();
+      jest.doMock('../config/app.config', () => ({
+        appConfig: {
+          clerk: {
+            secretKey: null,
+          },
         },
-      });
+      }));
+
+      const { ClerkService: ClerkServiceWithoutClient } = await import(
+        './clerk.service'
+      );
+      const serviceWithoutClient = new ClerkServiceWithoutClient();
+      const loggerSpy = jest
+        .spyOn(serviceWithoutClient['logger'], 'warn')
+        .mockImplementation();
 
       await serviceWithoutClient.updateUserRoles('user-123', ['admin']);
 
       // Should not throw, just log a warning
-      expect(consoleSpy).toHaveBeenCalled();
-      consoleSpy.mockRestore();
+      expect(loggerSpy).toHaveBeenCalled();
+      loggerSpy.mockRestore();
+
+      // Restore modules
+      jest.resetModules();
     });
 
     it('should throw error if Clerk API call fails', async () => {
@@ -108,20 +116,27 @@ describe('ClerkService', () => {
       expect(client).toBeDefined();
     });
 
-    it('should return null if Clerk client is not available', () => {
-      // Create a service without Clerk client
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const appConfigModule = require('../config/app.config');
-      jest.spyOn(appConfigModule, 'appConfig', 'get').mockReturnValue({
-        clerk: {
-          secretKey: null,
+    it('should return null if Clerk client is not available', async () => {
+      // Create a service without Clerk client by mocking the config
+      jest.resetModules();
+      jest.doMock('../config/app.config', () => ({
+        appConfig: {
+          clerk: {
+            secretKey: null,
+          },
         },
-      });
+      }));
 
-      const serviceWithoutClient = new ClerkService();
+      const { ClerkService: ClerkServiceWithoutClient } = await import(
+        './clerk.service'
+      );
+      const serviceWithoutClient = new ClerkServiceWithoutClient();
       const client = serviceWithoutClient.getClient();
 
       expect(client).toBeNull();
+
+      // Restore modules
+      jest.resetModules();
     });
   });
 });

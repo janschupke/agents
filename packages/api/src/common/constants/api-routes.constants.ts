@@ -4,27 +4,32 @@
 
 export const API_ROUTES = {
   PREFIX: 'api',
-  
+
   CHAT: {
     BASE: 'api/chat',
     BY_AGENT: (agentId: number) => `api/chat/${agentId}`,
     SESSIONS: (agentId: number) => `api/chat/${agentId}/sessions`,
-    SESSION: (agentId: number, sessionId: number) => `api/chat/${agentId}/sessions/${sessionId}`,
+    SESSION: (agentId: number, sessionId: number) =>
+      `api/chat/${agentId}/sessions/${sessionId}`,
   },
 
   AGENTS: {
     BASE: 'api/agents',
     BY_ID: (agentId: number) => `api/agents/${agentId}`,
     MEMORIES: (agentId: number) => `api/agents/${agentId}/memories`,
-    MEMORY: (agentId: number, memoryId: number) => `api/agents/${agentId}/memories/${memoryId}`,
-    MEMORIES_SUMMARIZE: (agentId: number) => `api/agents/${agentId}/memories/summarize`,
+    MEMORY: (agentId: number, memoryId: number) =>
+      `api/agents/${agentId}/memories/${memoryId}`,
+    MEMORIES_SUMMARIZE: (agentId: number) =>
+      `api/agents/${agentId}/memories/summarize`,
   },
 
   MESSAGES: {
     BASE: 'api/messages',
     TRANSLATE: (messageId: number) => `api/messages/${messageId}/translate`,
-    TRANSLATE_WITH_WORDS: (messageId: number) => `api/messages/${messageId}/translate-with-words`,
-    WORD_TRANSLATIONS: (messageId: number) => `api/messages/${messageId}/word-translations`,
+    TRANSLATE_WITH_WORDS: (messageId: number) =>
+      `api/messages/${messageId}/translate-with-words`,
+    WORD_TRANSLATIONS: (messageId: number) =>
+      `api/messages/${messageId}/word-translations`,
     TRANSLATIONS: 'api/messages/translations',
   },
 

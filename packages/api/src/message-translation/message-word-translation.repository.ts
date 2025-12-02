@@ -25,7 +25,8 @@ export class MessageWordTranslationRepository {
         messageId,
         originalWord: wt.originalWord,
         translation: wt.translation,
-        sentenceContext: wt.sentenceContext || sentenceContexts.get(wt.originalWord),
+        sentenceContext:
+          wt.sentenceContext || sentenceContexts.get(wt.originalWord),
       })),
     });
   }
@@ -51,10 +52,7 @@ export class MessageWordTranslationRepository {
       where: {
         messageId: { in: messageIds },
       },
-      orderBy: [
-        { messageId: SortOrder.ASC },
-        { id: SortOrder.ASC },
-      ],
+      orderBy: [{ messageId: SortOrder.ASC }, { id: SortOrder.ASC }],
     });
   }
 
@@ -68,5 +66,3 @@ export class MessageWordTranslationRepository {
     return count > 0;
   }
 }
-
-

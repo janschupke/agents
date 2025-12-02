@@ -10,7 +10,10 @@ import { SystemConfigService } from './system-config.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UseGuards } from '@nestjs/common';
 import { RolesGuard } from '../auth/roles.guard';
-import { SystemBehaviorRulesDto, UpdateSystemConfigDto } from '../common/dto/system-config.dto';
+import {
+  SystemBehaviorRulesDto,
+  UpdateSystemConfigDto,
+} from '../common/dto/system-config.dto';
 import { API_ROUTES } from '../common/constants/api-routes.constants.js';
 
 @Controller(API_ROUTES.SYSTEM_CONFIG.BASE)

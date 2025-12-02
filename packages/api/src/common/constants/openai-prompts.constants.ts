@@ -4,7 +4,8 @@
 
 export const OPENAI_PROMPTS = {
   TRANSLATION: {
-    SYSTEM: 'You are a professional translator. Translate the given message to English, preserving context, tone, and meaning. Only return the translation, no additional text.',
+    SYSTEM:
+      'You are a professional translator. Translate the given message to English, preserving context, tone, and meaning. Only return the translation, no additional text.',
     WITH_CONTEXT: (contextString: string, message: string) =>
       `Translate the following message to English. Consider the conversation context to provide an accurate translation that preserves meaning and context.
 
@@ -23,7 +24,8 @@ Translation:`,
   },
 
   WORD_TRANSLATION: {
-    SYSTEM: 'You are a professional translator. Return only valid JSON objects.',
+    SYSTEM:
+      'You are a professional translator. Return only valid JSON objects.',
     USER: (messageContent: string) =>
       `You are a professional translator. Analyze the following text and translate each word/token to English, considering the sentence context.
 
@@ -63,8 +65,13 @@ Return ONLY the JSON object, no additional text.`,
 
   MEMORY: {
     EXTRACTION: {
-      SYSTEM: 'You are a memory extraction assistant. Extract key insights from conversations in a concise format.',
-      USER: (conversationText: string, maxInsights: number, maxLength: number) =>
+      SYSTEM:
+        'You are a memory extraction assistant. Extract key insights from conversations in a concise format.',
+      USER: (
+        conversationText: string,
+        maxInsights: number,
+        maxLength: number
+      ) =>
         `Extract 1-${maxInsights} key insights from this conversation. 
 Focus on:
 - User preferences, interests, or important facts about the user
@@ -80,7 +87,8 @@ Conversation:
 ${conversationText}`,
     },
     SUMMARIZATION: {
-      SYSTEM: 'You are a memory summarization assistant. Combine related memories into concise summaries.',
+      SYSTEM:
+        'You are a memory summarization assistant. Combine related memories into concise summaries.',
       USER: (memoriesText: string, maxLength: number) =>
         `Summarize these related memories into a single, concise memory (max ${maxLength} characters).
 Remove redundancy and combine related information.
@@ -92,7 +100,8 @@ ${memoriesText}`,
   },
 
   BEHAVIOR_RULES: {
-    SYSTEM: (rulesText: string) => `System Behavior Rules (Required):\n${rulesText}`,
+    SYSTEM: (rulesText: string) =>
+      `System Behavior Rules (Required):\n${rulesText}`,
     AGENT: (rulesText: string) => `Behavior Rules:\n${rulesText}`,
   },
 } as const;

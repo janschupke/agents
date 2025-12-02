@@ -39,5 +39,3 @@ export const NUMERIC_CONSTANTS = {
   DEFAULT_PAGE: 1,
   MAX_PAGE_SIZE: 1000,
 } as const;
-
-

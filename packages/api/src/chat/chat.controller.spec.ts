@@ -61,7 +61,10 @@ describe('ChatController', () => {
       const result = await controller.getSessions(agentId, mockUser);
 
       expect(result).toEqual(mockSessions);
-      expect(chatService.getSessions).toHaveBeenCalledWith(agentId, mockUser.id);
+      expect(chatService.getSessions).toHaveBeenCalledWith(
+        agentId,
+        mockUser.id
+      );
     });
 
     it('should throw HttpException on service error', async () => {
@@ -166,12 +169,12 @@ describe('ChatController', () => {
       const error = new HttpException('Agent not found', HttpStatus.NOT_FOUND);
       mockChatService.getChatHistory.mockRejectedValue(error);
 
-      await expect(controller.getChatHistory(agentId, mockUser)).rejects.toThrow(
-        HttpException
-      );
-      await expect(controller.getChatHistory(agentId, mockUser)).rejects.toThrow(
-        'Agent not found'
-      );
+      await expect(
+        controller.getChatHistory(agentId, mockUser)
+      ).rejects.toThrow(HttpException);
+      await expect(
+        controller.getChatHistory(agentId, mockUser)
+      ).rejects.toThrow('Agent not found');
     });
   });
 
@@ -294,7 +297,11 @@ describe('ChatController', () => {
 
       mockChatService.deleteSession.mockResolvedValue(undefined);
 
-      const result = await controller.deleteSession(agentId, sessionId, mockUser);
+      const result = await controller.deleteSession(
+        agentId,
+        sessionId,
+        mockUser
+      );
 
       expect(result).toEqual({ success: true });
       expect(chatService.deleteSession).toHaveBeenCalledWith(

@@ -13,7 +13,6 @@ import { WordTranslationService } from '../message-translation/word-translation.
 import { MessageRole } from '../common/enums/message-role.enum';
 import { MEMORY_CONFIG } from '../common/constants/api.constants.js';
 import { BehaviorRulesUtil } from '../common/utils/behavior-rules.util.js';
-import { OPENAI_PROMPTS } from '../common/constants/openai-prompts.constants.js';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 import {
   SessionResponseDto,
@@ -42,13 +41,19 @@ export class ChatService {
     userId: string
   ): Promise<SessionResponseDto[]> {
     // Load agent with config
-    const agent = await this.agentRepository.findByIdWithConfig(agentId, userId);
+    const agent = await this.agentRepository.findByIdWithConfig(
+      agentId,
+      userId
+    );
     if (!agent) {
       throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
     }
 
     // Get all sessions for this agent and user
-    const sessions = await this.sessionRepository.findAllByAgentId(agentId, userId);
+    const sessions = await this.sessionRepository.findAllByAgentId(
+      agentId,
+      userId
+    );
 
     return sessions.map((session) => ({
       id: session.id,
@@ -64,7 +69,10 @@ export class ChatService {
     // User is automatically synced to DB by ClerkGuard
 
     // Load agent with config
-    const agent = await this.agentRepository.findByIdWithConfig(agentId, userId);
+    const agent = await this.agentRepository.findByIdWithConfig(
+      agentId,
+      userId
+    );
     if (!agent) {
       throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
     }
@@ -85,7 +93,10 @@ export class ChatService {
     sessionId?: number
   ): Promise<ChatHistoryResponseDto> {
     // Load agent with config
-    const agent = await this.agentRepository.findByIdWithConfig(agentId, userId);
+    const agent = await this.agentRepository.findByIdWithConfig(
+      agentId,
+      userId
+    );
     if (!agent) {
       throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
     }
@@ -101,7 +112,10 @@ export class ChatService {
         throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
       }
     } else {
-      session = await this.sessionRepository.findLatestByAgentId(agentId, userId);
+      session = await this.sessionRepository.findLatestByAgentId(
+        agentId,
+        userId
+      );
       if (!session) {
         session = await this.sessionRepository.create(userId, agentId);
       }
@@ -191,7 +205,10 @@ export class ChatService {
     }
 
     // Load agent with config
-    const agent = await this.agentRepository.findByIdWithConfig(agentId, userId);
+    const agent = await this.agentRepository.findByIdWithConfig(
+      agentId,
+      userId
+    );
     if (!agent) {
       throw new HttpException('Agent not found', HttpStatus.NOT_FOUND);
     }
@@ -209,7 +226,10 @@ export class ChatService {
         throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
       }
     } else {
-      session = await this.sessionRepository.findLatestByAgentId(agentId, userId);
+      session = await this.sessionRepository.findLatestByAgentId(
+        agentId,
+        userId
+      );
       if (!session) {
         session = await this.sessionRepository.create(userId, agentId);
       }
@@ -279,7 +299,8 @@ export class ChatService {
     // Add system-wide behavior rules FIRST (these cannot be overridden)
     let systemBehaviorRules: string[] = [];
     try {
-      const systemConfig = await this.systemConfigRepository.findByKey('behavior_rules');
+      const systemConfig =
+        await this.systemConfigRepository.findByKey('behavior_rules');
       if (systemConfig && systemConfig.configValue) {
         systemBehaviorRules = BehaviorRulesUtil.parse(systemConfig.configValue);
       }
@@ -289,13 +310,15 @@ export class ChatService {
     }
 
     if (systemBehaviorRules.length > 0) {
-      const systemBehaviorRulesMessage = BehaviorRulesUtil.formatSystemRules(systemBehaviorRules);
+      const systemBehaviorRulesMessage =
+        BehaviorRulesUtil.formatSystemRules(systemBehaviorRules);
 
       if (systemBehaviorRulesMessage.length > 0) {
         // Check if system behavior rules are already present
         if (
           !messagesForAPI.some(
-            (m) => m.role === 'system' && m.content === systemBehaviorRulesMessage
+            (m) =>
+              m.role === 'system' && m.content === systemBehaviorRulesMessage
           )
         ) {
           // Add system behavior rules after system prompt but before agent-specific rules
@@ -328,7 +351,8 @@ export class ChatService {
 
       // Format behavior rules as a system message
       if (behaviorRules.length > 0) {
-        const behaviorRulesMessage = BehaviorRulesUtil.formatAgentRules(behaviorRules);
+        const behaviorRulesMessage =
+          BehaviorRulesUtil.formatAgentRules(behaviorRules);
 
         if (behaviorRulesMessage.length > 0) {
           // Check if behavior rules are already present (exact match)
@@ -342,7 +366,7 @@ export class ChatService {
               (m) =>
                 m.role === 'system' &&
                 m.content === String(agentConfig.system_prompt || '')
-              );
+            );
 
             if (systemPromptIndex >= 0) {
               // Insert after system prompt
@@ -372,7 +396,9 @@ export class ChatService {
     const openaiRequest = {
       model: String(agentConfig.model || 'gpt-4o-mini'),
       messages: messagesForAPI,
-      temperature: Number(agentConfig.temperature || NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE),
+      temperature: Number(
+        agentConfig.temperature || NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE
+      ),
       max_tokens: agentConfig.max_tokens
         ? Number(agentConfig.max_tokens)
         : undefined,
@@ -435,8 +461,10 @@ export class ChatService {
         );
 
         // Check if summarization is needed
-        const shouldSummarize =
-          await this.agentMemoryService.shouldSummarize(agentId, userId);
+        const shouldSummarize = await this.agentMemoryService.shouldSummarize(
+          agentId,
+          userId
+        );
         if (shouldSummarize) {
           // Run summarization asynchronously (don't wait)
           this.agentMemoryService
@@ -540,5 +568,4 @@ export class ChatService {
     // Delete the session - Prisma will cascade delete all related data (messages, memory chunks)
     await this.sessionRepository.delete(sessionId, userId);
   }
-
 }

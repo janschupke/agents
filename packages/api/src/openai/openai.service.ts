@@ -66,7 +66,9 @@ export class OpenAIService {
     messages: Array<{ role: string; content: string }>
   ): string {
     // Simple implementation: combine recent messages into a summary
-    const recentMessages = messages.slice(-NUMERIC_CONSTANTS.MEMORY_EXTRACTION_MESSAGES);
+    const recentMessages = messages.slice(
+      -NUMERIC_CONSTANTS.MEMORY_EXTRACTION_MESSAGES
+    );
     return recentMessages
       .map((msg) => `${msg.role}: ${msg.content}`)
       .join('\n');

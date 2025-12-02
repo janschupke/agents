@@ -82,7 +82,9 @@ describe('AgentService', () => {
         configs: [{ key: 'temperature', value: '0.7' }],
       };
 
-      mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockAgentWithConfig);
+      mockAgentRepository.findByIdWithConfig.mockResolvedValue(
+        mockAgentWithConfig
+      );
       mockAgentRepository.findById.mockResolvedValue(mockAgent);
 
       const result = await service.findById(agentId, userId);
@@ -129,7 +131,13 @@ describe('AgentService', () => {
       mockAgentRepository.findByName.mockResolvedValue(null);
       mockAgentRepository.create.mockResolvedValue(mockAgent);
 
-      const result = await service.create(userId, name, description, undefined, configs);
+      const result = await service.create(
+        userId,
+        name,
+        description,
+        undefined,
+        configs
+      );
 
       expect(result).toEqual(mockAgent);
       expect(mockAgentRepository.findByName).toHaveBeenCalledWith(name, userId);

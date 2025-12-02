@@ -23,7 +23,9 @@ export class AgentController {
   constructor(private readonly agentService: AgentService) {}
 
   @Get()
-  async getAllAgents(@User() user: AuthenticatedUser): Promise<AgentResponse[]> {
+  async getAllAgents(
+    @User() user: AuthenticatedUser
+  ): Promise<AgentResponse[]> {
     try {
       return await this.agentService.findAll(user.id);
     } catch (error) {

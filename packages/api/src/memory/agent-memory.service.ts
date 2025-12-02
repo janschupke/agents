@@ -21,7 +21,9 @@ export class AgentMemoryService {
     }
 
     // Get the last N messages for context
-    const recentMessages = messages.slice(-NUMERIC_CONSTANTS.MEMORY_EXTRACTION_MESSAGES);
+    const recentMessages = messages.slice(
+      -NUMERIC_CONSTANTS.MEMORY_EXTRACTION_MESSAGES
+    );
     const conversationText = recentMessages
       .map((msg) => `${msg.role}: ${msg.content}`)
       .join('\n\n');
@@ -60,7 +62,7 @@ export class AgentMemoryService {
         .split('\n')
         .map((line) => line.trim())
         .filter((line) => line.length > 0)
-        .filter((line) => !line.match(/^\d+[\.\)]/)) // Remove numbering
+        .filter((line) => !line.match(/^\d+[.)]/)) // Remove numbering
         .map((line) => line.replace(/^[-•*]\s*/, '')) // Remove bullets
         .filter((line) => line.length <= MEMORY_CONFIG.MAX_MEMORY_LENGTH)
         .slice(0, MEMORY_CONFIG.MAX_KEY_INSIGHTS_PER_UPDATE);
@@ -241,7 +243,7 @@ export class AgentMemoryService {
       context: unknown;
       createdAt: Date;
     }>,
-    apiKey: string
+    _apiKey: string
   ): Promise<
     Array<
       Array<{

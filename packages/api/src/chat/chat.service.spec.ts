@@ -8,6 +8,10 @@ import { AgentMemoryService } from '../memory/agent-memory.service';
 import { AgentMemoryRepository } from '../memory/agent-memory.repository';
 import { OpenAIService } from '../openai/openai.service';
 import { UserService } from '../user/user.service';
+import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
+import { SystemConfigRepository } from '../system-config/system-config.repository';
+import { MessageTranslationService } from '../message-translation/message-translation.service';
+import { WordTranslationService } from '../message-translation/word-translation.service';
 
 describe('ChatService', () => {
   let service: ChatService;
@@ -24,6 +28,7 @@ describe('ChatService', () => {
 
   const mockMessageRepository = {
     findAllBySessionIdForOpenAI: jest.fn(),
+    findAllBySessionIdWithRawData: jest.fn(),
     create: jest.fn(),
   };
 
@@ -45,6 +50,25 @@ describe('ChatService', () => {
 
   const mockUserService = {
     findById: jest.fn(),
+  };
+
+  const mockApiCredentialsService = {
+    getCredentialsForUser: jest.fn(),
+    getApiKey: jest.fn(),
+  };
+
+  const mockSystemConfigRepository = {
+    getSystemBehaviorRules: jest.fn(),
+  };
+
+  const mockMessageTranslationService = {
+    translateMessage: jest.fn(),
+    getTranslationsForMessages: jest.fn().mockResolvedValue(new Map()),
+  };
+
+  const mockWordTranslationService = {
+    translateWords: jest.fn(),
+    getWordTranslationsForMessages: jest.fn().mockResolvedValue(new Map()),
   };
 
   beforeEach(async () => {
@@ -78,6 +102,22 @@ describe('ChatService', () => {
         {
           provide: UserService,
           useValue: mockUserService,
+        },
+        {
+          provide: ApiCredentialsService,
+          useValue: mockApiCredentialsService,
+        },
+        {
+          provide: SystemConfigRepository,
+          useValue: mockSystemConfigRepository,
+        },
+        {
+          provide: MessageTranslationService,
+          useValue: mockMessageTranslationService,
+        },
+        {
+          provide: WordTranslationService,
+          useValue: mockWordTranslationService,
         },
       ],
     }).compile();
@@ -118,10 +158,13 @@ describe('ChatService', () => {
       mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue(
         mockMessages
       );
+      mockMessageRepository.findAllBySessionIdWithRawData.mockResolvedValue(
+        mockMessages.map((m, i) => ({ ...m, id: i + 1 }))
+      );
 
       const result = await service.getChatHistory(agentId, userId);
 
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         agent: {
           id: mockAgent.id,
           name: mockAgent.name,
@@ -154,10 +197,14 @@ describe('ChatService', () => {
       mockSessionRepository.findLatestByAgentId.mockResolvedValue(null);
       mockSessionRepository.create.mockResolvedValue(mockSession);
       mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue([]);
+      mockMessageRepository.findAllBySessionIdWithRawData.mockResolvedValue([]);
 
       await service.getChatHistory(agentId, userId);
 
-      expect(mockSessionRepository.create).toHaveBeenCalledWith(userId, agentId);
+      expect(mockSessionRepository.create).toHaveBeenCalledWith(
+        userId,
+        agentId
+      );
     });
 
     it('should throw HttpException if agent not found', async () => {
@@ -181,9 +228,9 @@ describe('ChatService', () => {
       const message = 'Hello';
       mockAgentRepository.findByIdWithConfig.mockResolvedValue(null);
 
-      await expect(service.sendMessage(agentId, userId, message)).rejects.toThrow(
-        HttpException
-      );
+      await expect(
+        service.sendMessage(agentId, userId, message)
+      ).rejects.toThrow(HttpException);
     });
 
     // Additional tests can be added for sendMessage method

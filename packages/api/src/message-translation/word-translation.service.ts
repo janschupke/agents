@@ -1,6 +1,9 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { OpenAIService } from '../openai/openai.service';
-import { MessageWordTranslationRepository, WordTranslation } from './message-word-translation.repository';
+import {
+  MessageWordTranslationRepository,
+  WordTranslation,
+} from './message-word-translation.repository';
 import { MessageTranslationRepository } from './message-translation.repository';
 import { OPENAI_PROMPTS } from '../common/constants/openai-prompts.constants.js';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
@@ -23,20 +26,18 @@ export class WordTranslationService {
     apiKey: string
   ): Promise<void> {
     // Check if translations already exist
-    const exists = await this.wordTranslationRepository.existsForMessage(messageId);
+    const exists =
+      await this.wordTranslationRepository.existsForMessage(messageId);
     if (exists) {
       return; // Already translated
     }
 
     // Split message into sentences for context (we'll use this to populate sentenceContext)
     const sentences = this.splitIntoSentences(messageContent);
-    
+
     // Let OpenAI handle word/token splitting and translation
-    const { wordTranslations, fullTranslation } = await this.translateWordsWithOpenAI(
-      messageContent,
-      sentences,
-      apiKey
-    );
+    const { wordTranslations, fullTranslation } =
+      await this.translateWordsWithOpenAI(messageContent, sentences, apiKey);
 
     // Create a map of word -> sentence for populating sentenceContext
     const wordToSentenceMap = this.createWordToSentenceMap(
@@ -55,7 +56,8 @@ export class WordTranslationService {
     // Save full message translation from OpenAI (not derived from words)
     if (fullTranslation) {
       // Check if translation already exists
-      const existing = await this.translationRepository.findByMessageId(messageId);
+      const existing =
+        await this.translationRepository.findByMessageId(messageId);
       if (!existing) {
         await this.translationRepository.create(messageId, fullTranslation);
       }
@@ -73,7 +75,8 @@ export class WordTranslationService {
     wordTranslations: WordTranslation[]
   ): Promise<void> {
     // Check if translation already exists
-    const existing = await this.translationRepository.findByMessageId(messageId);
+    const existing =
+      await this.translationRepository.findByMessageId(messageId);
     if (existing) {
       return; // Already has translation
     }
@@ -96,7 +99,7 @@ export class WordTranslationService {
     // This handles various languages and punctuation marks
     return text
       .split(/([.!?。！？]+[\s\n]*)/)
-      .filter(s => s.trim().length > 0);
+      .filter((s) => s.trim().length > 0);
   }
 
   /**
@@ -108,12 +111,12 @@ export class WordTranslationService {
     wordTranslations: WordTranslation[]
   ): Map<string, string> {
     const wordToSentence = new Map<string, string>();
-    
+
     // For each word, find which sentence it belongs to
     wordTranslations.forEach((wt) => {
       if (!wordToSentence.has(wt.originalWord)) {
         // Find the sentence containing this word
-        const containingSentence = sentences.find(sentence =>
+        const containingSentence = sentences.find((sentence) =>
           sentence.includes(wt.originalWord)
         );
         if (containingSentence) {
@@ -133,7 +136,10 @@ export class WordTranslationService {
     messageContent: string,
     sentences: string[],
     apiKey: string
-  ): Promise<{ wordTranslations: WordTranslation[]; fullTranslation: string | null }> {
+  ): Promise<{
+    wordTranslations: WordTranslation[];
+    fullTranslation: string | null;
+  }> {
     const openai = this.openaiService.getClient(apiKey);
 
     const prompt = OPENAI_PROMPTS.WORD_TRANSLATION.USER(messageContent);
@@ -178,11 +184,15 @@ export class WordTranslationService {
       const fullTranslation = parsed.fullTranslation;
 
       // Validate and map to our format
-      const wordTranslations = translations
-        .filter((wt: any) => wt.originalWord && wt.translation)
-        .map((wt: any) => ({
-          originalWord: wt.originalWord,
-          translation: wt.translation,
+      interface WordTranslationItem {
+        originalWord?: string;
+        translation?: string;
+      }
+      const wordTranslations = (translations as WordTranslationItem[])
+        .filter((wt) => wt.originalWord && wt.translation)
+        .map((wt) => ({
+          originalWord: wt.originalWord!,
+          translation: wt.translation!,
         }));
 
       return {
@@ -206,7 +216,8 @@ export class WordTranslationService {
   async getWordTranslationsForMessage(
     messageId: number
   ): Promise<WordTranslation[]> {
-    const translations = await this.wordTranslationRepository.findByMessageId(messageId);
+    const translations =
+      await this.wordTranslationRepository.findByMessageId(messageId);
     return translations.map((t) => ({
       originalWord: t.originalWord,
       translation: t.translation,
@@ -220,10 +231,11 @@ export class WordTranslationService {
   async getWordTranslationsForMessages(
     messageIds: number[]
   ): Promise<Map<number, WordTranslation[]>> {
-    const translations = await this.wordTranslationRepository.findByMessageIds(messageIds);
-    
+    const translations =
+      await this.wordTranslationRepository.findByMessageIds(messageIds);
+
     const translationMap = new Map<number, WordTranslation[]>();
-    
+
     translations.forEach((t) => {
       if (!translationMap.has(t.messageId)) {
         translationMap.set(t.messageId, []);

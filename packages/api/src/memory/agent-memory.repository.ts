@@ -268,14 +268,12 @@ export class AgentMemoryRepository {
     });
   }
 
-  private parseVector(
-    vector: string | null | unknown
-  ): number[] | null {
+  private parseVector(vector: string | null | unknown): number[] | null {
     if (!vector) return null;
     if (typeof vector === 'string') {
       try {
         // pgvector returns as string like '[0.1,0.2,0.3]'
-        const cleaned = vector.replace(/[\[\]]/g, '');
+        const cleaned = vector.replace(/[[\]]/g, '');
         return cleaned.split(',').map(Number);
       } catch {
         return null;

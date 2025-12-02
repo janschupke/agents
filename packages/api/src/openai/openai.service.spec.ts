@@ -199,7 +199,7 @@ describe('OpenAIService', () => {
       expect(result).toContain('user: Great!');
     });
 
-    it('should only use last 5 messages', () => {
+    it('should only use last 10 messages', () => {
       const messages = [
         { role: 'user', content: 'Message 1' },
         { role: 'user', content: 'Message 2' },
@@ -208,15 +208,26 @@ describe('OpenAIService', () => {
         { role: 'user', content: 'Message 5' },
         { role: 'user', content: 'Message 6' },
         { role: 'user', content: 'Message 7' },
+        { role: 'user', content: 'Message 8' },
+        { role: 'user', content: 'Message 9' },
+        { role: 'user', content: 'Message 10' },
+        { role: 'user', content: 'Message 11' },
+        { role: 'user', content: 'Message 12' },
       ];
 
       const result = service.createMemoryChunkFromMessages(messages);
 
-      expect(result).not.toContain('Message 1');
-      expect(result).not.toContain('Message 2');
+      // Should only contain last 10 messages (3-12), not first 2
+      expect(result).not.toMatch(/\bMessage 1\b/);
+      expect(result).not.toMatch(/\bMessage 2\b/);
       expect(result).toContain('Message 3');
-      expect(result).toContain('Message 4');
-      expect(result).toContain('Message 5');
+      expect(result).toContain('Message 10');
+      expect(result).toContain('Message 11');
+      expect(result).toContain('Message 12');
+
+      // Verify it contains exactly 10 messages
+      const messageCount = (result.match(/Message \d+/g) || []).length;
+      expect(messageCount).toBe(10);
       expect(result).toContain('Message 6');
       expect(result).toContain('Message 7');
     });

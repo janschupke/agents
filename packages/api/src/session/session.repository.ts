@@ -49,7 +49,10 @@ export class SessionRepository {
     });
   }
 
-  async findAllByAgentId(agentId: number, userId: string): Promise<ChatSession[]> {
+  async findAllByAgentId(
+    agentId: number,
+    userId: string
+  ): Promise<ChatSession[]> {
     return this.prisma.chatSession.findMany({
       where: { agentId, userId },
       orderBy: { createdAt: 'desc' },

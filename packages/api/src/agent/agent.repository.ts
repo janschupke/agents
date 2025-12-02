@@ -37,7 +37,9 @@ export class AgentRepository {
     });
   }
 
-  async findConfigsByAgentId(agentId: number): Promise<Record<string, unknown>> {
+  async findConfigsByAgentId(
+    agentId: number
+  ): Promise<Record<string, unknown>> {
     // Select only needed fields to reduce data transfer
     const configs = await this.prisma.agentConfig.findMany({
       where: { agentId },
@@ -81,7 +83,9 @@ export class AgentRepository {
     return { ...DEFAULT_AGENT_CONFIG };
   }
 
-  mergeAgentConfig(agentConfig: Record<string, unknown>): Record<string, unknown> {
+  mergeAgentConfig(
+    agentConfig: Record<string, unknown>
+  ): Record<string, unknown> {
     const defaults = this.getDefaultAgentConfig();
     return { ...defaults, ...agentConfig };
   }
@@ -127,7 +131,7 @@ export class AgentRepository {
       data: {
         name,
         description: description || null,
-        avatarUrl: avatarUrl !== undefined ? (avatarUrl || null) : undefined,
+        avatarUrl: avatarUrl !== undefined ? avatarUrl || null : undefined,
       },
     });
   }

@@ -6,7 +6,10 @@ import { MessageTranslation } from '@prisma/client';
 export class MessageTranslationRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(messageId: number, translation: string): Promise<MessageTranslation> {
+  async create(
+    messageId: number,
+    translation: string
+  ): Promise<MessageTranslation> {
     return this.prisma.messageTranslation.create({
       data: {
         messageId,
@@ -29,5 +32,3 @@ export class MessageTranslationRepository {
     });
   }
 }
-
-

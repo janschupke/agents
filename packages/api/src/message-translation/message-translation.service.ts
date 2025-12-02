@@ -27,7 +27,8 @@ export class MessageTranslationService {
     userId: string
   ): Promise<{ translation: string }> {
     // Check if translation already exists
-    const existing = await this.translationRepository.findByMessageId(messageId);
+    const existing =
+      await this.translationRepository.findByMessageId(messageId);
     if (existing) {
       return { translation: existing.translation };
     }
@@ -87,7 +88,7 @@ export class MessageTranslationService {
   ): Promise<Array<{ role: string; content: string }>> {
     const allMessages =
       await this.messageRepository.findAllBySessionId(sessionId);
-    
+
     // Find the target message index
     const targetIndex = allMessages.findIndex((m) => m.id === targetMessageId);
     if (targetIndex === -1) {
@@ -95,7 +96,10 @@ export class MessageTranslationService {
     }
 
     // Get previous messages (up to context limit, or all if less)
-    const contextCount = Math.min(NUMERIC_CONSTANTS.TRANSLATION_CONTEXT_MESSAGES, targetIndex);
+    const contextCount = Math.min(
+      NUMERIC_CONSTANTS.TRANSLATION_CONTEXT_MESSAGES,
+      targetIndex
+    );
     const contextMessages = allMessages.slice(
       Math.max(0, targetIndex - contextCount),
       targetIndex
@@ -165,7 +169,7 @@ export class MessageTranslationService {
 
     const translations =
       await this.translationRepository.findByMessageIds(messageIds);
-    
+
     const translationMap = new Map<number, string>();
     translations.forEach((t) => {
       translationMap.set(t.messageId, t.translation);
@@ -208,9 +212,13 @@ export class MessageTranslationService {
     }
 
     // Check if translations already exist
-    const existingTranslation = await this.translationRepository.findByMessageId(messageId);
-    const existingWordTranslations = await this.wordTranslationService.getWordTranslationsForMessage(messageId);
-    
+    const existingTranslation =
+      await this.translationRepository.findByMessageId(messageId);
+    const existingWordTranslations =
+      await this.wordTranslationService.getWordTranslationsForMessage(
+        messageId
+      );
+
     if (existingTranslation && existingWordTranslations.length > 0) {
       return {
         translation: existingTranslation.translation,
@@ -235,8 +243,12 @@ export class MessageTranslationService {
     );
 
     // Get the created translations
-    const translation = await this.translationRepository.findByMessageId(messageId);
-    const wordTranslations = await this.wordTranslationService.getWordTranslationsForMessage(messageId);
+    const translation =
+      await this.translationRepository.findByMessageId(messageId);
+    const wordTranslations =
+      await this.wordTranslationService.getWordTranslationsForMessage(
+        messageId
+      );
 
     if (!translation || wordTranslations.length === 0) {
       throw new HttpException(

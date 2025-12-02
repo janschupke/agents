@@ -315,12 +315,14 @@ describe('ClerkWebhookService', () => {
 
     it('should handle missing Clerk client', async () => {
       mockClerkService.getClient.mockReturnValue(null);
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'warn')
+        .mockImplementation();
 
       await service.syncAllUserRoles();
 
-      expect(consoleSpy).toHaveBeenCalled();
-      consoleSpy.mockRestore();
+      expect(loggerSpy).toHaveBeenCalled();
+      loggerSpy.mockRestore();
     });
   });
 });

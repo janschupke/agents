@@ -35,10 +35,7 @@ export class SystemConfigRepository {
     );
   }
 
-  async upsert(
-    configKey: string,
-    configValue: unknown
-  ): Promise<SystemConfig> {
+  async upsert(configKey: string, configValue: unknown): Promise<SystemConfig> {
     return this.prisma.systemConfig.upsert({
       where: { configKey },
       update: {
@@ -51,9 +48,7 @@ export class SystemConfigRepository {
     });
   }
 
-  async updateConfigs(
-    configs: Record<string, unknown>
-  ): Promise<void> {
+  async updateConfigs(configs: Record<string, unknown>): Promise<void> {
     for (const [key, value] of Object.entries(configs)) {
       if (value !== undefined && value !== null) {
         await this.upsert(key, value);
