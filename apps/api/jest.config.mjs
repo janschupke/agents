@@ -28,6 +28,7 @@ export default {
   transform: {
     '^.+\\.(t|j)s$': tsJestPath,
   },
+  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   collectCoverageFrom: [
     '**/*.(t|j)s',
     '!**/*.spec.ts',

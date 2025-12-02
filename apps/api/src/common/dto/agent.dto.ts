@@ -7,14 +7,14 @@ export class AgentConfigDto {
 }
 
 export class CreateAgentDto {
-  name: string;
+  name!: string;
   description?: string;
   avatarUrl?: string;
   configs?: AgentConfigDto;
 }
 
 export class UpdateAgentDto {
-  name: string;
+  name!: string;
   description?: string;
   avatarUrl?: string;
   configs?: AgentConfigDto;

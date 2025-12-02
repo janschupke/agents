@@ -1,3 +1,3 @@
 export class WebhookResponseDto {
-  received: boolean;
+  received!: boolean;
 }

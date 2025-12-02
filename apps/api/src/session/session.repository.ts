@@ -86,7 +86,7 @@ export class SessionRepository {
     });
 
     // Return sessions without the messages relation (we only needed it for sorting)
-    return sorted.map(({ messages, ...session }) => session);
+    return sorted.map(({ ...session }) => session);
   }
 
   async update(

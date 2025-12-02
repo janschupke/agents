@@ -23,7 +23,7 @@ async function bootstrap() {
     raw({ type: 'application/json', limit: '1mb' }),
     (
       req: Request & { rawBody?: Buffer; body?: Buffer },
-      res: Response,
+      _res: Response,
       next: NextFunction
     ) => {
       // Store raw body for webhook verification

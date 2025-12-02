@@ -7,5 +7,5 @@ export class UpdateSystemConfigDto {
 }
 
 export class SystemBehaviorRulesDto {
-  rules: string[];
+  rules!: string[];
 }

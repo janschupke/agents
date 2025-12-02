@@ -3,9 +3,7 @@ import { AgentRepository } from '../agent/agent.repository';
 import { SessionRepository } from '../session/session.repository';
 import { MessageRepository } from '../message/message.repository';
 import { AgentMemoryService } from '../memory/agent-memory.service';
-import { AgentMemoryRepository } from '../memory/agent-memory.repository';
 import { OpenAIService } from '../openai/openai.service';
-import { UserService } from '../user/user.service';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
 import { SystemConfigRepository } from '../system-config/system-config.repository';
 import { MessageTranslationService } from '../message-translation/message-translation.service';
@@ -27,9 +25,7 @@ export class ChatService {
     private readonly sessionRepository: SessionRepository,
     private readonly messageRepository: MessageRepository,
     private readonly agentMemoryService: AgentMemoryService,
-    private readonly agentMemoryRepository: AgentMemoryRepository,
     private readonly openaiService: OpenAIService,
-    private readonly userService: UserService,
     private readonly apiCredentialsService: ApiCredentialsService,
     private readonly systemConfigRepository: SystemConfigRepository,
     private readonly messageTranslationService: MessageTranslationService,

@@ -1,16 +1,16 @@
 export class SetApiKeyDto {
-  apiKey: string;
+  apiKey!: string;
 }
 
 export class ApiCredentialsStatusItemDto {
-  provider: string;
-  hasKey: boolean;
+  provider!: string;
+  hasKey!: boolean;
 }
 
 export class ApiCredentialsStatusResponseDto {
-  credentials: ApiCredentialsStatusItemDto[];
+  credentials!: ApiCredentialsStatusItemDto[];
 }
 
 export class CheckApiKeyResponseDto {
-  hasKey: boolean;
+  hasKey!: boolean;
 }

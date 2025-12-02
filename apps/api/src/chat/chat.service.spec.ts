@@ -178,7 +178,7 @@ describe('ChatService', () => {
       });
     });
 
-    it('should create session if not exists', async () => {
+    it('should return empty history if no session exists', async () => {
       const agentId = 1;
       const userId = 'user-123';
       const mockAgent = {
@@ -187,24 +187,22 @@ describe('ChatService', () => {
         description: 'Test Description',
         config: {},
       };
-      const mockSession = {
-        id: 1,
-        agentId,
-        sessionName: 'Session 1',
-      };
 
       mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockAgent);
       mockSessionRepository.findLatestByAgentId.mockResolvedValue(null);
-      mockSessionRepository.create.mockResolvedValue(mockSession);
-      mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue([]);
-      mockMessageRepository.findAllBySessionIdWithRawData.mockResolvedValue([]);
 
-      await service.getChatHistory(agentId, userId);
+      const result = await service.getChatHistory(agentId, userId);
 
-      expect(mockSessionRepository.create).toHaveBeenCalledWith(
-        userId,
-        agentId
-      );
+      expect(mockSessionRepository.create).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        agent: {
+          id: agentId,
+          name: 'Test Agent',
+          description: 'Test Description',
+        },
+        session: null,
+        messages: [],
+      });
     });
 
     it('should throw HttpException if agent not found', async () => {

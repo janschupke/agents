@@ -1,13 +1,11 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { AgentRepository } from './agent.repository';
-import { UserService } from '../user/user.service';
 import { AgentResponse } from '../common/interfaces/agent.interface';
 
 @Injectable()
 export class AgentService {
   constructor(
-    private readonly agentRepository: AgentRepository,
-    private readonly userService: UserService
+    private readonly agentRepository: AgentRepository
   ) {}
 
   async findAll(userId: string): Promise<AgentResponse[]> {

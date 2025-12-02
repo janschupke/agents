@@ -1,9 +1,9 @@
 import { SendMessageDto } from './send-message.dto';
 
 export class SessionResponseDto {
-  id: number;
-  session_name: string | null;
-  createdAt: Date;
+  id!: number;
+  session_name!: string | null;
+  createdAt!: Date;
 }
 
 export class UpdateSessionDto {
@@ -12,8 +12,8 @@ export class UpdateSessionDto {
 
 export class MessageResponseDto {
   id?: number;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
+  role!: 'user' | 'assistant' | 'system';
+  content!: string;
   rawRequest?: unknown;
   rawResponse?: unknown;
   translation?: string;
@@ -25,21 +25,21 @@ export class MessageResponseDto {
 }
 
 export class ChatHistoryResponseDto {
-  agent: {
+  agent!: {
     id: number;
     name: string;
     description: string | null;
   };
-  session: {
+  session!: {
     id: number;
     session_name: string | null;
   } | null;
-  messages: MessageResponseDto[];
+  messages!: MessageResponseDto[];
 }
 
 export class SendMessageResponseDto {
-  response: string;
-  session: {
+  response!: string;
+  session!: {
     id: number;
     session_name: string | null;
   };

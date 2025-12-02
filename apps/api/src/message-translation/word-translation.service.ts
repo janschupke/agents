@@ -106,7 +106,7 @@ export class WordTranslationService {
    * Create a map of words to their containing sentences
    */
   private createWordToSentenceMap(
-    messageContent: string,
+    _messageContent: string,
     sentences: string[],
     wordTranslations: WordTranslation[]
   ): Map<string, string> {
@@ -134,7 +134,7 @@ export class WordTranslationService {
    */
   private async translateWordsWithOpenAI(
     messageContent: string,
-    sentences: string[],
+    _sentences: string[],
     apiKey: string
   ): Promise<{
     wordTranslations: WordTranslation[];
