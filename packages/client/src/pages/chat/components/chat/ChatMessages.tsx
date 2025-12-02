@@ -1,8 +1,8 @@
 import { Message, MessageRole } from '../../../../types/chat.types';
 import MessageBubble from './MessageBubble';
-import { Skeleton } from '../../../../components/ui/feedback';
 import { IconChat } from '../../../../components/ui/Icons';
 import { FadeIn } from '../../../../components/ui/animation';
+import { TypingIndicator } from '../../../../components/ui/feedback';
 import { useRef, useEffect } from 'react';
 
 interface ChatMessagesProps {
@@ -87,11 +87,7 @@ export default function ChatMessages({
       {loading && (
         <div className="flex max-w-[80%] self-start">
           <div className="px-3 py-2 rounded-lg bg-message-assistant text-message-assistant-text text-sm">
-            <div className="flex items-center gap-2">
-              <Skeleton className="w-2 h-2 rounded-full" />
-              <Skeleton className="w-2 h-2 rounded-full" />
-              <Skeleton className="w-2 h-2 rounded-full" />
-            </div>
+            <TypingIndicator />
           </div>
         </div>
       )}
