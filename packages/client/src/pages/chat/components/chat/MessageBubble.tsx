@@ -1,4 +1,4 @@
-import { Message, MessageRole } from '../../../types/chat.types';
+import { Message, MessageRole } from '../../../../types/chat.types';
 import { IconSearch, IconTranslate } from '../../../../components/ui/Icons';
 import TranslatableMarkdownContent from '../markdown/TranslatableMarkdownContent';
 import MarkdownContent from '../markdown/MarkdownContent';

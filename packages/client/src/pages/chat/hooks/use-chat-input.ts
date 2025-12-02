@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { NUMERIC_CONSTANTS } from '../../../../constants/numeric.constants';
+import { NUMERIC_CONSTANTS } from '../../../constants/numeric.constants';
 import { ChatInputRef } from '../components/chat/ChatInput';
+import { SendMessageResponse } from '../../../types/chat.types';
 
 interface UseChatInputOptions {
   currentSessionId: number | null;
   messagesLoading: boolean;
   showChatPlaceholder: boolean;
-  sendMessage: (message: string) => Promise<void>;
+  sendMessage: (message: string) => Promise<SendMessageResponse | undefined>;
 }
 
 interface UseChatInputReturn {
@@ -59,4 +60,3 @@ export function useChatInput({
     handleSubmit,
   };
 }
-

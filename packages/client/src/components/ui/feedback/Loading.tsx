@@ -1,4 +1,3 @@
-import React from 'react';
 import { IconLoader } from '../Icons';
 
 interface LoadingProps {

@@ -93,7 +93,7 @@ export default function BotConfigForm({ bot, saving = false, onSaveClick }: BotC
               <BotNameAndAvatar
                 avatarUrl={values.avatarUrl}
                 name={values.name}
-                nameError={errors.name}
+                nameError={errors.name ?? undefined}
                 nameTouched={touched.name}
                 saving={saving}
                 autoFocus={bot.id < 0}

@@ -12,7 +12,7 @@ interface UseMessageTranslationReturn {
   isTranslating: boolean;
   showTranslation: boolean;
   translation: string | undefined;
-  wordTranslations: import('../types/chat.types').WordTranslation[] | undefined;
+  wordTranslations: import('../../../types/chat.types').WordTranslation[] | undefined;
   handleTranslate: (e?: React.MouseEvent) => Promise<void>;
   setShowTranslation: (show: boolean) => void;
 }

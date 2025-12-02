@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../hooks/queries/query-keys';
 import { useBotSessions } from '../../../hooks/queries/use-bots';
 import { useCreateSession, useDeleteSession } from '../../../hooks/mutations/use-bot-mutations';
-import { Session } from '../../../types/chat.types';
+import { Session, ChatHistoryResponse } from '../../../types/chat.types';
 
 interface UseChatSessionOptions {
   botId: number | null;
@@ -14,8 +14,8 @@ interface UseChatSessionReturn {
   sessions: Session[];
   sessionsLoading: boolean;
   setCurrentSessionId: (sessionId: number | null) => void;
-  handleSessionSelect: (sessionId: number) => Promise<void>;
-  handleNewSession: () => Promise<void>;
+  handleSessionSelect: (sessionId: number) => Promise<ChatHistoryResponse | undefined>;
+  handleNewSession: () => Promise<Session | undefined>;
   handleSessionDelete: (sessionId: number, onConfirm?: () => Promise<boolean>) => Promise<void>;
 }
 
@@ -88,7 +88,7 @@ export function useChatSession({ botId }: UseChatSessionOptions): UseChatSession
       const history = await queryClient.fetchQuery({
         queryKey: queryKeys.chat.history(botId, sessionId),
         queryFn: async () => {
-          const { ChatService } = await import('../services/chat.service');
+          const { ChatService } = await import('../../../services/chat.service');
           return ChatService.getChatHistory(botId, sessionId);
         },
       });

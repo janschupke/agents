@@ -4,7 +4,7 @@ import { useFormValidation } from '../../../hooks/use-form-validation';
 import { validationRules } from '../../../utils/validation';
 import { parseBehaviorRules } from '../utils/bot.utils';
 
-export interface BotFormValues {
+export interface BotFormValues extends Record<string, unknown> {
   name: string;
   description: string;
   avatarUrl: string | null;
@@ -20,7 +20,7 @@ interface UseBotFormOptions {
 
 interface UseBotFormReturn {
   values: BotFormValues;
-  errors: Partial<Record<keyof BotFormValues, string>>;
+  errors: Partial<Record<keyof BotFormValues, string | null>>;
   touched: Partial<Record<keyof BotFormValues, boolean>>;
   setValue: <K extends keyof BotFormValues>(field: K, value: BotFormValues[K]) => void;
   setTouched: (field: keyof BotFormValues) => void;

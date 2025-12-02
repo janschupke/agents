@@ -1,4 +1,4 @@
-import { Message, MessageRole } from '../../../types/chat.types';
+import { Message, MessageRole } from '../../../../types/chat.types';
 import MessageBubble from './MessageBubble';
 import { Skeleton } from '../../../../components/ui/feedback';
 import { IconChat } from '../../../../components/ui/Icons';

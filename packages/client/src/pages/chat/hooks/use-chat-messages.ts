@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Message, MessageRole } from '../../../types/chat.types';
+import { Message, MessageRole, SendMessageResponse } from '../../../types/chat.types';
 import { useChatHistory } from '../../../hooks/queries/use-chat';
 import { useSendMessage } from '../../../hooks/mutations/use-chat-mutations';
 import { useQueryClient } from '@tanstack/react-query';
@@ -13,7 +13,7 @@ interface UseChatMessagesOptions {
 interface UseChatMessagesReturn {
   messages: Message[];
   loading: boolean;
-  sendMessage: (message: string) => Promise<void>;
+  sendMessage: (message: string) => Promise<SendMessageResponse | undefined>;
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
 }
 

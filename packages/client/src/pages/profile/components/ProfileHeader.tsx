@@ -1,4 +1,4 @@
-import { User } from '../../../../types/chat.types';
+import { User } from '../../../types/chat.types';
 
 interface ProfileHeaderProps {
   user: User;
@@ -34,4 +34,3 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
     </div>
   );
 }
-

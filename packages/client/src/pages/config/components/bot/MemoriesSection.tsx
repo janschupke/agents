@@ -1,4 +1,4 @@
-import { AgentMemory } from '../../../types/chat.types';
+import { AgentMemory } from '../../../../types/chat.types';
 import { IconRefresh } from '../../../../components/ui/Icons';
 import MemoriesList from './MemoriesList';
 

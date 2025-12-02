@@ -1,15 +1,15 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useConfirm } from '../../../hooks/useConfirm';
 import { queryKeys } from '../../../hooks/queries/query-keys';
-import { Session } from '../../../types/chat.types';
+import { Session, Message, ChatHistoryResponse } from '../../../types/chat.types';
 
 interface UseChatHandlersOptions {
   botId: number | null;
   sessions: Session[];
-  handleSessionSelect: (sessionId: number) => Promise<void>;
-  handleNewSession: () => Promise<void>;
+  handleSessionSelect: (sessionId: number) => Promise<ChatHistoryResponse | undefined>;
+  handleNewSession: () => Promise<Session | undefined>;
   handleSessionDelete: (sessionId: number, onConfirm?: () => Promise<boolean>) => Promise<void>;
-  setMessages: React.Dispatch<React.SetStateAction<unknown[]>>;
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
 }
 
 interface UseChatHandlersReturn {

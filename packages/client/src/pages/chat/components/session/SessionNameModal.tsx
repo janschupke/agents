@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { IconClose } from '../../../../components/ui/Icons';
-import { NUMERIC_CONSTANTS } from '../../../constants/numeric.constants';
+import { NUMERIC_CONSTANTS } from '../../../../constants/numeric.constants';
 import { useUpdateSession } from '../../../../hooks/mutations/use-bot-mutations';
 import { useFormValidation } from '../../../../hooks/use-form-validation';
 import { FormButton, FormContainer, ButtonType, ButtonVariant } from '../../../../components/ui/form';
@@ -14,7 +14,7 @@ interface SessionNameModalProps {
   sessionId: number;
 }
 
-interface SessionFormValues {
+interface SessionFormValues extends Record<string, unknown> {
   name: string;
 }
 

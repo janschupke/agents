@@ -6,7 +6,7 @@ import { useConfirm } from '../../../hooks/useConfirm';
 import { useFormValidation } from '../../../hooks/use-form-validation';
 import { validationRules } from '../../../utils/validation';
 
-export interface ApiKeyFormValues {
+export interface ApiKeyFormValues extends Record<string, unknown> {
   apiKey: string;
 }
 
@@ -14,7 +14,7 @@ interface UseApiKeyReturn {
   showApiKeyInput: boolean;
   hasApiKey: boolean;
   values: ApiKeyFormValues;
-  errors: Partial<Record<keyof ApiKeyFormValues, string>>;
+  errors: Partial<Record<keyof ApiKeyFormValues, string | null>>;
   touched: Partial<Record<keyof ApiKeyFormValues, boolean>>;
   saving: boolean;
   errorMessage: string | null;
@@ -147,4 +147,3 @@ export function useApiKey(): UseApiKeyReturn {
     handleCancelEdit,
   };
 }
-

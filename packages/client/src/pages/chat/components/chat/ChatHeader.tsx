@@ -1,4 +1,4 @@
-import BotSelector from '../bot/BotSelector';
+import BotSelector from '../../../config/components/bot/BotSelector';
 
 export default function ChatHeader() {
   return (

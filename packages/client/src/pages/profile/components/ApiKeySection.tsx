@@ -1,5 +1,5 @@
-import { IconPencil, IconTrash, IconClose, IconCheck } from '../../../../components/ui/Icons';
-import { FormButton, FormContainer, ValidatedInput, ButtonType, ButtonVariant } from '../../../../components/ui/form';
+import { IconPencil, IconTrash, IconClose, IconCheck } from '../../../components/ui/Icons';
+import { FormButton, FormContainer, ValidatedInput, ButtonType, ButtonVariant } from '../../../components/ui/form';
 import { useApiKey } from '../hooks/use-api-key';
 
 /**
@@ -81,7 +81,7 @@ export default function ApiKeySection() {
                 <ValidatedInput
                   type="password"
                   value={values.apiKey}
-                  onChange={(e) => setValue('apiKey', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue('apiKey', e.target.value)}
                   onBlur={() => setTouched('apiKey')}
                   disabled={saving}
                   error={errors.apiKey}
