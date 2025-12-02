@@ -88,3 +88,4 @@ ALTER TABLE "messages" ADD CONSTRAINT "messages_session_id_fkey" FOREIGN KEY ("s
 -- AddForeignKey
 ALTER TABLE "memory_chunks" ADD CONSTRAINT "memory_chunks_session_id_fkey" FOREIGN KEY ("session_id") REFERENCES "chat_sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+

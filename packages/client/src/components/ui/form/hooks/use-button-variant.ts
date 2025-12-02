@@ -16,3 +16,4 @@ export function getButtonVariantStyles(variant: ButtonVariant): string {
 
   return variantStyles[variant] || variantStyles[ButtonVariant.PRIMARY];
 }
+

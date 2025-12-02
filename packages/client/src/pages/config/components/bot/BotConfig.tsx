@@ -6,7 +6,6 @@ import { PageContainer } from '../../../../components/ui/layout';
 import { useBots } from '../../../../hooks/queries/use-bots';
 import { useBotSelection } from '../../hooks/use-bot-selection';
 import { useBotConfigOperations } from '../../hooks/use-bot-config-operations';
-import { LoadingWrapper } from '../../../../components/ui/feedback';
 
 export default function BotConfig() {
   const { data: contextBots = [], isLoading: loadingBots } = useBots();
@@ -46,16 +45,14 @@ export default function BotConfig() {
   return (
     <PageContainer>
       <div className="flex h-full">
-        <LoadingWrapper isLoading={loadingBots} loadingText="Loading bots...">
-          <BotSidebar
-            bots={bots}
-            currentBotId={currentBotId}
-            onBotSelect={handleBotSelect}
-            onNewBot={handleNewBot}
-            onBotDelete={handleDelete}
-            loading={loadingBots}
-          />
-        </LoadingWrapper>
+        <BotSidebar
+          bots={bots}
+          currentBotId={currentBotId}
+          onBotSelect={handleBotSelect}
+          onNewBot={handleNewBot}
+          onBotDelete={handleDelete}
+          loading={loadingBots}
+        />
         <div className="flex-1 flex flex-col overflow-hidden">
           <BotConfigForm
             bot={currentBot}

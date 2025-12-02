@@ -17,3 +17,4 @@ CREATE INDEX IF NOT EXISTS "message_translations_message_id_idx" ON "message_tra
 -- AddForeignKey
 ALTER TABLE "message_translations" ADD CONSTRAINT "message_translations_message_id_fkey" FOREIGN KEY ("message_id") REFERENCES "messages"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+

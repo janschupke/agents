@@ -1743,3 +1743,4 @@ Add to the existing CSS:
 - **Performance**: Vocabulary extraction uses OpenAI API, so it may take a few seconds. Consider adding progress indicators for better UX
 - **Scalability**: For large vocabulary lists, consider implementing virtual scrolling in the management view
 
+

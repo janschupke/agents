@@ -10,7 +10,7 @@ interface LoadingWrapperProps {
 
 export default function LoadingWrapper({
   isLoading,
-  loadingText = 'Loading...',
+  loadingText,
   children,
   fallback,
 }: LoadingWrapperProps) {

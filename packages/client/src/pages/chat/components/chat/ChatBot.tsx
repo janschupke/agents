@@ -15,7 +15,6 @@ import ChatHeader from './ChatHeader';
 import ChatContent from './ChatContent';
 import ChatLoadingState from './ChatLoadingState';
 import ChatEmptyState from './ChatEmptyState';
-import { LoadingWrapper } from '../../../../components/ui/feedback';
 
 function ChatBotContent({ botId: propBotId }: ChatBotProps) {
   const { ConfirmDialog } = useConfirm();
@@ -92,17 +91,15 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
   return (
     <PageContainer>
       <div className="flex h-full">
-        <LoadingWrapper isLoading={sessionsLoading} loadingText="Loading sessions...">
-          <SessionSidebar
-            sessions={sessions}
-            currentSessionId={currentSessionId}
-            onSessionSelect={handleSessionSelectWrapper}
-            onNewSession={handleNewSessionWrapper}
-            onSessionDelete={handleSessionDeleteWrapper}
-            onSessionEdit={openSessionNameModal}
-            loading={sessionsLoading}
-          />
-        </LoadingWrapper>
+        <SessionSidebar
+          sessions={sessions}
+          currentSessionId={currentSessionId}
+          onSessionSelect={handleSessionSelectWrapper}
+          onNewSession={handleNewSessionWrapper}
+          onSessionDelete={handleSessionDeleteWrapper}
+          onSessionEdit={openSessionNameModal}
+          loading={sessionsLoading}
+        />
         <div className="flex flex-col flex-1 overflow-hidden">
           <ChatHeader />
           <ChatContent
