@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { IconClose } from './Icons';
+import { NUMERIC_CONSTANTS } from '../../constants/numeric.constants.js';
 
 export type ToastType = 'success' | 'error' | 'info';
 
@@ -10,7 +11,7 @@ interface ToastProps {
   duration?: number;
 }
 
-export default function Toast({ message, type, onClose, duration = 3000 }: ToastProps) {
+export default function Toast({ message, type, onClose, duration = NUMERIC_CONSTANTS.UI_NOTIFICATION_DURATION }: ToastProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();

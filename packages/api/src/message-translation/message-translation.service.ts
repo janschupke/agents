@@ -5,6 +5,8 @@ import { SessionRepository } from '../session/session.repository';
 import { OpenAIService } from '../openai/openai.service';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
 import { WordTranslationService } from './word-translation.service';
+import { OPENAI_PROMPTS } from '../common/constants/openai-prompts.constants.js';
+import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 
 @Injectable()
 export class MessageTranslationService {
@@ -92,8 +94,8 @@ export class MessageTranslationService {
       return [];
     }
 
-    // Get previous messages (up to 10, or all if less)
-    const contextCount = Math.min(10, targetIndex);
+    // Get previous messages (up to context limit, or all if less)
+    const contextCount = Math.min(NUMERIC_CONSTANTS.TRANSLATION_CONTEXT_MESSAGES, targetIndex);
     const contextMessages = allMessages.slice(
       Math.max(0, targetIndex - contextCount),
       targetIndex
@@ -121,35 +123,23 @@ export class MessageTranslationService {
       .join('\n');
 
     const prompt = contextString
-      ? `Translate the following message to English. Consider the conversation context to provide an accurate translation that preserves meaning and context.
-
-Previous conversation:
-${contextString}
-
-Message to translate:
-${message}
-
-Translation:`
-      : `Translate the following message to English:
-${message}
-
-Translation:`;
+      ? OPENAI_PROMPTS.TRANSLATION.WITH_CONTEXT(contextString, message)
+      : OPENAI_PROMPTS.TRANSLATION.WITHOUT_CONTEXT(message);
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini', // Use cheaper model for translations
       messages: [
         {
           role: 'system',
-          content:
-            'You are a professional translator. Translate the given message to English, preserving context, tone, and meaning. Only return the translation, no additional text.',
+          content: OPENAI_PROMPTS.TRANSLATION.SYSTEM,
         },
         {
           role: 'user',
           content: prompt,
         },
       ],
-      temperature: 0.3, // Lower temperature for more consistent translations
-      max_tokens: 1000,
+      temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
+      max_tokens: NUMERIC_CONSTANTS.DEFAULT_MAX_TOKENS,
     });
 
     const translation = completion.choices[0]?.message?.content?.trim();

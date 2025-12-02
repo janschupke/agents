@@ -7,8 +7,9 @@ import { UseGuards } from '@nestjs/common';
 import { RolesGuard } from '../auth/roles.guard';
 import { AuthenticatedUser } from '../common/types/auth.types';
 import { UserResponseDto, UserListResponseDto } from '../common/dto/user.dto';
+import { API_ROUTES } from '../common/constants/api-routes.constants.js';
 
-@Controller('api/user')
+@Controller(API_ROUTES.USER.BASE)
 export class UserController {
   constructor(
     private readonly userService: UserService,

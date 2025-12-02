@@ -1,5 +1,6 @@
 import { apiManager } from './api-manager.js';
 import { WordTranslation } from '../types/chat.types.js';
+import { API_ENDPOINTS } from '../constants/api.constants.js';
 
 export class TranslationService {
   /**
@@ -7,7 +8,7 @@ export class TranslationService {
    */
   static async translateMessage(messageId: number): Promise<string> {
     const response = await apiManager.post<{ translation: string }>(
-      `/api/messages/${messageId}/translate`,
+      API_ENDPOINTS.MESSAGES.TRANSLATE(messageId),
       {}
     );
     return response.translation;
@@ -22,7 +23,7 @@ export class TranslationService {
     return apiManager.post<{
       translation: string;
       wordTranslations: WordTranslation[];
-    }>(`/api/messages/${messageId}/translate-with-words`, {});
+    }>(API_ENDPOINTS.MESSAGES.TRANSLATE_WITH_WORDS(messageId), {});
   }
 
   /**
@@ -34,9 +35,8 @@ export class TranslationService {
     if (messageIds.length === 0) {
       return {};
     }
-    const ids = messageIds.join(',');
     return apiManager.get<Record<number, string>>(
-      `/api/messages/translations?messageIds=${ids}`
+      API_ENDPOINTS.MESSAGES.TRANSLATIONS(messageIds)
     );
   }
 }

@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { AgentMemoryRepository } from './agent-memory.repository';
 import { OpenAIService } from '../openai/openai.service';
-import { MEMORY_CONFIG } from '../common/constants/api.constants';
+import { MEMORY_CONFIG } from '../common/constants/api.constants.js';
+import { OPENAI_PROMPTS } from '../common/constants/openai-prompts.constants.js';
+import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 
 @Injectable()
 export class AgentMemoryService {
@@ -18,25 +20,17 @@ export class AgentMemoryService {
       return [];
     }
 
-    // Get the last 10 messages for context
-    const recentMessages = messages.slice(-10);
+    // Get the last N messages for context
+    const recentMessages = messages.slice(-NUMERIC_CONSTANTS.MEMORY_EXTRACTION_MESSAGES);
     const conversationText = recentMessages
       .map((msg) => `${msg.role}: ${msg.content}`)
       .join('\n\n');
 
-    const prompt = `Extract 1-${MEMORY_CONFIG.MAX_KEY_INSIGHTS_PER_UPDATE} key insights from this conversation. 
-Focus on:
-- User preferences, interests, or important facts about the user
-- Main topics discussed
-- Important facts or information shared
-- Significant agent responses or statements
-
-Format each insight as a short, concise statement (max ${MEMORY_CONFIG.MAX_MEMORY_LENGTH} characters each).
-Each insight should be standalone and meaningful.
-Return ONLY the insights, one per line, without numbering or bullets.
-
-Conversation:
-${conversationText}`;
+    const prompt = OPENAI_PROMPTS.MEMORY.EXTRACTION.USER(
+      conversationText,
+      MEMORY_CONFIG.MAX_KEY_INSIGHTS_PER_UPDATE,
+      MEMORY_CONFIG.MAX_MEMORY_LENGTH
+    );
 
     try {
       const openai = this.openaiService.getClient(apiKey);
@@ -45,16 +39,15 @@ ${conversationText}`;
         messages: [
           {
             role: 'system',
-            content:
-              'You are a memory extraction assistant. Extract key insights from conversations in a concise format.',
+            content: OPENAI_PROMPTS.MEMORY.EXTRACTION.SYSTEM,
           },
           {
             role: 'user',
             content: prompt,
           },
         ],
-        temperature: 0.3,
-        max_tokens: 300,
+        temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
+        max_tokens: NUMERIC_CONSTANTS.MEMORY_EXTRACTION_MAX_TOKENS,
       });
 
       const response = completion.choices[0]?.message?.content;
@@ -147,7 +140,7 @@ ${conversationText}`;
     const memories = await this.memoryRepository.findForSummarization(
       botId,
       userId,
-      100
+      NUMERIC_CONSTANTS.MEMORY_SUMMARIZATION_LIMIT
     );
 
     if (memories.length === 0) {
@@ -288,8 +281,8 @@ ${conversationText}`;
           memories[j].vectorEmbedding!
         );
 
-        // Group if similarity is high (>= 0.8)
-        if (similarity >= 0.8) {
+        // Group if similarity is high
+        if (similarity >= NUMERIC_CONSTANTS.MEMORY_SIMILARITY_THRESHOLD) {
           group.push(memories[j]);
           processed.add(memories[j].id);
         }
@@ -320,12 +313,10 @@ ${conversationText}`;
       .map((m, i) => `${i + 1}. ${m.keyPoint}`)
       .join('\n');
 
-    const prompt = `Summarize these related memories into a single, concise memory (max ${MEMORY_CONFIG.MAX_MEMORY_LENGTH} characters).
-Remove redundancy and combine related information.
-Return ONLY the summarized memory, no additional text.
-
-Memories:
-${memoriesText}`;
+    const prompt = OPENAI_PROMPTS.MEMORY.SUMMARIZATION.USER(
+      memoriesText,
+      MEMORY_CONFIG.MAX_MEMORY_LENGTH
+    );
 
     try {
       const openai = this.openaiService.getClient(apiKey);
@@ -334,16 +325,15 @@ ${memoriesText}`;
         messages: [
           {
             role: 'system',
-            content:
-              'You are a memory summarization assistant. Combine related memories into concise summaries.',
+            content: OPENAI_PROMPTS.MEMORY.SUMMARIZATION.SYSTEM,
           },
           {
             role: 'user',
             content: prompt,
           },
         ],
-        temperature: 0.3,
-        max_tokens: 150,
+        temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
+        max_tokens: NUMERIC_CONSTANTS.MEMORY_SUMMARIZATION_MAX_TOKENS,
       });
 
       const response = completion.choices[0]?.message?.content;

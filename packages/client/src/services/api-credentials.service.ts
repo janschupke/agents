@@ -8,7 +8,7 @@ export class ApiCredentialsService {
   static async hasOpenAIKey(): Promise<boolean> {
     try {
       const result = await apiManager.get<{ hasKey: boolean }>(
-        API_ENDPOINTS.API_CREDENTIALS_OPENAI_CHECK
+        API_ENDPOINTS.API_CREDENTIALS.OPENAI_CHECK
       );
       return result.hasKey;
     } catch (error) {
@@ -21,13 +21,13 @@ export class ApiCredentialsService {
    * Set OpenAI API key
    */
   static async setOpenAIKey(apiKey: string): Promise<void> {
-    await apiManager.post(API_ENDPOINTS.API_CREDENTIALS_OPENAI, { apiKey });
+    await apiManager.post(API_ENDPOINTS.API_CREDENTIALS.OPENAI, { apiKey });
   }
 
   /**
    * Delete OpenAI API key
    */
   static async deleteOpenAIKey(): Promise<void> {
-    await apiManager.delete(API_ENDPOINTS.API_CREDENTIALS_OPENAI);
+    await apiManager.delete(API_ENDPOINTS.API_CREDENTIALS.OPENAI);
   }
 }

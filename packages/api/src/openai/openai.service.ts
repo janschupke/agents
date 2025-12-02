@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
 import { config } from 'dotenv';
+import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 
 config();
 
@@ -35,14 +36,14 @@ export class OpenAIService {
       const response = await openai.embeddings.create({
         model: 'text-embedding-3-small',
         input: text,
-        dimensions: 1536, // Explicitly set dimensions to ensure consistency
+        dimensions: NUMERIC_CONSTANTS.EMBEDDING_DIMENSIONS,
       });
 
       if (response.data && response.data.length > 0) {
         const embedding = response.data[0].embedding;
-        if (embedding.length !== 1536) {
+        if (embedding.length !== NUMERIC_CONSTANTS.EMBEDDING_DIMENSIONS) {
           console.warn(
-            `Warning: Expected embedding dimension 1536, got ${embedding.length}`
+            `Warning: Expected embedding dimension ${NUMERIC_CONSTANTS.EMBEDDING_DIMENSIONS}, got ${embedding.length}`
           );
         }
         return embedding;
@@ -65,7 +66,7 @@ export class OpenAIService {
     messages: Array<{ role: string; content: string }>
   ): string {
     // Simple implementation: combine recent messages into a summary
-    const recentMessages = messages.slice(-5); // Last 5 messages
+    const recentMessages = messages.slice(-NUMERIC_CONSTANTS.MEMORY_EXTRACTION_MESSAGES);
     return recentMessages
       .map((msg) => `${msg.role}: ${msg.content}`)
       .join('\n');

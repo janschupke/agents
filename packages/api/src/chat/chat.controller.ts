@@ -22,8 +22,9 @@ import {
 import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
 import { SuccessResponseDto } from '../common/dto/common.dto';
+import { API_ROUTES } from '../common/constants/api-routes.constants.js';
 
-@Controller('api/chat')
+@Controller(API_ROUTES.CHAT.BASE)
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 

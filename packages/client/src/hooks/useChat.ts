@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { ChatService } from '../services/chat.service.js';
 import { Message, MessageRole, Session } from '../types/chat.types.js';
 import { useChatContext } from '../contexts/ChatContext.js';
+import { NUMERIC_CONSTANTS } from '../constants/numeric.constants.js';
 
 interface UseChatOptions {
   botId?: number;
@@ -19,8 +20,8 @@ export function useChat({ botId, onError }: UseChatOptions) {
   const getCachedSessionsList = useCallback((botId: number): Session[] | null => {
     const cached = sessionsListCacheRef.current.get(botId);
     if (!cached) return null;
-    // Cache valid for 5 minutes
-    if (Date.now() - cached.lastUpdated > 5 * 60 * 1000) {
+    // Cache valid for configured timeout
+    if (Date.now() - cached.lastUpdated > NUMERIC_CONSTANTS.CACHE_TIMEOUT_MS) {
       sessionsListCacheRef.current.delete(botId);
       return null;
     }
@@ -306,7 +307,7 @@ export function useChat({ botId, onError }: UseChatOptions) {
         // Poll for translations with exponential backoff
         let pollCount = 0;
         const maxPolls = 10;
-        const pollInterval = 1000; // Start with 1 second
+        const pollInterval = NUMERIC_CONSTANTS.POLLING_INTERVAL_START;
 
         const pollForTranslations = async () => {
           if (pollCount >= maxPolls) return;

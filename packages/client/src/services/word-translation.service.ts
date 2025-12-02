@@ -1,5 +1,6 @@
 import { apiManager } from './api-manager.js';
 import { WordTranslation } from '../types/chat.types.js';
+import { API_ENDPOINTS } from '../constants/api.constants.js';
 
 export class WordTranslationService {
   /**
@@ -9,7 +10,7 @@ export class WordTranslationService {
     messageId: number
   ): Promise<WordTranslation[]> {
     const response = await apiManager.get<{ wordTranslations: WordTranslation[] }>(
-      `/api/messages/${messageId}/word-translations`
+      API_ENDPOINTS.MESSAGES.WORD_TRANSLATIONS(messageId)
     );
     return response.wordTranslations;
   }
@@ -20,6 +21,9 @@ export class WordTranslationService {
   static async getMessageTranslations(
     messageId: number
   ): Promise<{ translation?: string; wordTranslations: WordTranslation[] }> {
+    // Note: This endpoint doesn't match the backend exactly, but we'll use the translations endpoint
+    // Backend has: GET /api/messages/:messageId/translations
+    // For now, we'll construct it manually since it's not in our constants structure
     return apiManager.get<{ translation?: string; wordTranslations: WordTranslation[] }>(
       `/api/messages/${messageId}/translations`
     );

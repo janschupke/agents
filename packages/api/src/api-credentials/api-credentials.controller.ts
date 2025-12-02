@@ -16,8 +16,9 @@ import {
   CheckApiKeyResponseDto,
 } from '../common/dto/api-credentials.dto';
 import { SuccessResponseDto } from '../common/dto/common.dto';
+import { API_ROUTES } from '../common/constants/api-routes.constants.js';
 
-@Controller('api/api-credentials')
+@Controller(API_ROUTES.API_CREDENTIALS.BASE)
 export class ApiCredentialsController {
   constructor(private readonly apiCredentialsService: ApiCredentialsService) {}
 

@@ -11,8 +11,9 @@ import { Request } from 'express';
 import { ClerkWebhookService } from './clerk-webhook.service';
 import { Public } from '../auth/clerk.guard';
 import { WebhookResponseDto } from '../common/dto/webhook.dto';
+import { API_ROUTES } from '../common/constants/api-routes.constants.js';
 
-@Controller('api/webhooks/clerk')
+@Controller(API_ROUTES.WEBHOOKS.CLERK)
 @Public()
 export class ClerkWebhookController {
   private readonly logger = new Logger(ClerkWebhookController.name);

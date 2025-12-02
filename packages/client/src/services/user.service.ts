@@ -7,6 +7,6 @@ export class UserService {
    * Get current user
    */
   static async getCurrentUser(): Promise<User> {
-    return apiManager.get<User>(API_ENDPOINTS.USER_ME);
+    return apiManager.get<User>(API_ENDPOINTS.USER.ME);
   }
 }

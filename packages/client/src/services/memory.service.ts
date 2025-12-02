@@ -7,7 +7,7 @@ export class MemoryService {
    * Get all memories for a bot
    */
   static async getMemories(botId: number): Promise<AgentMemory[]> {
-    return apiManager.get<AgentMemory[]>(API_ENDPOINTS.BOT_MEMORIES(botId));
+    return apiManager.get<AgentMemory[]>(API_ENDPOINTS.BOTS.MEMORIES(botId));
   }
 
   /**
@@ -18,7 +18,7 @@ export class MemoryService {
     memoryId: number
   ): Promise<AgentMemory> {
     return apiManager.get<AgentMemory>(
-      API_ENDPOINTS.BOT_MEMORY(botId, memoryId)
+      API_ENDPOINTS.BOTS.MEMORY(botId, memoryId)
     );
   }
 
@@ -31,7 +31,7 @@ export class MemoryService {
     keyPoint: string
   ): Promise<AgentMemory> {
     return apiManager.put<AgentMemory>(
-      API_ENDPOINTS.BOT_MEMORY(botId, memoryId),
+      API_ENDPOINTS.BOTS.MEMORY(botId, memoryId),
       { keyPoint }
     );
   }
@@ -40,13 +40,13 @@ export class MemoryService {
    * Delete a memory
    */
   static async deleteMemory(botId: number, memoryId: number): Promise<void> {
-    return apiManager.delete(API_ENDPOINTS.BOT_MEMORY(botId, memoryId));
+    return apiManager.delete(API_ENDPOINTS.BOTS.MEMORY(botId, memoryId));
   }
 
   /**
    * Manually trigger memory summarization
    */
   static async summarizeMemories(botId: number): Promise<void> {
-    return apiManager.post(API_ENDPOINTS.BOT_MEMORIES_SUMMARIZE(botId), {});
+    return apiManager.post(API_ENDPOINTS.BOTS.MEMORIES_SUMMARIZE(botId), {});
   }
 }

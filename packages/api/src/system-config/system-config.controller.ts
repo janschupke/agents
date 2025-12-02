@@ -11,8 +11,9 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UseGuards } from '@nestjs/common';
 import { RolesGuard } from '../auth/roles.guard';
 import { SystemBehaviorRulesDto, UpdateSystemConfigDto } from '../common/dto/system-config.dto';
+import { API_ROUTES } from '../common/constants/api-routes.constants.js';
 
-@Controller('api/system-config')
+@Controller(API_ROUTES.SYSTEM_CONFIG.BASE)
 export class SystemConfigController {
   constructor(private readonly systemConfigService: SystemConfigService) {}
 

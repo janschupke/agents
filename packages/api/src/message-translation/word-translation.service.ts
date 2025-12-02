@@ -2,6 +2,8 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { OpenAIService } from '../openai/openai.service';
 import { MessageWordTranslationRepository, WordTranslation } from './message-word-translation.repository';
 import { MessageTranslationRepository } from './message-translation.repository';
+import { OPENAI_PROMPTS } from '../common/constants/openai-prompts.constants.js';
+import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 
 @Injectable()
 export class WordTranslationService {
@@ -134,40 +136,7 @@ export class WordTranslationService {
   ): Promise<{ wordTranslations: WordTranslation[]; fullTranslation: string | null }> {
     const openai = this.openaiService.getClient(apiKey);
 
-    const prompt = `You are a professional translator. Analyze the following text and translate each word/token to English, considering the sentence context.
-
-Text to translate:
-${messageContent}
-
-For each word or token (handle languages without spaces like Chinese, Japanese, etc.), provide:
-1. The original word/token as it appears in the text
-2. Its English translation considering the sentence context
-
-Also provide the full sentence translation in natural, fluent English.
-
-Return a JSON object with:
-- "fullTranslation": string (the complete message translated into natural, fluent English)
-- "words": array where each element has:
-  - "originalWord": string (the word/token as it appears in the text)
-  - "translation": string (English translation of the word in context)
-
-Example format:
-{
-  "fullTranslation": "Thank you! I'm also very happy that you're in a good mood. What are your plans for today? Or would you like to talk about something special? 🌟",
-  "words": [
-    {
-      "originalWord": "Hola",
-      "translation": "Hello"
-    },
-    {
-      "originalWord": "你好",
-      "translation": "Hello"
-    },
-    ...
-  ]
-}
-
-Return ONLY the JSON object, no additional text.`;
+    const prompt = OPENAI_PROMPTS.WORD_TRANSLATION.USER(messageContent);
 
     try {
       const completion = await openai.chat.completions.create({
@@ -175,14 +144,14 @@ Return ONLY the JSON object, no additional text.`;
         messages: [
           {
             role: 'system',
-            content: 'You are a professional translator. Return only valid JSON objects.',
+            content: OPENAI_PROMPTS.WORD_TRANSLATION.SYSTEM,
           },
           {
             role: 'user',
             content: prompt,
           },
         ],
-        temperature: 0.3,
+        temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
         response_format: { type: 'json_object' },
       });
 

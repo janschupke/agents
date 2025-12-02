@@ -11,7 +11,10 @@ import { SystemConfigRepository } from '../system-config/system-config.repositor
 import { MessageTranslationService } from '../message-translation/message-translation.service';
 import { WordTranslationService } from '../message-translation/word-translation.service';
 import { MessageRole } from '../common/enums/message-role.enum';
-import { MEMORY_CONFIG } from '../common/constants/api.constants';
+import { MEMORY_CONFIG } from '../common/constants/api.constants.js';
+import { BehaviorRulesUtil } from '../common/utils/behavior-rules.util.js';
+import { OPENAI_PROMPTS } from '../common/constants/openai-prompts.constants.js';
+import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 import {
   SessionResponseDto,
   ChatHistoryResponseDto,
@@ -278,7 +281,7 @@ export class ChatService {
     try {
       const systemConfig = await this.systemConfigRepository.findByKey('behavior_rules');
       if (systemConfig && systemConfig.configValue) {
-        systemBehaviorRules = this.parseBehaviorRules(systemConfig.configValue);
+        systemBehaviorRules = BehaviorRulesUtil.parse(systemConfig.configValue);
       }
     } catch (error) {
       console.error('Error loading system behavior rules:', error);
@@ -286,14 +289,9 @@ export class ChatService {
     }
 
     if (systemBehaviorRules.length > 0) {
-      const systemBehaviorRulesText = systemBehaviorRules
-        .filter((rule) => rule.trim().length > 0)
-        .map((rule, index) => `${index + 1}. ${rule.trim()}`)
-        .join('\n');
+      const systemBehaviorRulesMessage = BehaviorRulesUtil.formatSystemRules(systemBehaviorRules);
 
-      if (systemBehaviorRulesText.length > 0) {
-        const systemBehaviorRulesMessage = `System Behavior Rules (Required):\n${systemBehaviorRulesText}`;
-
+      if (systemBehaviorRulesMessage.length > 0) {
         // Check if system behavior rules are already present
         if (
           !messagesForAPI.some(
@@ -326,58 +324,13 @@ export class ChatService {
 
     // Add bot-specific behavior rules (these are additional to system rules)
     if (botConfig.behavior_rules) {
-      let behaviorRules: string[] = [];
-
-      // Parse behavior_rules - can be stored as JSON string, object with "rules" array, or direct array
-      try {
-        const rulesValue = botConfig.behavior_rules;
-
-        if (typeof rulesValue === 'string') {
-          // Try to parse as JSON
-          try {
-            const parsed = JSON.parse(rulesValue);
-            if (Array.isArray(parsed)) {
-              behaviorRules = parsed.map((r) => String(r));
-            } else if (
-              typeof parsed === 'object' &&
-              parsed.rules &&
-              Array.isArray(parsed.rules)
-            ) {
-              behaviorRules = parsed.rules.map((r: unknown) => String(r));
-            } else {
-              behaviorRules = [String(parsed)];
-            }
-          } catch {
-            // Not valid JSON, treat as single rule string
-            behaviorRules = [rulesValue];
-          }
-        } else if (Array.isArray(rulesValue)) {
-          behaviorRules = rulesValue.map((r: unknown) => String(r));
-        } else if (typeof rulesValue === 'object' && rulesValue !== null) {
-          const rulesObj = rulesValue as { rules?: unknown[] };
-          if (rulesObj.rules && Array.isArray(rulesObj.rules)) {
-            behaviorRules = rulesObj.rules.map((r: unknown) => String(r));
-          } else {
-            behaviorRules = [String(rulesValue)];
-          }
-        } else {
-          behaviorRules = [String(rulesValue)];
-        }
-      } catch (error) {
-        console.error('Error parsing behavior rules:', error);
-        // Continue without behavior rules if parsing fails
-      }
+      const behaviorRules = BehaviorRulesUtil.parse(botConfig.behavior_rules);
 
       // Format behavior rules as a system message
       if (behaviorRules.length > 0) {
-        const behaviorRulesText = behaviorRules
-          .filter((rule) => rule.trim().length > 0)
-          .map((rule, index) => `${index + 1}. ${rule.trim()}`)
-          .join('\n');
+        const behaviorRulesMessage = BehaviorRulesUtil.formatBotRules(behaviorRules);
 
-        if (behaviorRulesText.length > 0) {
-          const behaviorRulesMessage = `Behavior Rules:\n${behaviorRulesText}`;
-
+        if (behaviorRulesMessage.length > 0) {
           // Check if behavior rules are already present (exact match)
           if (
             !messagesForAPI.some(
@@ -419,7 +372,7 @@ export class ChatService {
     const openaiRequest = {
       model: String(botConfig.model || 'gpt-4o-mini'),
       messages: messagesForAPI,
-      temperature: Number(botConfig.temperature || 0.7),
+      temperature: Number(botConfig.temperature || NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE),
       max_tokens: botConfig.max_tokens
         ? Number(botConfig.max_tokens)
         : undefined,
@@ -588,44 +541,4 @@ export class ChatService {
     await this.sessionRepository.delete(sessionId, userId);
   }
 
-  private parseBehaviorRules(behaviorRules: unknown): string[] {
-    if (!behaviorRules) return [];
-
-    try {
-      if (typeof behaviorRules === 'string') {
-        try {
-          const parsed = JSON.parse(behaviorRules);
-          if (Array.isArray(parsed)) {
-            return parsed.map((r) => String(r));
-          } else if (
-            typeof parsed === 'object' &&
-            parsed !== null &&
-            'rules' in parsed &&
-            Array.isArray((parsed as { rules: unknown }).rules)
-          ) {
-            return (parsed as { rules: unknown[] }).rules.map((r: unknown) => String(r));
-          } else {
-            return [String(parsed)];
-          }
-        } catch {
-          return [behaviorRules];
-        }
-      } else if (Array.isArray(behaviorRules)) {
-        return behaviorRules.map((r: unknown) => String(r));
-      } else if (
-        typeof behaviorRules === 'object' &&
-        behaviorRules !== null &&
-        'rules' in behaviorRules &&
-        Array.isArray((behaviorRules as { rules: unknown }).rules)
-      ) {
-        const rulesObj = behaviorRules as { rules: unknown[] };
-        return rulesObj.rules.map((r: unknown) => String(r));
-      } else {
-        return [String(behaviorRules)];
-      }
-    } catch (error) {
-      console.error('Error parsing behavior rules:', error);
-      return [];
-    }
-  }
 }

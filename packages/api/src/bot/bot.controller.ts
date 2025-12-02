@@ -16,8 +16,9 @@ import { AuthenticatedUser } from '../common/types/auth.types';
 import { CreateBotDto, UpdateBotDto } from '../common/dto/bot.dto';
 import { SuccessResponseDto } from '../common/dto/common.dto';
 import { BotResponse } from '../common/interfaces/bot.interface';
+import { API_ROUTES } from '../common/constants/api-routes.constants.js';
 
-@Controller('api/bots')
+@Controller(API_ROUTES.BOTS.BASE)
 export class BotController {
   constructor(private readonly botService: BotService) {}
 

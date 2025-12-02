@@ -8,6 +8,7 @@ import { useBotInitialization } from '../../hooks/useBotInitialization.js';
 import { useSessionValidation } from '../../hooks/useSessionValidation.js';
 import { useChatAutoLoad } from '../../hooks/useChatAutoLoad.js';
 import { useChatHandlers } from '../../hooks/useChatHandlers.js';
+import { NUMERIC_CONSTANTS } from '../../constants/numeric.constants.js';
 import { useConfirm } from '../../hooks/useConfirm';
 import { useToast } from '../../contexts/ToastContext';
 import { ChatService } from '../../services/chat.service.js';
@@ -123,7 +124,7 @@ function ChatBotContent({ botId: propBotId }: ChatBotProps) {
       // Small delay to ensure the input is rendered and visible
       const timer = setTimeout(() => {
         chatInputRef.current?.focus();
-      }, 100);
+      }, NUMERIC_CONSTANTS.UI_DEBOUNCE_DELAY);
       return () => clearTimeout(timer);
     }
   }, [currentSessionId, loadingMessages, loadingSession, showChatPlaceholder]);

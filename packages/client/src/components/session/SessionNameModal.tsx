@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { IconClose } from '../ui/Icons';
+import { NUMERIC_CONSTANTS } from '../../constants/numeric.constants.js';
 
 interface SessionNameModalProps {
   isOpen: boolean;
@@ -27,7 +28,7 @@ export default function SessionNameModal({
       setTimeout(() => {
         inputRef.current?.focus();
         inputRef.current?.select();
-      }, 100);
+      }, NUMERIC_CONSTANTS.UI_DEBOUNCE_DELAY);
     }
   }, [isOpen, currentName]);
 
