@@ -1,6 +1,7 @@
 import { Session } from '../../../../types/chat.types';
 import { IconTrash, IconPencil } from '../../../../components/ui/Icons';
 import { formatDate, formatTime } from '@openai/utils';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 interface SessionItemProps {
   session: Session;
@@ -17,11 +18,13 @@ export default function SessionItem({
   onDelete,
   onEdit,
 }: SessionItemProps) {
+  const { t } = useTranslation(I18nNamespace.CLIENT);
+  
   const formatSessionName = (session: Session): string => {
     if (session.session_name) {
       return session.session_name;
     }
-    return `Session ${formatDate(session.createdAt)} ${formatTime(session.createdAt)}`;
+    return `${t('chat.session')} ${formatDate(session.createdAt)} ${formatTime(session.createdAt)}`;
   };
 
   return (
@@ -61,7 +64,7 @@ export default function SessionItem({
                 ? 'text-text-inverse hover:opacity-80'
                 : 'text-text-tertiary hover:text-text-primary'
             }`}
-            title="Edit session name"
+            title={t('chat.editSessionNameTooltip')}
           >
             <IconPencil className="w-4 h-4" />
           </button>
@@ -77,7 +80,7 @@ export default function SessionItem({
                 ? 'text-text-inverse hover:opacity-100'
                 : 'text-text-tertiary hover:text-red-500'
             }`}
-            title="Delete session"
+            title={t('chat.deleteSessionTooltip')}
           >
             <IconTrash className="w-4 h-4" />
           </button>

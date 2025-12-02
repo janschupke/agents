@@ -11,9 +11,25 @@
     "send": "Send",
     "newChat": "New Chat",
     "session": "Session",
+    "sessions": "Sessions",
+    "newSession": "New Session",
     "deleteSession": "Delete Session",
     "deleteSessionConfirm": "Are you sure you want to delete this session?",
     "noMessages": "No messages yet. Start a conversation!",
+    "noSessions": "No sessions yet",
+    "createNewSession": "Create a new session to start chatting",
+    "selectSession": "Select a session to start chatting",
+    "chooseSession": "Choose a session from the sidebar or create a new one",
+    "noAgents": "No agents available.",
+    "createAgentFirst": "Please create an agent first.",
+    "editSessionName": "Edit Session Name",
+    "sessionName": "Session Name",
+    "enterSessionName": "Enter session name (optional)",
+    "defaultSessionName": "Leave empty to use default name based on creation date",
+    "editSessionNameTooltip": "Edit session name",
+    "deleteSessionTooltip": "Delete session",
+    "openaiRequest": "OpenAI Request",
+    "openaiResponse": "OpenAI Response",
     "translation": {
       "title": "Translation",
       "translating": "Translating...",
@@ -31,7 +47,27 @@
     "description": "Configure your AI agent settings",
     "save": "Save Configuration",
     "saved": "Configuration saved successfully",
-    "error": "Failed to save configuration"
+    "error": "Failed to save configuration",
+    "selectAgent": "Select an agent to configure",
+    "createAgent": "Create Agent",
+    "saveButton": "Save",
+    "saving": "Saving...",
+    "agentName": "Agent Name",
+    "enterAgentName": "Enter agent name",
+    "description": "Description (optional)",
+    "enterDescription": "Enter agent description",
+    "temperature": "Temperature",
+    "temperatureDeterministic": "0 (Deterministic)",
+    "temperatureBalanced": "1 (Balanced)",
+    "temperatureCreative": "2 (Creative)",
+    "systemPrompt": "System Prompt",
+    "enterSystemPrompt": "Enter system prompt for the agent",
+    "systemPromptDescription": "This prompt defines the agent's role and behavior",
+    "behaviorRules": "Behavior Rules",
+    "addRule": "Add Rule",
+    "removeRule": "Remove rule",
+    "rulePlaceholder": "Rule {{index}}",
+    "rulesDescription": "Rules will be saved as a JSON array"
   },
   "profile": {
     "title": "Profile",
@@ -43,7 +79,17 @@
       "saved": "API key saved successfully",
       "error": "Failed to save API key",
       "invalid": "Invalid API key format",
-      "required": "API key is required"
+      "required": "API key is required",
+      "requiredLabel": "Required:",
+      "requiredMessage": "You must set your OpenAI API key to use the chat feature. Get your API key from",
+      "openaiPlatform": "OpenAI Platform",
+      "securityNote": "Your API key is encrypted and stored securely. It will never be sent back to the frontend in plaintext.",
+      "apiKeySet": "API key is set",
+      "enterApiKey": "Enter your OpenAI API key",
+      "editApiKey": "Edit API key",
+      "deleteApiKey": "Delete API key",
+      "saving": "Saving...",
+      "saveTooltip": "Save API key"
     }
   },
   "auth": {
@@ -52,5 +98,13 @@
     "signingOut": "Signing out...",
     "profile": "Profile",
     "settings": "Settings"
+  },
+  "common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "edit": "Edit",
+    "delete": "Delete"
   }
 }

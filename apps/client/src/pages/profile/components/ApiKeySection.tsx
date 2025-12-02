@@ -11,12 +11,14 @@ import {
   ButtonType,
   ButtonVariant,
 } from '../../../components/ui/form';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useApiKey } from '../hooks/use-api-key';
 
 /**
  * API Key management section component
  */
 export default function ApiKeySection() {
+  const { t } = useTranslation(I18nNamespace.CLIENT);
   const {
     showApiKeyInput,
     hasApiKey,
@@ -38,28 +40,26 @@ export default function ApiKeySection() {
       <FormContainer saving={saving} error={errorMessage}>
         <div className="mb-4">
           <label className="text-sm font-medium text-text-secondary block mb-2">
-            OpenAI API Key{' '}
+            {t('profile.apiKey.title')}{' '}
             {!hasApiKey && <span className="text-red-600">*</span>}
           </label>
           {!hasApiKey && (
             <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
               <p className="text-sm text-yellow-800">
-                <strong>Required:</strong> You must set your OpenAI API key to
-                use the chat feature. Get your API key from{' '}
+                <strong>{t('profile.apiKey.requiredLabel')}</strong> {t('profile.apiKey.requiredMessage')}{' '}
                 <a
                   href="https://platform.openai.com/api-keys"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline hover:text-yellow-900"
                 >
-                  OpenAI Platform
+                  {t('profile.apiKey.openaiPlatform')}
                 </a>
               </p>
             </div>
           )}
           <p className="text-xs text-text-tertiary mb-3">
-            Your API key is encrypted and stored securely. It will never be sent
-            back to the frontend in plaintext.
+            {t('profile.apiKey.securityNote')}
           </p>
           {!showApiKeyInput && hasApiKey ? (
             <div className="flex items-center gap-2">
@@ -68,13 +68,13 @@ export default function ApiKeySection() {
                 value="••••••••••••••••••••••••••••••••"
                 disabled
                 className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-tertiary bg-background-tertiary font-mono cursor-not-allowed"
-                placeholder="API key is set"
+                placeholder={t('profile.apiKey.apiKeySet')}
               />
               <button
                 onClick={handleEditApiKey}
                 disabled={saving}
                 className="h-8 w-8 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Edit API key"
+                title={t('profile.apiKey.editApiKey')}
               >
                 <IconPencil className="w-4 h-4" />
               </button>
@@ -82,7 +82,7 @@ export default function ApiKeySection() {
                 onClick={handleDeleteApiKey}
                 disabled={saving}
                 className="h-8 w-8 flex items-center justify-center text-text-tertiary hover:text-red-600 hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Delete API key"
+                title={t('profile.apiKey.deleteApiKey')}
               >
                 <IconTrash className="w-4 h-4" />
               </button>
@@ -101,7 +101,7 @@ export default function ApiKeySection() {
                   error={errors.apiKey}
                   touched={touched.apiKey}
                   className="flex-1 font-mono"
-                  placeholder="Enter your OpenAI API key"
+                  placeholder={t('profile.apiKey.enterApiKey')}
                 />
                 {hasApiKey && (
                   <FormButton
@@ -119,7 +119,7 @@ export default function ApiKeySection() {
                   loading={saving}
                   disabled={saving || !values.apiKey.trim()}
                   variant={ButtonVariant.PRIMARY}
-                  tooltip={saving ? 'Saving...' : 'Save API key'}
+                  tooltip={saving ? t('profile.apiKey.saving') : t('profile.apiKey.saveTooltip')}
                 >
                   <IconCheck className="w-4 h-4" />
                 </FormButton>

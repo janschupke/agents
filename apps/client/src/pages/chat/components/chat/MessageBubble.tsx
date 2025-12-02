@@ -99,9 +99,9 @@ export default function MessageBubble({
               onClick={(e) => {
                 e.stopPropagation();
                 if (message.role === MessageRole.USER) {
-                  onShowJson('OpenAI Request', message.rawRequest);
+                  onShowJson(t('chat.openaiRequest'), message.rawRequest);
                 } else {
-                  onShowJson('OpenAI Response', message.rawResponse);
+                  onShowJson(t('chat.openaiResponse'), message.rawResponse);
                 }
               }}
               className="p-1 rounded hover:bg-black hover:bg-opacity-10"

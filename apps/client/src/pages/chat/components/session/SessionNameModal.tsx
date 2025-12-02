@@ -3,6 +3,7 @@ import { IconClose } from '../../../../components/ui/Icons';
 import { NUMERIC_CONSTANTS } from '../../../../constants/numeric.constants';
 import { useUpdateSession } from '../../../../hooks/mutations/use-agent-mutations';
 import { useFormValidation } from '@openai/utils';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 import {
   FormButton,
   FormContainer,
@@ -31,6 +32,7 @@ export default function SessionNameModal({
   agentId,
   sessionId,
 }: SessionNameModalProps) {
+  const { t } = useTranslation(I18nNamespace.CLIENT);
   const inputRef = useRef<HTMLInputElement>(null);
   const updateSessionMutation = useUpdateSession();
 
@@ -100,12 +102,12 @@ export default function SessionNameModal({
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <h2 className="text-lg font-semibold text-text-secondary">
-            Edit Session Name
+            {t('chat.editSessionName')}
           </h2>
           <button
             onClick={onClose}
             className="text-text-tertiary hover:text-text-primary transition-colors"
-            aria-label="Close"
+            aria-label={t('common.close')}
           >
             <IconClose className="w-5 h-5" />
           </button>
@@ -117,7 +119,7 @@ export default function SessionNameModal({
                 htmlFor="session-name"
                 className="block text-sm font-medium text-text-secondary mb-1.5"
               >
-                Session Name
+                {t('chat.sessionName')}
               </label>
               <input
                 ref={inputRef}
@@ -129,13 +131,13 @@ export default function SessionNameModal({
                 onKeyDown={handleKeyDown}
                 disabled={saving}
                 className="w-full h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus disabled:opacity-50 disabled:cursor-not-allowed"
-                placeholder="Enter session name (optional)"
+                placeholder={t('chat.enterSessionName')}
               />
               {touched.name && errors.name && (
                 <p className="text-xs text-red-600 mt-1">{errors.name}</p>
               )}
               <p className="text-xs text-text-tertiary mt-1">
-                Leave empty to use default name based on creation date
+                {t('chat.defaultSessionName')}
               </p>
             </div>
           </FormContainer>
@@ -147,7 +149,7 @@ export default function SessionNameModal({
             disabled={saving}
             variant={ButtonVariant.SECONDARY}
           >
-            Cancel
+            {t('common.cancel')}
           </FormButton>
           <FormButton
             type={ButtonType.BUTTON}
@@ -155,9 +157,9 @@ export default function SessionNameModal({
             loading={saving}
             disabled={saving}
             variant={ButtonVariant.PRIMARY}
-            tooltip={saving ? 'Saving...' : 'Save'}
+            tooltip={saving ? t('config.saving') : t('common.save')}
           >
-            Save
+            {t('common.save')}
           </FormButton>
         </div>
       </div>

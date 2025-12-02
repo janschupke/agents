@@ -5,6 +5,7 @@ import { useAgent } from '../../../../hooks/queries/use-agents';
 import { useAgentMemories as useAgentMemoriesQuery } from '../../../../hooks/queries/use-agents';
 import { useAgentForm } from '../../hooks/use-agent-form';
 import { useAgentMemories } from '../../hooks/use-agent-memories';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 import {
   FormButton,
   FormContainer,
@@ -85,11 +86,13 @@ export default function AgentConfigForm({
     await onSaveClick(agent, values);
   };
 
+  const { t } = useTranslation(I18nNamespace.CLIENT);
+  
   if (!agent) {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="text-text-tertiary text-center text-sm">
-          Select an agent to configure
+          {t('config.selectAgent')}
         </div>
       </div>
     );
@@ -98,7 +101,7 @@ export default function AgentConfigForm({
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <PageHeader
-        title="Agent Configuration"
+        title={t('config.title')}
         actions={
           <FormButton
             type={ButtonType.BUTTON}
@@ -107,10 +110,10 @@ export default function AgentConfigForm({
             disabled={!values.name.trim()}
             variant={ButtonVariant.PRIMARY}
             tooltip={
-              saving ? 'Saving...' : agent.id < 0 ? 'Create Agent' : 'Save'
+              saving ? t('config.saving') : agent.id < 0 ? t('config.createAgent') : t('config.saveButton')
             }
           >
-            {agent.id < 0 ? 'Create Agent' : 'Save'}
+            {agent.id < 0 ? t('config.createAgent') : t('config.saveButton')}
           </FormButton>
         }
       />

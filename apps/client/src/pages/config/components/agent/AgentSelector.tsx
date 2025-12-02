@@ -2,9 +2,11 @@ import { useState, useRef, useEffect } from 'react';
 import { IconChevronDown } from '../../../../components/ui/Icons';
 import { useAgents } from '../../../../hooks/queries/use-agents';
 import { useSelectedAgent } from '../../../../contexts/AppContext';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { DropdownTransition } from '../../../../components/ui/animation';
 
 export default function AgentSelector() {
+  const { t } = useTranslation(I18nNamespace.CLIENT);
   const { data: agents = [], isLoading: loadingAgents } = useAgents();
   const { selectedAgentId, setSelectedAgentId } = useSelectedAgent();
   const [isOpen, setIsOpen] = useState(false);
@@ -31,7 +33,7 @@ export default function AgentSelector() {
   }, [isOpen]);
 
   const currentAgent = agents.find((a) => a.id === selectedAgentId);
-  const displayName = currentAgent?.name || 'Select Agent';
+  const displayName = currentAgent?.name || t('config.selectAgent');
 
   const handleAgentSelect = (agentId: number) => {
     setSelectedAgentId(agentId);
@@ -47,7 +49,7 @@ export default function AgentSelector() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-3 h-10 px-2 rounded-md hover:bg-background-tertiary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
-        aria-label="Select agent"
+        aria-label={t('config.selectAgent')}
       >
         {currentAgent?.avatarUrl ? (
           <img

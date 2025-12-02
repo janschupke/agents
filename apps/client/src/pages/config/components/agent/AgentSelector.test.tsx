@@ -72,7 +72,7 @@ describe('AgentSelector', () => {
     await waitFor(
       () => {
         expect(
-          screen.getByRole('button', { name: /select agent/i })
+          screen.getByRole('button', { name: /config\.selectAgent/i })
         ).toBeInTheDocument();
       },
       { timeout: 3000 }
@@ -91,13 +91,13 @@ describe('AgentSelector', () => {
     await waitFor(
       () => {
         expect(
-          screen.getByRole('button', { name: /select agent/i })
+          screen.getByRole('button', { name: /config\.selectAgent/i })
         ).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
 
-    const button = screen.getByRole('button', { name: /select agent/i });
+    const button = screen.getByRole('button', { name: /config\.selectAgent/i });
     await user.click(button);
 
     await waitFor(
@@ -120,14 +120,14 @@ describe('AgentSelector', () => {
     await waitFor(
       () => {
         expect(
-          screen.getByRole('button', { name: /select agent/i })
+          screen.getByRole('button', { name: /config\.selectAgent/i })
         ).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
 
     // Open dropdown
-    const button = screen.getByRole('button', { name: /select agent/i });
+    const button = screen.getByRole('button', { name: /config\.selectAgent/i });
     await user.click(button);
 
     // Should show agent options
@@ -152,14 +152,14 @@ describe('AgentSelector', () => {
     await waitFor(
       () => {
         expect(
-          screen.getByRole('button', { name: /select agent/i })
+          screen.getByRole('button', { name: /config\.selectAgent/i })
         ).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
 
     // Open dropdown
-    const button = screen.getByRole('button', { name: /select agent/i });
+    const button = screen.getByRole('button', { name: /config\.selectAgent/i });
     await user.click(button);
 
     // Should show dropdown with agents
@@ -183,7 +183,7 @@ describe('AgentSelector', () => {
     await waitFor(
       () => {
         // Should show button (either with agent name or "Select Agent")
-        const button = screen.getByRole('button', { name: /select agent/i });
+        const button = screen.getByRole('button', { name: /config\.selectAgent/i });
         expect(button).toBeInTheDocument();
       },
       { timeout: 3000 }

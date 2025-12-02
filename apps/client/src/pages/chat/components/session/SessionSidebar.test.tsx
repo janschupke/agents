@@ -28,7 +28,7 @@ describe('SessionSidebar', () => {
       />
     );
 
-    expect(screen.getByText('Sessions')).toBeInTheDocument();
+    expect(screen.getByText('chat.sessions')).toBeInTheDocument();
     expect(screen.getByText('Session 1')).toBeInTheDocument();
     expect(screen.getByText('Session 2')).toBeInTheDocument();
     expect(screen.getByText('Session 3')).toBeInTheDocument();
@@ -93,7 +93,7 @@ describe('SessionSidebar', () => {
       />
     );
 
-    const newSessionButton = screen.getByTitle('New Session');
+    const newSessionButton = screen.getByTitle('chat.newSession');
     await user.click(newSessionButton);
 
     expect(onNewSession).toHaveBeenCalledTimes(1);
@@ -112,9 +112,9 @@ describe('SessionSidebar', () => {
       />
     );
 
-    expect(screen.getByText('No sessions yet')).toBeInTheDocument();
+    expect(screen.getByText('chat.noSessions')).toBeInTheDocument();
     expect(
-      screen.getByText('Create a new session to start chatting')
+      screen.getByText('chat.createNewSession')
     ).toBeInTheDocument();
   });
 
@@ -133,7 +133,7 @@ describe('SessionSidebar', () => {
     );
 
     // Should show skeleton instead of empty state
-    expect(screen.queryByText('No sessions yet')).not.toBeInTheDocument();
+    expect(screen.queryByText('chat.noSessions')).not.toBeInTheDocument();
   });
 
   it('should disable new session button when loading', () => {
@@ -150,7 +150,7 @@ describe('SessionSidebar', () => {
       />
     );
 
-    const newSessionButton = screen.getByTitle('New Session');
+    const newSessionButton = screen.getByTitle('chat.newSession');
     expect(newSessionButton).toBeDisabled();
   });
 

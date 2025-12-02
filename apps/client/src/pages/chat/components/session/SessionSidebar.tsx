@@ -1,6 +1,7 @@
 import { Session } from '../../../../types/chat.types';
 import { IconPlus } from '../../../../components/ui/Icons';
 import { SkeletonList } from '../../../../components/ui/feedback';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 import SessionItem from './SessionItem';
 
 interface SessionSidebarProps {
@@ -22,15 +23,17 @@ export default function SessionSidebar({
   onSessionEdit,
   loading = false,
 }: SessionSidebarProps) {
+  const { t } = useTranslation(I18nNamespace.CLIENT);
+  
   return (
     <div className="flex flex-col w-56 h-full bg-background-tertiary border-r border-border overflow-hidden">
       <div className="px-3 py-2.5 bg-background border-b border-border flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-text-secondary">Sessions</h3>
+        <h3 className="text-sm font-semibold text-text-secondary">{t('chat.sessions')}</h3>
         <button
           onClick={onNewSession}
           disabled={loading}
           className="h-6 w-6 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-background-tertiary rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          title="New Session"
+          title={t('chat.newSession')}
         >
           <IconPlus className="w-4 h-4" />
         </button>
@@ -42,8 +45,8 @@ export default function SessionSidebar({
           </div>
         ) : sessions.length === 0 ? (
           <div className="p-4 text-text-tertiary text-center text-sm">
-            <p className="mb-1">No sessions yet</p>
-            <p className="text-xs">Create a new session to start chatting</p>
+            <p className="mb-1">{t('chat.noSessions')}</p>
+            <p className="text-xs">{t('chat.createNewSession')}</p>
           </div>
         ) : (
           <div className="flex flex-col">
