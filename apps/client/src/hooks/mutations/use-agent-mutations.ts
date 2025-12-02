@@ -202,7 +202,7 @@ export function useDeleteMemory() {
   });
 }
 
-export function useSummarizeMemories() {
+function useSummarizeMemories() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 

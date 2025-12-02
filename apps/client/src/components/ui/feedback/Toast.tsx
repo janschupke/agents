@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { IconClose } from '../Icons';
 import { NUMERIC_CONSTANTS } from '../../../constants/numeric.constants';
 
-export type ToastType = 'success' | 'error' | 'info';
+type ToastType = 'success' | 'error' | 'info';
 
 interface ToastProps {
   message: string;

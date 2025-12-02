@@ -17,7 +17,7 @@ import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
 
-export interface AgentMemoryResponse {
+interface AgentMemoryResponse {
   id: number;
   agentId: number;
   userId: string;
@@ -31,7 +31,7 @@ export interface AgentMemoryResponse {
   updatedAt: string;
 }
 
-export interface UpdateMemoryDto {
+interface UpdateMemoryDto {
   keyPoint: string;
 }
 

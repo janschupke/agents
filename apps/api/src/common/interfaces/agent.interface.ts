@@ -6,7 +6,7 @@ export interface AgentWithConfig {
   configs: Record<string, unknown>;
 }
 
-export interface AgentConfig {
+interface AgentConfig {
   temperature?: number;
   system_prompt?: string;
   behavior_rules?: string | string[] | { rules: string[] };
@@ -24,7 +24,7 @@ export interface AgentResponse {
   configs?: Record<string, unknown>;
 }
 
-export interface EmbeddingResponse {
+interface EmbeddingResponse {
   id: number;
   sessionId: number;
   chunk: string;

@@ -7,6 +7,6 @@ export interface AuthenticatedUser {
   roles: string[];
 }
 
-export interface AuthenticatedRequest {
+interface AuthenticatedRequest {
   user?: AuthenticatedUser;
 }

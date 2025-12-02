@@ -1,4 +1,4 @@
-export class SystemConfigDto {
+class SystemConfigDto {
   behavior_rules?: string[];
 }
 

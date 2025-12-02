@@ -14,7 +14,7 @@ interface FileUploadProps {
 /**
  * File upload component with drag-and-drop support
  */
-export default function FileUpload({
+function FileUpload({
   value,
   onChange,
   accept = 'image/*',

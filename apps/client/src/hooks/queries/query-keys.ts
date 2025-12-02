@@ -1,4 +1,4 @@
-export enum QueryKey {
+enum QueryKey {
   AGENTS = 'agents',
   CHAT = 'chat',
   USER = 'user',

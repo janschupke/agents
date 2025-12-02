@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AgentMemory } from '@prisma/client';
 
-export interface AgentMemoryWithVector {
+interface AgentMemoryWithVector {
   id: number;
   agentId: number;
   userId: string;

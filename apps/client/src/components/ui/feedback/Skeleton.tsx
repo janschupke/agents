@@ -8,7 +8,7 @@ export function Skeleton({ className = '' }: { className?: string }) {
   );
 }
 
-export function SkeletonText({
+function SkeletonText({
   lines = 1,
   className = '',
 }: {
@@ -24,11 +24,11 @@ export function SkeletonText({
   );
 }
 
-export function SkeletonButton({ className = '' }: { className?: string }) {
+function SkeletonButton({ className = '' }: { className?: string }) {
   return <Skeleton className={`h-8 rounded-md ${className}`} />;
 }
 
-export function SkeletonSidebarItem({
+function SkeletonSidebarItem({
   className = '',
 }: {
   className?: string;

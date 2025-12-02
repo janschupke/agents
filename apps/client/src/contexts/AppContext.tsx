@@ -56,7 +56,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
 
-export function useAppContext() {
+function useAppContext() {
   const context = useContext(AppContext);
   if (context === undefined) {
     throw new Error('useAppContext must be used within an AppProvider');
@@ -70,7 +70,7 @@ export function useSelectedAgent() {
   return { selectedAgentId, setSelectedAgentId };
 }
 
-export function useSelectedSession() {
+function useSelectedSession() {
   const { selectedSessionId, setSelectedSessionId } = useAppContext();
   return { selectedSessionId, setSelectedSessionId };
 }

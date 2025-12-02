@@ -15,7 +15,7 @@ const typeStyles = {
   warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
 };
 
-export default function Alert({ type, message, className = '' }: AlertProps) {
+function Alert({ type, message, className = '' }: AlertProps) {
   return (
     <div
       className={`px-4 py-3 rounded-md border text-sm ${typeStyles[type]} ${className}`}

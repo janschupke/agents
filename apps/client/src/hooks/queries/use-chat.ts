@@ -19,7 +19,7 @@ export function useChatHistory(
   });
 }
 
-export function useSessions(agentId: number | null) {
+function useSessions(agentId: number | null) {
   const { isSignedIn, isLoaded } = useAuth();
   const tokenReady = useTokenReady();
 

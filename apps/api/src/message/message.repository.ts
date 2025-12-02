@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Message, Prisma } from '@prisma/client';
 
-export interface MessageForOpenAI {
+interface MessageForOpenAI {
   role: 'user' | 'assistant' | 'system';
   content: string;
 }

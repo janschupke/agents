@@ -8,7 +8,7 @@ interface NameFieldProps {
   agentId?: number; // Track agent ID to detect when new agent is selected
 }
 
-export function NameField({
+function NameField({
   value,
   onChange,
   autoFocus = false,

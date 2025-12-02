@@ -7,7 +7,7 @@ import {
 } from 'react';
 import { Toast } from '../components/ui/feedback';
 
-export type ToastType = 'success' | 'error' | 'info';
+type ToastType = 'success' | 'error' | 'info';
 
 interface ToastItem {
   id: string;

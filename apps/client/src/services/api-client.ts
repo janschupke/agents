@@ -1,14 +1,14 @@
 import { API_BASE_URL } from '../constants/api.constants';
 import { tokenProvider } from './token-provider';
 
-export interface ApiError {
+interface ApiError {
   message: string;
   status?: number;
   data?: unknown;
   expected?: boolean;
 }
 
-export interface ApiRequestOptions extends RequestInit {
+interface ApiRequestOptions extends RequestInit {
   skipErrorHandling?: boolean;
   params?: Record<string, string | number | boolean>;
 }

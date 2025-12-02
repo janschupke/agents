@@ -13,7 +13,7 @@ import { appConfig } from '../config/app.config';
 import { UserService } from '../user/user.service';
 import { AuthenticatedUser } from '../common/types/auth.types';
 
-export const IS_PUBLIC_KEY = 'isPublic';
+const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 
 interface CachedUser {

@@ -1,6 +1,6 @@
 import { NUMERIC_CONSTANTS } from './numeric.constants.js';
 
-export const API_PREFIX = 'api';
+const API_PREFIX = 'api';
 
 export const DEFAULT_AGENT_CONFIG = {
   model: 'gpt-4o-mini',

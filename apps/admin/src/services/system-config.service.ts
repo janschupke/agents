@@ -1,11 +1,11 @@
 import { apiManager } from './api-manager.js';
 import { API_ENDPOINTS } from '../constants/api.constants.js';
 
-export interface SystemBehaviorRules {
+interface SystemBehaviorRules {
   rules: string[];
 }
 
-export class SystemConfigService {
+class SystemConfigService {
   async getBehaviorRules(): Promise<SystemBehaviorRules> {
     return apiManager.get<SystemBehaviorRules>(
       API_ENDPOINTS.SYSTEM_CONFIG_BEHAVIOR_RULES

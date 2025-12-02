@@ -3,6 +3,6 @@ export interface ApiCredentialsStatus {
   hasKey: boolean;
 }
 
-export interface ApiCredentialsStatusResponse {
+interface ApiCredentialsStatusResponse {
   credentials: ApiCredentialsStatus[];
 }

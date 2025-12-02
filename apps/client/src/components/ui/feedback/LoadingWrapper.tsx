@@ -8,7 +8,7 @@ interface LoadingWrapperProps {
   fallback?: ReactNode;
 }
 
-export default function LoadingWrapper({
+function LoadingWrapper({
   isLoading,
   loadingText,
   children,

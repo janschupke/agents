@@ -2,7 +2,7 @@ export class SuccessResponseDto {
   success!: boolean;
 }
 
-export class ErrorResponseDto {
+class ErrorResponseDto {
   statusCode!: number;
   timestamp!: string;
   path!: string;

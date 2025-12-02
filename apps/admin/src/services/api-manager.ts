@@ -1,7 +1,7 @@
 import { API_BASE_URL } from '../constants/api.constants.js';
 import { tokenProvider } from './token-provider.js';
 
-export interface ApiRequestOptions extends RequestInit {
+interface ApiRequestOptions extends RequestInit {
   params?: Record<string, string | number>;
   skipErrorHandling?: boolean;
 }
@@ -11,14 +11,14 @@ async function getClerkToken(): Promise<string | null> {
   return tokenProvider.getToken();
 }
 
-export interface ApiError {
+interface ApiError {
   message: string;
   status?: number;
   data?: unknown;
   expected?: boolean;
 }
 
-export class ApiManager {
+class ApiManager {
   private baseURL: string;
   private defaultHeaders: HeadersInit;
 
