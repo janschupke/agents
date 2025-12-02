@@ -232,9 +232,8 @@ describe('ChatAgent', () => {
           messages: [],
         });
       }),
-      http.post(`${API_BASE_URL}/api/chat/1`, async ({ request }) => {
+      http.post(`${API_BASE_URL}/api/chat/1`, async () => {
         messageCount++;
-        const body = await request.json() as { message: string };
         return HttpResponse.json({
           response: 'Test response',
           session: {

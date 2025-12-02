@@ -22,10 +22,5 @@ export function createTestQueryClient() {
         networkMode: 'always',
       },
     },
-    logger: {
-      log: () => {},
-      warn: () => {},
-      error: () => {},
-    },
   });
 }

@@ -406,8 +406,8 @@ export class ChatService {
       'assistant',
       response,
       {
-        model: botConfig.model,
-        temperature: botConfig.temperature,
+        model: agentConfig.model,
+        temperature: agentConfig.temperature,
       },
       undefined,
       completion

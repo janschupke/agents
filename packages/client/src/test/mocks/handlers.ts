@@ -4,7 +4,13 @@ import { http, HttpResponse } from 'msw';
 const API_BASE = 'http://localhost:3001';
 
 // Mock data
-export const mockAgents = [
+export const mockAgents: Array<{
+  id: number;
+  name: string;
+  description: string | null;
+  avatarUrl: string | null;
+  createdAt: string;
+}> = [
   {
     id: 1,
     name: 'Test Agent 1',
@@ -29,7 +35,11 @@ export const mockUser = {
   imageUrl: null,
 };
 
-export const mockSessions = [
+export const mockSessions: Array<{
+  id: number;
+  session_name: string | null;
+  agent_id: number;
+}> = [
   {
     id: 1,
     session_name: 'Session 1',
@@ -90,7 +100,7 @@ export const handlers = [
       description: body.description || null,
       avatarUrl: null,
       createdAt: new Date().toISOString(),
-    };
+    } as typeof mockAgents[number];
     mockAgents.push(newAgent);
     return HttpResponse.json(newAgent, { status: 201 });
   }),
@@ -179,7 +189,7 @@ export const handlers = [
     const agentId = Number(params.agentId);
     const url = new URL(request.url);
     const sessionId = url.searchParams.get('sessionId');
-    const body = await request.json() as { message: string };
+    await request.json() as { message: string }; // Validate request body
 
     const agent = mockAgents.find((a) => a.id === agentId);
     if (!agent) {
@@ -207,7 +217,7 @@ export const handlers = [
       id: mockSessions.length + 1,
       session_name: null,
       agent_id: agentId,
-    };
+    } as typeof mockSessions[number];
     mockSessions.push(newSession);
     return HttpResponse.json(newSession, { status: 201 });
   }),
@@ -245,7 +255,7 @@ export const handlers = [
   }),
 
   http.post(`${API_BASE}/api/api-credentials/openai`, async ({ request }) => {
-    const body = await request.json() as { apiKey: string };
+    await request.json() as { apiKey: string }; // Validate request body
     // In a real scenario, this would store the API key
     return HttpResponse.json({ success: true });
   }),

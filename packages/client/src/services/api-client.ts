@@ -145,9 +145,9 @@ class ApiClient {
     const url = this.buildURL(endpoint, params);
     const token = await this.getAuthToken();
 
-    const requestHeaders: HeadersInit = {
+    const requestHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...headers,
+      ...(headers as Record<string, string>),
     };
 
     if (token) {
@@ -248,6 +248,3 @@ class ApiClient {
 
 // Export singleton instance
 export const apiClient = new ApiClient();
-
-// Re-export ApiError for backward compatibility
-export type { ApiError };
