@@ -6,7 +6,7 @@ import {
 } from '../../../hooks/mutations/use-user-mutations';
 import { queryKeys } from '../../../hooks/queries/query-keys';
 import { useApiKeyStatus } from '../../../hooks/queries/use-user';
-import { useConfirm } from '../../../hooks/useConfirm';
+import { useConfirm } from '../../../hooks/ui/useConfirm';
 import { useFormValidation, validationRules } from '@openai/utils';
 
 interface ApiKeyFormValues extends Record<string, unknown> {

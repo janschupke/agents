@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { queryKeys } from '../../../hooks/queries/query-keys';
-import { ChatService } from '../../../services/chat.service';
+import { SessionService } from '../../../services/chat/session/session.service';
 import { useToast } from '../../../contexts/ToastContext';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Session } from '../../../types/chat.types';
@@ -21,7 +21,7 @@ export function useSessionWithAgent(sessionId: number | null) {
 
   const { data, isLoading, isError, error } = useQuery<SessionWithAgent>({
     queryKey: queryKeys.sessions.withAgent(sessionId!),
-    queryFn: () => ChatService.getSessionWithAgent(sessionId!),
+    queryFn: () => SessionService.getSessionWithAgent(sessionId!),
     enabled: sessionId !== null && sessionId > 0,
   });
 

@@ -7,9 +7,9 @@ import {
   useAgentSessions,
   useAgentMemories,
 } from './use-agents';
-import { AgentService } from '../../services/agent.service';
-import { ChatService } from '../../services/chat.service';
-import { MemoryService } from '../../services/memory.service';
+import { AgentService } from '../../services/agent/agent.service';
+import { SessionService } from '../../services/chat/session/session.service';
+import { MemoryService } from '../../services/memory/memory.service';
 
 // Mock AuthContext
 const mockAuth = {
@@ -26,9 +26,9 @@ vi.mock('../use-token-ready', () => ({
 }));
 
 // Mock services
-vi.mock('../../services/agent.service');
-vi.mock('../../services/chat.service');
-vi.mock('../../services/memory.service');
+vi.mock('../../services/agent/agent.service');
+vi.mock('../../services/chat/session/session.service');
+vi.mock('../../services/memory/memory.service');
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <TestQueryProvider>{children}</TestQueryProvider>
@@ -140,7 +140,7 @@ describe('use-agents', () => {
         },
       ];
 
-      vi.mocked(ChatService.getSessions).mockResolvedValue(mockSessions);
+      vi.mocked(SessionService.getSessions).mockResolvedValue(mockSessions);
 
       const { result } = renderHook(() => useAgentSessions(1), { wrapper });
 
@@ -155,7 +155,7 @@ describe('use-agents', () => {
       const { result } = renderHook(() => useAgentSessions(null), { wrapper });
 
       expect(result.current.isFetching).toBe(false);
-      expect(ChatService.getSessions).not.toHaveBeenCalled();
+      expect(SessionService.getSessions).not.toHaveBeenCalled();
     });
   });
 

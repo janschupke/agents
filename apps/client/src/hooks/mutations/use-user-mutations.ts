@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ApiCredentialsService } from '../../services/api-credentials.service';
+import { ApiCredentialsService } from '../../services/user/api-credentials.service';
 import { queryKeys } from '../queries/query-keys';
 import { useToast } from '../../contexts/ToastContext';
 

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { TestQueryProvider } from '../../test/utils/test-query-provider';
 import { useChatHistory } from './use-chat';
-import { ChatService } from '../../services/chat.service';
+import { MessageService } from '../../services/chat/message/message.service';
 
 // Mock AuthContext
 const mockAuth = {
@@ -19,7 +19,7 @@ vi.mock('../use-token-ready', () => ({
 }));
 
 // Mock services
-vi.mock('../../services/chat.service');
+vi.mock('../../services/chat/message/message.service');
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <TestQueryProvider>{children}</TestQueryProvider>
@@ -45,7 +45,7 @@ describe('use-chat', () => {
         messages: [],
       };
 
-      vi.mocked(ChatService.getChatHistory).mockResolvedValue(mockChatHistory);
+      vi.mocked(MessageService.getChatHistory).mockResolvedValue(mockChatHistory);
 
       const { result } = renderHook(() => useChatHistory(1, 1), { wrapper });
 
@@ -54,7 +54,7 @@ describe('use-chat', () => {
       });
 
       expect(result.current.data).toEqual(mockChatHistory);
-      expect(ChatService.getChatHistory).toHaveBeenCalledWith(1, 1);
+      expect(MessageService.getChatHistory).toHaveBeenCalledWith(1, 1);
     });
 
     it('should fetch chat history without sessionId', async () => {
@@ -68,7 +68,7 @@ describe('use-chat', () => {
         messages: [],
       };
 
-      vi.mocked(ChatService.getChatHistory).mockResolvedValue(mockChatHistory);
+      vi.mocked(MessageService.getChatHistory).mockResolvedValue(mockChatHistory);
 
       const { result } = renderHook(() => useChatHistory(1, null), { wrapper });
 
@@ -76,7 +76,7 @@ describe('use-chat', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(ChatService.getChatHistory).toHaveBeenCalledWith(1, undefined);
+      expect(MessageService.getChatHistory).toHaveBeenCalledWith(1, undefined);
     });
 
     it('should not fetch when agentId is null', () => {
@@ -85,7 +85,7 @@ describe('use-chat', () => {
       });
 
       expect(result.current.isFetching).toBe(false);
-      expect(ChatService.getChatHistory).not.toHaveBeenCalled();
+      expect(MessageService.getChatHistory).not.toHaveBeenCalled();
     });
 
     it('should not fetch when not signed in', () => {
@@ -95,7 +95,7 @@ describe('use-chat', () => {
       const { result } = renderHook(() => useChatHistory(1, 1), { wrapper });
 
       expect(result.current.isFetching).toBe(false);
-      expect(ChatService.getChatHistory).not.toHaveBeenCalled();
+      expect(MessageService.getChatHistory).not.toHaveBeenCalled();
     });
   });
 });

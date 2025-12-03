@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useConfirm } from '../../../hooks/useConfirm';
+import { useConfirm } from '../../../hooks/ui/useConfirm';
 import { queryKeys } from '../../../hooks/queries/query-keys';
 import {
   Session,

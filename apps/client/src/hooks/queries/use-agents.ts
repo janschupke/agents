@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTokenReady } from '../use-token-ready';
-import { AgentService } from '../../services/agent.service';
-import { ChatService } from '../../services/chat.service';
-import { MemoryService } from '../../services/memory.service';
+import { AgentService } from '../../services/agent/agent.service';
+import { SessionService } from '../../services/chat/session/session.service';
+import { MemoryService } from '../../services/memory/memory.service';
 import { Agent, Session, AgentMemory } from '../../types/chat.types';
 import { queryKeys } from './query-keys';
 import {
@@ -46,7 +46,7 @@ export function useAgentSessions(agentId: number | null) {
 
   return useQuery<Session[]>({
     queryKey: queryKeys.agents.sessions(agentId!),
-    queryFn: () => ChatService.getSessions(agentId!),
+    queryFn: () => SessionService.getSessions(agentId!),
     enabled: isValidAgentId && isSignedIn && isLoaded && tokenReady,
     staleTime: SESSIONS_STALE_TIME,
   });

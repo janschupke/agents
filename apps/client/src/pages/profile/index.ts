@@ -1,1 +1,1 @@
-export { default as UserProfile } from './components/UserProfile';
+export { default as Profile } from './Profile';

@@ -2,7 +2,7 @@ import { expect, afterEach, beforeAll, afterAll, vi, beforeEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { server } from './mocks/server';
-import { tokenProvider } from '../services/token-provider';
+import { tokenProvider } from '../services/api/token-provider';
 import { mockUseTranslation } from './mocks/i18n';
 
 // Mock i18n to return keys instead of translations

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AgentService } from '../../services/agent.service';
-import { ChatService } from '../../services/chat.service';
-import { MemoryService } from '../../services/memory.service';
+import { AgentService } from '../../services/agent/agent.service';
+import { SessionService } from '../../services/chat/session/session.service';
+import { MemoryService } from '../../services/memory/memory.service';
 import { CreateAgentRequest, UpdateAgentRequest } from '../../types/chat.types';
 import { queryKeys } from '../queries/query-keys';
 import { useToast } from '../../contexts/ToastContext';
@@ -68,7 +68,7 @@ export function useCreateSession() {
   const { showToast } = useToast();
 
   return useMutation({
-    mutationFn: (agentId: number) => ChatService.createSession(agentId),
+    mutationFn: (agentId: number) => SessionService.createSession(agentId),
     onSuccess: (_data, agentId) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.agents.sessions(agentId),
@@ -97,7 +97,7 @@ export function useUpdateSession() {
       agentId: number;
       sessionId: number;
       sessionName?: string;
-    }) => ChatService.updateSession(agentId, sessionId, sessionName),
+    }) => SessionService.updateSession(agentId, sessionId, sessionName),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.agents.sessions(variables.agentId),
@@ -130,7 +130,7 @@ export function useDeleteSession() {
     }: {
       agentId: number;
       sessionId: number;
-    }) => ChatService.deleteSession(agentId, sessionId),
+    }) => SessionService.deleteSession(agentId, sessionId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.agents.sessions(variables.agentId),

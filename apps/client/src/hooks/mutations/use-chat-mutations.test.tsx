@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { TestQueryProvider } from '../../test/utils/test-query-provider';
 import { useSendMessage } from './use-chat-mutations';
-import { ChatService } from '../../services/chat.service';
+import { MessageService } from '../../services/chat/message/message.service';
 
 // Mock ToastContext
 const mockShowToast = vi.fn();
@@ -11,7 +11,7 @@ vi.mock('../../contexts/ToastContext', () => ({
 }));
 
 // Mock services
-vi.mock('../../services/chat.service');
+vi.mock('../../services/chat/message/message.service');
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <TestQueryProvider>{children}</TestQueryProvider>
@@ -34,7 +34,7 @@ describe('use-chat-mutations', () => {
         assistantMessageId: 2,
       };
 
-      vi.mocked(ChatService.sendMessage).mockResolvedValue(mockResponse);
+      vi.mocked(MessageService.sendMessage).mockResolvedValue(mockResponse);
 
       const { result } = renderHook(() => useSendMessage(), { wrapper });
 
@@ -44,7 +44,7 @@ describe('use-chat-mutations', () => {
         sessionId: 1,
       });
 
-      expect(ChatService.sendMessage).toHaveBeenCalledWith(1, 'Hello', 1);
+      expect(MessageService.sendMessage).toHaveBeenCalledWith(1, 'Hello', 1);
     });
 
     it('should send message without sessionId', async () => {
@@ -56,7 +56,7 @@ describe('use-chat-mutations', () => {
         },
       };
 
-      vi.mocked(ChatService.sendMessage).mockResolvedValue(mockResponse);
+      vi.mocked(MessageService.sendMessage).mockResolvedValue(mockResponse);
 
       const { result } = renderHook(() => useSendMessage(), { wrapper });
 
@@ -65,7 +65,7 @@ describe('use-chat-mutations', () => {
         message: 'Hello',
       });
 
-      expect(ChatService.sendMessage).toHaveBeenCalledWith(
+      expect(MessageService.sendMessage).toHaveBeenCalledWith(
         1,
         'Hello',
         undefined
@@ -74,7 +74,7 @@ describe('use-chat-mutations', () => {
 
     it('should show error toast on failure', async () => {
       const error = { message: 'Failed to send message' };
-      vi.mocked(ChatService.sendMessage).mockRejectedValue(error);
+      vi.mocked(MessageService.sendMessage).mockRejectedValue(error);
 
       const { result } = renderHook(() => useSendMessage(), { wrapper });
 
@@ -95,7 +95,7 @@ describe('use-chat-mutations', () => {
 
     it('should show generic error message when error has no message', async () => {
       const error = {};
-      vi.mocked(ChatService.sendMessage).mockRejectedValue(error);
+      vi.mocked(MessageService.sendMessage).mockRejectedValue(error);
 
       const { result } = renderHook(() => useSendMessage(), { wrapper });
 

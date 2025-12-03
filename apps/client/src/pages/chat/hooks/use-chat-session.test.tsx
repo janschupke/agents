@@ -40,8 +40,8 @@ vi.mock('@tanstack/react-query', async () => {
   };
 });
 
-vi.mock('../../../services/chat.service', () => ({
-  ChatService: {
+vi.mock('../../../services/chat/message/message.service', () => ({
+  MessageService: {
     getChatHistory: vi.fn(),
   },
 }));

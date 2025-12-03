@@ -5,7 +5,7 @@ import {
   useDeleteMemory,
 } from '../../../../hooks/mutations/use-agent-mutations';
 import { queryKeys } from '../../../../hooks/queries/query-keys';
-import { useConfirm } from '../../../../hooks/useConfirm';
+import { useConfirm } from '../../../../hooks/ui/useConfirm';
 
 interface UseAgentMemoriesOptions {
   agentId: number | null;

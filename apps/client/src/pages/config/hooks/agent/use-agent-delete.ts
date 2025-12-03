@@ -1,5 +1,5 @@
 import { Agent } from '../../../../types/chat.types';
-import { useConfirm } from '../../../../hooks/useConfirm';
+import { useConfirm } from '../../../../hooks/ui/useConfirm';
 import { useDeleteAgent } from '../../../../hooks/mutations/use-agent-mutations';
 
 interface UseAgentDeleteOptions {

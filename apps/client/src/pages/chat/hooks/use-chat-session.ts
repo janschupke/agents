@@ -7,8 +7,8 @@ import {
   useDeleteSession,
 } from '../../../hooks/mutations/use-agent-mutations';
 import { Session, ChatHistoryResponse } from '../../../types/chat.types';
-import { ChatService } from '../../../services/chat.service';
-import { useSidebarLoadingState } from '../../../hooks/use-sidebar-loading-state';
+import { MessageService } from '../../../services/chat/message/message.service';
+import { useSidebarLoadingState } from '../../../hooks/utils/use-sidebar-loading-state';
 
 interface UseChatSessionOptions {
   agentId: number | null;
@@ -92,7 +92,7 @@ export function useChatSession({
       // Load chat history
       const history = await queryClient.fetchQuery({
         queryKey: queryKeys.chat.history(agentId, sessionId),
-        queryFn: () => ChatService.getChatHistory(agentId, sessionId),
+        queryFn: () => MessageService.getChatHistory(agentId, sessionId),
       });
 
       return history;

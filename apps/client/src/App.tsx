@@ -17,25 +17,25 @@ import {
 import { SignIn } from '@clerk/clerk-react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { ROUTES } from './constants/routes.constants';
-import TopNavigation from './components/layout/TopNavigation';
+import TopNavigation from './components/layout/TopNavigation/TopNavigation';
 import { Footer, Skeleton, PageContainer } from '@openai/ui';
 import { AppProvider } from './contexts/AppContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { QueryProvider } from './providers/QueryProvider';
 import { useApiKeyStatus } from './hooks/queries/use-user';
-import PageLoadingState from './components/layout/PageLoadingState';
+import PageLoadingState from './components/layout/PageLoadingState/PageLoadingState';
 
 // Lazy load routes for code splitting
-const ChatRoute = lazy(
-  () => import(/* webpackChunkName: "chat" */ './pages/chat/ChatRoute')
+const Chat = lazy(
+  () => import(/* webpackChunkName: "chat" */ './pages/chat/Chat')
 );
-const ConfigRoute = lazy(
-  () => import(/* webpackChunkName: "config" */ './pages/config/ConfigRoute')
+const Config = lazy(
+  () => import(/* webpackChunkName: "config" */ './pages/config/Config')
 );
-const UserProfile = lazy(() =>
+const Profile = lazy(() =>
   import(/* webpackChunkName: "profile" */ './pages/profile').then(
-    (module) => ({ default: module.UserProfile })
+    (module) => ({ default: module.Profile })
   )
 );
 
@@ -159,16 +159,16 @@ function AppContent() {
               path={ROUTES.ROOT}
               element={<Navigate to={ROUTES.CHAT} replace />}
             />
-            <Route path={ROUTES.CHAT} element={<ChatRoute />} />
-            <Route path={ROUTES.CHAT_AGENT_PATTERN} element={<ChatRoute />} />
-            <Route path={ROUTES.CHAT_SESSION_PATTERN} element={<ChatRoute />} />
-            <Route path={ROUTES.CONFIG} element={<ConfigRoute />} />
-            <Route path={ROUTES.CONFIG_NEW} element={<ConfigRoute />} />
+            <Route path={ROUTES.CHAT} element={<Chat />} />
+            <Route path={ROUTES.CHAT_AGENT_PATTERN} element={<Chat />} />
+            <Route path={ROUTES.CHAT_SESSION_PATTERN} element={<Chat />} />
+            <Route path={ROUTES.CONFIG} element={<Config />} />
+            <Route path={ROUTES.CONFIG_NEW} element={<Config />} />
             <Route
               path={ROUTES.CONFIG_AGENT_PATTERN}
-              element={<ConfigRoute />}
+              element={<Config />}
             />
-            <Route path={ROUTES.PROFILE} element={<UserProfile />} />
+            <Route path={ROUTES.PROFILE} element={<Profile />} />
           </Routes>
         </Suspense>
       </RouteTransitionWrapper>

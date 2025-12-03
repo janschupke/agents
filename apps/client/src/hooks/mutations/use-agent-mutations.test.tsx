@@ -11,9 +11,9 @@ import {
   useUpdateMemory,
   useDeleteMemory,
 } from './use-agent-mutations';
-import { AgentService } from '../../services/agent.service';
-import { ChatService } from '../../services/chat.service';
-import { MemoryService } from '../../services/memory.service';
+import { AgentService } from '../../services/agent/agent.service';
+import { SessionService } from '../../services/chat/session/session.service';
+import { MemoryService } from '../../services/memory/memory.service';
 
 // Mock ToastContext
 const mockShowToast = vi.fn();
@@ -22,9 +22,9 @@ vi.mock('../../contexts/ToastContext', () => ({
 }));
 
 // Mock services
-vi.mock('../../services/agent.service');
-vi.mock('../../services/chat.service');
-vi.mock('../../services/memory.service');
+vi.mock('../../services/agent/agent.service');
+vi.mock('../../services/chat/session/session.service');
+vi.mock('../../services/memory/memory.service');
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <TestQueryProvider>{children}</TestQueryProvider>
@@ -176,7 +176,7 @@ describe('use-agent-mutations', () => {
         createdAt: '2024-01-01T00:00:00.000Z',
       };
 
-      vi.mocked(ChatService.createSession).mockResolvedValue(mockSession);
+      vi.mocked(SessionService.createSession).mockResolvedValue(mockSession);
 
       const { result } = renderHook(() => useCreateSession(), { wrapper });
 
@@ -192,7 +192,7 @@ describe('use-agent-mutations', () => {
 
     it('should show error toast on failure', async () => {
       const error = { message: 'Failed to create session' };
-      vi.mocked(ChatService.createSession).mockRejectedValue(error);
+      vi.mocked(SessionService.createSession).mockRejectedValue(error);
 
       const { result } = renderHook(() => useCreateSession(), { wrapper });
 
@@ -215,7 +215,7 @@ describe('use-agent-mutations', () => {
         createdAt: '2024-01-01T00:00:00.000Z',
       };
 
-      vi.mocked(ChatService.updateSession).mockResolvedValue(mockSession);
+      vi.mocked(SessionService.updateSession).mockResolvedValue(mockSession);
 
       const { result } = renderHook(() => useUpdateSession(), { wrapper });
 
@@ -235,7 +235,7 @@ describe('use-agent-mutations', () => {
 
     it('should show error toast on failure', async () => {
       const error = { message: 'Failed to update session' };
-      vi.mocked(ChatService.updateSession).mockRejectedValue(error);
+      vi.mocked(SessionService.updateSession).mockRejectedValue(error);
 
       const { result } = renderHook(() => useUpdateSession(), { wrapper });
 
@@ -258,7 +258,7 @@ describe('use-agent-mutations', () => {
 
   describe('useDeleteSession', () => {
     it('should delete session and show success toast', async () => {
-      vi.mocked(ChatService.deleteSession).mockResolvedValue(undefined);
+      vi.mocked(SessionService.deleteSession).mockResolvedValue(undefined);
 
       const { result } = renderHook(() => useDeleteSession(), { wrapper });
 
@@ -277,7 +277,7 @@ describe('use-agent-mutations', () => {
 
     it('should show error toast on failure', async () => {
       const error = { message: 'Failed to delete session' };
-      vi.mocked(ChatService.deleteSession).mockRejectedValue(error);
+      vi.mocked(SessionService.deleteSession).mockRejectedValue(error);
 
       const { result } = renderHook(() => useDeleteSession(), { wrapper });
 

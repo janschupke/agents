@@ -4,7 +4,7 @@ import { ClerkProvider } from '@clerk/clerk-react';
 import { initI18n } from '@openai/i18n';
 import '@openai/ui/styles/base.css';
 import App from './App';
-import ClerkTokenProvider from './components/auth/ClerkTokenProvider';
+import ClerkTokenProvider from './components/auth/ClerkTokenProvider/ClerkTokenProvider';
 import './index.css';
 
 // Initialize i18n

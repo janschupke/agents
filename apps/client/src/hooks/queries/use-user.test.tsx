@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { TestQueryProvider } from '../../test/utils/test-query-provider';
 import { useUser, useApiKeyStatus } from './use-user';
-import { UserService } from '../../services/user.service';
-import { ApiCredentialsService } from '../../services/api-credentials.service';
+import { UserService } from '../../services/user/user.service';
+import { ApiCredentialsService } from '../../services/user/api-credentials.service';
 
 // Mock AuthContext
 const mockAuth = {
@@ -20,8 +20,8 @@ vi.mock('../use-token-ready', () => ({
 }));
 
 // Mock services
-vi.mock('../../services/user.service');
-vi.mock('../../services/api-credentials.service');
+vi.mock('../../services/user/user.service');
+vi.mock('../../services/user/api-credentials.service');
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <TestQueryProvider>{children}</TestQueryProvider>

@@ -24,8 +24,8 @@ vi.mock('../../../contexts/ToastContext', () => ({
   }),
 }));
 
-vi.mock('../../../services/chat.service', () => ({
-  ChatService: {
+vi.mock('../../../services/chat/session/session.service', () => ({
+  SessionService: {
     getSessionWithAgent: vi.fn(),
   },
 }));

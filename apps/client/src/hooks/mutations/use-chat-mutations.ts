@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChatService } from '../../services/chat.service';
+import { MessageService } from '../../services/chat/message/message.service';
 import { queryKeys } from '../queries/query-keys';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -16,7 +16,7 @@ export function useSendMessage() {
       agentId: number;
       message: string;
       sessionId?: number;
-    }) => ChatService.sendMessage(agentId, message, sessionId),
+    }) => MessageService.sendMessage(agentId, message, sessionId),
     onSuccess: (_data, variables) => {
       // Invalidate chat history to refetch with new message
       queryClient.invalidateQueries({

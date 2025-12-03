@@ -2,7 +2,7 @@ import { useAgents } from '../../../hooks/queries/use-agents';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../hooks/queries/query-keys';
 import { Session, Agent } from '../../../types/chat.types';
-import { useSidebarLoadingState } from '../../../hooks/use-sidebar-loading-state';
+import { useSidebarLoadingState } from '../../../hooks/utils/use-sidebar-loading-state';
 
 interface UseChatLoadingStateOptions {
   agentId: number | null;

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { TestQueryProvider } from '../../test/utils/test-query-provider';
 import { useUpdateApiKey, useDeleteApiKey } from './use-user-mutations';
-import { ApiCredentialsService } from '../../services/api-credentials.service';
+import { ApiCredentialsService } from '../../services/user/api-credentials.service';
 
 // Mock ToastContext
 const mockShowToast = vi.fn();
@@ -11,7 +11,7 @@ vi.mock('../../contexts/ToastContext', () => ({
 }));
 
 // Mock services
-vi.mock('../../services/api-credentials.service');
+vi.mock('../../services/user/api-credentials.service');
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <TestQueryProvider>{children}</TestQueryProvider>

@@ -3,7 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { TestQueryProvider } from '../../../test/utils/test-query-provider';
 import { AuthProvider } from '../../../contexts/AuthContext';
 import { useChatRoute } from './use-chat-route';
-import { AgentService } from '../../../services/agent.service';
+import { AgentService } from '../../../services/agent/agent.service';
 import { Agent } from '../../../types/chat.types';
 
 // Mock Clerk
@@ -15,13 +15,13 @@ vi.mock('@clerk/clerk-react', () => ({
 }));
 
 // Mock services
-vi.mock('../../../services/chat.service', () => ({
-  ChatService: {
+vi.mock('../../../services/chat/session/session.service', () => ({
+  SessionService: {
     getSessionWithAgent: vi.fn(),
   },
 }));
 
-vi.mock('../../../services/agent.service', () => ({
+vi.mock('../../../services/agent/agent.service', () => ({
   AgentService: {
     getAllAgents: vi.fn(),
   },
