@@ -104,6 +104,7 @@ export function useChatMessages({
         content: result.response,
         rawResponse: result.rawResponse,
         id: result.assistantMessageId,
+        wordTranslations: result.wordTranslations, // Include parsed words (may have empty translations)
       };
 
       // Update saved word matches if new matches were returned

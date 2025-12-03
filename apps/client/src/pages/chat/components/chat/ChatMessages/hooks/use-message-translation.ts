@@ -46,23 +46,25 @@ export function useMessageTranslation({
     }
   }, [message.translation, message.wordTranslations]);
 
-  // Load translations on mount if available (for assistant messages)
+  // Load parsed words and translations on mount if available (for assistant messages)
   useEffect(() => {
     if (
       messageId &&
       message.role === MessageRole.ASSISTANT &&
-      !translation &&
       !wordTranslations
     ) {
-      // Check if translations exist in the database
+      // Check if parsed words or translations exist in the database
       WordTranslationService.getMessageTranslations(messageId)
         .then((result) => {
-          if (result.translation && result.wordTranslations.length > 0) {
-            setTranslation(result.translation);
+          // Load word translations even if they don't have translations yet (for highlighting)
+          if (result.wordTranslations && result.wordTranslations.length > 0) {
             setWordTranslations(result.wordTranslations);
-            // Update message object for parent state sync
-            message.translation = result.translation;
             message.wordTranslations = result.wordTranslations;
+          }
+          // Load full translation if available
+          if (result.translation) {
+            setTranslation(result.translation);
+            message.translation = result.translation;
           }
         })
         .catch(() => {

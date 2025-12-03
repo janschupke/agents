@@ -64,10 +64,10 @@ export default function WordPresenter({
         const lowerKey = originalWord.toLowerCase();
         const savedMatch = savedWordMatches?.get(lowerKey);
 
-        // Found a match - add it
+        // Found a match - add it (even if translation is empty, for saved word highlighting)
         parts.push({
           text: originalWord,
-          translation: word.translation,
+          translation: word.translation || undefined, // Use undefined if empty string
           savedWordMatch: savedMatch,
         });
         i += wordLength;
@@ -89,7 +89,12 @@ export default function WordPresenter({
   return (
     <>
       {parts.map((part, index) => {
-        if (!part.translation) {
+        const savedMatch = part.savedWordMatch;
+        const hasTranslation = !!part.translation;
+        const hasSavedWord = !!savedMatch;
+
+        // Show highlighting for saved words even without translation
+        if (!hasTranslation && !hasSavedWord) {
           return (
             <span key={index} className="inline">
               {part.text}
@@ -97,7 +102,6 @@ export default function WordPresenter({
           );
         }
 
-        const savedMatch = part.savedWordMatch;
         const pinyin = savedMatch?.pinyin || undefined;
 
         // Find sentence context from word translations
@@ -118,7 +122,7 @@ export default function WordPresenter({
                 ? () =>
                     onWordClick(
                       part.text,
-                      part.translation!,
+                      part.translation || '', // Use empty string if no translation
                       pinyin || null,
                       savedMatch?.savedWordId,
                       sentenceContext

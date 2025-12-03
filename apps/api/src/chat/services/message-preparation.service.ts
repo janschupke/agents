@@ -59,6 +59,10 @@ export class MessagePreparationService {
       this.addAgentBehaviorRules(messagesForAPI, agentConfig);
     }
 
+    // Add word parsing instruction for assistant responses
+    // This requests OpenAI to parse words in the response for immediate highlighting
+    this.addWordParsingInstruction(messagesForAPI);
+
     // Add user message
     messagesForAPI.push({
       role: MessageRole.USER,
@@ -218,6 +222,37 @@ export class MessagePreparationService {
           }
         }
       }
+    }
+  }
+
+  /**
+   * Add instruction for assistant to parse words in response (optional)
+   * This is a hint to OpenAI - we'll parse words ourselves if not provided
+   */
+  private addWordParsingInstruction(
+    messagesForAPI: MessageForOpenAI[]
+  ): void {
+    const wordParsingInstruction = `Note: If your response contains words in languages other than English (especially languages without spaces like Chinese, Japanese, etc.), you may optionally include a JSON structure at the end with parsed words. This is optional and will not affect your main response.
+
+If you choose to include it, add it after your main response on a new line:
+{"words": [{"originalWord": "word1"}, {"originalWord": "word2"}]}
+
+This helps with word-level highlighting. If you don't include it, that's fine - we'll parse the words automatically.`;
+
+    // Check if word parsing instruction is already present
+    if (
+      !messagesForAPI.some(
+        (m) =>
+          m.role === MessageRole.SYSTEM &&
+          m.content.includes('word parsing') &&
+          m.content.includes('JSON structure')
+      )
+    ) {
+      // Add as a system message after behavior rules
+      messagesForAPI.push({
+        role: MessageRole.SYSTEM,
+        content: wordParsingInstruction,
+      });
     }
   }
 }

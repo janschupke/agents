@@ -233,7 +233,11 @@ export class MessageTranslationService {
         messageId
       );
 
-    if (existingTranslation && existingWordTranslations.length > 0) {
+    // If we have both translation and word translations with actual translations, return them
+    const hasTranslatedWords = existingWordTranslations.some(
+      (wt) => wt.translation && wt.translation.trim() !== ''
+    );
+    if (existingTranslation && hasTranslatedWords) {
       return {
         translation: existingTranslation.translation,
         wordTranslations: existingWordTranslations,
@@ -265,13 +269,29 @@ export class MessageTranslationService {
         messageId
       );
 
-    if (!translation || wordTranslations.length === 0) {
+    if (wordTranslations.length === 0) {
+      this.logger.error(`Translation failed for message ${messageId}`);
+      throw new Error('Translation failed');
+    }
+
+    // Translation might not exist if only words were translated
+    // In that case, derive it from word translations
+    let finalTranslation = translation?.translation;
+    if (!finalTranslation && wordTranslations.length > 0) {
+      // Derive translation from words
+      finalTranslation = wordTranslations
+        .map((wt) => wt.translation)
+        .filter((t) => t && t.trim() !== '')
+        .join(' ');
+    }
+
+    if (!finalTranslation) {
       this.logger.error(`Translation failed for message ${messageId}`);
       throw new Error('Translation failed');
     }
 
     return {
-      translation: translation.translation,
+      translation: finalTranslation,
       wordTranslations,
     };
   }

@@ -33,8 +33,10 @@ export default function WordTooltip({
   }, [showTooltip]);
 
   const hasContent = translation || pinyin;
+  const isSaved = savedWordId !== undefined;
 
-  if (!hasContent && !onClick) {
+  // Always show highlighting for saved words, even without translation
+  if (!hasContent && !onClick && !isSaved) {
     return <>{children}</>;
   }
 
@@ -63,8 +65,6 @@ export default function WordTooltip({
       />
     </div>
   ) : null;
-
-  const isSaved = savedWordId !== undefined;
 
   return (
     <>

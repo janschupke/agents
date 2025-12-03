@@ -65,4 +65,13 @@ export class MessageWordTranslationRepository {
     });
     return count > 0;
   }
+
+  /**
+   * Delete all word translations for a message
+   */
+  async deleteByMessageId(messageId: number): Promise<void> {
+    await this.prisma.messageWordTranslation.deleteMany({
+      where: { messageId },
+    });
+  }
 }

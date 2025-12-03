@@ -337,11 +337,36 @@ export class ChatService {
       `Received response from OpenAI (length: ${response.length})`
     );
 
-    // Save assistant message to database with raw response
+    // Extract words from response if OpenAI included them in JSON format
+    let extractedWords: Array<{ originalWord: string }> = [];
+    let cleanedResponse = response;
+    try {
+      // Check if response ends with a JSON structure containing words
+      const jsonMatch = response.match(/\n\s*\{[\s\S]*"words"[\s\S]*\}\s*$/);
+      if (jsonMatch) {
+        const jsonStr = jsonMatch[0].trim();
+        const parsed = JSON.parse(jsonStr);
+        if (parsed.words && Array.isArray(parsed.words)) {
+          extractedWords = parsed.words
+            .filter((w: any) => w.originalWord && typeof w.originalWord === 'string')
+            .map((w: any) => ({ originalWord: w.originalWord }));
+          // Remove JSON from response
+          cleanedResponse = response.substring(0, response.length - jsonMatch[0].length).trim();
+          this.logger.debug(
+            `Extracted ${extractedWords.length} words from OpenAI response`
+          );
+        }
+      }
+    } catch (error) {
+      // If JSON parsing fails, continue with original response
+      this.logger.debug('No words found in response JSON, will parse separately');
+    }
+
+    // Save assistant message to database with cleaned response (without JSON if present)
     const assistantMessage = await this.messageRepository.create(
       session.id,
       MessageRole.ASSISTANT,
-      response,
+      cleanedResponse,
       {
         model: agentConfig.model,
         temperature: agentConfig.temperature,
@@ -351,7 +376,41 @@ export class ChatService {
     );
     this.logger.debug(`Saved assistant message ${assistantMessage.id}`);
 
-    // Find saved word matches if word translations exist
+    // Parse words immediately to enable highlighting (without translation)
+    // Use extracted words if available, otherwise parse from response
+    try {
+      if (extractedWords.length > 0) {
+        // Use words extracted from response
+        await this.wordTranslationService.saveParsedWords(
+          assistantMessage.id,
+          extractedWords,
+          cleanedResponse
+        );
+        this.logger.debug(
+          `Saved ${extractedWords.length} words extracted from OpenAI response for message ${assistantMessage.id}`
+        );
+      } else {
+        // Parse words using OpenAI
+        await this.wordTranslationService.parseWordsInMessage(
+          assistantMessage.id,
+          cleanedResponse,
+          apiKey
+        );
+        this.logger.debug(
+          `Parsed words for message ${assistantMessage.id}`
+        );
+      }
+    } catch (error) {
+      this.logger.error('Error parsing words:', error);
+      // Continue without word parsing - highlighting will still work if words exist
+    }
+
+    // Get parsed words (may have empty translations) for response
+    let parsedWordTranslations: Array<{
+      originalWord: string;
+      translation: string;
+      sentenceContext?: string;
+    }> = [];
     let savedWordMatches: Array<{
       originalWord: string;
       savedWordId: number;
@@ -359,14 +418,14 @@ export class ChatService {
       pinyin: string | null;
     }> = [];
     try {
-      // Check if word translations exist for this message
-      const wordTranslations =
+      // Get parsed words (may have empty translations)
+      parsedWordTranslations =
         await this.wordTranslationService.getWordTranslationsForMessage(
           assistantMessage.id
         );
-      if (wordTranslations.length > 0) {
-        // Extract words from word translations
-        const words = wordTranslations.map((wt) => wt.originalWord);
+      if (parsedWordTranslations.length > 0) {
+        // Extract words from parsed word translations
+        const words = parsedWordTranslations.map((wt) => wt.originalWord);
         savedWordMatches = await this.savedWordService.findMatchingWords(
           userId,
           words
@@ -434,6 +493,8 @@ export class ChatService {
       rawResponse: completion,
       userMessageId: userMessage.id,
       assistantMessageId: assistantMessage.id,
+      wordTranslations:
+        parsedWordTranslations.length > 0 ? parsedWordTranslations : undefined,
       savedWordMatches: savedWordMatches.length > 0 ? savedWordMatches : undefined,
     };
   }
