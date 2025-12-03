@@ -4,27 +4,31 @@ import { useAgentMemories } from './use-agent-memories';
 import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
 import { ToastProvider } from '../../../../contexts/ToastContext';
 
-// Mock dependencies
-const mockConfirm = vi.fn();
-const mockUpdateMemory = vi.fn();
-const mockDeleteMemory = vi.fn();
-const mockInvalidateQueries = vi.fn();
+// Mock dependencies - use hoisted to ensure stable references
+const { mockConfirm, mockUpdateMemory, mockDeleteMemory, mockInvalidateQueries, updateMemoryMutation, deleteMemoryMutation } = vi.hoisted(() => {
+  const mockConfirm = vi.fn();
+  const mockUpdateMemory = vi.fn();
+  const mockDeleteMemory = vi.fn();
+  const mockInvalidateQueries = vi.fn();
+  
+  const updateMemoryMutation = {
+    mutateAsync: mockUpdateMemory,
+    isPending: false,
+  };
+  
+  const deleteMemoryMutation = {
+    mutateAsync: mockDeleteMemory,
+    isPending: false,
+  };
+  
+  return { mockConfirm, mockUpdateMemory, mockDeleteMemory, mockInvalidateQueries, updateMemoryMutation, deleteMemoryMutation };
+});
 
 vi.mock('../../../../../hooks/ui/useConfirm', () => ({
   useConfirm: () => ({
     confirm: mockConfirm,
   }),
 }));
-
-const updateMemoryMutation = {
-  mutateAsync: mockUpdateMemory,
-  isPending: false,
-};
-
-const deleteMemoryMutation = {
-  mutateAsync: mockDeleteMemory,
-  isPending: false,
-};
 
 vi.mock('../../../../../hooks/mutations/use-agent-mutations', () => ({
   useUpdateMemory: () => updateMemoryMutation,
@@ -37,6 +41,8 @@ vi.mock('@tanstack/react-query', async () => {
     ...actual,
     useQueryClient: () => ({
       invalidateQueries: mockInvalidateQueries,
+      getQueryData: vi.fn(),
+      setQueryData: vi.fn(),
     }),
   };
 });

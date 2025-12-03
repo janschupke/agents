@@ -125,6 +125,13 @@ describe('AgentConfig Loading States', () => {
         error: null,
       });
 
+      // Mock useAgent (even though agentId is null, the hook might still be called)
+      mockUseAgent.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: false,
+      });
+
       render(
         <TestWrapper>
           <AgentConfig />
@@ -290,6 +297,13 @@ describe('AgentConfig Loading States', () => {
 
       mockUseAgentConfigState.mockReturnValue({
         currentAgent: null,
+      });
+
+      // Mock useAgent for AgentConfigForm
+      mockUseAgent.mockReturnValue({
+        data: undefined,
+        isLoading: true,
+        isError: false,
       });
 
       // Cache is set by useAgents hook returning data

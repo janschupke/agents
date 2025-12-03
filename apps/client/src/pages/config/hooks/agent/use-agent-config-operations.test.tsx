@@ -1,13 +1,42 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
 import { ToastProvider } from '../../../../contexts/ToastContext';
 import { useAgentConfigOperations } from './use-agent-config-operations';
 import { Agent } from '../../../../types/chat.types';
 import { AgentFormValues } from './use-agent-form';
 
-// Mock useConfirm
-const mockConfirm = vi.fn();
+// Mock dependencies - use hoisted to ensure stable references
+const { mockConfirm, mockCreateAgent, mockUpdateAgent, mockDeleteAgent, createAgentMutation, updateAgentMutation, deleteAgentMutation, mockUseCreateAgent, mockUseUpdateAgent, mockUseDeleteAgent } = vi.hoisted(() => {
+  const mockConfirm = vi.fn();
+  const mockCreateAgent = vi.fn();
+  const mockUpdateAgent = vi.fn();
+  const mockDeleteAgent = vi.fn();
+  
+  // Create mutable mutation objects with proper function binding
+  const createAgentMutation = {
+    mutateAsync: (...args: Parameters<typeof mockCreateAgent>) => mockCreateAgent(...args),
+    isPending: false,
+  };
+  
+  const updateAgentMutation = {
+    mutateAsync: (...args: Parameters<typeof mockUpdateAgent>) => mockUpdateAgent(...args),
+    isPending: false,
+  };
+  
+  const deleteAgentMutation = {
+    mutateAsync: (...args: Parameters<typeof mockDeleteAgent>) => mockDeleteAgent(...args),
+    isPending: false,
+  };
+  
+  // Create functions that return the mutation objects
+  const mockUseCreateAgent = vi.fn(() => createAgentMutation);
+  const mockUseUpdateAgent = vi.fn(() => updateAgentMutation);
+  const mockUseDeleteAgent = vi.fn(() => deleteAgentMutation);
+  
+  return { mockConfirm, mockCreateAgent, mockUpdateAgent, mockDeleteAgent, createAgentMutation, updateAgentMutation, deleteAgentMutation, mockUseCreateAgent, mockUseUpdateAgent, mockUseDeleteAgent };
+});
+
 vi.mock('../../../../../hooks/ui/useConfirm', () => ({
   useConfirm: () => ({
     confirm: mockConfirm,
@@ -15,35 +44,25 @@ vi.mock('../../../../../hooks/ui/useConfirm', () => ({
   }),
 }));
 
-// Mock mutation hooks - use hoisted to ensure stable references
-const { mockCreateAgent, mockUpdateAgent, mockDeleteAgent, createAgentMutation, updateAgentMutation, deleteAgentMutation } = vi.hoisted(() => {
-  const mockCreateAgent = vi.fn();
-  const mockUpdateAgent = vi.fn();
-  const mockDeleteAgent = vi.fn();
-  
-  const createAgentMutation = {
-    mutateAsync: mockCreateAgent,
-    isPending: false,
+// Mock AgentService to prevent real API calls
+vi.mock('../../../../../services/agent/agent.service', () => ({
+  AgentService: {
+    createAgent: vi.fn(),
+    updateAgent: vi.fn(),
+    deleteAgent: vi.fn(),
+  },
+}));
+
+vi.mock('../../../../hooks/mutations/use-agent-mutations', () => {
+  return {
+    useCreateAgent: () => mockUseCreateAgent(),
+    useUpdateAgent: () => mockUseUpdateAgent(),
+    useDeleteAgent: () => mockUseDeleteAgent(),
   };
-  
-  const updateAgentMutation = {
-    mutateAsync: mockUpdateAgent,
-    isPending: false,
-  };
-  
-  const deleteAgentMutation = {
-    mutateAsync: mockDeleteAgent,
-    isPending: false,
-  };
-  
-  return { mockCreateAgent, mockUpdateAgent, mockDeleteAgent, createAgentMutation, updateAgentMutation, deleteAgentMutation };
 });
 
-vi.mock('../../../../../hooks/mutations/use-agent-mutations', () => ({
-  useCreateAgent: () => createAgentMutation,
-  useUpdateAgent: () => updateAgentMutation,
-  useDeleteAgent: () => deleteAgentMutation,
-}));
+// Don't mock useQueryClient - let it use the real one from TestQueryProvider
+// The hook uses queryClient.getQueryData which will return undefined for non-existent queries
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <TestQueryProvider>
@@ -52,6 +71,12 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe('useAgentConfigOperations', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Ensure mockConfirm has a default return value
+    mockConfirm.mockResolvedValue(false);
+  });
+
   const mockContextAgents: Agent[] = [
     {
       id: 1,
@@ -117,6 +142,13 @@ describe('useAgentConfigOperations', () => {
         }),
       { wrapper }
     );
+
+    // Verify the hook rendered successfully
+    expect(result.current).not.toBeNull();
+    expect(result.current.handleSave).toBeDefined();
+
+    // Verify the mock hook is being called
+    expect(mockUseCreateAgent).toHaveBeenCalled();
 
     const savedAgent = await act(async () => {
       return await result.current.handleSave(newAgent, mockFormValues);
@@ -240,6 +272,8 @@ describe('useAgentConfigOperations', () => {
       { wrapper }
     );
 
+    expect(result.current).not.toBeNull();
+
     await act(async () => {
       await result.current.handleDelete(1);
     });
@@ -271,6 +305,8 @@ describe('useAgentConfigOperations', () => {
       { wrapper }
     );
 
+    expect(result.current).not.toBeNull();
+
     await act(async () => {
       await result.current.handleDelete(1);
     });
@@ -294,6 +330,8 @@ describe('useAgentConfigOperations', () => {
         }),
       { wrapper }
     );
+
+    expect(result.current).not.toBeNull();
 
     await act(async () => {
       await result.current.handleDelete(1);
@@ -338,6 +376,8 @@ describe('useAgentConfigOperations', () => {
       { wrapper }
     );
 
+    expect(result.current).not.toBeNull();
+
     act(() => {
       result.current.handleNewAgent();
     });
@@ -364,6 +404,7 @@ describe('useAgentConfigOperations', () => {
       { wrapper }
     );
 
+    expect(result.current).not.toBeNull();
     expect(result.current.saving).toBe(true);
     
     // Restore original values
@@ -393,6 +434,8 @@ describe('useAgentConfigOperations', () => {
         }),
       { wrapper }
     );
+
+    expect(result.current).not.toBeNull();
 
     const savedAgent = await act(async () => {
       return await result.current.handleSave(newAgent, mockFormValues);

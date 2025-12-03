@@ -56,7 +56,7 @@ describe('SessionService', () => {
 
     it('should throw error when update fails', async () => {
       server.use(
-        http.put(`${API_BASE_URL}/api/chat/1/1`, () => {
+        http.put(`${API_BASE_URL}/api/chat/1/sessions/1`, () => {
           return HttpResponse.json({ message: 'Not found' }, { status: 404 });
         })
       );
@@ -75,7 +75,7 @@ describe('SessionService', () => {
 
     it('should throw error when delete fails', async () => {
       server.use(
-        http.delete(`${API_BASE_URL}/api/chat/1/1`, () => {
+        http.delete(`${API_BASE_URL}/api/chat/1/sessions/1`, () => {
           return HttpResponse.json({ message: 'Not found' }, { status: 404 });
         })
       );
