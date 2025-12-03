@@ -4,7 +4,6 @@ import {
   IconChevronDown,
   Avatar,
   Button,
-  ButtonVariant,
   DropdownTransition,
 } from '@openai/ui';
 import { useAgents } from '../../../../../hooks/queries/use-agents';
@@ -69,7 +68,7 @@ export default function AgentSelector() {
     <div className="relative" ref={dropdownRef}>
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        variant={ButtonVariant.ICON}
+        variant="icon"
         className="flex items-center gap-3 h-10 px-2 rounded-md"
         tooltip={t('config.selectAgent')}
       >
@@ -101,8 +100,8 @@ export default function AgentSelector() {
             >
               <Button
                 onClick={() => handleAgentSelect(agent.id)}
-                variant={ButtonVariant.ICON}
-                className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 ${
+                variant="icon"
+                className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 justify-start ${
                   agent.id === selectedAgentId
                     ? 'bg-primary text-text-inverse'
                     : 'text-text-primary hover:bg-background-tertiary'

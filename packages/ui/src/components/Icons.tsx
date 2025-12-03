@@ -1,9 +1,20 @@
 // Icon components for consistent UI
+import { ComponentSize, getSizeClasses } from './form/size-system';
 
-export function IconPlus({ className = 'w-4 h-4' }: { className?: string }) {
+interface IconProps {
+  size?: ComponentSize;
+  className?: string;
+}
+
+function getIconClassName(size?: ComponentSize, className?: string): string {
+  const sizeClass = size ? getSizeClasses(size).iconSize : 'w-4 h-4';
+  return className || sizeClass;
+}
+
+export function IconPlus({ size, className }: IconProps) {
   return (
     <svg
-      className={className}
+      className={getIconClassName(size, className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -18,10 +29,10 @@ export function IconPlus({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconChat({ className = 'w-4 h-4' }: { className?: string }) {
+export function IconChat({ size, className }: IconProps) {
   return (
     <svg
-      className={className}
+      className={getIconClassName(size, className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -36,14 +47,10 @@ export function IconChat({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconSettings({
-  className = 'w-4 h-4',
-}: {
-  className?: string;
-}) {
+export function IconSettings({ size, className }: IconProps) {
   return (
     <svg
-      className={className}
+      className={getIconClassName(size, className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -64,10 +71,10 @@ export function IconSettings({
   );
 }
 
-export function IconClose({ className = 'w-4 h-4' }: { className?: string }) {
+export function IconClose({ size, className }: IconProps) {
   return (
     <svg
-      className={className}
+      className={getIconClassName(size, className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -82,10 +89,10 @@ export function IconClose({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconSend({ className = 'w-4 h-4' }: { className?: string }) {
+export function IconSend({ size, className }: IconProps) {
   return (
     <svg
-      className={className}
+      className={getIconClassName(size, className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -100,10 +107,10 @@ export function IconSend({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconUser({ className = 'w-4 h-4' }: { className?: string }) {
+export function IconUser({ size, className }: IconProps) {
   return (
     <svg
-      className={className}
+      className={getIconClassName(size, className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -118,10 +125,10 @@ export function IconUser({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconLogout({ className = 'w-4 h-4' }: { className?: string }) {
+export function IconLogout({ size, className }: IconProps) {
   return (
     <svg
-      className={className}
+      className={getIconClassName(size, className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -136,14 +143,10 @@ export function IconLogout({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconChevronDown({
-  className = 'w-4 h-4',
-}: {
-  className?: string;
-}) {
+export function IconChevronDown({ size, className }: IconProps) {
   return (
     <svg
-      className={className}
+      className={getIconClassName(size, className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -158,10 +161,10 @@ export function IconChevronDown({
   );
 }
 
-export function IconSearch({ className = 'w-4 h-4' }: { className?: string }) {
+export function IconSearch({ size, className }: IconProps) {
   return (
     <svg
-      className={className}
+      className={getIconClassName(size, className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -176,10 +179,10 @@ export function IconSearch({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconRefresh({ className = 'w-4 h-4' }: { className?: string }) {
+export function IconRefresh({ size, className }: IconProps) {
   return (
     <svg
-      className={className}
+      className={getIconClassName(size, className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -194,10 +197,10 @@ export function IconRefresh({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconTrash({ className = 'w-4 h-4' }: { className?: string }) {
+export function IconTrash({ size, className }: IconProps) {
   return (
     <svg
-      className={className}
+      className={getIconClassName(size, className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -212,10 +215,10 @@ export function IconTrash({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconPencil({ className = 'w-4 h-4' }: { className?: string }) {
+export function IconPencil({ size, className }: IconProps) {
   return (
     <svg
-      className={className}
+      className={getIconClassName(size, className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -230,10 +233,10 @@ export function IconPencil({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconCheck({ className = 'w-4 h-4' }: { className?: string }) {
+export function IconCheck({ size, className }: IconProps) {
   return (
     <svg
-      className={className}
+      className={getIconClassName(size, className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -248,14 +251,10 @@ export function IconCheck({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconTranslate({
-  className = 'w-4 h-4',
-}: {
-  className?: string;
-}) {
+export function IconTranslate({ size, className }: IconProps) {
   return (
     <svg
-      className={className}
+      className={getIconClassName(size, className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -270,10 +269,10 @@ export function IconTranslate({
   );
 }
 
-export function IconEdit({ className = 'w-4 h-4' }: { className?: string }) {
+export function IconEdit({ size, className }: IconProps) {
   return (
     <svg
-      className={className}
+      className={getIconClassName(size, className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -288,10 +287,10 @@ export function IconEdit({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconUpload({ className = 'w-4 h-4' }: { className?: string }) {
+export function IconUpload({ size, className }: IconProps) {
   return (
     <svg
-      className={className}
+      className={getIconClassName(size, className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -306,10 +305,10 @@ export function IconUpload({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-export function IconLoader({ className = 'w-4 h-4' }: { className?: string }) {
+export function IconLoader({ size, className }: IconProps) {
   return (
     <svg
-      className={className}
+      className={getIconClassName(size, className)}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"

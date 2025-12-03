@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
-import { IconSend, Input, Button, ButtonType, ButtonVariant } from '@openai/ui';
+import { IconSend, Input, Button } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 interface ChatInputProps {
@@ -53,16 +53,17 @@ const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
           placeholder={t('chat.placeholder')}
           disabled={disabled}
           className="flex-1"
+          size="md"
         />
         <Button
-          type={ButtonType.SUBMIT}
+          type="submit"
           disabled={disabled || !input.trim()}
-          variant={ButtonVariant.PRIMARY}
-          size="sm"
+          variant="primary"
+          size="md"
           className="w-8 p-0"
           tooltip={t('chat.send')}
         >
-          <IconSend className="w-4 h-4" />
+          <IconSend size="md" />
         </Button>
       </form>
     );

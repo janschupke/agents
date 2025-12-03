@@ -1,5 +1,5 @@
 import { IconClose } from '../../Icons';
-import { Button, ButtonVariant } from '../../form';
+import { Button } from '../../form';
 
 interface ModalHeaderProps {
   title: string;
@@ -15,7 +15,7 @@ export default function ModalHeader({ title, onClose }: ModalHeaderProps) {
       <h2 className="text-lg font-semibold text-text-secondary">{title}</h2>
       <Button
         onClick={onClose}
-        variant={ButtonVariant.ICON}
+        variant="ghost"
         size="sm"
         className="p-0"
         tooltip="Close"

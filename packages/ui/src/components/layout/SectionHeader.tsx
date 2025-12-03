@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Button, ButtonVariant } from '../form';
+import { Button } from '../form';
 
 interface SectionHeaderProps {
   title: string;
@@ -27,9 +27,9 @@ export default function SectionHeader({
         <Button
           onClick={action.onClick}
           disabled={action.disabled}
-          variant={ButtonVariant.ICON}
-          size="sm"
-          className="h-6 w-6 p-0"
+          variant="ghost"
+          size="xs"
+          className="h-6 w-6 p-0 text-text-primary"
           tooltip={action.tooltip}
         >
           {action.icon}

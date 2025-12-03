@@ -8,8 +8,6 @@ import {
   FormButton,
   FormContainer,
   FormField,
-  ButtonType,
-  ButtonVariant,
 } from '@openai/ui';
 
 interface SessionNameModalProps {
@@ -126,19 +124,19 @@ export default function SessionNameModal({
           </div>
           <ModalFooter>
             <FormButton
-              type={ButtonType.BUTTON}
+              type="button"
               onClick={onClose}
               disabled={saving}
-              variant={ButtonVariant.SECONDARY}
+              variant="secondary"
             >
               {t('common.cancel')}
             </FormButton>
             <FormButton
-              type={ButtonType.BUTTON}
+              type="button"
               onClick={handleSave}
               loading={saving}
               disabled={saving}
-              variant={ButtonVariant.PRIMARY}
+              variant="primary"
               tooltip={saving ? t('config.saving') : t('common.save')}
             >
               {t('common.save')}

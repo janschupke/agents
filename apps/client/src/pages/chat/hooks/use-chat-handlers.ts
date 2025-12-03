@@ -27,6 +27,7 @@ interface UseChatHandlersReturn {
   handleNewSessionWrapper: () => Promise<void>;
   handleSessionDeleteWrapper: (sessionId: number) => Promise<void>;
   handleSessionNameSave: (name?: string) => Promise<void>;
+  ConfirmDialog: React.ReactNode;
 }
 
 /**
@@ -40,7 +41,7 @@ export function useChatHandlers({
   handleSessionDelete,
   setMessages,
 }: UseChatHandlersOptions): UseChatHandlersReturn {
-  const { confirm } = useConfirm();
+  const { confirm, ConfirmDialog } = useConfirm();
   const queryClient = useQueryClient();
 
   const handleSessionSelectWrapper = async (sessionId: number) => {
@@ -92,5 +93,6 @@ export function useChatHandlers({
     handleNewSessionWrapper,
     handleSessionDeleteWrapper,
     handleSessionNameSave,
+    ConfirmDialog,
   };
 }

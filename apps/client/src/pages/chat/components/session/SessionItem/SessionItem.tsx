@@ -36,7 +36,7 @@ export default function SessionItem({
   const actions = [];
   if (onEdit) {
     actions.push({
-      icon: <IconPencil className="w-4 h-4" />,
+      icon: <IconPencil size="xs" />,
       onClick: () => onEdit(session.id),
       variant: 'default' as const,
       tooltip: t('chat.editSessionNameTooltip'),
@@ -44,7 +44,7 @@ export default function SessionItem({
   }
   if (onDelete) {
     actions.push({
-      icon: <IconTrash className="w-4 h-4" />,
+      icon: <IconTrash size="xs" />,
       onClick: () => onDelete(session.id),
       variant: 'danger' as const,
       tooltip: t('chat.deleteSessionTooltip'),

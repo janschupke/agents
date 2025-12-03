@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import ModalBackdrop from './components/ModalBackdrop';
 import ModalContainer from './components/ModalContainer';
 import ModalHeader from './components/ModalHeader';
@@ -16,7 +17,7 @@ interface ConfirmModalProps {
 }
 
 /**
- * Confirmation modal component
+ * Confirmation modal component with keyboard support
  */
 export default function ConfirmModal({
   isOpen,
@@ -28,6 +29,26 @@ export default function ConfirmModal({
   cancelText = 'Cancel',
   confirmVariant = 'primary',
 }: ConfirmModalProps) {
+  // Handle keyboard events
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      } else if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        onConfirm();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose, onConfirm]);
+
   if (!isOpen) return null;
 
   const confirmButtonClass =

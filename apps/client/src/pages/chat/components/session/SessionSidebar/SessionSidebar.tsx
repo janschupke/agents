@@ -37,7 +37,7 @@ export default function SessionSidebar({
       <SidebarHeader
         title={t('chat.sessions')}
         action={{
-          icon: <IconPlus className="w-4 h-4" />,
+          icon: <IconPlus size="sm" />,
           onClick: onNewSession,
           disabled: loading,
           tooltip: t('chat.newSession'),

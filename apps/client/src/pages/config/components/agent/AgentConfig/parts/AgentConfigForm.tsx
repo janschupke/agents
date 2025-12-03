@@ -14,7 +14,7 @@ import {
 import AgentConfigFormSkeleton from './AgentConfigFormSkeleton';
 import AgentNameAndAvatar from './AgentNameAndAvatar';
 import MemoriesSection from './MemoriesSection';
-import { forwardRef, useImperativeHandle, useEffect } from 'react';
+import { forwardRef, useImperativeHandle, useEffect, useRef } from 'react';
 
 interface AgentConfigFormProps {
   agent: Agent | null;
@@ -54,6 +54,7 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
     } = useAgentMemoryOperations({ agentId: agent?.id || null });
 
     const loadingConfig = loadingAgent && agent !== null && agent.id > 0;
+    const formRef = useRef<HTMLFormElement>(null);
 
     const handleSave = async () => {
       if (!agent) return;
@@ -66,6 +67,35 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
 
       await onSaveClick(agent, values);
     };
+
+    // Handle Enter key to submit form
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        // Only handle Enter if form is focused and not in a textarea
+        if (
+          e.key === 'Enter' &&
+          !e.shiftKey &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          formRef.current &&
+          formRef.current.contains(document.activeElement) &&
+          document.activeElement?.tagName !== 'TEXTAREA'
+        ) {
+          const canSave = !!agent && !!values.name.trim();
+          if (canSave) {
+            e.preventDefault();
+            // Call handleSave directly - it's stable within the component
+            void handleSave();
+          }
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [agent, values.name]);
 
     useImperativeHandle(ref, () => ({
       save: handleSave,
@@ -96,7 +126,14 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
         {loadingConfig ? (
           <AgentConfigFormSkeleton />
         ) : (
-          <div className="space-y-5">
+          <form
+            ref={formRef}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSave();
+            }}
+            className="space-y-5"
+          >
             <AgentNameAndAvatar
               avatarUrl={values.avatarUrl}
               name={values.name}
@@ -135,7 +172,7 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
               onDelete={handleDeleteMemory}
               onRefresh={handleRefreshMemories}
             />
-          </div>
+          </form>
         )}
       </FormContainer>
     );

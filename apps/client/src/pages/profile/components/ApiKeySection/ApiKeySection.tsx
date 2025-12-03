@@ -10,8 +10,6 @@ import {
   Button,
   Input,
   Card,
-  ButtonType,
-  ButtonVariant,
 } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useApiKey } from '../../hooks/use-api-key';
@@ -81,7 +79,7 @@ export default function ApiKeySection() {
               <Button
                 onClick={handleEditApiKey}
                 disabled={saving}
-                variant={ButtonVariant.ICON}
+                variant="icon-compact"
                 size="sm"
                 className="w-8 p-0"
                 tooltip={t('profile.apiKey.editApiKey')}
@@ -91,7 +89,7 @@ export default function ApiKeySection() {
               <Button
                 onClick={handleDeleteApiKey}
                 disabled={saving}
-                variant={ButtonVariant.ICON}
+                variant="icon-compact"
                 size="sm"
                 className="w-8 p-0 hover:text-red-500"
                 tooltip={t('profile.apiKey.deleteApiKey')}
@@ -117,20 +115,20 @@ export default function ApiKeySection() {
                 />
                 {hasApiKey && (
                   <FormButton
-                    type={ButtonType.BUTTON}
+                    type="button"
                     onClick={handleCancelEdit}
                     disabled={saving}
-                    variant={ButtonVariant.SECONDARY}
+                    variant="secondary"
                   >
                     <IconClose className="w-4 h-4" />
                   </FormButton>
                 )}
                 <FormButton
-                  type={ButtonType.BUTTON}
+                  type="button"
                   onClick={handleSaveApiKey}
                   loading={saving}
                   disabled={saving || !values.apiKey.trim()}
-                  variant={ButtonVariant.PRIMARY}
+                  variant="primary"
                   tooltip={
                     saving
                       ? t('profile.apiKey.saving')

@@ -4,8 +4,8 @@ import {
   IconTranslate,
   FadeTransition,
   Button,
-  ButtonVariant,
   Card,
+  getSizeClasses,
 } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import TranslatableMarkdownContent from '../../../markdown/TranslatableMarkdownContent/TranslatableMarkdownContent';
@@ -64,7 +64,7 @@ export default function MessageBubble({
 
         {/* Action buttons container - overlay text with background when visible */}
         <div
-          className={`absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${
+          className={`absolute top-2 right-2 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity ${
             message.role === MessageRole.USER
               ? 'bg-message-user'
               : 'bg-message-assistant'
@@ -75,8 +75,8 @@ export default function MessageBubble({
           <Button
             onClick={handleTranslate}
             disabled={isTranslating || !messageId}
-            variant={ButtonVariant.ICON}
-            size="sm"
+            variant="message-bubble"
+            size="xs"
             className="p-1"
             tooltip={
               isTranslating
@@ -89,15 +89,9 @@ export default function MessageBubble({
             }
           >
             {isTranslating ? (
-              <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              <div className={`${getSizeClasses('xs').iconSize} border-2 border-current border-t-transparent rounded-full animate-spin`} />
             ) : (
-              <IconTranslate
-                className={`w-3.5 h-3.5 ${
-                  message.role === MessageRole.USER
-                    ? 'text-message-user-text'
-                    : 'text-message-assistant-text'
-                }`}
-              />
+              <IconTranslate size="xs" />
             )}
           </Button>
 
@@ -111,8 +105,8 @@ export default function MessageBubble({
                   onShowJson(t('chat.openaiResponse'), message.rawResponse);
                 }
               }}
-              variant={ButtonVariant.ICON}
-              size="sm"
+              variant="message-bubble"
+              size="xs"
               className="p-1"
               tooltip={
                 message.role === MessageRole.USER
@@ -120,13 +114,7 @@ export default function MessageBubble({
                   : t('chat.message.viewResponseJson')
               }
             >
-              <IconSearch
-                className={`w-3.5 h-3.5 ${
-                  message.role === MessageRole.USER
-                    ? 'text-message-user-text'
-                    : 'text-message-assistant-text'
-                }`}
-              />
+              <IconSearch size="xs" />
             </Button>
           )}
         </div>

@@ -42,7 +42,6 @@ function ChatAgentContent({
   error: propError,
 }: ChatAgentContentProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
-  const { ConfirmDialog } = useConfirm();
   const navigate = useNavigate();
   const { sessionId: urlSessionId } = useParams<{ sessionId?: string }>();
 
@@ -99,6 +98,7 @@ function ChatAgentContent({
     handleNewSessionWrapper,
     handleSessionDeleteWrapper,
     handleSessionNameSave,
+    ConfirmDialog,
   } = useChatHandlers({
     agentId,
     sessions,

@@ -6,4 +6,7 @@ export { default as Textarea } from './Textarea';
 export { default as Button } from './Button';
 export { default as FormField } from './FormField';
 export { default as InfoField } from './InfoField';
-export { ButtonType, ButtonVariant } from './form-types';
+export type { ButtonType, ButtonVariant } from './form-types';
+export { VALID_BUTTON_VARIANTS, isValidButtonVariant } from './form-types';
+export type { ComponentSize } from './size-system';
+export { SIZE_CLASSES, getSizeClasses, getButtonSizeClasses, getInputSizeClasses } from './size-system';

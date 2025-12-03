@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Button, ButtonVariant } from '../form';
+import { Button } from '../form';
 
 interface SidebarItemAction {
   icon: ReactNode;
@@ -91,7 +91,7 @@ export default function SidebarItem({
         )}
       </button>
       {actions && actions.length > 0 && (
-        <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-0.5 pr-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {actions.map((action, index) => (
             <Button
               key={index}
@@ -99,16 +99,16 @@ export default function SidebarItem({
                 e?.stopPropagation();
                 action.onClick();
               }}
-              variant={ButtonVariant.ICON}
-              size="sm"
-              className={`px-2 py-1 ${
+              variant={isSelected ? 'ghost-inverse' : 'ghost'}
+              size="xs"
+              className={`p-1 ${
                 isSelected
                   ? action.variant === 'danger'
                     ? 'text-text-inverse hover:opacity-100'
                     : 'text-text-inverse hover:opacity-80'
                   : action.variant === 'danger'
-                    ? 'text-text-tertiary hover:text-red-500'
-                    : 'text-text-tertiary hover:text-text-primary'
+                    ? 'text-text-primary hover:text-red-500'
+                    : 'text-text-primary hover:text-text-primary'
               }`}
               tooltip={action.tooltip}
             >

@@ -8,8 +8,7 @@ import {
   Button,
   Input,
   Textarea,
-  ButtonVariant,
-  ButtonType,
+  FadeTransition,
 } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { parseBehaviorRules } from '../../../../utils/agent.utils';
@@ -19,14 +18,17 @@ interface BehaviorRulesFieldProps {
   onChange: (rules: string[]) => void;
 }
 
-type ViewMode = 'form' | 'json';
+enum ViewMode {
+  FORM = 'form',
+  JSON = 'json',
+}
 
 export function BehaviorRulesField({
   rules,
   onChange,
 }: BehaviorRulesFieldProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
-  const [viewMode, setViewMode] = useState<ViewMode>('form');
+  const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.FORM);
   const [jsonValue, setJsonValue] = useState('');
   const [jsonError, setJsonError] = useState<string | null>(null);
 
@@ -37,7 +39,7 @@ export function BehaviorRulesField({
 
   // Initialize JSON value when switching to JSON view or when rules change
   useEffect(() => {
-    if (viewMode === 'json') {
+    if (viewMode === ViewMode.JSON) {
       setJsonValue(rulesToJson);
       setJsonError(null);
     }
@@ -75,7 +77,7 @@ export function BehaviorRulesField({
 
   // Handle view mode switch
   const handleViewModeSwitch = (newMode: ViewMode) => {
-    if (newMode === 'json') {
+    if (newMode === ViewMode.JSON) {
       // Switching to JSON view - format current rules
       setJsonValue(rulesToJson);
       setJsonError(null);
@@ -91,41 +93,33 @@ export function BehaviorRulesField({
           <span>{t('config.behaviorRules')}</span>
           <div className="flex gap-2">
             <Button
-              type={ButtonType.BUTTON}
-              onClick={() => handleViewModeSwitch('form')}
-              variant={
-                viewMode === 'form'
-                  ? ButtonVariant.PRIMARY
-                  : ButtonVariant.SECONDARY
-              }
+              type="button"
+              onClick={() => handleViewModeSwitch(ViewMode.FORM)}
+              variant={viewMode === ViewMode.FORM ? 'primary' : 'secondary'}
               size="sm"
               className="text-xs"
             >
-              <IconEdit className="w-3.5 h-3.5 mr-1" />
+              <IconEdit size="sm" />
               {t('config.viewForm', { defaultValue: 'Form' })}
             </Button>
             <Button
-              type={ButtonType.BUTTON}
-              onClick={() => handleViewModeSwitch('json')}
-              variant={
-                viewMode === 'json'
-                  ? ButtonVariant.PRIMARY
-                  : ButtonVariant.SECONDARY
-              }
+              type="button"
+              onClick={() => handleViewModeSwitch(ViewMode.JSON)}
+              variant={viewMode === ViewMode.JSON ? 'primary' : 'secondary'}
               size="sm"
               className="text-xs"
             >
-              <IconSettings className="w-3.5 h-3.5 mr-1" />
+              <IconSettings size="sm" />
               {t('config.viewJson', { defaultValue: 'JSON' })}
             </Button>
           </div>
         </div>
       }
       hint={t('config.rulesDescription')}
-      error={viewMode === 'json' ? jsonError : undefined}
-      touched={viewMode === 'json' && jsonError !== null}
+      error={viewMode === ViewMode.JSON ? jsonError : undefined}
+      touched={viewMode === ViewMode.JSON && jsonError !== null}
     >
-      {viewMode === 'form' ? (
+      <FadeTransition show={viewMode === ViewMode.FORM}>
         <div className="space-y-2">
           {rules.map((rule, index) => (
             <div key={index} className="flex items-center gap-2">
@@ -138,37 +132,39 @@ export function BehaviorRulesField({
                   onChange(newRules);
                 }}
                 className="flex-1"
+                size="md"
                 placeholder={t('config.rulePlaceholder', {
                   index: (index + 1).toString(),
                 })}
               />
               <Button
-                type={ButtonType.BUTTON}
+                type="button"
                 onClick={() => {
                   const newRules = rules.filter((_, i) => i !== index);
                   onChange(newRules);
                 }}
-                variant={ButtonVariant.ICON}
+                variant="icon-compact"
                 size="sm"
                 className="w-8 p-0"
                 tooltip={t('config.removeRule')}
               >
-                <IconTrash className="w-4 h-4" />
+                <IconTrash size="sm" />
               </Button>
             </div>
           ))}
           <Button
-            type={ButtonType.BUTTON}
+            type="button"
             onClick={() => onChange([...rules, ''])}
-            variant={ButtonVariant.SECONDARY}
+            variant="secondary"
             size="sm"
             className="w-full"
           >
-            <IconPlus className="w-4 h-4" />
+            <IconPlus size="sm" />
             <span>{t('config.addRule')}</span>
           </Button>
         </div>
-      ) : (
+      </FadeTransition>
+      <FadeTransition show={viewMode === ViewMode.JSON}>
         <Textarea
           value={jsonValue}
           onChange={(e) => handleJsonChange(e.target.value)}
@@ -178,7 +174,7 @@ export function BehaviorRulesField({
             defaultValue: '["Rule 1", "Rule 2", "Rule 3"]',
           })}
         />
-      )}
+      </FadeTransition>
     </FormField>
   );
 }

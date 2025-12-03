@@ -11,8 +11,6 @@ import {
   PageHeader,
   PageContent,
   FormButton,
-  ButtonType,
-  ButtonVariant,
 } from '@openai/ui';
 import { useAgents } from '../../../../../hooks/queries/use-agents';
 import { useSidebarLoadingState } from '../../../../../hooks/utils/use-sidebar-loading-state';
@@ -138,11 +136,11 @@ export default function AgentConfig({
               actions={
                 currentAgent ? (
                   <FormButton
-                    type={ButtonType.BUTTON}
+                    type="button"
                     onClick={handleSaveClick}
                     loading={isSaving}
                     disabled={!canSave}
-                    variant={ButtonVariant.PRIMARY}
+                    variant="primary"
                     tooltip={
                       isSaving
                         ? t('config.saving')

@@ -3,7 +3,7 @@ import ModalContainer from './components/ModalContainer';
 import ModalHeader from './components/ModalHeader';
 import ModalContent from './components/ModalContent';
 import ModalFooter from './components/ModalFooter';
-import { FormButton, ButtonType, ButtonVariant } from '../form';
+import { FormButton } from '../form';
 
 interface JsonModalProps {
   isOpen: boolean;
@@ -40,9 +40,9 @@ export default function JsonModal({
         </ModalContent>
         <ModalFooter>
           <FormButton
-            type={ButtonType.BUTTON}
+            type="button"
             onClick={onClose}
-            variant={ButtonVariant.PRIMARY}
+            variant="primary"
           >
             Close
           </FormButton>

@@ -37,7 +37,7 @@ export default function AgentSidebar({
       <SidebarHeader
         title="Agents"
         action={{
-          icon: <IconPlus className="w-4 h-4" />,
+          icon: <IconPlus size="sm" />,
           onClick: onNewAgent,
           disabled: loading,
           tooltip: 'New Agent',
@@ -80,7 +80,7 @@ export default function AgentSidebar({
                 onAgentDelete
                   ? [
                       {
-                        icon: <IconTrash className="w-4 h-4" />,
+                        icon: <IconTrash size="xs" />,
                         onClick: () => onAgentDelete(agent.id),
                         variant: 'danger' as const,
                         tooltip: agent.id < 0 ? 'Cancel' : 'Delete agent',

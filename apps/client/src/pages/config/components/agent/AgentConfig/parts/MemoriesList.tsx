@@ -6,7 +6,6 @@ import {
   Card,
   Button,
   Textarea,
-  ButtonVariant,
 } from '@openai/ui';
 import { formatRelativeDate } from '@openai/utils';
 import { useMemoryEditing } from '../../../../hooks/memory/use-memory-editing';
@@ -93,7 +92,7 @@ export default function MemoriesList({
                     <Button
                       onClick={() => handleSaveEdit(memory.id, onEdit)}
                       disabled={!editValue.trim() || editingId === memory.id}
-                      variant={ButtonVariant.PRIMARY}
+                      variant="primary"
                       size="sm"
                       loading={editingId === memory.id}
                     >
@@ -102,7 +101,7 @@ export default function MemoriesList({
                     <Button
                       onClick={handleCancelEdit}
                       disabled={editingId === memory.id}
-                      variant={ButtonVariant.SECONDARY}
+                      variant="secondary"
                       size="sm"
                     >
                       Cancel
@@ -120,7 +119,7 @@ export default function MemoriesList({
                 <Button
                   onClick={() => handleStartEdit(memory)}
                   disabled={editingId === memory.id || deletingId === memory.id}
-                  variant={ButtonVariant.SECONDARY}
+                  variant="icon-compact"
                   size="sm"
                   className="w-7 p-0"
                   tooltip="Edit"
@@ -130,7 +129,7 @@ export default function MemoriesList({
                 <Button
                   onClick={() => onDelete(memory.id)}
                   disabled={deletingId === memory.id || editingId === memory.id}
-                  variant={ButtonVariant.DANGER}
+                  variant="danger"
                   size="sm"
                   className="w-7 p-0"
                   tooltip="Delete"
