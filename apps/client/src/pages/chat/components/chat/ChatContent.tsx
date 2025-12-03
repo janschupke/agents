@@ -15,6 +15,7 @@ interface ChatContentProps {
   onInputChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => Promise<void>;
   onShowJson: (title: string, data: unknown) => void;
+  onInputRefReady?: (ref: ChatInputRef) => void;
 }
 
 /**
@@ -32,6 +33,7 @@ export default function ChatContent({
   onInputChange,
   onSubmit,
   onShowJson,
+  onInputRefReady,
 }: ChatContentProps) {
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
@@ -64,6 +66,7 @@ export default function ChatContent({
           onInputChange={onInputChange}
           onSubmit={onSubmit}
           disabled={showTypingIndicator}
+          onRefReady={onInputRefReady}
         />
       )}
     </div>

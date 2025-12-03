@@ -133,10 +133,12 @@ function ChatAgentContent({
 
   // Chat input management
   const showChatPlaceholder = agentId !== null && currentSessionId === null;
-  const { input, setInput, chatInputRef, handleSubmit } = useChatInput({
+  const { input, setInput, chatInputRef, handleSubmit, onRefReady } = useChatInput({
     currentSessionId,
     messagesLoading: false, // Don't disable input based on loading
     showChatPlaceholder,
+    showTypingIndicator,
+    agentId,
     sendMessage,
   });
 
@@ -200,6 +202,7 @@ function ChatAgentContent({
                   onInputChange={setInput}
                   onSubmit={handleSubmit}
                   onShowJson={openJsonModal}
+                  onInputRefReady={onRefReady}
                 />
               )}
             </PageContent>

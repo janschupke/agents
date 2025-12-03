@@ -1,24 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useChatInput } from './use-chat-input';
-import { NUMERIC_CONSTANTS } from '../../../constants/numeric.constants';
 
-// Mock ChatInputRef focus method
-const mockFocus = vi.fn();
-const mockChatInputRef = {
-  current: {
-    focus: mockFocus,
-  },
-};
-
-// Mock useRef to return our mock ref
-vi.mock('react', async () => {
-  const actual = await vi.importActual('react');
-  return {
-    ...actual,
-    useRef: () => mockChatInputRef,
-  };
-});
+// Mock the focus hook since we test it separately
+vi.mock('./use-chat-input-focus', () => ({
+  useChatInputFocus: vi.fn(),
+}));
 
 describe('useChatInput', () => {
   const mockSendMessage = vi.fn(async (_message: string) => {
@@ -49,6 +36,65 @@ describe('useChatInput', () => {
 
     expect(result.current.input).toBe('');
   });
+
+  it('should initialize with chatInputRef', () => {
+    // Render hook with valid conditions on initial mount
+    const { result } = renderHook(() =>
+      useChatInput({
+        currentSessionId: 1,
+        messagesLoading: false,
+        showChatPlaceholder: false,
+        sendMessage: mockSendMessage,
+      })
+    );
+
+    // Verify the hook returns a ref
+    expect(result.current.chatInputRef).toBeDefined();
+    expect(result.current.chatInputRef.current).toBeNull(); // Initially null until ChatInput mounts
+  });
+
+  it('should pass correct props to useChatInputFocus', async () => {
+    const { useChatInputFocus } = await import('./use-chat-input-focus');
+    
+    const { rerender } = renderHook<
+      ReturnType<typeof useChatInput>,
+      { currentSessionId: number | null; messagesLoading: boolean }
+    >(
+      ({ currentSessionId, messagesLoading }) =>
+        useChatInput({
+          currentSessionId,
+          messagesLoading,
+          showChatPlaceholder: false,
+          sendMessage: mockSendMessage,
+        }),
+      {
+        initialProps: {
+          currentSessionId: null,
+          messagesLoading: true,
+        },
+      }
+    );
+
+    // Verify useChatInputFocus was called with correct props
+    expect(useChatInputFocus).toHaveBeenCalled();
+    const lastCall = (useChatInputFocus as any).mock.calls[(useChatInputFocus as any).mock.calls.length - 1][0];
+    expect(lastCall.currentSessionId).toBe(null);
+    expect(lastCall.messagesLoading).toBe(true);
+
+    // Update props
+    rerender({
+      currentSessionId: 1,
+      messagesLoading: false,
+    });
+
+    // Verify useChatInputFocus was called again with updated props
+    const updatedCall = (useChatInputFocus as any).mock.calls[(useChatInputFocus as any).mock.calls.length - 1][0];
+    expect(updatedCall.currentSessionId).toBe(1);
+    expect(updatedCall.messagesLoading).toBe(false);
+  });
+
+  // Focus behavior is tested in use-chat-input-focus.test.tsx
+  // These tests verify that useChatInput correctly passes props to useChatInputFocus
 
   it('should update input value', () => {
     const { result } = renderHook(() =>
@@ -140,74 +186,7 @@ describe('useChatInput', () => {
     expect(result.current.input).toBe('');
   });
 
-  it('should focus input when session changes', async () => {
-    // Use real timers for this test since fake timers are causing issues
-    vi.useRealTimers();
-
-    const { rerender } = renderHook<
-      ReturnType<typeof useChatInput>,
-      { currentSessionId: number | null }
-    >(
-      ({ currentSessionId }) =>
-        useChatInput({
-          currentSessionId,
-          messagesLoading: false,
-          showChatPlaceholder: false,
-          sendMessage: mockSendMessage,
-        }),
-      {
-        initialProps: { currentSessionId: null },
-      }
-    );
-
-    // Change session
-    rerender({ currentSessionId: 1 });
-
-    // Wait for the debounce delay plus a small buffer
-    await waitFor(
-      () => {
-        expect(mockFocus).toHaveBeenCalled();
-      },
-      { timeout: NUMERIC_CONSTANTS.UI_DEBOUNCE_DELAY + 100 }
-    );
-
-    // Restore fake timers
-    vi.useFakeTimers();
-  });
-
-  it('should not focus input when messages are loading', () => {
-    renderHook(() =>
-      useChatInput({
-        currentSessionId: 1,
-        messagesLoading: true,
-        showChatPlaceholder: false,
-        sendMessage: mockSendMessage,
-      })
-    );
-
-    act(() => {
-      vi.advanceTimersByTime(NUMERIC_CONSTANTS.UI_DEBOUNCE_DELAY);
-    });
-
-    expect(mockFocus).not.toHaveBeenCalled();
-  });
-
-  it('should not focus input when showing placeholder', () => {
-    renderHook(() =>
-      useChatInput({
-        currentSessionId: 1,
-        messagesLoading: false,
-        showChatPlaceholder: true,
-        sendMessage: mockSendMessage,
-      })
-    );
-
-    act(() => {
-      vi.advanceTimersByTime(NUMERIC_CONSTANTS.UI_DEBOUNCE_DELAY);
-    });
-
-    expect(mockFocus).not.toHaveBeenCalled();
-  });
+  // Focus behavior is tested in use-chat-input-focus.test.tsx
 
   it('should handle send message error gracefully', async () => {
     const mockSendMessageError = vi.fn(async () => {
@@ -246,5 +225,40 @@ describe('useChatInput', () => {
     );
 
     consoleSpy.mockRestore();
+  });
+
+  // Focus behavior (including typing indicator) is tested in use-chat-input-focus.test.tsx
+  // This test just verifies that useChatInput correctly passes showTypingIndicator to useChatInputFocus
+  it('should pass showTypingIndicator to useChatInputFocus', async () => {
+    const { useChatInputFocus } = await import('./use-chat-input-focus');
+    
+    const { rerender } = renderHook<
+      ReturnType<typeof useChatInput>,
+      { showTypingIndicator: boolean }
+    >(
+      ({ showTypingIndicator }) =>
+        useChatInput({
+          currentSessionId: 1,
+          messagesLoading: false,
+          showChatPlaceholder: false,
+          showTypingIndicator,
+          sendMessage: mockSendMessage,
+        }),
+      {
+        initialProps: { showTypingIndicator: false },
+      }
+    );
+
+    // Verify useChatInputFocus was called with showTypingIndicator
+    expect(useChatInputFocus).toHaveBeenCalled();
+    const lastCall = (useChatInputFocus as any).mock.calls[(useChatInputFocus as any).mock.calls.length - 1][0];
+    expect(lastCall.showTypingIndicator).toBe(false);
+
+    // Update showTypingIndicator
+    rerender({ showTypingIndicator: true });
+
+    // Verify useChatInputFocus was called again with updated showTypingIndicator
+    const updatedCall = (useChatInputFocus as any).mock.calls[(useChatInputFocus as any).mock.calls.length - 1][0];
+    expect(updatedCall.showTypingIndicator).toBe(true);
   });
 });

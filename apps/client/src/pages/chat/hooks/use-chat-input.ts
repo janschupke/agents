@@ -1,12 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
-import { NUMERIC_CONSTANTS } from '../../../constants/numeric.constants';
+import { useState, useRef } from 'react';
 import { ChatInputRef } from '../components/chat/ChatInput';
 import { SendMessageResponse } from '../../../types/chat.types';
+import { useChatInputFocus } from './use-chat-input-focus';
 
 interface UseChatInputOptions {
   currentSessionId: number | null;
   messagesLoading: boolean;
   showChatPlaceholder: boolean;
+  showTypingIndicator?: boolean;
+  agentId: number | null;
   sendMessage: (message: string) => Promise<SendMessageResponse | undefined>;
 }
 
@@ -15,6 +17,7 @@ interface UseChatInputReturn {
   setInput: (value: string) => void;
   chatInputRef: React.RefObject<ChatInputRef>;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
+  onRefReady: (ref: ChatInputRef) => void;
 }
 
 /**
@@ -24,21 +27,24 @@ export function useChatInput({
   currentSessionId,
   messagesLoading,
   showChatPlaceholder,
+  showTypingIndicator = false,
+  agentId,
   sendMessage,
 }: UseChatInputOptions): UseChatInputReturn {
   const [input, setInput] = useState('');
   const chatInputRef = useRef<ChatInputRef>(null);
+  const isInputDisabled = showTypingIndicator;
 
-  // Focus chat input when session changes
-  useEffect(() => {
-    if (currentSessionId && !messagesLoading && !showChatPlaceholder) {
-      const timer = setTimeout(() => {
-        chatInputRef.current?.focus();
-      }, NUMERIC_CONSTANTS.UI_DEBOUNCE_DELAY);
-      return () => clearTimeout(timer);
-    }
-    return undefined;
-  }, [currentSessionId, messagesLoading, showChatPlaceholder]);
+  // Unified focus management - returns callback ref handler
+  const handleRefReady = useChatInputFocus({
+    chatInputRef,
+    currentSessionId,
+    messagesLoading,
+    showChatPlaceholder,
+    showTypingIndicator,
+    isInputDisabled,
+    agentId,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,5 +65,6 @@ export function useChatInput({
     setInput,
     chatInputRef,
     handleSubmit,
+    onRefReady: handleRefReady,
   };
 }

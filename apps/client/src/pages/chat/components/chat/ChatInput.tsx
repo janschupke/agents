@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 import { IconSend, Input, Button, ButtonType, ButtonVariant } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 
@@ -7,6 +7,7 @@ interface ChatInputProps {
   onInputChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   disabled?: boolean;
+  onRefReady?: (ref: ChatInputRef) => void;
 }
 
 export interface ChatInputRef {
@@ -14,15 +15,28 @@ export interface ChatInputRef {
 }
 
 const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(
-  ({ input, onInputChange, onSubmit, disabled }, ref) => {
+  ({ input, onInputChange, onSubmit, disabled, onRefReady }, ref) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const { t } = useTranslation(I18nNamespace.CLIENT);
+    const refInstanceRef = useRef<ChatInputRef | null>(null);
 
-    useImperativeHandle(ref, () => ({
+    const refInstance: ChatInputRef = {
       focus: () => {
         inputRef.current?.focus();
       },
-    }));
+    };
+
+    useImperativeHandle(ref, () => refInstance);
+
+    // Notify parent when component mounts and ref is ready
+    useEffect(() => {
+      if (!refInstanceRef.current) {
+        refInstanceRef.current = refInstance;
+        onRefReady?.(refInstance);
+      }
+      // Only run once on mount - onRefReady callback is stable
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
       <form
