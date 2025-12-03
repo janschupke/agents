@@ -51,27 +51,33 @@ export function useChatLoadingState({
   useAgents();
 
   // Use universal sidebar loading state hook
-  const { shouldShowLoading: shouldShowAgentsLoading } = useSidebarLoadingState({
-    type: 'agents',
-    isLoading: agentsLoading,
-  });
-  const { shouldShowLoading: shouldShowSessionsLoading } = useSidebarLoadingState({
-    type: 'sessions',
-    agentId,
-    isLoading: sessionsLoading,
-  });
+  const { shouldShowLoading: shouldShowAgentsLoading } = useSidebarLoadingState(
+    {
+      type: 'agents',
+      isLoading: agentsLoading,
+    }
+  );
+  const { shouldShowLoading: shouldShowSessionsLoading } =
+    useSidebarLoadingState({
+      type: 'sessions',
+      agentId,
+      isLoading: sessionsLoading,
+    });
 
   // Check React Query cache directly (not array length)
   // Cache is source of truth - persists across render cycles
-  const hasCachedAgents = queryClient.getQueryData<Agent[]>(queryKeys.agents.list()) !== undefined;
-  const hasCachedSessionsForCurrentAgent = agentId !== null
-    ? queryClient.getQueryData<Session[]>(queryKeys.agents.sessions(agentId)) !== undefined
-    : false;
+  const hasCachedAgents =
+    queryClient.getQueryData<Agent[]>(queryKeys.agents.list()) !== undefined;
+  const hasCachedSessionsForCurrentAgent =
+    agentId !== null
+      ? queryClient.getQueryData<Session[]>(
+          queryKeys.agents.sessions(agentId)
+        ) !== undefined
+      : false;
   const hasCachedMessages =
     agentId !== null && sessionId !== null
-      ? queryClient.getQueryData(
-          queryKeys.chat.history(agentId, sessionId)
-        ) !== undefined
+      ? queryClient.getQueryData(queryKeys.chat.history(agentId, sessionId)) !==
+        undefined
       : false;
 
   // Full page loading (only on initial load)
@@ -87,7 +93,7 @@ export function useChatLoadingState({
   // CRITICAL: Check React Query cache directly, not array length or hasSessions prop
   // Array length can be 0 during render cycles even when cache has data
   // Cache is the source of truth - if cache has data for current agent, we're not loading
-  
+
   // Use universal sidebar loading state - automatically checks cache
   // This prevents sidebar from showing loading when:
   // - Clicking a session (which loads message history, not sessions)

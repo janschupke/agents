@@ -67,10 +67,7 @@ describe('useClickOutside', () => {
   it('should cleanup event listener on unmount', () => {
     const handler = vi.fn();
     const ref = { current: element };
-    const removeEventListenerSpy = vi.spyOn(
-      document,
-      'removeEventListener'
-    );
+    const removeEventListenerSpy = vi.spyOn(document, 'removeEventListener');
 
     const { unmount } = renderHook(() => useClickOutside(ref, handler));
 

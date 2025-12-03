@@ -26,16 +26,19 @@ export default function ChatRoute() {
 
   // Parse agentId and sessionId (call hooks unconditionally)
   const parsedAgentId = urlAgentId
-    ? (isNaN(parseInt(urlAgentId, 10)) ? null : parseInt(urlAgentId, 10))
+    ? isNaN(parseInt(urlAgentId, 10))
+      ? null
+      : parseInt(urlAgentId, 10)
     : null;
   const parsedSessionId = urlSessionId
-    ? (isNaN(parseInt(urlSessionId, 10)) ? null : parseInt(urlSessionId, 10))
+    ? isNaN(parseInt(urlSessionId, 10))
+      ? null
+      : parseInt(urlSessionId, 10)
     : null;
 
   // Call hooks unconditionally - use null agentId if not in URL to disable query
-  const { data: sessions = [], isLoading: sessionsLoading } = useAgentSessions(
-    parsedAgentId
-  );
+  const { data: sessions = [], isLoading: sessionsLoading } =
+    useAgentSessions(parsedAgentId);
   const { loading: routeLoading, error: routeError } = useChatRoute(
     parsedAgentId,
     parsedSessionId
@@ -43,12 +46,17 @@ export default function ChatRoute() {
 
   // Check React Query cache directly for sessions (not isLoading)
   // Cache is source of truth - persists across render cycles
-  const hasCachedSessionsForAgent = parsedAgentId !== null
-    ? queryClient.getQueryData<Session[]>(queryKeys.agents.sessions(parsedAgentId)) !== undefined
-    : false;
-  
+  const hasCachedSessionsForAgent =
+    parsedAgentId !== null
+      ? queryClient.getQueryData<Session[]>(
+          queryKeys.agents.sessions(parsedAgentId)
+        ) !== undefined
+      : false;
+
   // Only consider sessions loading if cache has no data AND query is loading
-  const actualSessionsLoading = hasCachedSessionsForAgent ? false : sessionsLoading;
+  const actualSessionsLoading = hasCachedSessionsForAgent
+    ? false
+    : sessionsLoading;
 
   // Handle /chat route (no agentId)
   useEffect(() => {
@@ -64,9 +72,12 @@ export default function ChatRoute() {
 
         // Navigate to agent route, or agent + most recent session
         if (cachedSessions && cachedSessions.length > 0) {
-          navigate(ROUTES.CHAT_SESSION(effectiveAgentId, cachedSessions[0].id), {
-            replace: true,
-          });
+          navigate(
+            ROUTES.CHAT_SESSION(effectiveAgentId, cachedSessions[0].id),
+            {
+              replace: true,
+            }
+          );
         } else {
           navigate(ROUTES.CHAT_AGENT(effectiveAgentId), { replace: true });
         }
@@ -76,7 +87,12 @@ export default function ChatRoute() {
 
   // Handle /chat/:agentId route (no sessionId) - auto-select most recent session
   useEffect(() => {
-    if (parsedAgentId && !urlSessionId && !actualSessionsLoading && sessions.length > 0) {
+    if (
+      parsedAgentId &&
+      !urlSessionId &&
+      !actualSessionsLoading &&
+      sessions.length > 0
+    ) {
       const mostRecent = sessions[0];
       navigate(ROUTES.CHAT_SESSION(parsedAgentId, mostRecent.id), {
         replace: true,
@@ -131,11 +147,11 @@ export default function ChatRoute() {
 
   if (routeError) {
     return (
-      <ChatErrorState message={routeError || t('chat.errors.sessionNotFound')} />
+      <ChatErrorState
+        message={routeError || t('chat.errors.sessionNotFound')}
+      />
     );
   }
 
-  return (
-    <ChatAgent sessionId={parsedSessionId} agentId={parsedAgentId} />
-  );
+  return <ChatAgent sessionId={parsedSessionId} agentId={parsedAgentId} />;
 }

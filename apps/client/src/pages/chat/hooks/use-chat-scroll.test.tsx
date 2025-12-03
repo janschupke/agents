@@ -35,7 +35,8 @@ describe('useChatScroll', () => {
   it('should reset when sessionId changes', () => {
     const messages = [{ id: 1 }];
     const { result, rerender } = renderHook(
-      ({ sessionId, messages: msgs }) => useChatScroll({ messages: msgs, sessionId }),
+      ({ sessionId, messages: msgs }) =>
+        useChatScroll({ messages: msgs, sessionId }),
       {
         initialProps: { sessionId: 1, messages },
       }
@@ -44,7 +45,9 @@ describe('useChatScroll', () => {
     // Create a div and attach it to the ref
     const div = document.createElement('div');
     // Access the ref object and set current (refs are mutable in tests)
-    const ref = result.current.messagesEndRef as { current: HTMLDivElement | null };
+    const ref = result.current.messagesEndRef as {
+      current: HTMLDivElement | null;
+    };
     ref.current = div;
 
     // Change sessionId - this resets the initial load flag

@@ -56,7 +56,9 @@ export default function SessionItem({
       queryClient.prefetchQuery({
         queryKey: queryKeys.chat.history(agentId, session.id),
         queryFn: async () => {
-          const { ChatService } = await import('../../../../services/chat.service');
+          const { ChatService } = await import(
+            '../../../../services/chat.service'
+          );
           return ChatService.getChatHistory(agentId, session.id);
         },
       });

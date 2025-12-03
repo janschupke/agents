@@ -148,9 +148,7 @@ function ChatAgentContent({
   // Error state - show in page content
   if (propError) {
     return (
-      <ChatErrorState
-        message={propError || t('chat.errors.sessionNotFound')}
-      />
+      <ChatErrorState message={propError || t('chat.errors.sessionNotFound')} />
     );
   }
 

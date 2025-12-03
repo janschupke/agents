@@ -26,7 +26,9 @@ vi.mock('../../../hooks/mutations/use-agent-mutations', () => ({
 }));
 
 vi.mock('@tanstack/react-query', async () => {
-  const actual = await vi.importActual<typeof import('@tanstack/react-query')>('@tanstack/react-query');
+  const actual = await vi.importActual<typeof import('@tanstack/react-query')>(
+    '@tanstack/react-query'
+  );
   return {
     ...actual,
     useQueryClient: () => ({
@@ -87,10 +89,9 @@ describe('useChatSession', () => {
       isLoading: false,
     });
 
-    const { result } = renderHook(
-      () => useChatSession({ agentId: 1 }),
-      { wrapper }
-    );
+    const { result } = renderHook(() => useChatSession({ agentId: 1 }), {
+      wrapper,
+    });
 
     // Should start with null (no auto-selection in hook)
     expect(result.current.currentSessionId).toBeNull();
@@ -109,10 +110,9 @@ describe('useChatSession', () => {
       isLoading: false,
     });
 
-    const { result } = renderHook(
-      () => useChatSession({ agentId: 1 }),
-      { wrapper }
-    );
+    const { result } = renderHook(() => useChatSession({ agentId: 1 }), {
+      wrapper,
+    });
 
     let createdSession;
     await act(async () => {
@@ -137,10 +137,9 @@ describe('useChatSession', () => {
       isLoading: false,
     });
 
-    const { result } = renderHook(
-      () => useChatSession({ agentId: 1 }),
-      { wrapper }
-    );
+    const { result } = renderHook(() => useChatSession({ agentId: 1 }), {
+      wrapper,
+    });
 
     let history;
     await act(async () => {
@@ -169,7 +168,10 @@ describe('useChatSession', () => {
     });
 
     expect(mockOnConfirm).toHaveBeenCalled();
-    expect(mockDeleteSession).toHaveBeenCalledWith({ agentId: 1, sessionId: 1 });
+    expect(mockDeleteSession).toHaveBeenCalledWith({
+      agentId: 1,
+      sessionId: 1,
+    });
   });
 
   it('should not delete session if not confirmed', async () => {

@@ -26,7 +26,13 @@ describe('useSidebarLoadingState', () => {
   describe('agents type', () => {
     it('should return shouldShowLoading: false when cache has agents data', () => {
       const mockAgents: Agent[] = [
-        { id: 1, name: 'Agent 1', description: 'Desc 1', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' },
+        {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Desc 1',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
       ];
       queryClient.setQueryData(queryKeys.agents.list(), mockAgents);
 
@@ -58,7 +64,13 @@ describe('useSidebarLoadingState', () => {
 
     it('should return shouldShowLoading: false when cache has agents even if isLoading is true (background refetch)', () => {
       const mockAgents: Agent[] = [
-        { id: 1, name: 'Agent 1', description: 'Desc 1', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' },
+        {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Desc 1',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
       ];
       queryClient.setQueryData(queryKeys.agents.list(), mockAgents);
 
@@ -82,7 +94,10 @@ describe('useSidebarLoadingState', () => {
           createdAt: '2024-01-01T00:00:00.000Z',
         },
       ];
-      queryClient.setQueryData(queryKeys.agents.sessions(agentId), mockSessions);
+      queryClient.setQueryData(
+        queryKeys.agents.sessions(agentId),
+        mockSessions
+      );
 
       const { result } = renderHook(
         () =>
@@ -191,7 +206,10 @@ describe('useSidebarLoadingState', () => {
           createdAt: '2024-01-01T00:00:00.000Z',
         },
       ];
-      queryClient.setQueryData(queryKeys.agents.sessions(agentId), mockSessions);
+      queryClient.setQueryData(
+        queryKeys.agents.sessions(agentId),
+        mockSessions
+      );
 
       const { result } = renderHook(
         () =>

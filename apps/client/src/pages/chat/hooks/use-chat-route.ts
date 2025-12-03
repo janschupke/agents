@@ -9,30 +9,30 @@ import { Session } from '../../../types/chat.types';
  * @param agentId - Agent ID from URL params
  * @param sessionId - Session ID from URL params
  */
-export function useChatRoute(
-  agentId: number | null,
-  sessionId: number | null
-) {
+export function useChatRoute(agentId: number | null, sessionId: number | null) {
   const queryClient = useQueryClient();
-  
+
   // If we have both agentId and sessionId from URL, we can validate using cached sessions
   // instead of calling useSessionWithAgent (which triggers a query)
-  const cachedSessions = agentId !== null
-    ? queryClient.getQueryData<Session[]>(queryKeys.agents.sessions(agentId))
-    : undefined;
-  
+  const cachedSessions =
+    agentId !== null
+      ? queryClient.getQueryData<Session[]>(queryKeys.agents.sessions(agentId))
+      : undefined;
+
   // Check if sessionId is in the cached sessions list
   // null = can't determine (no cache), true = belongs, false = doesn't belong
-  const sessionBelongsToAgent = agentId !== null && sessionId !== null && cachedSessions
-    ? cachedSessions.some(s => s.id === sessionId)
-    : null;
+  const sessionBelongsToAgent =
+    agentId !== null && sessionId !== null && cachedSessions
+      ? cachedSessions.some((s) => s.id === sessionId)
+      : null;
 
   // Only call useSessionWithAgent if:
   // 1. We don't have agentId (need to fetch it from session)
   // 2. OR we have agentId but can't validate from cache (no cached sessions or session not found)
   // If we validated from cache and session belongs, skip the query entirely
-  const needsSessionQuery = agentId === null || (sessionId !== null && sessionBelongsToAgent !== true);
-  
+  const needsSessionQuery =
+    agentId === null || (sessionId !== null && sessionBelongsToAgent !== true);
+
   const {
     agentId: agentIdFromSession,
     loading: loadingSession,
@@ -41,15 +41,19 @@ export function useChatRoute(
 
   // If we validated from cache, we're not loading
   // Otherwise, check cache for session data
-  const hasCachedSessionData = sessionId !== null
-    ? queryClient.getQueryData(queryKeys.sessions.withAgent(sessionId)) !== undefined
-    : false;
-  
+  const hasCachedSessionData =
+    sessionId !== null
+      ? queryClient.getQueryData(queryKeys.sessions.withAgent(sessionId)) !==
+        undefined
+      : false;
+
   // Only consider it loading if:
   // 1. We need the session query AND cache has no data AND query is loading
   // 2. OR we validated from cache (not loading)
-  const actualLoading = needsSessionQuery 
-    ? (hasCachedSessionData ? false : loadingSession)
+  const actualLoading = needsSessionQuery
+    ? hasCachedSessionData
+      ? false
+      : loadingSession
     : false;
 
   // Validate that session belongs to the agent

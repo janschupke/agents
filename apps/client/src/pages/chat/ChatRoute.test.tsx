@@ -8,7 +8,8 @@ import { ROUTES } from '../../constants/routes.constants';
 // Mock useChatRoute
 const mockUseChatRoute = vi.fn();
 vi.mock('./hooks/use-chat-route', () => ({
-  useChatRoute: (agentId: number | null, sessionId: number | null) => mockUseChatRoute(agentId, sessionId),
+  useChatRoute: (agentId: number | null, sessionId: number | null) =>
+    mockUseChatRoute(agentId, sessionId),
 }));
 
 // Mock useAgents and useAgentSessions
@@ -25,7 +26,8 @@ const mockSetSelectedAgentIdChat = vi.fn();
 vi.mock('../../utils/localStorage', () => ({
   LocalStorageManager: {
     getSelectedAgentIdChat: () => mockGetSelectedAgentIdChat(),
-    setSelectedAgentIdChat: (agentId: number) => mockSetSelectedAgentIdChat(agentId),
+    setSelectedAgentIdChat: (agentId: number) =>
+      mockSetSelectedAgentIdChat(agentId),
   },
 }));
 
@@ -74,7 +76,9 @@ vi.mock('react-router-dom', async () => {
 // Mock useQueryClient
 const mockGetQueryData = vi.fn(() => undefined);
 vi.mock('@tanstack/react-query', async () => {
-  const actual = await vi.importActual<typeof import('@tanstack/react-query')>('@tanstack/react-query');
+  const actual = await vi.importActual<typeof import('@tanstack/react-query')>(
+    '@tanstack/react-query'
+  );
   return {
     ...actual,
     useQueryClient: () => ({
@@ -124,7 +128,15 @@ describe('ChatRoute', () => {
     mockUseParams.mockReturnValue({});
     mockGetSelectedAgentIdChat.mockReturnValue(null);
     mockUseAgents.mockReturnValue({
-      data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' }],
+      data: [
+        {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Desc',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
+      ],
       isLoading: false,
     });
     mockUseAgentSessions.mockReturnValue({

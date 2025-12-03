@@ -10,7 +10,8 @@ const mockSetSelectedAgentIdConfig = vi.fn();
 vi.mock('../../../../utils/localStorage', () => ({
   LocalStorageManager: {
     getSelectedAgentIdConfig: () => mockGetSelectedAgentIdConfig(),
-    setSelectedAgentIdConfig: (agentId: number | null) => mockSetSelectedAgentIdConfig(agentId),
+    setSelectedAgentIdConfig: (agentId: number | null) =>
+      mockSetSelectedAgentIdConfig(agentId),
   },
 }));
 
@@ -105,7 +106,10 @@ describe('useAgentSelection', () => {
     );
 
     // Local agents (with negative IDs) should appear first
-    expect(result.current.agents).toEqual([...localAgents, ...mockContextAgents]);
+    expect(result.current.agents).toEqual([
+      ...localAgents,
+      ...mockContextAgents,
+    ]);
   });
 
   it('should save to localStorage when currentAgentId changes', async () => {

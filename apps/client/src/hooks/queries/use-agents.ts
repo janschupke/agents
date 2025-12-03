@@ -6,7 +6,10 @@ import { ChatService } from '../../services/chat.service';
 import { MemoryService } from '../../services/memory.service';
 import { Agent, Session, AgentMemory } from '../../types/chat.types';
 import { queryKeys } from './query-keys';
-import { AGENTS_STALE_TIME, SESSIONS_STALE_TIME } from '../../constants/cache.constants';
+import {
+  AGENTS_STALE_TIME,
+  SESSIONS_STALE_TIME,
+} from '../../constants/cache.constants';
 
 export function useAgents() {
   const { isSignedIn, isLoaded } = useAuth();

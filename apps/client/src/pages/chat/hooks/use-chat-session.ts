@@ -39,8 +39,9 @@ export function useChatSession({
   initialSessionId,
 }: UseChatSessionOptions): UseChatSessionReturn {
   const queryClient = useQueryClient();
-  const { data: sessions = [], isLoading: sessionsLoading } = useAgentSessions(agentId);
-  
+  const { data: sessions = [], isLoading: sessionsLoading } =
+    useAgentSessions(agentId);
+
   // Use universal sidebar loading state hook - automatically checks cache
   const { shouldShowLoading: actualSessionsLoading } = useSidebarLoadingState({
     type: 'sessions',

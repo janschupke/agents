@@ -85,12 +85,12 @@ export class OpenAIService {
   /**
    * Helper method for common OpenAI chat completion pattern
    * Centralizes the pattern used across multiple services
-   * 
+   *
    * This method automatically limits conversation history to the last 6 messages
    * (3 user messages and 3 assistant responses) to provide context while managing
    * token usage. Only user and assistant messages from the history are included;
    * system messages are excluded from the history limit.
-   * 
+   *
    * @param apiKey - OpenAI API key
    * @param options - Chat completion options
    * @param options.model - Model to use
@@ -114,9 +114,12 @@ export class OpenAIService {
   ): Promise<string> {
     try {
       const openai = this.getClient(apiKey);
-      
+
       // Build messages array with system message, limited conversation history, and current user message
-      const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+      const messages: Array<{
+        role: 'system' | 'user' | 'assistant';
+        content: string;
+      }> = [
         {
           role: 'system',
           content: options.systemMessage,
@@ -125,7 +128,10 @@ export class OpenAIService {
 
       // Filter and limit conversation history to last 6 messages (3 user + 3 assistant)
       // Only include user and assistant messages, exclude system messages from history
-      if (options.conversationHistory && options.conversationHistory.length > 0) {
+      if (
+        options.conversationHistory &&
+        options.conversationHistory.length > 0
+      ) {
         // Filter to only user and assistant messages, preserving order
         const userAndAssistantMessages = options.conversationHistory.filter(
           (msg) => msg.role === 'user' || msg.role === 'assistant'
@@ -147,7 +153,9 @@ export class OpenAIService {
 
       const completion = await openai.chat.completions.create({
         model: options.model,
-        messages: messages as Parameters<typeof openai.chat.completions.create>[0]['messages'],
+        messages: messages as Parameters<
+          typeof openai.chat.completions.create
+        >[0]['messages'],
         temperature:
           options.temperature ?? NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE,
         max_tokens: options.maxTokens,

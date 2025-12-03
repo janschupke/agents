@@ -95,7 +95,9 @@ export default function AgentSelector() {
                 queryClient.prefetchQuery({
                   queryKey: queryKeys.agents.sessions(agent.id),
                   queryFn: async () => {
-                    const { ChatService } = await import('../../../../services/chat.service');
+                    const { ChatService } = await import(
+                      '../../../../services/chat.service'
+                    );
                     return ChatService.getSessions(agent.id);
                   },
                 });
@@ -104,22 +106,22 @@ export default function AgentSelector() {
               <Button
                 onClick={() => handleAgentSelect(agent.id)}
                 variant={ButtonVariant.ICON}
-              className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 ${
-                agent.id === selectedAgentId
-                  ? 'bg-primary text-text-inverse'
-                  : 'text-text-primary hover:bg-background-tertiary'
-              }`}
-            >
-              <Avatar
-                src={agent.avatarUrl || undefined}
-                name={agent.name}
-                size="sm"
-              />
-              <span className="truncate">{agent.name}</span>
-              {agent.id === selectedAgentId && (
-                <span className="ml-auto text-xs">✓                </span>
-              )}
-            </Button>
+                className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 ${
+                  agent.id === selectedAgentId
+                    ? 'bg-primary text-text-inverse'
+                    : 'text-text-primary hover:bg-background-tertiary'
+                }`}
+              >
+                <Avatar
+                  src={agent.avatarUrl || undefined}
+                  name={agent.name}
+                  size="sm"
+                />
+                <span className="truncate">{agent.name}</span>
+                {agent.id === selectedAgentId && (
+                  <span className="ml-auto text-xs">✓ </span>
+                )}
+              </Button>
             </div>
           ))}
         </div>

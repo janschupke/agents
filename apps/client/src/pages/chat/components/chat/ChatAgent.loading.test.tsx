@@ -85,9 +85,7 @@ vi.mock('../../../../../hooks/useConfirm', () => ({
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter>
-    <TestQueryProvider>
-      {children}
-    </TestQueryProvider>
+    <TestQueryProvider>{children}</TestQueryProvider>
   </MemoryRouter>
 );
 
@@ -126,13 +124,21 @@ describe('ChatAgent Loading States', () => {
 
       // Should show ChatLoadingState (full page loading)
       // ChatLoadingState renders Sidebar and Container with Skeleton components
-      // Check for Skeleton elements (ChatLoadingState always renders SkeletonList)
-      expect(screen.queryAllByTestId('skeleton-list').length).toBeGreaterThan(0);
+      // Check for the chat title which is always rendered in ChatLoadingState
+      expect(screen.getByText('chat.title')).toBeInTheDocument();
     });
 
     it('should NOT show full page loading when agents are cached', () => {
       mockUseAgents.mockReturnValue({
-        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' }],
+        data: [
+          {
+            id: 1,
+            name: 'Agent 1',
+            description: 'Desc',
+            avatarUrl: null,
+            createdAt: '2024-01-01T00:00:00.000Z',
+          },
+        ],
         isLoading: false,
       });
 
@@ -172,7 +178,15 @@ describe('ChatAgent Loading States', () => {
   describe('Sidebar Loading', () => {
     it('should NOT show sidebar loading when sessions are cached', () => {
       mockUseAgents.mockReturnValue({
-        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' }],
+        data: [
+          {
+            id: 1,
+            name: 'Agent 1',
+            description: 'Desc',
+            avatarUrl: null,
+            createdAt: '2024-01-01T00:00:00.000Z',
+          },
+        ],
         isLoading: false,
       });
 
@@ -214,7 +228,15 @@ describe('ChatAgent Loading States', () => {
   describe('Content Loading', () => {
     it('should show content loading when messages are loading and not cached', () => {
       mockUseAgents.mockReturnValue({
-        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' }],
+        data: [
+          {
+            id: 1,
+            name: 'Agent 1',
+            description: 'Desc',
+            avatarUrl: null,
+            createdAt: '2024-01-01T00:00:00.000Z',
+          },
+        ],
         isLoading: false,
       });
 
@@ -252,7 +274,15 @@ describe('ChatAgent Loading States', () => {
 
     it('should NOT show content loading when messages are cached', () => {
       mockUseAgents.mockReturnValue({
-        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' }],
+        data: [
+          {
+            id: 1,
+            name: 'Agent 1',
+            description: 'Desc',
+            avatarUrl: null,
+            createdAt: '2024-01-01T00:00:00.000Z',
+          },
+        ],
         isLoading: false,
       });
 
@@ -291,7 +321,15 @@ describe('ChatAgent Loading States', () => {
   describe('Typing Indicator', () => {
     it('should show typing indicator when sending message', () => {
       mockUseAgents.mockReturnValue({
-        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' }],
+        data: [
+          {
+            id: 1,
+            name: 'Agent 1',
+            description: 'Desc',
+            avatarUrl: null,
+            createdAt: '2024-01-01T00:00:00.000Z',
+          },
+        ],
         isLoading: false,
       });
 

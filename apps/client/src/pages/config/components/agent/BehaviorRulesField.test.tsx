@@ -109,9 +109,7 @@ describe('BehaviorRulesField', () => {
     });
 
     it('should display multiple rules correctly', () => {
-      render(
-        <TestWrapper initialRules={['Rule 1', 'Rule 2', 'Rule 3']} />
-      );
+      render(<TestWrapper initialRules={['Rule 1', 'Rule 2', 'Rule 3']} />);
 
       expect(screen.getByDisplayValue('Rule 1')).toBeInTheDocument();
       expect(screen.getByDisplayValue('Rule 2')).toBeInTheDocument();
@@ -175,7 +173,9 @@ describe('BehaviorRulesField', () => {
 
       const textarea = screen.getByRole('textbox');
       await user.clear(textarea);
-      fireEvent.change(textarea, { target: { value: '["New Rule 1", "New Rule 2"]' } });
+      fireEvent.change(textarea, {
+        target: { value: '["New Rule 1", "New Rule 2"]' },
+      });
 
       // Switch back to form view to verify rules were updated
       const formButton = screen.getByText('Form');
@@ -286,7 +286,9 @@ describe('BehaviorRulesField', () => {
       const textarea = screen.getByRole('textbox');
       await user.clear(textarea);
       await user.clear(textarea);
-      fireEvent.change(textarea, { target: { value: '{"rules": ["Rule 1", "Rule 2"]}' } });
+      fireEvent.change(textarea, {
+        target: { value: '{"rules": ["Rule 1", "Rule 2"]}' },
+      });
 
       // Switch back to form view
       const formButton = screen.getByText('Form');
@@ -333,7 +335,9 @@ describe('BehaviorRulesField', () => {
 
       const textarea = screen.getByRole('textbox');
       await user.clear(textarea);
-      fireEvent.change(textarea, { target: { value: '["JSON Rule 1", "JSON Rule 2"]' } });
+      fireEvent.change(textarea, {
+        target: { value: '["JSON Rule 1", "JSON Rule 2"]' },
+      });
 
       // Switch back to form view
       const formButton = screen.getByText('Form');
@@ -447,9 +451,11 @@ describe('BehaviorRulesField', () => {
       await waitFor(() => {
         // Error message is the actual JSON parse error (could be various messages)
         // Look for any error paragraph with red text
-        const errorParagraphs = screen.queryAllByText(/./).filter(
-          el => el.tagName === 'P' && el.className.includes('text-red-600')
-        );
+        const errorParagraphs = screen
+          .queryAllByText(/./)
+          .filter(
+            (el) => el.tagName === 'P' && el.className.includes('text-red-600')
+          );
         expect(errorParagraphs.length).toBeGreaterThan(0);
         expect(errorParagraphs[0].textContent).toBeTruthy();
       });
@@ -466,12 +472,7 @@ describe('BehaviorRulesField', () => {
     it('should not update rules when JSON is invalid', async () => {
       const user = userEvent.setup();
       const mockOnChange = vi.fn();
-      render(
-        <TestWrapper
-          rules={['Original Rule']}
-          onChange={mockOnChange}
-        />
-      );
+      render(<TestWrapper rules={['Original Rule']} onChange={mockOnChange} />);
 
       // Switch to JSON view
       await user.click(screen.getByText('JSON'));
@@ -484,19 +485,19 @@ describe('BehaviorRulesField', () => {
       fireEvent.change(textarea, { target: { value: 'invalid json{' } });
 
       // Wait a bit to ensure onChange wasn't called with invalid data
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Verify onChange was not called with the invalid JSON
       // It should only be called with valid JSON or empty array
-      const invalidCalls = mockOnChange.mock.calls.filter(
-        call => {
-          const rules = call[0];
-          return Array.isArray(rules) && 
-                 rules.length > 0 && 
-                 rules[0] !== 'Original Rule' &&
-                 !rules.some(r => typeof r === 'string' && r.length > 0);
-        }
-      );
+      const invalidCalls = mockOnChange.mock.calls.filter((call) => {
+        const rules = call[0];
+        return (
+          Array.isArray(rules) &&
+          rules.length > 0 &&
+          rules[0] !== 'Original Rule' &&
+          !rules.some((r) => typeof r === 'string' && r.length > 0)
+        );
+      });
       expect(invalidCalls.length).toBe(0);
 
       // Switch back to form - original rule should still be there

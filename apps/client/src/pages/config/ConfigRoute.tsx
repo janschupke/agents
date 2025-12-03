@@ -42,13 +42,14 @@ export default function ConfigRoute() {
   const { t } = useTranslation(I18nNamespace.CLIENT);
   const { error, lastSelectedAgentId } = useConfigRoute(agentId);
   const { isLoading: loadingAgents } = useAgents();
-  
+
   // Use universal sidebar loading state - only show full page loading if agents aren't cached
   // If agents are cached, always render AgentConfig (even if loading specific agent)
-  const { shouldShowLoading: shouldShowFullPageLoading } = useSidebarLoadingState({
-    type: 'agents',
-    isLoading: loadingAgents,
-  });
+  const { shouldShowLoading: shouldShowFullPageLoading } =
+    useSidebarLoadingState({
+      type: 'agents',
+      isLoading: loadingAgents,
+    });
 
   // Only show full page loading if we don't have cached agents
   // This ensures sidebar stays visible when agents are cached

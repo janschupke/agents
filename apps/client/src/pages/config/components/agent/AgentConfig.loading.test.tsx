@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import AgentConfig from './AgentConfig';
 import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
+import { Agent } from '../../../../types/chat.types';
 
 // Mock Clerk
 vi.mock('@clerk/clerk-react', () => ({
@@ -54,7 +55,7 @@ vi.mock('../../hooks/agent/use-agent-delete', () => ({
 }));
 
 const mockUseAgentConfigState = vi.fn(() => ({
-  currentAgent: null as any,
+  currentAgent: null as Agent | null,
 }));
 vi.mock('../../hooks/agent/use-agent-config-state', () => ({
   useAgentConfigState: () => mockUseAgentConfigState(),
@@ -62,6 +63,16 @@ vi.mock('../../hooks/agent/use-agent-config-state', () => ({
 
 vi.mock('../../hooks/agent/use-is-new-agent', () => ({
   useIsNewAgent: vi.fn(() => false),
+}));
+
+vi.mock('../../hooks/agent/use-agent-memories', () => ({
+  useAgentMemories: vi.fn(() => ({
+    editingId: null,
+    deletingId: null,
+    handleDeleteMemory: vi.fn(),
+    handleEditMemory: vi.fn(),
+    handleRefreshMemories: vi.fn(),
+  })),
 }));
 
 vi.mock('../../hooks/form/use-new-agent-form', () => ({
@@ -76,16 +87,16 @@ vi.mock('../../../../hooks/use-unsaved-changes-warning', () => ({
 
 const mockUseAgents = vi.fn();
 const mockUseAgent = vi.fn();
+const mockUseAgentMemories = vi.fn();
 vi.mock('../../../../hooks/queries/use-agents', () => ({
   useAgents: () => mockUseAgents(),
   useAgent: () => mockUseAgent(),
+  useAgentMemories: () => mockUseAgentMemories(),
 }));
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter>
-    <TestQueryProvider>
-      {children}
-    </TestQueryProvider>
+    <TestQueryProvider>{children}</TestQueryProvider>
   </MemoryRouter>
 );
 
@@ -121,24 +132,50 @@ describe('AgentConfig Loading States', () => {
 
     it('should NOT show full page loading when agents are cached even if isLoading is true', () => {
       mockUseAgents.mockReturnValue({
-        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' }],
+        data: [
+          {
+            id: 1,
+            name: 'Agent 1',
+            description: 'Desc',
+            avatarUrl: null,
+            createdAt: '2024-01-01T00:00:00.000Z',
+          },
+        ],
         isLoading: true, // Background refetch
       });
 
       mockUseAgentConfigData.mockReturnValue({
         agentId: 1,
-        agent: { id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' },
+        agent: {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Desc',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
         loading: false,
         error: null,
       });
 
       mockUseAgentConfigState.mockReturnValue({
-        currentAgent: { id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' },
+        currentAgent: {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Desc',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
       });
 
       // Mock useAgent for AgentConfigForm
       mockUseAgent.mockReturnValue({
-        data: { id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' },
+        data: {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Desc',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
         isLoading: false,
       });
 
@@ -182,19 +219,39 @@ describe('AgentConfig Loading States', () => {
 
     it('should NOT show sidebar loading when agents are cached', () => {
       mockUseAgents.mockReturnValue({
-        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' }],
+        data: [
+          {
+            id: 1,
+            name: 'Agent 1',
+            description: 'Desc',
+            avatarUrl: null,
+            createdAt: '2024-01-01T00:00:00.000Z',
+          },
+        ],
         isLoading: false,
       });
 
       mockUseAgentConfigData.mockReturnValue({
         agentId: 1,
-        agent: { id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' },
+        agent: {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Desc',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
         loading: false,
         error: null,
       });
 
       mockUseAgentConfigState.mockReturnValue({
-        currentAgent: { id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' },
+        currentAgent: {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Desc',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
       });
 
       // Cache is set by useAgents hook returning data
@@ -205,7 +262,15 @@ describe('AgentConfig Loading States', () => {
   describe('Content Loading', () => {
     it('should show content loading when loading specific agent', () => {
       mockUseAgents.mockReturnValue({
-        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' }],
+        data: [
+          {
+            id: 1,
+            name: 'Agent 1',
+            description: 'Desc',
+            avatarUrl: null,
+            createdAt: '2024-01-01T00:00:00.000Z',
+          },
+        ],
         isLoading: false,
       });
 
@@ -234,24 +299,56 @@ describe('AgentConfig Loading States', () => {
 
     it('should NOT show content loading when agent is cached', () => {
       mockUseAgents.mockReturnValue({
-        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' }],
+        data: [
+          {
+            id: 1,
+            name: 'Agent 1',
+            description: 'Desc',
+            avatarUrl: null,
+            createdAt: '2024-01-01T00:00:00.000Z',
+          },
+        ],
         isLoading: false,
       });
 
       mockUseAgentConfigData.mockReturnValue({
         agentId: 1,
-        agent: { id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' },
+        agent: {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Desc',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
         loading: false,
         error: null,
       });
 
       mockUseAgentConfigState.mockReturnValue({
-        currentAgent: { id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' },
+        currentAgent: {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Desc',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
       });
 
       // Mock useAgent for AgentConfigForm
       mockUseAgent.mockReturnValue({
-        data: { id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' },
+        data: {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Desc',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
+        isLoading: false,
+      });
+
+      // Mock useAgentMemories for AgentConfigForm
+      mockUseAgentMemories.mockReturnValue({
+        data: [],
         isLoading: false,
       });
 
@@ -265,9 +362,13 @@ describe('AgentConfig Loading States', () => {
 
       // Should render form, not skeleton
       // When agent is cached, loading should be false, so form renders
-      expect(screen.queryByTestId('agent-config-form-skeleton')).not.toBeInTheDocument();
-      // Form should be rendered (check for a form element or input)
-      expect(screen.queryByRole('textbox')).toBeInTheDocument();
+      expect(
+        screen.queryByTestId('agent-config-form-skeleton')
+      ).not.toBeInTheDocument();
+      // Form should be rendered (check for the agent name input by id)
+      expect(
+        screen.getByPlaceholderText('config.enterAgentName')
+      ).toBeInTheDocument();
     });
   });
 });

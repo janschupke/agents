@@ -7,28 +7,28 @@ interface UseAutoNavigateToItemOptions<T> {
    * Navigation will only trigger when on this exact path
    */
   baseRoute: string;
-  
+
   /**
    * The selected item ID to navigate to (null/undefined means no item selected)
    */
   selectedItemId: T | null | undefined;
-  
+
   /**
    * Function to build the target route from the item ID
    */
   buildTargetRoute: (itemId: T) => string;
-  
+
   /**
    * Whether data is currently loading
    */
   isLoading: boolean;
-  
+
   /**
    * Optional dependencies that should reset the navigation flag
    * (e.g., when the parent entity changes, like agentId in chat)
    */
   resetDependencies?: unknown[];
-  
+
   /**
    * Optional condition to check before navigating
    * Return false to prevent navigation
@@ -39,7 +39,7 @@ interface UseAutoNavigateToItemOptions<T> {
 /**
  * Hook to automatically navigate to a specific item when accessing a base route
  * without an item ID. Useful for auto-selecting the most recent/first item.
- * 
+ *
  * @example
  * // Auto-navigate to most recent session when accessing /chat
  * useAutoNavigateToItem({
@@ -63,8 +63,12 @@ export function useAutoNavigateToItem<T extends number | string>({
   const hasNavigatedRef = useRef(false);
 
   // Reset navigation flag when dependencies change
+  // Note: resetDependencies is intentionally dynamic (passed as a prop)
+  // ESLint cannot statically verify dynamic dependency arrays, so we disable the rule
+  // This is safe because resetDependencies is explicitly provided by the caller
   useEffect(() => {
     hasNavigatedRef.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- resetDependencies is intentionally dynamic
   }, resetDependencies);
 
   // Auto-navigate when conditions are met
@@ -73,7 +77,8 @@ export function useAutoNavigateToItem<T extends number | string>({
     const isOnBaseRoute = location.pathname === baseRoute;
 
     // Check if we have a valid selected item ID
-    const hasSelectedItem = selectedItemId !== null && selectedItemId !== undefined;
+    const hasSelectedItem =
+      selectedItemId !== null && selectedItemId !== undefined;
 
     // Check if we should navigate (custom condition)
     const canNavigate =

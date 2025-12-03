@@ -44,10 +44,9 @@ describe('useAgentMemories', () => {
   });
 
   it('should initialize with null editingId and deletingId', () => {
-    const { result } = renderHook(
-      () => useAgentMemories({ agentId: 1 }),
-      { wrapper }
-    );
+    const { result } = renderHook(() => useAgentMemories({ agentId: 1 }), {
+      wrapper,
+    });
 
     expect(result.current.editingId).toBeNull();
     expect(result.current.deletingId).toBeNull();
@@ -57,10 +56,9 @@ describe('useAgentMemories', () => {
     mockConfirm.mockResolvedValue(true);
     mockDeleteMemory.mockResolvedValue(undefined);
 
-    const { result } = renderHook(
-      () => useAgentMemories({ agentId: 1 }),
-      { wrapper }
-    );
+    const { result } = renderHook(() => useAgentMemories({ agentId: 1 }), {
+      wrapper,
+    });
 
     await act(async () => {
       await result.current.handleDeleteMemory(1);
@@ -81,10 +79,9 @@ describe('useAgentMemories', () => {
   it('should not delete memory when confirmation is cancelled', async () => {
     mockConfirm.mockResolvedValue(false);
 
-    const { result } = renderHook(
-      () => useAgentMemories({ agentId: 1 }),
-      { wrapper }
-    );
+    const { result } = renderHook(() => useAgentMemories({ agentId: 1 }), {
+      wrapper,
+    });
 
     await act(async () => {
       await result.current.handleDeleteMemory(1);
@@ -95,10 +92,9 @@ describe('useAgentMemories', () => {
   });
 
   it('should not delete memory when agentId is null', async () => {
-    const { result } = renderHook(
-      () => useAgentMemories({ agentId: null }),
-      { wrapper }
-    );
+    const { result } = renderHook(() => useAgentMemories({ agentId: null }), {
+      wrapper,
+    });
 
     await act(async () => {
       await result.current.handleDeleteMemory(1);
@@ -109,10 +105,9 @@ describe('useAgentMemories', () => {
   });
 
   it('should not delete memory when agentId is negative', async () => {
-    const { result } = renderHook(
-      () => useAgentMemories({ agentId: -1 }),
-      { wrapper }
-    );
+    const { result } = renderHook(() => useAgentMemories({ agentId: -1 }), {
+      wrapper,
+    });
 
     await act(async () => {
       await result.current.handleDeleteMemory(1);
@@ -125,10 +120,9 @@ describe('useAgentMemories', () => {
   it('should edit memory', async () => {
     mockUpdateMemory.mockResolvedValue(undefined);
 
-    const { result } = renderHook(
-      () => useAgentMemories({ agentId: 1 }),
-      { wrapper }
-    );
+    const { result } = renderHook(() => useAgentMemories({ agentId: 1 }), {
+      wrapper,
+    });
 
     await act(async () => {
       await result.current.handleEditMemory(1, 'Updated key point');
@@ -143,10 +137,9 @@ describe('useAgentMemories', () => {
   });
 
   it('should not edit memory when agentId is null', async () => {
-    const { result } = renderHook(
-      () => useAgentMemories({ agentId: null }),
-      { wrapper }
-    );
+    const { result } = renderHook(() => useAgentMemories({ agentId: null }), {
+      wrapper,
+    });
 
     await act(async () => {
       await result.current.handleEditMemory(1, 'Updated key point');
@@ -156,10 +149,9 @@ describe('useAgentMemories', () => {
   });
 
   it('should refresh memories', () => {
-    const { result } = renderHook(
-      () => useAgentMemories({ agentId: 1 }),
-      { wrapper }
-    );
+    const { result } = renderHook(() => useAgentMemories({ agentId: 1 }), {
+      wrapper,
+    });
 
     act(() => {
       result.current.handleRefreshMemories();
@@ -169,10 +161,9 @@ describe('useAgentMemories', () => {
   });
 
   it('should not refresh memories when agentId is null', () => {
-    const { result } = renderHook(
-      () => useAgentMemories({ agentId: null }),
-      { wrapper }
-    );
+    const { result } = renderHook(() => useAgentMemories({ agentId: null }), {
+      wrapper,
+    });
 
     act(() => {
       result.current.handleRefreshMemories();

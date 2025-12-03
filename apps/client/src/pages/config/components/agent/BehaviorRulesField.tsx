@@ -66,7 +66,9 @@ export function BehaviorRulesField({
       setJsonError(
         error instanceof Error
           ? error.message
-          : t('config.jsonInvalidError', { defaultValue: 'Invalid JSON format' })
+          : t('config.jsonInvalidError', {
+              defaultValue: 'Invalid JSON format',
+            })
       );
     }
   };

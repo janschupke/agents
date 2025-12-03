@@ -2,7 +2,7 @@ import { Agent } from '../../../../types/chat.types';
 import { useAgent } from '../../../../hooks/queries/use-agents';
 import { useAgentMemories as useAgentMemoriesQuery } from '../../../../hooks/queries/use-agents';
 import { useAgentForm } from '../../hooks/agent/use-agent-form';
-import { useAgentMemories } from '../../hooks/agent/use-agent-memories';
+import { useAgentMemories as useAgentMemoryOperations } from '../../hooks/agent/use-agent-memories';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { FormContainer } from '@openai/ui';
 import {
@@ -51,7 +51,7 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
       handleDeleteMemory,
       handleEditMemory,
       handleRefreshMemories,
-    } = useAgentMemories({ agentId: agent?.id || null });
+    } = useAgentMemoryOperations({ agentId: agent?.id || null });
 
     const loadingConfig = loadingAgent && agent !== null && agent.id > 0;
 

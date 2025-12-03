@@ -68,7 +68,13 @@ describe('useChatLoadingState', () => {
 
     it('should be false when agents are cached', () => {
       const mockAgents: Agent[] = [
-        { id: 1, name: 'Agent 1', description: 'Desc 1', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' },
+        {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Desc 1',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
       ];
       queryClient.setQueryData(queryKeys.agents.list(), mockAgents);
 
@@ -116,7 +122,13 @@ describe('useChatLoadingState', () => {
 
     it('should be false when messages are loading (should not trigger full page load)', () => {
       const mockAgents: Agent[] = [
-        { id: 1, name: 'Agent 1', description: 'Desc 1', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' },
+        {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Desc 1',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
       ];
       const mockSessions: Session[] = [
         {
@@ -182,7 +194,13 @@ describe('useChatLoadingState', () => {
 
     it('should be false when agents are cached even if isLoading is true', () => {
       const mockAgents: Agent[] = [
-        { id: 1, name: 'Agent 1', description: 'Desc 1', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' },
+        {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Desc 1',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
       ];
       queryClient.setQueryData(queryKeys.agents.list(), mockAgents);
 
@@ -230,7 +248,13 @@ describe('useChatLoadingState', () => {
 
     it('should be false when both agents and sessions are cached', () => {
       const mockAgents: Agent[] = [
-        { id: 1, name: 'Agent 1', description: 'Desc 1', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' },
+        {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Desc 1',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
       ];
       const mockSessions: Session[] = [
         {
@@ -279,7 +303,13 @@ describe('useChatLoadingState', () => {
 
     it('should be false when agents are cached', () => {
       const mockAgents: Agent[] = [
-        { id: 1, name: 'Agent 1', description: 'Desc 1', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' },
+        {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Desc 1',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
       ];
       queryClient.setQueryData(queryKeys.agents.list(), mockAgents);
 
@@ -320,7 +350,12 @@ describe('useChatLoadingState', () => {
 
     it('should be false when messages are cached', () => {
       const mockHistory = {
-        agent: { id: 1, name: 'Agent 1', description: 'Desc 1', avatarUrl: null },
+        agent: {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Desc 1',
+          avatarUrl: null,
+        },
         session: {
           id: 1,
           session_name: 'Session 1',

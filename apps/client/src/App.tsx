@@ -1,4 +1,12 @@
-import { memo, useEffect, useState, useRef, ReactNode, lazy, Suspense } from 'react';
+import {
+  memo,
+  useEffect,
+  useState,
+  useRef,
+  ReactNode,
+  lazy,
+  Suspense,
+} from 'react';
 import {
   BrowserRouter,
   Routes,
@@ -19,9 +27,17 @@ import { useApiKeyStatus } from './hooks/queries/use-user';
 import PageLoadingState from './components/layout/PageLoadingState';
 
 // Lazy load routes for code splitting
-const ChatRoute = lazy(() => import(/* webpackChunkName: "chat" */ './pages/chat/ChatRoute'));
-const ConfigRoute = lazy(() => import(/* webpackChunkName: "config" */ './pages/config/ConfigRoute'));
-const UserProfile = lazy(() => import(/* webpackChunkName: "profile" */ './pages/profile').then(module => ({ default: module.UserProfile })));
+const ChatRoute = lazy(
+  () => import(/* webpackChunkName: "chat" */ './pages/chat/ChatRoute')
+);
+const ConfigRoute = lazy(
+  () => import(/* webpackChunkName: "config" */ './pages/config/ConfigRoute')
+);
+const UserProfile = lazy(() =>
+  import(/* webpackChunkName: "profile" */ './pages/profile').then(
+    (module) => ({ default: module.UserProfile })
+  )
+);
 
 // Memoized Footer component to prevent re-renders
 const AppFooter = memo(Footer);
@@ -57,7 +73,10 @@ function RouteTransitionWrapper({ children }: { children: ReactNode }) {
   }, [location.pathname]);
 
   return (
-    <div key={routeKey} className="flex flex-row flex-1 overflow-hidden animate-fade-in">
+    <div
+      key={routeKey}
+      className="flex flex-row flex-1 overflow-hidden animate-fade-in"
+    >
       {children}
     </div>
   );
@@ -145,7 +164,10 @@ function AppContent() {
             <Route path={ROUTES.CHAT_SESSION_PATTERN} element={<ChatRoute />} />
             <Route path={ROUTES.CONFIG} element={<ConfigRoute />} />
             <Route path={ROUTES.CONFIG_NEW} element={<ConfigRoute />} />
-            <Route path={ROUTES.CONFIG_AGENT_PATTERN} element={<ConfigRoute />} />
+            <Route
+              path={ROUTES.CONFIG_AGENT_PATTERN}
+              element={<ConfigRoute />}
+            />
             <Route path={ROUTES.PROFILE} element={<UserProfile />} />
           </Routes>
         </Suspense>

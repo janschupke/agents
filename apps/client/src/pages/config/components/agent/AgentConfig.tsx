@@ -59,10 +59,11 @@ export default function AgentConfig({
   });
 
   const { data: agents = [], isLoading: loadingAgents } = useAgents();
-  const { shouldShowLoading: shouldShowSidebarLoading } = useSidebarLoadingState({
-    type: 'agents',
-    isLoading: loadingAgents,
-  });
+  const { shouldShowLoading: shouldShowSidebarLoading } =
+    useSidebarLoadingState({
+      type: 'agents',
+      isLoading: loadingAgents,
+    });
   const formRef = useRef<AgentConfigFormRef>(null);
   const [canSave, setCanSave] = useState(false);
 
@@ -97,11 +98,12 @@ export default function AgentConfig({
   // Loading state - only show full page loading if we don't have cached agents
   // This ensures sidebar stays visible when agents are cached
   // If agents are cached, always render the component (even if loading specific agent)
-  const { shouldShowLoading: shouldShowFullPageLoading } = useSidebarLoadingState({
-    type: 'agents',
-    isLoading: loadingAgents,
-  });
-  
+  const { shouldShowLoading: shouldShowFullPageLoading } =
+    useSidebarLoadingState({
+      type: 'agents',
+      isLoading: loadingAgents,
+    });
+
   // Only show full page loading if:
   // 1. We don't have cached agents AND agents are loading
   // 2. OR we're loading a specific agent AND we don't have cached agents
