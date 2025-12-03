@@ -44,7 +44,7 @@ export function useSidebarLoadingState({
 
   if (type === 'agents') {
     hasCachedData = queryClient.getQueryData<Agent[]>(queryKeys.agents.list()) !== undefined;
-  } else if (type === 'sessions' && agentId !== null) {
+  } else if (type === 'sessions' && agentId !== null && agentId !== undefined) {
     hasCachedData = queryClient.getQueryData<Session[]>(queryKeys.agents.sessions(agentId)) !== undefined;
   }
 
