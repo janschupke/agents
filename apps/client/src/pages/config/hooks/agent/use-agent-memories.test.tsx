@@ -56,6 +56,8 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 describe('useAgentMemories', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Ensure mockConfirm has a default return value
+    mockConfirm.mockResolvedValue(false);
   });
 
   it('should initialize with null editingId and deletingId', () => {

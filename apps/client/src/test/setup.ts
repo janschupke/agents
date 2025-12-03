@@ -31,6 +31,9 @@ beforeAll(() => {
   });
 });
 
+// Mock scrollIntoView for jsdom (not implemented by default)
+Element.prototype.scrollIntoView = vi.fn();
+
 // Set up token provider for tests before each test
 beforeEach(() => {
   // Set up a mock token getter that returns a token immediately

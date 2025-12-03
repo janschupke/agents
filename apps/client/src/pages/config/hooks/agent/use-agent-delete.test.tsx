@@ -55,6 +55,8 @@ describe('useAgentDelete', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Ensure mockConfirm has a default return value
+    mockConfirm.mockResolvedValue(false);
   });
 
   it('should delete agent after confirmation', async () => {

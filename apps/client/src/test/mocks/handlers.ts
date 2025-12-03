@@ -259,9 +259,26 @@ export const handlers = [
         );
       }
       mockSessions.splice(sessionIndex, 1);
-      return HttpResponse.json({ success: true });
+      return new HttpResponse(null, { status: 204 });
     }
   ),
+
+  // Get session with agent ID (for routing)
+  http.get(`${API_BASE}/api/sessions/:sessionId`, ({ params }) => {
+    const sessionId = Number(params.sessionId);
+    const session = mockSessions.find((s) => s.id === sessionId);
+    if (!session) {
+      return HttpResponse.json({ message: 'Session not found' }, { status: 404 });
+    }
+    return HttpResponse.json({
+      session: {
+        id: session.id,
+        session_name: session.session_name,
+        createdAt: '2024-01-01T00:00:00.000Z',
+      },
+      agentId: session.agent_id,
+    }, { status: 200 });
+  }),
 
   // User endpoints
   http.get(`${API_BASE}/api/user/me`, () => {

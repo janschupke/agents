@@ -30,6 +30,7 @@ const { mockConfirm, mockCreateAgent, mockUpdateAgent, mockDeleteAgent, createAg
   };
   
   // Create functions that return the mutation objects
+  // Note: These return the same object reference, but isPending is reset in beforeEach
   const mockUseCreateAgent = vi.fn(() => createAgentMutation);
   const mockUseUpdateAgent = vi.fn(() => updateAgentMutation);
   const mockUseDeleteAgent = vi.fn(() => deleteAgentMutation);
@@ -75,6 +76,10 @@ describe('useAgentConfigOperations', () => {
     vi.clearAllMocks();
     // Ensure mockConfirm has a default return value
     mockConfirm.mockResolvedValue(false);
+    // Reset mutation object states
+    createAgentMutation.isPending = false;
+    updateAgentMutation.isPending = false;
+    deleteAgentMutation.isPending = false;
   });
 
   const mockContextAgents: Agent[] = [
@@ -107,10 +112,6 @@ describe('useAgentConfigOperations', () => {
     systemPrompt: 'You are helpful',
     behaviorRules: ['Rule 1', 'Rule 2'],
   };
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
 
   it('should create new agent when agent.id < 0', async () => {
     const newAgent: Agent = {
@@ -257,6 +258,7 @@ describe('useAgentConfigOperations', () => {
   });
 
   it('should delete agent after confirmation', async () => {
+    // Set up mocks before rendering
     mockConfirm.mockResolvedValue(true);
     mockDeleteAgent.mockResolvedValue(undefined);
 
@@ -291,9 +293,10 @@ describe('useAgentConfigOperations', () => {
   });
 
   it('should not delete agent when confirmation is cancelled', async () => {
+    // Set up mock before rendering
     mockConfirm.mockResolvedValue(false);
 
-    const { result } = renderHook(
+    const { result, waitFor } = renderHook(
       () =>
         useAgentConfigOperations({
           contextAgents: mockContextAgents,
@@ -304,8 +307,6 @@ describe('useAgentConfigOperations', () => {
         }),
       { wrapper }
     );
-
-    expect(result.current).not.toBeNull();
 
     await act(async () => {
       await result.current.handleDelete(1);
@@ -331,8 +332,6 @@ describe('useAgentConfigOperations', () => {
       { wrapper }
     );
 
-    expect(result.current).not.toBeNull();
-
     await act(async () => {
       await result.current.handleDelete(1);
     });
@@ -356,6 +355,8 @@ describe('useAgentConfigOperations', () => {
       { wrapper }
     );
 
+    expect(result.current).not.toBeNull();
+
     await act(async () => {
       await result.current.handleDelete(1);
     });
@@ -364,6 +365,8 @@ describe('useAgentConfigOperations', () => {
   });
 
   it('should create new agent with handleNewAgent', () => {
+    mockConfirm.mockResolvedValue(false);
+
     const { result } = renderHook(
       () =>
         useAgentConfigOperations({
@@ -376,8 +379,6 @@ describe('useAgentConfigOperations', () => {
       { wrapper }
     );
 
-    expect(result.current).not.toBeNull();
-
     act(() => {
       result.current.handleNewAgent();
     });
@@ -388,6 +389,7 @@ describe('useAgentConfigOperations', () => {
   });
 
   it('should return saving state', () => {
+    mockConfirm.mockResolvedValue(false);
     // Temporarily modify the mutation objects to have isPending: true
     createAgentMutation.isPending = true;
     updateAgentMutation.isPending = false;
@@ -404,7 +406,6 @@ describe('useAgentConfigOperations', () => {
       { wrapper }
     );
 
-    expect(result.current).not.toBeNull();
     expect(result.current.saving).toBe(true);
     
     // Restore original values
@@ -412,6 +413,9 @@ describe('useAgentConfigOperations', () => {
   });
 
   it('should handle save errors gracefully', async () => {
+    mockConfirm.mockResolvedValue(false);
+    mockCreateAgent.mockRejectedValue(new Error('Save failed'));
+    
     const newAgent: Agent = {
       id: -1,
       name: '',
@@ -421,7 +425,6 @@ describe('useAgentConfigOperations', () => {
     };
 
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    mockCreateAgent.mockRejectedValue(new Error('Save failed'));
 
     const { result } = renderHook(
       () =>
@@ -434,8 +437,6 @@ describe('useAgentConfigOperations', () => {
         }),
       { wrapper }
     );
-
-    expect(result.current).not.toBeNull();
 
     const savedAgent = await act(async () => {
       return await result.current.handleSave(newAgent, mockFormValues);

@@ -70,7 +70,8 @@ describe('SessionService', () => {
   describe('deleteSession', () => {
     it('should delete session successfully', async () => {
       const result = await SessionService.deleteSession(1, 1);
-      expect(result).toBeUndefined();
+      // api-client returns {} for 204 responses, which is valid for void return type
+      expect(result).toEqual({});
     });
 
     it('should throw error when delete fails', async () => {
