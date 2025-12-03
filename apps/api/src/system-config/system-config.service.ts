@@ -11,27 +11,36 @@ export class SystemConfigService {
   ) {}
 
   async getBehaviorRules(): Promise<string[]> {
+    this.logger.debug('Getting system behavior rules');
     const config =
       await this.systemConfigRepository.findByKey('behavior_rules');
     if (!config) {
+      this.logger.debug('No behavior rules configured');
       return [];
     }
 
-    return this.parseBehaviorRules(config.configValue);
+    const rules = this.parseBehaviorRules(config.configValue);
+    this.logger.debug(`Found ${rules.length} behavior rules`);
+    return rules;
   }
 
   async getAllConfigs(): Promise<Record<string, unknown>> {
+    this.logger.debug('Getting all system configs');
     return this.systemConfigRepository.findAllAsRecord();
   }
 
   async updateBehaviorRules(rules: string[]): Promise<void> {
+    this.logger.log(`Updating system behavior rules (${rules.length} rules)`);
     await this.systemConfigRepository.upsert('behavior_rules', rules);
+    this.logger.log('System behavior rules updated successfully');
   }
 
   async updateConfigs(configs: UpdateSystemConfigDto): Promise<void> {
+    this.logger.log('Updating system configs');
     await this.systemConfigRepository.updateConfigs(
       configs as Record<string, unknown>
     );
+    this.logger.log('System configs updated successfully');
   }
 
   private parseBehaviorRules(behaviorRules: unknown): string[] {

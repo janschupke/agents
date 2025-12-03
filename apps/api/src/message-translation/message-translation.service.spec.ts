@@ -129,7 +129,7 @@ describe('MessageTranslationService', () => {
         HttpException
       );
       await expect(service.translateMessage(messageId, userId)).rejects.toThrow(
-        ERROR_MESSAGES.MESSAGE_NOT_FOUND
+        `Message with ID ${messageId} not found`
       );
     });
 
@@ -155,7 +155,7 @@ describe('MessageTranslationService', () => {
         HttpException
       );
       await expect(service.translateMessage(messageId, userId)).rejects.toThrow(
-        ERROR_MESSAGES.SESSION_ACCESS_DENIED
+        `Session with ID ${message.sessionId} not found`
       );
     });
 
@@ -374,7 +374,7 @@ describe('MessageTranslationService', () => {
       ).rejects.toThrow(HttpException);
       await expect(
         service.translateMessageWithWords(messageId, userId)
-      ).rejects.toThrow(ERROR_MESSAGES.MESSAGE_NOT_FOUND);
+      ).rejects.toThrow(`Message with ID ${messageId} not found`);
     });
 
     it('should create translations if they do not exist', async () => {

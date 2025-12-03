@@ -118,7 +118,9 @@ describe('UserService', () => {
       mockUserRepository.findById.mockResolvedValue(null);
 
       await expect(service.findById(userId)).rejects.toThrow(HttpException);
-      await expect(service.findById(userId)).rejects.toThrow('User not found');
+      await expect(service.findById(userId)).rejects.toThrow(
+        `User with ID ${userId} not found`
+      );
     });
   });
 

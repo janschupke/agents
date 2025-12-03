@@ -5,9 +5,9 @@ import {
   CallHandler,
   Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { appConfig } from '../../config/app.config.js';
 
 /**
  * Interceptor that adds an arbitrary delay to API responses for testing purposes.
@@ -20,22 +20,30 @@ import { appConfig } from '../../config/app.config.js';
 export class DelayInterceptor implements NestInterceptor {
   private readonly logger = new Logger(DelayInterceptor.name);
 
+  constructor(private readonly configService: ConfigService) {}
+
   intercept(
     _context: ExecutionContext,
     next: CallHandler
   ): Observable<unknown> {
+    const nodeEnv =
+      this.configService.get<string>('app.nodeEnv') || 'development';
+    const delayEnabled =
+      this.configService.get<boolean>('app.delay.enabled') || false;
+    const delayMs = this.configService.get<number>('app.delay.ms') || 0;
+
     // Only work in development mode, never in production
-    if (appConfig.nodeEnv === 'production') {
+    if (nodeEnv === 'production') {
       return next.handle();
     }
 
     // Check if delay is enabled
-    if (!appConfig.delay.enabled || appConfig.delay.ms <= 0) {
+    if (!delayEnabled || delayMs <= 0) {
       return next.handle();
     }
 
     const startTime = Date.now();
-    const targetDelay = appConfig.delay.ms;
+    const targetDelay = delayMs;
 
     return next.handle().pipe(
       switchMap((data) => {

@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { EncryptionService } from './encryption.service';
 
 describe('EncryptionService', () => {
@@ -11,8 +12,23 @@ describe('EncryptionService', () => {
     // Set a valid encryption key for testing
     process.env.ENCRYPTION_KEY = validKey;
 
+    const mockConfigService = {
+      get: jest.fn((key: string) => {
+        if (key === 'app.encryption.key') {
+          return process.env.ENCRYPTION_KEY || '';
+        }
+        return undefined;
+      }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
-      providers: [EncryptionService],
+      providers: [
+        EncryptionService,
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
+        },
+      ],
     }).compile();
 
     service = module.get<EncryptionService>(EncryptionService);
@@ -50,18 +66,58 @@ describe('EncryptionService', () => {
       expect(() => service.encrypt('')).toThrow('Plaintext cannot be empty');
     });
 
-    it('should throw error if ENCRYPTION_KEY is not set', () => {
+    it('should throw error if ENCRYPTION_KEY is not set', async () => {
       delete process.env.ENCRYPTION_KEY;
-      const serviceWithoutKey = new EncryptionService();
+      const mockConfigService = {
+        get: jest.fn((key: string) => {
+          if (key === 'app.encryption.key') {
+            return '';
+          }
+          return undefined;
+        }),
+      };
+
+      const module = await Test.createTestingModule({
+        providers: [
+          EncryptionService,
+          {
+            provide: ConfigService,
+            useValue: mockConfigService,
+          },
+        ],
+      }).compile();
+
+      const serviceWithoutKey =
+        module.get<EncryptionService>(EncryptionService);
 
       expect(() => serviceWithoutKey.encrypt('test')).toThrow(
         'ENCRYPTION_KEY environment variable is required'
       );
     });
 
-    it('should throw error if ENCRYPTION_KEY has wrong length', () => {
-      process.env.ENCRYPTION_KEY = Buffer.alloc(16, 1).toString('base64');
-      const serviceWithWrongKey = new EncryptionService();
+    it('should throw error if ENCRYPTION_KEY has wrong length', async () => {
+      const wrongKey = Buffer.alloc(16, 1).toString('base64');
+      const mockConfigService = {
+        get: jest.fn((key: string) => {
+          if (key === 'app.encryption.key') {
+            return wrongKey;
+          }
+          return undefined;
+        }),
+      };
+
+      const module = await Test.createTestingModule({
+        providers: [
+          EncryptionService,
+          {
+            provide: ConfigService,
+            useValue: mockConfigService,
+          },
+        ],
+      }).compile();
+
+      const serviceWithWrongKey =
+        module.get<EncryptionService>(EncryptionService);
 
       expect(() => serviceWithWrongKey.encrypt('test')).toThrow(
         'ENCRYPTION_KEY must be exactly 32 bytes'
@@ -123,16 +179,45 @@ describe('EncryptionService', () => {
       expect(() => service.decrypt(tampered)).toThrow();
     });
 
-    it('should throw error if ENCRYPTION_KEY is not set', () => {
+    it('should throw error if ENCRYPTION_KEY is not set', async () => {
       const plaintext = 'test message';
       const encrypted = service.encrypt(plaintext);
 
-      delete process.env.ENCRYPTION_KEY;
-      const serviceWithoutKey = new EncryptionService();
+      const mockConfigService = {
+        get: jest.fn((key: string) => {
+          if (key === 'app.encryption.key') {
+            return undefined; // Return undefined to simulate missing key
+          }
+          return undefined;
+        }),
+      };
 
+      // Also clear process.env.ENCRYPTION_KEY to ensure it's not used as fallback
+      const originalEnv = process.env.ENCRYPTION_KEY;
+      delete process.env.ENCRYPTION_KEY;
+
+      const module = await Test.createTestingModule({
+        providers: [
+          EncryptionService,
+          {
+            provide: ConfigService,
+            useValue: mockConfigService,
+          },
+        ],
+      }).compile();
+
+      const serviceWithoutKey =
+        module.get<EncryptionService>(EncryptionService);
+
+      // decrypt calls getEncryptionKey internally, which will throw if key is missing
       expect(() => serviceWithoutKey.decrypt(encrypted)).toThrow(
         'ENCRYPTION_KEY environment variable is required'
       );
+
+      // Restore original env
+      if (originalEnv) {
+        process.env.ENCRYPTION_KEY = originalEnv;
+      }
     });
   });
 

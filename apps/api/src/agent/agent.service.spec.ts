@@ -110,7 +110,7 @@ describe('AgentService', () => {
         HttpException
       );
       await expect(service.findById(agentId, userId)).rejects.toThrow(
-        'Agent not found'
+        `Agent with ID ${agentId} not found`
       );
     });
   });
@@ -267,7 +267,7 @@ describe('AgentService', () => {
         HttpException
       );
       await expect(service.update(agentId, userId, name)).rejects.toThrow(
-        'Agent not found'
+        `Agent with ID ${agentId} not found`
       );
     });
 
@@ -334,7 +334,7 @@ describe('AgentService', () => {
         HttpException
       );
       await expect(service.delete(agentId, userId)).rejects.toThrow(
-        'Agent not found'
+        `Agent with ID ${agentId} not found`
       );
     });
   });

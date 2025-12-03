@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type { Agent, Prisma } from '@prisma/client';
 import { AgentWithConfig } from '../common/interfaces/agent.interface';
-import { DEFAULT_AGENT_CONFIG } from '../common/constants/api.constants';
 
 @Injectable()
 export class AgentRepository {
@@ -77,17 +76,6 @@ export class AgentRepository {
       ...agent,
       configs: config,
     };
-  }
-
-  getDefaultAgentConfig(): Record<string, unknown> {
-    return { ...DEFAULT_AGENT_CONFIG };
-  }
-
-  mergeAgentConfig(
-    agentConfig: Record<string, unknown>
-  ): Record<string, unknown> {
-    const defaults = this.getDefaultAgentConfig();
-    return { ...defaults, ...agentConfig };
   }
 
   async findAll(userId: string): Promise<Agent[]> {

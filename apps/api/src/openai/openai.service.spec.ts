@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { OpenAIService } from './openai.service';
 import OpenAI from 'openai';
 
@@ -14,8 +15,23 @@ describe('OpenAIService', () => {
   };
 
   beforeEach(async () => {
+    const mockConfigService = {
+      get: jest.fn((key: string) => {
+        if (key === 'app.openai.apiKey') {
+          return process.env.OPENAI_API_KEY || '';
+        }
+        return undefined;
+      }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
-      providers: [OpenAIService],
+      providers: [
+        OpenAIService,
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
+        },
+      ],
     }).compile();
 
     service = module.get<OpenAIService>(OpenAIService);
@@ -41,19 +57,34 @@ describe('OpenAIService', () => {
       expect(OpenAI).toHaveBeenCalledWith({ apiKey });
     });
 
-    it('should return default client if API key not provided and OPENAI_API_KEY is set', () => {
-      process.env.OPENAI_API_KEY = 'env-api-key';
-      const serviceWithEnv = new OpenAIService();
+    it('should return default client if API key not provided and OPENAI_API_KEY is set', async () => {
+      const mockConfigServiceWithKey = {
+        get: jest.fn((key: string) => {
+          if (key === 'app.openai.apiKey') {
+            return 'env-api-key';
+          }
+          return undefined;
+        }),
+      };
+
+      const moduleWithKey = await Test.createTestingModule({
+        providers: [
+          OpenAIService,
+          {
+            provide: ConfigService,
+            useValue: mockConfigServiceWithKey,
+          },
+        ],
+      }).compile();
+
+      const serviceWithEnv = moduleWithKey.get<OpenAIService>(OpenAIService);
       const client = serviceWithEnv.getClient();
 
       expect(client).toBeDefined();
     });
 
     it('should throw error if no API key provided and OPENAI_API_KEY is not set', () => {
-      delete process.env.OPENAI_API_KEY;
-      const serviceWithoutEnv = new OpenAIService();
-
-      expect(() => serviceWithoutEnv.getClient()).toThrow(
+      expect(() => service.getClient()).toThrow(
         'No API key provided and OPENAI_API_KEY is not set in .env file'
       );
     });

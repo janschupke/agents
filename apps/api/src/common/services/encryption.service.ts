@@ -3,6 +3,7 @@ import {
   BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -15,12 +16,16 @@ export class EncryptionService {
   private readonly tagPosition = this.saltLength + this.ivLength;
   private readonly encryptedPosition = this.tagPosition + this.tagLength;
 
+  constructor(private readonly configService: ConfigService) {}
+
   /**
    * Get encryption key from environment variable or generate a default one
    * In production, this should be a strong, randomly generated key stored securely
    */
   private getEncryptionKey(): Buffer {
-    const key = process.env.ENCRYPTION_KEY;
+    const key =
+      this.configService.get<string>('app.encryption.key') ||
+      process.env.ENCRYPTION_KEY;
     if (!key) {
       throw new InternalServerErrorException(
         'ENCRYPTION_KEY environment variable is required. Generate a 32-byte key using: openssl rand -base64 32'

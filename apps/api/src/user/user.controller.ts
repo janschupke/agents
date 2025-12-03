@@ -23,6 +23,7 @@ export class UserController {
   @Roles('admin')
   @UseGuards(RolesGuard)
   async getAllUsers(): Promise<UserListResponseDto[]> {
+    this.logger.log('Getting all users (admin only)');
     const users = await this.userService.findAll();
     return users.map((user) => ({
       id: user.id,
@@ -40,6 +41,7 @@ export class UserController {
   async getCurrentUser(
     @User() user: AuthenticatedUser
   ): Promise<UserResponseDto> {
+    this.logger.log(`Getting current user ${user.id}`);
     // Ensure user has roles (default to ["user"] if not present)
     const roles =
       user.roles && user.roles.length > 0

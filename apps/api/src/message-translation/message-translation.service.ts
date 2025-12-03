@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { MessageTranslationRepository } from './message-translation.repository';
 import { MessageRepository } from '../message/message.repository';
 import { SessionRepository } from '../session/session.repository';
@@ -7,14 +7,18 @@ import { ApiCredentialsService } from '../api-credentials/api-credentials.servic
 import { WordTranslationService } from './word-translation.service';
 import { OPENAI_PROMPTS } from '../common/constants/openai-prompts.constants.js';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
-import {
-  MAGIC_STRINGS,
-  ERROR_MESSAGES,
-} from '../common/constants/error-messages.constants.js';
+import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
 import { OPENAI_MODELS } from '../common/constants/api.constants.js';
+import {
+  MessageNotFoundException,
+  SessionNotFoundException,
+  ApiKeyRequiredException,
+} from '../common/exceptions';
 
 @Injectable()
 export class MessageTranslationService {
+  private readonly logger = new Logger(MessageTranslationService.name);
+
   constructor(
     private readonly translationRepository: MessageTranslationRepository,
     private readonly messageRepository: MessageRepository,
@@ -31,20 +35,21 @@ export class MessageTranslationService {
     messageId: number,
     userId: string
   ): Promise<{ translation: string }> {
+    this.logger.log(`Translating message ${messageId} for user ${userId}`);
+
     // Check if translation already exists
     const existing =
       await this.translationRepository.findByMessageId(messageId);
     if (existing) {
+      this.logger.debug(`Translation already exists for message ${messageId}`);
       return { translation: existing.translation };
     }
 
     // Get the message
     const message = await this.messageRepository.findById(messageId);
     if (!message) {
-      throw new HttpException(
-        ERROR_MESSAGES.MESSAGE_NOT_FOUND,
-        HttpStatus.NOT_FOUND
-      );
+      this.logger.warn(`Message ${messageId} not found`);
+      throw new MessageNotFoundException(messageId);
     }
 
     // Verify user has access to this message's session
@@ -53,10 +58,10 @@ export class MessageTranslationService {
       userId
     );
     if (!session) {
-      throw new HttpException(
-        ERROR_MESSAGES.SESSION_ACCESS_DENIED,
-        HttpStatus.FORBIDDEN
+      this.logger.warn(
+        `User ${userId} does not have access to session ${message.sessionId}`
       );
+      throw new SessionNotFoundException(message.sessionId);
     }
 
     // Get conversation context (previous messages for context)
@@ -71,10 +76,8 @@ export class MessageTranslationService {
       MAGIC_STRINGS.OPENAI_PROVIDER
     );
     if (!apiKey) {
-      throw new HttpException(
-        ERROR_MESSAGES.OPENAI_API_KEY_REQUIRED,
-        HttpStatus.BAD_REQUEST
-      );
+      this.logger.warn(`No API key found for user ${userId}`);
+      throw new ApiKeyRequiredException();
     }
 
     // Call OpenAI to translate
@@ -159,12 +162,11 @@ export class MessageTranslationService {
 
     const translation = completion.choices[0]?.message?.content?.trim();
     if (!translation) {
-      throw new HttpException(
-        ERROR_MESSAGES.TRANSLATION_FAILED,
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
+      this.logger.error('No translation returned from OpenAI');
+      throw new Error('Translation failed: No response from OpenAI');
     }
 
+    this.logger.debug('Translation completed');
     return translation;
   }
 
@@ -207,10 +209,8 @@ export class MessageTranslationService {
     // Get the message
     const message = await this.messageRepository.findById(messageId);
     if (!message) {
-      throw new HttpException(
-        ERROR_MESSAGES.MESSAGE_NOT_FOUND,
-        HttpStatus.NOT_FOUND
-      );
+      this.logger.warn(`Message ${messageId} not found`);
+      throw new MessageNotFoundException(messageId);
     }
 
     // Verify user has access to this message's session
@@ -219,10 +219,10 @@ export class MessageTranslationService {
       userId
     );
     if (!session) {
-      throw new HttpException(
-        ERROR_MESSAGES.SESSION_ACCESS_DENIED,
-        HttpStatus.FORBIDDEN
+      this.logger.warn(
+        `User ${userId} does not have access to session ${message.sessionId}`
       );
+      throw new SessionNotFoundException(message.sessionId);
     }
 
     // Check if translations already exist
@@ -246,10 +246,8 @@ export class MessageTranslationService {
       MAGIC_STRINGS.OPENAI_PROVIDER
     );
     if (!apiKey) {
-      throw new HttpException(
-        ERROR_MESSAGES.OPENAI_API_KEY_REQUIRED,
-        HttpStatus.BAD_REQUEST
-      );
+      this.logger.warn(`No API key found for user ${userId}`);
+      throw new ApiKeyRequiredException();
     }
 
     // Translate words (this will also create full translation)
@@ -268,10 +266,8 @@ export class MessageTranslationService {
       );
 
     if (!translation || wordTranslations.length === 0) {
-      throw new HttpException(
-        ERROR_MESSAGES.TRANSLATION_FAILED,
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
+      this.logger.error(`Translation failed for message ${messageId}`);
+      throw new Error('Translation failed');
     }
 
     return {

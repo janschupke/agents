@@ -4,21 +4,22 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
-import { config } from 'dotenv';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
-
-config();
 
 @Injectable()
 export class OpenAIService {
   private readonly logger = new Logger(OpenAIService.name);
   private readonly defaultOpenai: OpenAI | null;
 
-  constructor() {
+  constructor(private readonly configService: ConfigService) {
     // Keep default client for backward compatibility (optional)
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = this.configService.get<string>('app.openai.apiKey') || '';
     this.defaultOpenai = apiKey ? new OpenAI({ apiKey }) : null;
+    if (!apiKey) {
+      this.logger.debug('No default OpenAI API key configured');
+    }
   }
 
   /**

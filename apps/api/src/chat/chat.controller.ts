@@ -8,8 +8,7 @@ import {
   Body,
   ParseIntPipe,
   Query,
-  HttpException,
-  HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import {
@@ -27,6 +26,8 @@ import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
 
 @Controller(API_ROUTES.CHAT.BASE)
 export class ChatController {
+  private readonly logger = new Logger(ChatController.name);
+
   constructor(private readonly chatService: ChatService) {}
 
   @Get(':agentId/sessions')
@@ -34,6 +35,7 @@ export class ChatController {
     @Param('agentId', ParseIntPipe) agentId: number,
     @User() user: AuthenticatedUser
   ): Promise<SessionResponseDto[]> {
+    this.logger.log(`Getting sessions for agent ${agentId}, user ${user.id}`);
     return await this.chatService.getSessions(agentId, user.id);
   }
 
@@ -42,6 +44,7 @@ export class ChatController {
     @Param('agentId', ParseIntPipe) agentId: number,
     @User() user: AuthenticatedUser
   ): Promise<SessionResponseDto> {
+    this.logger.log(`Creating session for agent ${agentId}, user ${user.id}`);
     return await this.chatService.createSession(agentId, user.id);
   }
 
@@ -54,6 +57,9 @@ export class ChatController {
     const parsedSessionId = sessionId
       ? parseInt(sessionId, MAGIC_STRINGS.PARSE_INT_BASE)
       : undefined;
+    this.logger.log(
+      `Getting chat history for agent ${agentId}, user ${user.id}, sessionId: ${parsedSessionId || 'latest'}`
+    );
     return await this.chatService.getChatHistory(
       agentId,
       user.id,
@@ -68,40 +74,20 @@ export class ChatController {
     @User() user: AuthenticatedUser,
     @Query('sessionId') sessionId?: string
   ): Promise<SendMessageResponseDto> {
-    if (
-      !body.message ||
-      typeof body.message !== 'string' ||
-      body.message.trim().length === 0
-    ) {
-      throw new HttpException('Message is required', HttpStatus.BAD_REQUEST);
-    }
+    // DTO validation is handled by ValidationPipe
     const parsedSessionId = sessionId
       ? parseInt(sessionId, MAGIC_STRINGS.PARSE_INT_BASE)
       : undefined;
-    try {
-      return await this.chatService.sendMessage(
-        agentId,
-        user.id,
-        body.message,
-        parsedSessionId
-      );
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      // Handle API key errors
-      const errorObj = error as { message?: string; status?: number };
-      if (errorObj.message?.includes('API key') || errorObj.status === 401) {
-        throw new HttpException(
-          'Invalid API key. Please check your .env file.',
-          HttpStatus.UNAUTHORIZED
-        );
-      }
-      throw new HttpException(
-        errorObj.message || 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+    this.logger.log(
+      `Sending message for agent ${agentId}, user ${user.id}, sessionId: ${parsedSessionId || 'new'}`
+    );
+    // Exception filter will handle any errors
+    return await this.chatService.sendMessage(
+      agentId,
+      user.id,
+      body.message,
+      parsedSessionId
+    );
   }
 
   @Put(':agentId/sessions/:sessionId')

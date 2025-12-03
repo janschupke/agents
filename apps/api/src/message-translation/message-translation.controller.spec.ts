@@ -5,7 +5,6 @@ import { MessageTranslationService } from './message-translation.service';
 import { WordTranslationService } from './word-translation.service';
 import { MessageRepository } from '../message/message.repository';
 import { SessionRepository } from '../session/session.repository';
-import { ERROR_MESSAGES } from '../common/constants/error-messages.constants.js';
 
 describe('MessageTranslationController', () => {
   let controller: MessageTranslationController;
@@ -134,7 +133,7 @@ describe('MessageTranslationController', () => {
         translationsMap
       );
 
-      const result = await controller.getTranslations(messageIds, mockUser);
+      const result = await controller.getTranslations({ messageIds }, mockUser);
 
       expect(result).toEqual({
         1: 'Translation 1',
@@ -157,7 +156,7 @@ describe('MessageTranslationController', () => {
         translationsMap
       );
 
-      const result = await controller.getTranslations(messageIds, mockUser);
+      const result = await controller.getTranslations({ messageIds }, mockUser);
 
       expect(result).toEqual({
         1: 'Translation 1',
@@ -227,7 +226,7 @@ describe('MessageTranslationController', () => {
       ).rejects.toThrow(HttpException);
       await expect(
         controller.getWordTranslations(messageId, mockUser)
-      ).rejects.toThrow(ERROR_MESSAGES.MESSAGE_NOT_FOUND);
+      ).rejects.toThrow(`Message with ID ${messageId} not found`);
     });
 
     it('should throw error if session access denied', async () => {
@@ -251,7 +250,7 @@ describe('MessageTranslationController', () => {
       ).rejects.toThrow(HttpException);
       await expect(
         controller.getWordTranslations(messageId, mockUser)
-      ).rejects.toThrow(ERROR_MESSAGES.ACCESS_DENIED);
+      ).rejects.toThrow(`Session with ID 1 not found`);
     });
   });
 

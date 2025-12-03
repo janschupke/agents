@@ -8,108 +8,41 @@ import {
   forwardRef,
   Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { createClerkClient, verifyToken } from '@clerk/backend';
-import { appConfig } from '../config/app.config';
 import { UserService } from '../user/user.service';
 import { AuthenticatedUser } from '../common/types/auth.types';
 import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
+import { AuthCacheService, CachedUser } from './services/auth-cache.service';
 
 const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
-
-interface CachedUser {
-  id: string;
-  email: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  imageUrl: string | null;
-  roles: string[];
-  cachedAt: number;
-}
-
-interface CachedToken {
-  userId: string;
-  verifiedAt: number;
-}
 
 @Injectable()
 export class ClerkGuard implements CanActivate {
   private readonly logger = new Logger(ClerkGuard.name);
   private clerk: ReturnType<typeof createClerkClient> | null = null;
-  // Cache user data for 5 minutes to avoid repeated Clerk API calls
-  private userCache = new Map<string, CachedUser>();
-  // Cache verified tokens for 1 minute to avoid repeated verifyToken calls
-  private tokenCache = new Map<string, CachedToken>();
-  private readonly USER_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-  private readonly TOKEN_CACHE_TTL = 60 * 1000; // 1 minute (tokens can expire)
 
   constructor(
-    private reflector: Reflector,
+    private readonly reflector: Reflector,
+    private readonly configService: ConfigService,
+    private readonly authCacheService: AuthCacheService,
     @Inject(forwardRef(() => UserService))
-    private userService: UserService
+    private readonly userService: UserService
   ) {
-    if (appConfig.clerk.secretKey) {
+    const secretKey =
+      this.configService.get<string>('app.clerk.secretKey') || '';
+    if (secretKey) {
       this.clerk = createClerkClient({
-        secretKey: appConfig.clerk.secretKey,
+        secretKey,
       });
+      this.logger.log('Clerk client initialized');
     } else {
       this.logger.warn(
         'CLERK_SECRET_KEY is not set. Authentication will be disabled.'
       );
     }
-
-    // Clean up expired cache entries every 5 minutes
-    setInterval(
-      () => {
-        const now = Date.now();
-        for (const [userId, user] of this.userCache.entries()) {
-          if (now - user.cachedAt > this.USER_CACHE_TTL) {
-            this.userCache.delete(userId);
-          }
-        }
-        for (const [token, cached] of this.tokenCache.entries()) {
-          if (now - cached.verifiedAt > this.TOKEN_CACHE_TTL) {
-            this.tokenCache.delete(token);
-          }
-        }
-      },
-      5 * 60 * 1000
-    );
-  }
-
-  private getCachedUser(userId: string): CachedUser | null {
-    const cached = this.userCache.get(userId);
-    if (!cached) return null;
-
-    const now = Date.now();
-    if (now - cached.cachedAt > this.USER_CACHE_TTL) {
-      this.userCache.delete(userId);
-      return null;
-    }
-
-    return cached;
-  }
-
-  private setCachedUser(user: CachedUser): void {
-    this.userCache.set(user.id, { ...user, cachedAt: Date.now() });
-  }
-
-  private getCachedToken(token: string): string | null {
-    const cached = this.tokenCache.get(token);
-    if (!cached) return null;
-
-    const now = Date.now();
-    if (now - cached.verifiedAt > this.TOKEN_CACHE_TTL) {
-      this.tokenCache.delete(token);
-      return null;
-    }
-
-    return cached.userId;
-  }
-
-  private setCachedToken(token: string, userId: string): void {
-    this.tokenCache.set(token, { userId, verifiedAt: Date.now() });
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -147,17 +80,20 @@ export class ClerkGuard implements CanActivate {
       }
 
       // Check if we've recently verified this token (cache for 1 minute)
-      const cachedUserId = this.getCachedToken(token);
+      const cachedUserId = this.authCacheService.getCachedToken(token);
       let userId: string | null = null;
       let session: { sub?: string; userId?: string } | null = null;
 
       if (cachedUserId) {
         // Token was recently verified, use cached userId
+        this.logger.debug('Using cached token verification');
         userId = cachedUserId;
       } else {
         // Verify the session token with Clerk (only if not cached)
+        const secretKey =
+          this.configService.get<string>('app.clerk.secretKey') || '';
         session = await verifyToken(token, {
-          secretKey: appConfig.clerk.secretKey,
+          secretKey,
         });
 
         // Get user ID from session (JWT payload)
@@ -165,16 +101,19 @@ export class ClerkGuard implements CanActivate {
 
         if (userId) {
           // Cache the verified token
-          this.setCachedToken(token, userId);
+          this.authCacheService.setCachedToken(token, userId);
+          this.logger.debug(`Token verified and cached for user ${userId}`);
         }
       }
 
       if (!userId) {
+        this.logger.warn('Invalid token: user ID not found');
         throw new UnauthorizedException('Invalid token: user ID not found');
       }
 
       // Check cache first to avoid repeated Clerk API calls
-      let userData: CachedUser | null = this.getCachedUser(userId);
+      let userData: CachedUser | null =
+        this.authCacheService.getCachedUser(userId);
 
       if (!userData) {
         // Fetch user details from Clerk only if not cached
@@ -201,7 +140,7 @@ export class ClerkGuard implements CanActivate {
           };
 
           // Cache the user data
-          this.setCachedUser(userData);
+          this.authCacheService.setCachedUser(userData);
         } catch (userError) {
           this.logger.error(`ClerkGuard.getUser ERROR for ${path}:`, userError);
           throw new UnauthorizedException('Failed to fetch user information');

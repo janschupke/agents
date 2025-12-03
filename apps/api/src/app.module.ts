@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
 import { HealthcheckModule } from './healthcheck/healthcheck.module';
@@ -13,9 +14,15 @@ import { MessageTranslationModule } from './message-translation/message-translat
 import { AgentMemoryModule } from './memory/agent-memory.module';
 import { SessionModule } from './session/session.module';
 import { ClerkGuard } from './auth/clerk.guard';
+import appConfig from './config/app.config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [appConfig],
+      envFilePath: ['.env.local', '.env'],
+    }),
     PrismaModule,
     HealthcheckModule,
     ChatModule,

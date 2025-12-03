@@ -3,7 +3,6 @@ import { HttpException } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { AgentRepository } from '../agent/agent.repository';
 import { SessionRepository } from './session.repository';
-import { ERROR_MESSAGES } from '../common/constants/error-messages.constants.js';
 
 describe('SessionService', () => {
   let service: SessionService;
@@ -108,7 +107,7 @@ describe('SessionService', () => {
         HttpException
       );
       await expect(service.getSessions(agentId, userId)).rejects.toThrow(
-        ERROR_MESSAGES.AGENT_NOT_FOUND
+        `Agent with ID ${agentId} not found`
       );
     });
   });
@@ -158,7 +157,7 @@ describe('SessionService', () => {
         HttpException
       );
       await expect(service.createSession(agentId, userId)).rejects.toThrow(
-        ERROR_MESSAGES.AGENT_NOT_FOUND
+        `Agent with ID ${agentId} not found`
       );
     });
   });
@@ -225,7 +224,7 @@ describe('SessionService', () => {
       ).rejects.toThrow(HttpException);
       await expect(
         service.updateSession(agentId, sessionId, userId)
-      ).rejects.toThrow(ERROR_MESSAGES.AGENT_NOT_FOUND);
+      ).rejects.toThrow(`Agent with ID ${agentId} not found`);
     });
 
     it('should throw error if session not found', async () => {
@@ -249,7 +248,7 @@ describe('SessionService', () => {
       ).rejects.toThrow(HttpException);
       await expect(
         service.updateSession(agentId, sessionId, userId)
-      ).rejects.toThrow(ERROR_MESSAGES.SESSION_NOT_FOUND);
+      ).rejects.toThrow(`Session with ID ${sessionId} not found`);
     });
 
     it('should throw error if session does not belong to agent', async () => {
@@ -281,7 +280,7 @@ describe('SessionService', () => {
       ).rejects.toThrow(HttpException);
       await expect(
         service.updateSession(agentId, sessionId, userId)
-      ).rejects.toThrow(ERROR_MESSAGES.SESSION_DOES_NOT_BELONG_TO_AGENT);
+      ).rejects.toThrow(`Session with ID ${sessionId} not found`);
     });
   });
 
@@ -328,7 +327,7 @@ describe('SessionService', () => {
       ).rejects.toThrow(HttpException);
       await expect(
         service.deleteSession(agentId, sessionId, userId)
-      ).rejects.toThrow(ERROR_MESSAGES.AGENT_NOT_FOUND);
+      ).rejects.toThrow(`Agent with ID ${agentId} not found`);
     });
 
     it('should throw error if session not found', async () => {
@@ -352,7 +351,7 @@ describe('SessionService', () => {
       ).rejects.toThrow(HttpException);
       await expect(
         service.deleteSession(agentId, sessionId, userId)
-      ).rejects.toThrow(ERROR_MESSAGES.SESSION_NOT_FOUND);
+      ).rejects.toThrow(`Session with ID ${sessionId} not found`);
     });
 
     it('should throw error if session does not belong to agent', async () => {
@@ -384,7 +383,7 @@ describe('SessionService', () => {
       ).rejects.toThrow(HttpException);
       await expect(
         service.deleteSession(agentId, sessionId, userId)
-      ).rejects.toThrow(ERROR_MESSAGES.SESSION_DOES_NOT_BELONG_TO_AGENT);
+      ).rejects.toThrow(`Session with ID ${sessionId} not found`);
     });
   });
 });

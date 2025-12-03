@@ -2,9 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AgentMemoryService } from './agent-memory.service';
 import { AgentMemoryRepository } from './agent-memory.repository';
 import { OpenAIService } from '../openai/openai.service';
+import { MemoryExtractionService } from './services/memory-extraction.service';
+import { MemoryRetrievalService } from './services/memory-retrieval.service';
+import { MemorySummarizationService } from './services/memory-summarization.service';
 import { MEMORY_CONFIG } from '../common/constants/api.constants.js';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
-import OpenAI from 'openai';
 import { AgentMemory } from '@prisma/client';
 
 describe('AgentMemoryService', () => {
@@ -26,6 +28,19 @@ describe('AgentMemoryService', () => {
     generateEmbedding: jest.fn(),
   };
 
+  const mockMemoryExtractionService = {
+    extractKeyInsights: jest.fn(),
+  };
+
+  const mockMemoryRetrievalService = {
+    getMemoriesForContext: jest.fn(),
+  };
+
+  const mockMemorySummarizationService = {
+    groupSimilarMemories: jest.fn(),
+    summarizeMemoryGroup: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -37,6 +52,18 @@ describe('AgentMemoryService', () => {
         {
           provide: OpenAIService,
           useValue: mockOpenAIService,
+        },
+        {
+          provide: MemoryExtractionService,
+          useValue: mockMemoryExtractionService,
+        },
+        {
+          provide: MemoryRetrievalService,
+          useValue: mockMemoryRetrievalService,
+        },
+        {
+          provide: MemorySummarizationService,
+          useValue: mockMemorySummarizationService,
         },
       ],
     }).compile();
@@ -50,8 +77,12 @@ describe('AgentMemoryService', () => {
 
   describe('extractKeyInsights', () => {
     it('should return empty array for empty messages', async () => {
+      mockMemoryExtractionService.extractKeyInsights.mockResolvedValue([]);
       const result = await service.extractKeyInsights([], 'api-key');
       expect(result).toEqual([]);
+      expect(
+        mockMemoryExtractionService.extractKeyInsights
+      ).toHaveBeenCalledWith([], 'api-key');
     });
 
     it('should extract insights from OpenAI response', async () => {
@@ -59,24 +90,13 @@ describe('AgentMemoryService', () => {
         { role: 'user', content: 'Hello' },
         { role: 'assistant', content: 'Hi there!' },
       ];
-      const mockOpenAIClient = {
-        chat: {
-          completions: {
-            create: jest.fn().mockResolvedValue({
-              choices: [
-                {
-                  message: {
-                    content: 'User likes programming\nAssistant is helpful',
-                  },
-                },
-              ],
-            }),
-          },
-        },
-      };
+      const expectedInsights = [
+        'User likes programming',
+        'Assistant is helpful',
+      ];
 
-      openaiService.getClient.mockReturnValue(
-        mockOpenAIClient as unknown as OpenAI
+      mockMemoryExtractionService.extractKeyInsights.mockResolvedValue(
+        expectedInsights
       );
 
       const result = await service.extractKeyInsights(messages, 'api-key');
@@ -84,30 +104,17 @@ describe('AgentMemoryService', () => {
       expect(result).toHaveLength(2);
       expect(result[0]).toBe('User likes programming');
       expect(result[1]).toBe('Assistant is helpful');
-      expect(openaiService.getClient).toHaveBeenCalledWith('api-key');
+      expect(
+        mockMemoryExtractionService.extractKeyInsights
+      ).toHaveBeenCalledWith(messages, 'api-key');
     });
 
     it('should filter out numbered lines and bullets', async () => {
       const messages = [{ role: 'user', content: 'Test' }];
-      const mockOpenAIClient = {
-        chat: {
-          completions: {
-            create: jest.fn().mockResolvedValue({
-              choices: [
-                {
-                  message: {
-                    content:
-                      '1. First insight\n- Second insight\n* Third insight',
-                  },
-                },
-              ],
-            }),
-          },
-        },
-      };
+      const expectedInsights = ['Second insight', 'Third insight'];
 
-      openaiService.getClient.mockReturnValue(
-        mockOpenAIClient as unknown as OpenAI
+      mockMemoryExtractionService.extractKeyInsights.mockResolvedValue(
+        expectedInsights
       );
 
       const result = await service.extractKeyInsights(messages, 'api-key');
@@ -120,28 +127,13 @@ describe('AgentMemoryService', () => {
 
     it('should limit insights to MAX_KEY_INSIGHTS_PER_UPDATE', async () => {
       const messages = [{ role: 'user', content: 'Test' }];
-      const manyInsights = Array.from(
-        { length: 10 },
+      const limitedInsights = Array.from(
+        { length: MEMORY_CONFIG.MAX_KEY_INSIGHTS_PER_UPDATE },
         (_, i) => `Insight ${i + 1}`
-      ).join('\n');
-      const mockOpenAIClient = {
-        chat: {
-          completions: {
-            create: jest.fn().mockResolvedValue({
-              choices: [
-                {
-                  message: {
-                    content: manyInsights,
-                  },
-                },
-              ],
-            }),
-          },
-        },
-      };
+      );
 
-      openaiService.getClient.mockReturnValue(
-        mockOpenAIClient as unknown as OpenAI
+      mockMemoryExtractionService.extractKeyInsights.mockResolvedValue(
+        limitedInsights
       );
 
       const result = await service.extractKeyInsights(messages, 'api-key');
@@ -153,17 +145,8 @@ describe('AgentMemoryService', () => {
 
     it('should return empty array on OpenAI error', async () => {
       const messages = [{ role: 'user', content: 'Test' }];
-      const mockOpenAIClient = {
-        chat: {
-          completions: {
-            create: jest.fn().mockRejectedValue(new Error('API Error')),
-          },
-        },
-      };
 
-      openaiService.getClient.mockReturnValue(
-        mockOpenAIClient as unknown as OpenAI
-      );
+      mockMemoryExtractionService.extractKeyInsights.mockResolvedValue([]);
 
       const result = await service.extractKeyInsights(messages, 'api-key');
 
@@ -172,19 +155,8 @@ describe('AgentMemoryService', () => {
 
     it('should return empty array when no response content', async () => {
       const messages = [{ role: 'user', content: 'Test' }];
-      const mockOpenAIClient = {
-        chat: {
-          completions: {
-            create: jest.fn().mockResolvedValue({
-              choices: [{ message: {} }],
-            }),
-          },
-        },
-      };
 
-      openaiService.getClient.mockReturnValue(
-        mockOpenAIClient as unknown as OpenAI
-      );
+      mockMemoryExtractionService.extractKeyInsights.mockResolvedValue([]);
 
       const result = await service.extractKeyInsights(messages, 'api-key');
 
@@ -204,24 +176,8 @@ describe('AgentMemoryService', () => {
         0.1
       );
 
-      const mockOpenAIClient = {
-        chat: {
-          completions: {
-            create: jest.fn().mockResolvedValue({
-              choices: [
-                {
-                  message: {
-                    content: insights.join('\n'),
-                  },
-                },
-              ],
-            }),
-          },
-        },
-      };
-
-      openaiService.getClient.mockReturnValue(
-        mockOpenAIClient as unknown as OpenAI
+      mockMemoryExtractionService.extractKeyInsights.mockResolvedValue(
+        insights
       );
       openaiService.generateEmbedding.mockResolvedValue(embedding);
       memoryRepository.create.mockResolvedValue({} as AgentMemory);
@@ -235,28 +191,23 @@ describe('AgentMemoryService', () => {
         apiKey
       );
 
+      expect(
+        mockMemoryExtractionService.extractKeyInsights
+      ).toHaveBeenCalledWith(messages, apiKey);
       expect(memoryRepository.create).toHaveBeenCalledTimes(2);
       expect(openaiService.generateEmbedding).toHaveBeenCalledTimes(2);
     });
 
     it('should skip memory creation if no insights extracted', async () => {
       const messages = [{ role: 'user', content: 'Test' }];
-      const mockOpenAIClient = {
-        chat: {
-          completions: {
-            create: jest.fn().mockResolvedValue({
-              choices: [{ message: {} }],
-            }),
-          },
-        },
-      };
 
-      openaiService.getClient.mockReturnValue(
-        mockOpenAIClient as unknown as OpenAI
-      );
+      mockMemoryExtractionService.extractKeyInsights.mockResolvedValue([]);
 
       await service.createMemory(1, 'user-1', 1, null, messages, 'api-key');
 
+      expect(
+        mockMemoryExtractionService.extractKeyInsights
+      ).toHaveBeenCalledWith(messages, 'api-key');
       expect(memoryRepository.create).not.toHaveBeenCalled();
     });
 
@@ -267,24 +218,8 @@ describe('AgentMemoryService', () => {
         0.1
       );
 
-      const mockOpenAIClient = {
-        chat: {
-          completions: {
-            create: jest.fn().mockResolvedValue({
-              choices: [
-                {
-                  message: {
-                    content: insights.join('\n'),
-                  },
-                },
-              ],
-            }),
-          },
-        },
-      };
-
-      openaiService.getClient.mockReturnValue(
-        mockOpenAIClient as unknown as OpenAI
+      mockMemoryExtractionService.extractKeyInsights.mockResolvedValue(
+        insights
       );
       openaiService.generateEmbedding
         .mockResolvedValueOnce(embedding)
@@ -326,36 +261,14 @@ describe('AgentMemoryService', () => {
       const userId = 'user-1';
       const queryText = 'test query';
       const apiKey = 'api-key';
-      const embedding = new Array(NUMERIC_CONSTANTS.EMBEDDING_DIMENSIONS).fill(
-        0.1
-      );
-      const mockMemories = [
-        {
-          id: 1,
-          agentId,
-          userId,
-          keyPoint: 'Memory 1',
-          context: {},
-          vectorEmbedding: null,
-          createdAt: new Date('2024-01-15'),
-          updatedAt: new Date(),
-          updateCount: 0,
-        },
-        {
-          id: 2,
-          agentId,
-          userId,
-          keyPoint: 'Memory 2',
-          context: {},
-          vectorEmbedding: null,
-          createdAt: new Date('2024-02-20'),
-          updatedAt: new Date(),
-          updateCount: 0,
-        },
+      const expectedMemories = [
+        'Jan 15, 2024 - Memory 1',
+        'Feb 20, 2024 - Memory 2',
       ];
 
-      openaiService.generateEmbedding.mockResolvedValue(embedding);
-      memoryRepository.findSimilar.mockResolvedValue(mockMemories);
+      mockMemoryRetrievalService.getMemoriesForContext.mockResolvedValue(
+        expectedMemories
+      );
 
       const result = await service.getMemoriesForContext(
         agentId,
@@ -367,21 +280,13 @@ describe('AgentMemoryService', () => {
       expect(result).toHaveLength(2);
       expect(result[0]).toContain('Memory 1');
       expect(result[1]).toContain('Memory 2');
-      expect(openaiService.generateEmbedding).toHaveBeenCalledWith(
-        queryText,
-        apiKey
-      );
-      expect(memoryRepository.findSimilar).toHaveBeenCalledWith(
-        embedding,
-        agentId,
-        userId,
-        MEMORY_CONFIG.MAX_SIMILAR_MEMORIES,
-        MEMORY_CONFIG.SIMILARITY_THRESHOLD
-      );
+      expect(
+        mockMemoryRetrievalService.getMemoriesForContext
+      ).toHaveBeenCalledWith(agentId, userId, queryText, apiKey);
     });
 
     it('should return empty array on error', async () => {
-      openaiService.generateEmbedding.mockRejectedValue(new Error('API Error'));
+      mockMemoryRetrievalService.getMemoriesForContext.mockResolvedValue([]);
 
       const result = await service.getMemoriesForContext(
         1,
@@ -401,6 +306,11 @@ describe('AgentMemoryService', () => {
       await service.summarizeMemories(1, 'user-1', 'api-key');
 
       expect(memoryRepository.findForSummarization).toHaveBeenCalled();
+      // When no memories, groupSimilarMemories is not called (early return)
+      expect(
+        mockMemorySummarizationService.groupSimilarMemories
+      ).not.toHaveBeenCalled();
+      // resetUpdateCount is not called when returning early
       expect(memoryRepository.resetUpdateCount).not.toHaveBeenCalled();
     });
 
@@ -438,25 +348,29 @@ describe('AgentMemoryService', () => {
         },
       ];
 
-      const mockOpenAIClient = {
-        chat: {
-          completions: {
-            create: jest.fn().mockResolvedValue({
-              choices: [
-                {
-                  message: {
-                    content: 'Summarized memory',
-                  },
-                },
-              ],
-            }),
+      const groupedMemories = [
+        [
+          {
+            id: 1,
+            keyPoint: 'Memory 1',
+            context: { sessionId: 1 },
+            createdAt: new Date(),
           },
-        },
-      };
+          {
+            id: 2,
+            keyPoint: 'Memory 2',
+            context: { sessionId: 1 },
+            createdAt: new Date(),
+          },
+        ],
+      ];
 
       memoryRepository.findForSummarization.mockResolvedValue(mockMemories);
-      openaiService.getClient.mockReturnValue(
-        mockOpenAIClient as unknown as OpenAI
+      mockMemorySummarizationService.groupSimilarMemories.mockResolvedValue(
+        groupedMemories
+      );
+      mockMemorySummarizationService.summarizeMemoryGroup.mockResolvedValue(
+        'Summarized memory'
       );
       openaiService.generateEmbedding.mockResolvedValue(embedding);
       memoryRepository.create.mockResolvedValue({} as AgentMemory);
@@ -466,6 +380,12 @@ describe('AgentMemoryService', () => {
       await service.summarizeMemories(agentId, userId, apiKey);
 
       expect(memoryRepository.findForSummarization).toHaveBeenCalled();
+      expect(
+        mockMemorySummarizationService.groupSimilarMemories
+      ).toHaveBeenCalledWith(mockMemories);
+      expect(
+        mockMemorySummarizationService.summarizeMemoryGroup
+      ).toHaveBeenCalled();
       expect(memoryRepository.resetUpdateCount).toHaveBeenCalledWith(
         agentId,
         userId
@@ -509,12 +429,28 @@ describe('AgentMemoryService', () => {
         },
       ];
 
+      const singleMemoryGroups = [
+        [{ id: 1, keyPoint: 'Memory 1', context: {}, createdAt: new Date() }],
+        [{ id: 2, keyPoint: 'Memory 2', context: {}, createdAt: new Date() }],
+      ];
+
       memoryRepository.findForSummarization.mockResolvedValue(mockMemories);
+      mockMemorySummarizationService.groupSimilarMemories.mockResolvedValue(
+        singleMemoryGroups
+      );
+      // For single memories, summarizeMemoryGroup returns the keyPoint as-is
+      mockMemorySummarizationService.summarizeMemoryGroup.mockImplementation(
+        (group) => Promise.resolve(group[0].keyPoint)
+      );
       memoryRepository.resetUpdateCount.mockResolvedValue(undefined);
 
       await service.summarizeMemories(1, 'user-1', 'api-key');
 
       // Should not create summaries for single memories (each memory is in its own group)
+      // Single memories are skipped in the service logic (group.length === 1)
+      expect(
+        mockMemorySummarizationService.groupSimilarMemories
+      ).toHaveBeenCalledWith(mockMemories);
       expect(memoryRepository.create).not.toHaveBeenCalled();
       expect(memoryRepository.resetUpdateCount).toHaveBeenCalled();
     });

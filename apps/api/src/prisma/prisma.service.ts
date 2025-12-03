@@ -4,6 +4,7 @@ import {
   OnModuleDestroy,
   Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
 
 @Injectable()
@@ -79,11 +80,17 @@ export class PrismaService
     }
   }
 
-  constructor() {
+  constructor(configService: ConfigService) {
     // Prefer DIRECT_URL for regular queries (better performance, no transaction overhead)
     // Fall back to DATABASE_URL if DIRECT_URL is not set
-    const directUrl = process.env.DIRECT_URL;
-    const databaseUrl = process.env.DATABASE_URL || '';
+    // Note: Access configService parameter directly (not via this) before super()
+    const directUrl =
+      configService.get<string>('app.database.directUrl') ||
+      process.env.DIRECT_URL;
+    const databaseUrl =
+      configService.get<string>('app.database.url') ||
+      process.env.DATABASE_URL ||
+      '';
 
     // Use DIRECT_URL if available, otherwise use DATABASE_URL
     const connectionUrl = directUrl || databaseUrl;

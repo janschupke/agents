@@ -7,8 +7,7 @@ import {
   Param,
   Body,
   ParseIntPipe,
-  HttpException,
-  HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { AgentService } from './agent.service';
 import { User } from '../auth/decorators/user.decorator';
@@ -21,23 +20,17 @@ import { mapAgentConfigs } from '../common/utils/agent-config.util.js';
 
 @Controller(API_ROUTES.AGENTS.BASE)
 export class AgentController {
+  private readonly logger = new Logger(AgentController.name);
+
   constructor(private readonly agentService: AgentService) {}
 
   @Get()
   async getAllAgents(
     @User() user: AuthenticatedUser
   ): Promise<AgentResponse[]> {
-    try {
-      return await this.agentService.findAll(user.id);
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw new HttpException(
-        error instanceof Error ? error.message : 'Unknown error',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+    this.logger.log(`Getting all agents for user ${user.id}`);
+    // Exception filter will handle any errors
+    return await this.agentService.findAll(user.id);
   }
 
   @Get(':id')
@@ -45,6 +38,7 @@ export class AgentController {
     @Param('id', ParseIntPipe) id: number,
     @User() user: AuthenticatedUser
   ): Promise<AgentResponse> {
+    this.logger.log(`Getting agent ${id} for user ${user.id}`);
     return await this.agentService.findById(id, user.id);
   }
 
@@ -53,6 +47,7 @@ export class AgentController {
     @Body() body: CreateAgentDto,
     @User() user: AuthenticatedUser
   ): Promise<AgentResponse> {
+    this.logger.log(`Creating agent "${body.name}" for user ${user.id}`);
     const configs = mapAgentConfigs(body.configs);
     return await this.agentService.create(
       user.id,
@@ -69,6 +64,7 @@ export class AgentController {
     @Body() body: UpdateAgentDto,
     @User() user: AuthenticatedUser
   ): Promise<AgentResponse> {
+    this.logger.log(`Updating agent ${id} for user ${user.id}`);
     const configs = mapAgentConfigs(body.configs);
     return await this.agentService.update(
       id,
@@ -85,6 +81,7 @@ export class AgentController {
     @Param('id', ParseIntPipe) id: number,
     @User() user: AuthenticatedUser
   ): Promise<SuccessResponseDto> {
+    this.logger.log(`Deleting agent ${id} for user ${user.id}`);
     await this.agentService.delete(id, user.id);
     return { success: true };
   }

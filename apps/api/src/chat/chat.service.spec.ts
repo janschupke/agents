@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { HttpException } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { AgentRepository } from '../agent/agent.repository';
+import { AgentConfigService } from '../agent/services/agent-config.service';
 import { SessionRepository } from '../session/session.repository';
 import { SessionService } from '../session/session.service';
 import { MessageRepository } from '../message/message.repository';
@@ -13,6 +14,8 @@ import { ApiCredentialsService } from '../api-credentials/api-credentials.servic
 import { SystemConfigRepository } from '../system-config/system-config.repository';
 import { MessageTranslationService } from '../message-translation/message-translation.service';
 import { WordTranslationService } from '../message-translation/word-translation.service';
+import { MessagePreparationService } from './services/message-preparation.service';
+import { OpenAIChatService } from './services/openai-chat.service';
 
 describe('ChatService', () => {
   let service: ChatService;
@@ -79,6 +82,19 @@ describe('ChatService', () => {
     getWordTranslationsForMessages: jest.fn().mockResolvedValue(new Map()),
   };
 
+  const mockAgentConfigService = {
+    mergeAgentConfig: jest.fn((config) => ({ ...config })),
+  };
+
+  const mockMessagePreparationService = {
+    prepareMessages: jest.fn(),
+    buildOpenAIRequest: jest.fn(),
+  };
+
+  const mockOpenAIChatService = {
+    createChatCompletion: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -86,6 +102,10 @@ describe('ChatService', () => {
         {
           provide: AgentRepository,
           useValue: mockAgentRepository,
+        },
+        {
+          provide: AgentConfigService,
+          useValue: mockAgentConfigService,
         },
         {
           provide: SessionRepository,
@@ -130,6 +150,14 @@ describe('ChatService', () => {
         {
           provide: WordTranslationService,
           useValue: mockWordTranslationService,
+        },
+        {
+          provide: MessagePreparationService,
+          useValue: mockMessagePreparationService,
+        },
+        {
+          provide: OpenAIChatService,
+          useValue: mockOpenAIChatService,
         },
       ],
     }).compile();
@@ -226,7 +254,7 @@ describe('ChatService', () => {
         HttpException
       );
       await expect(service.getChatHistory(agentId, userId)).rejects.toThrow(
-        'Agent not found'
+        `Agent with ID ${agentId} not found`
       );
     });
   });

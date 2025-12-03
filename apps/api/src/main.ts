@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { appConfig } from './config/app.config';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
@@ -11,7 +12,11 @@ import { Request, Response, NextFunction } from 'express';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     rawBody: true,
+    logger: ['error', 'warn', 'log', 'debug', 'verbose'], // All log levels output to console
   });
+
+  const configService = app.get(ConfigService);
+  const port = configService.get<number>('app.port') || appConfig.port;
 
   // Enable CORS with credentials support for Clerk
   app.enableCors({
@@ -55,15 +60,18 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
 
   // Global delay interceptor (only works in dev mode)
-  app.useGlobalInterceptors(new DelayInterceptor());
+  app.useGlobalInterceptors(new DelayInterceptor(configService));
 
   // ClerkGuard is applied globally via APP_GUARD in AppModule
   // It enforces authentication for all routes except those marked with @Public()
   // It automatically syncs users to the database and attaches user info to requests
 
-  await app.listen(appConfig.port);
+  await app.listen(port);
   const logger = new Logger('Bootstrap');
-  logger.log(`Server running on http://localhost:${appConfig.port}`);
+  logger.log(`Server running on http://localhost:${port}`);
+  logger.log(
+    `Environment: ${configService.get<string>('app.nodeEnv') || appConfig.nodeEnv}`
+  );
 }
 
 bootstrap();

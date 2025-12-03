@@ -84,7 +84,7 @@ describe('AgentMemoryController', () => {
 
       memoryRepository.findAllByAgentId.mockResolvedValue(mockMemories);
 
-      const result = await controller.getMemories(agentId, mockUser);
+      const result = await controller.getMemories(agentId, mockUser, {});
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
@@ -107,7 +107,7 @@ describe('AgentMemoryController', () => {
       const agentId = 1;
       memoryRepository.findAllByAgentId.mockResolvedValue([]);
 
-      await controller.getMemories(agentId, mockUser, '10');
+      await controller.getMemories(agentId, mockUser, { limit: 10 });
 
       expect(memoryRepository.findAllByAgentId).toHaveBeenCalledWith(
         agentId,
@@ -161,7 +161,7 @@ describe('AgentMemoryController', () => {
       ).rejects.toThrow(HttpException);
       await expect(
         controller.getMemory(agentId, memoryId, mockUser)
-      ).rejects.toThrow(ERROR_MESSAGES.MEMORY_NOT_FOUND);
+      ).rejects.toThrow(`Memory with ID ${memoryId} not found`);
     });
   });
 
@@ -215,7 +215,7 @@ describe('AgentMemoryController', () => {
       ).rejects.toThrow(HttpException);
       await expect(
         controller.updateMemory(agentId, memoryId, updateDto, mockUser)
-      ).rejects.toThrow(ERROR_MESSAGES.MEMORY_NOT_FOUND);
+      ).rejects.toThrow(`Memory with ID ${memoryId} not found`);
     });
   });
 
@@ -254,7 +254,7 @@ describe('AgentMemoryController', () => {
       ).rejects.toThrow(HttpException);
       await expect(
         controller.deleteMemory(agentId, memoryId, mockUser)
-      ).rejects.toThrow(ERROR_MESSAGES.MEMORY_NOT_FOUND);
+      ).rejects.toThrow(`Memory with ID ${memoryId} not found`);
     });
   });
 

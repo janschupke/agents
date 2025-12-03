@@ -8,18 +8,22 @@ import {
   Body,
   ParseIntPipe,
   Query,
-  HttpException,
-  HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { AgentMemoryService } from './agent-memory.service';
 import { AgentMemoryRepository } from './agent-memory.repository';
 import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
+import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
 import {
-  ERROR_MESSAGES,
-  MAGIC_STRINGS,
-} from '../common/constants/error-messages.constants.js';
+  UpdateMemoryDto,
+  MemoryQueryDto,
+} from '../common/dto/message-translation.dto';
+import {
+  MemoryNotFoundException,
+  ApiKeyRequiredException,
+} from '../common/exceptions';
 
 interface AgentMemoryResponse {
   id: number;
@@ -35,12 +39,10 @@ interface AgentMemoryResponse {
   updatedAt: string;
 }
 
-interface UpdateMemoryDto {
-  keyPoint: string;
-}
-
 @Controller('api/agents/:agentId/memories')
 export class AgentMemoryController {
+  private readonly logger = new Logger(AgentMemoryController.name);
+
   constructor(
     private readonly memoryService: AgentMemoryService,
     private readonly memoryRepository: AgentMemoryRepository,
@@ -51,13 +53,13 @@ export class AgentMemoryController {
   async getMemories(
     @Param('agentId', ParseIntPipe) agentId: number,
     @User() user: AuthenticatedUser,
-    @Query('limit') limit?: string,
-    @Query('offset') _offset?: string
+    @Query() query: MemoryQueryDto
   ): Promise<AgentMemoryResponse[]> {
+    this.logger.debug(`Getting memories for agent ${agentId}, user ${user.id}`);
     const memories = await this.memoryRepository.findAllByAgentId(
       agentId,
       user.id,
-      limit ? parseInt(limit, MAGIC_STRINGS.PARSE_INT_BASE) : undefined
+      query.limit
     );
 
     return memories.map((memory) => ({
@@ -88,10 +90,7 @@ export class AgentMemoryController {
     const memory = memories.find((m) => m.id === memoryId);
 
     if (!memory) {
-      throw new HttpException(
-        ERROR_MESSAGES.MEMORY_NOT_FOUND,
-        HttpStatus.NOT_FOUND
-      );
+      throw new MemoryNotFoundException(memoryId);
     }
 
     return {
@@ -124,10 +123,7 @@ export class AgentMemoryController {
     const memory = memories.find((m) => m.id === memoryId);
 
     if (!memory) {
-      throw new HttpException(
-        ERROR_MESSAGES.MEMORY_NOT_FOUND,
-        HttpStatus.NOT_FOUND
-      );
+      throw new MemoryNotFoundException(memoryId);
     }
 
     const updated = await this.memoryRepository.update(memoryId, body.keyPoint);
@@ -161,10 +157,7 @@ export class AgentMemoryController {
     const memory = memories.find((m) => m.id === memoryId);
 
     if (!memory) {
-      throw new HttpException(
-        ERROR_MESSAGES.MEMORY_NOT_FOUND,
-        HttpStatus.NOT_FOUND
-      );
+      throw new MemoryNotFoundException(memoryId);
     }
 
     await this.memoryRepository.delete(memoryId);
@@ -180,10 +173,7 @@ export class AgentMemoryController {
       MAGIC_STRINGS.OPENAI_PROVIDER
     );
     if (!apiKey) {
-      throw new HttpException(
-        ERROR_MESSAGES.OPENAI_API_KEY_REQUIRED,
-        HttpStatus.BAD_REQUEST
-      );
+      throw new ApiKeyRequiredException();
     }
 
     await this.memoryService.summarizeMemories(agentId, user.id, apiKey);

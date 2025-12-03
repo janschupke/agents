@@ -5,8 +5,7 @@ import {
   Param,
   Query,
   ParseIntPipe,
-  HttpException,
-  HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { MessageTranslationService } from './message-translation.service';
 import { WordTranslationService } from './word-translation.service';
@@ -15,13 +14,17 @@ import { SessionRepository } from '../session/session.repository';
 import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
 import { API_ROUTES } from '../common/constants/api-routes.constants.js';
+import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
+import { GetTranslationsQueryDto } from '../common/dto/message-translation.dto';
 import {
-  ERROR_MESSAGES,
-  MAGIC_STRINGS,
-} from '../common/constants/error-messages.constants.js';
+  MessageNotFoundException,
+  SessionNotFoundException,
+} from '../common/exceptions';
 
 @Controller(API_ROUTES.MESSAGES.BASE)
 export class MessageTranslationController {
+  private readonly logger = new Logger(MessageTranslationController.name);
+
   constructor(
     private readonly translationService: MessageTranslationService,
     private readonly wordTranslationService: WordTranslationService,
@@ -34,6 +37,7 @@ export class MessageTranslationController {
     @Param('messageId', ParseIntPipe) messageId: number,
     @User() user: AuthenticatedUser
   ): Promise<{ translation: string }> {
+    this.logger.log(`Translating message ${messageId} for user ${user.id}`);
     return this.translationService.translateMessage(messageId, user.id);
   }
 
@@ -49,6 +53,9 @@ export class MessageTranslationController {
       sentenceContext?: string;
     }>;
   }> {
+    this.logger.log(
+      `Translating message ${messageId} with words for user ${user.id}`
+    );
     return this.translationService.translateMessageWithWords(
       messageId,
       user.id
@@ -57,10 +64,13 @@ export class MessageTranslationController {
 
   @Get('translations')
   async getTranslations(
-    @Query('messageIds') messageIds: string, // Comma-separated IDs
+    @Query() query: GetTranslationsQueryDto,
     @User() _user: AuthenticatedUser
   ): Promise<Record<number, string>> {
-    const ids = messageIds
+    this.logger.debug(
+      `Getting translations for messageIds: ${query.messageIds}`
+    );
+    const ids = query.messageIds
       .split(',')
       .map((id) => parseInt(id.trim(), MAGIC_STRINGS.PARSE_INT_BASE))
       .filter((id) => !isNaN(id));
@@ -91,10 +101,7 @@ export class MessageTranslationController {
     // Verify access
     const message = await this.messageRepository.findById(messageId);
     if (!message) {
-      throw new HttpException(
-        ERROR_MESSAGES.MESSAGE_NOT_FOUND,
-        HttpStatus.NOT_FOUND
-      );
+      throw new MessageNotFoundException(messageId);
     }
 
     const session = await this.sessionRepository.findByIdAndUserId(
@@ -102,10 +109,7 @@ export class MessageTranslationController {
       user.id
     );
     if (!session) {
-      throw new HttpException(
-        ERROR_MESSAGES.ACCESS_DENIED,
-        HttpStatus.FORBIDDEN
-      );
+      throw new SessionNotFoundException(message.sessionId);
     }
 
     const wordTranslations =
@@ -131,10 +135,7 @@ export class MessageTranslationController {
     // Verify access
     const message = await this.messageRepository.findById(messageId);
     if (!message) {
-      throw new HttpException(
-        ERROR_MESSAGES.MESSAGE_NOT_FOUND,
-        HttpStatus.NOT_FOUND
-      );
+      throw new MessageNotFoundException(messageId);
     }
 
     const session = await this.sessionRepository.findByIdAndUserId(
@@ -142,10 +143,7 @@ export class MessageTranslationController {
       user.id
     );
     if (!session) {
-      throw new HttpException(
-        ERROR_MESSAGES.ACCESS_DENIED,
-        HttpStatus.FORBIDDEN
-      );
+      throw new SessionNotFoundException(message.sessionId);
     }
 
     const translation = await this.translationService
