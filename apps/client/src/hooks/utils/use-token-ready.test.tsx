@@ -8,7 +8,7 @@ const mockAuth = {
   isSignedIn: true,
   isLoaded: true,
 };
-vi.mock('../contexts/AuthContext', () => ({
+vi.mock('../../contexts/AuthContext', () => ({
   useAuth: () => mockAuth,
 }));
 

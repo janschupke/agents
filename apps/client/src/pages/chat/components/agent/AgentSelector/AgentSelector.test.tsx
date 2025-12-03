@@ -15,28 +15,14 @@ vi.mock('@clerk/clerk-react', () => ({
   })),
 }));
 
-// Mock AgentService
-vi.mock('../../../../services/agent.service', () => ({
-  AgentService: {
-    getAllAgents: vi.fn().mockResolvedValue([
-      {
-        id: 1,
-        name: 'Agent 1',
-        description: 'Description 1',
-        createdAt: '2024-01-01',
-      },
-      {
-        id: 2,
-        name: 'Agent 2',
-        description: 'Description 2',
-        createdAt: '2024-01-02',
-      },
-    ]),
-  },
+// Mock useAgents hook
+const mockUseAgents = vi.fn();
+vi.mock('../../../../../hooks/queries/use-agents', () => ({
+  useAgents: () => mockUseAgents(),
 }));
 
 // Mock SessionService
-vi.mock('../../../../services/chat/session/session.service', () => ({
+vi.mock('../../../../../services/chat/session/session.service', () => ({
   SessionService: {
     getSessions: vi.fn().mockResolvedValue([]),
   },
@@ -63,6 +49,25 @@ const waitForAgentsToLoad = async () => {
 describe('AgentSelector', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseAgents.mockReturnValue({
+      data: [
+        {
+          id: 1,
+          name: 'Agent 1',
+          description: 'Description 1',
+          avatarUrl: null,
+          createdAt: '2024-01-01T00:00:00.000Z',
+        },
+        {
+          id: 2,
+          name: 'Agent 2',
+          description: 'Description 2',
+          avatarUrl: null,
+          createdAt: '2024-01-02T00:00:00.000Z',
+        },
+      ],
+      isLoading: false,
+    });
   });
 
   it('should render agent selector button', async () => {
@@ -106,7 +111,7 @@ describe('AgentSelector', () => {
 
     await waitFor(
       () => {
-        expect(screen.getByText('Agent 2')).toBeInTheDocument();
+        expect(screen.getByText(/Agent 2/i)).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
@@ -137,8 +142,8 @@ describe('AgentSelector', () => {
     // Should show agent options
     await waitFor(
       () => {
-        expect(screen.getByText('Agent 1')).toBeInTheDocument();
-        expect(screen.getByText('Agent 2')).toBeInTheDocument();
+        expect(screen.getByText(/Agent 1/i)).toBeInTheDocument();
+        expect(screen.getByText(/Agent 2/i)).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
@@ -169,7 +174,7 @@ describe('AgentSelector', () => {
     // Should show dropdown with agents
     await waitFor(
       () => {
-        const agent1 = screen.getByText('Agent 1');
+        const agent1 = screen.getByText(/Agent 1/i);
         expect(agent1).toBeInTheDocument();
       },
       { timeout: 3000 }

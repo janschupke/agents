@@ -3,27 +3,36 @@ import { renderHook, act } from '@testing-library/react';
 import { useAgentDelete } from './use-agent-delete';
 import { Agent } from '../../../../types/chat.types';
 import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
+import { ToastProvider } from '../../../../contexts/ToastContext';
 
-// Mock dependencies
-const mockConfirm = vi.fn();
-const mockDeleteAgent = vi.fn();
+// Mock dependencies - use hoisted to ensure stable references
+const { mockConfirm, mockDeleteAgent, deleteAgentMutation } = vi.hoisted(() => {
+  const mockConfirm = vi.fn();
+  const mockDeleteAgent = vi.fn();
+  const deleteAgentMutation = {
+    mutateAsync: mockDeleteAgent,
+    isPending: false,
+  };
+  return { mockConfirm, mockDeleteAgent, deleteAgentMutation };
+});
+
 const mockConfirmDialog = <div>Confirm Dialog</div>;
 
-vi.mock('../../../../hooks/useConfirm', () => ({
+vi.mock('../../../../../hooks/ui/useConfirm', () => ({
   useConfirm: () => ({
     confirm: mockConfirm,
     ConfirmDialog: mockConfirmDialog,
   }),
 }));
 
-vi.mock('../../../../hooks/mutations/use-agent-mutations', () => ({
-  useDeleteAgent: () => ({
-    mutateAsync: mockDeleteAgent,
-  }),
+vi.mock('../../../../../hooks/mutations/use-agent-mutations', () => ({
+  useDeleteAgent: () => deleteAgentMutation,
 }));
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <TestQueryProvider>{children}</TestQueryProvider>
+  <TestQueryProvider>
+    <ToastProvider>{children}</ToastProvider>
+  </TestQueryProvider>
 );
 
 describe('useAgentDelete', () => {

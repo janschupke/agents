@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { TestQueryProvider } from '../../../test/utils/test-query-provider';
+import { ToastProvider } from '../../../contexts/ToastContext';
 import { useChatHandlers } from './use-chat-handlers';
 import { Session, ChatHistoryResponse } from '../../../types/chat.types';
 
 // Mock useConfirm
 const mockConfirm = vi.fn();
-vi.mock('../../../hooks/useConfirm', () => ({
+vi.mock('../../../hooks/ui/useConfirm', () => ({
   useConfirm: () => ({
     confirm: mockConfirm,
     ConfirmDialog: null,
@@ -22,7 +23,9 @@ vi.mock('@openai/utils', () => ({
 }));
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <TestQueryProvider>{children}</TestQueryProvider>
+  <TestQueryProvider>
+    <ToastProvider>{children}</ToastProvider>
+  </TestQueryProvider>
 );
 
 describe('useChatHandlers', () => {

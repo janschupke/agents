@@ -4,6 +4,8 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ChatAgent from './ChatAgent';
 import { TestQueryProvider } from '../../../../../test/utils/test-query-provider';
+import { AuthProvider } from '../../../../../contexts/AuthContext';
+import { ToastProvider } from '../../../../../contexts/ToastContext';
 import { Session } from '../../../../../types/chat.types';
 
 // Mock Clerk
@@ -35,9 +37,15 @@ vi.mock('../../hooks/use-chat-messages', () => ({
   useChatMessages: () => mockUseChatMessages(),
 }));
 
+// Mock scrollIntoView for jsdom
+const mockScrollIntoView = vi.fn();
 vi.mock('../../hooks/use-chat-scroll', () => ({
   useChatScroll: vi.fn(() => ({
-    messagesEndRef: { current: null },
+    messagesEndRef: { 
+      current: {
+        scrollIntoView: mockScrollIntoView,
+      } as unknown as HTMLDivElement,
+    },
   })),
 }));
 
@@ -77,7 +85,7 @@ vi.mock('../../hooks/use-chat-agent-navigation', () => ({
   })),
 }));
 
-vi.mock('../../../../../hooks/useConfirm', () => ({
+vi.mock('../../../../../hooks/ui/useConfirm', () => ({
   useConfirm: vi.fn(() => ({
     ConfirmDialog: null,
   })),
@@ -85,7 +93,11 @@ vi.mock('../../../../../hooks/useConfirm', () => ({
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter>
-    <TestQueryProvider>{children}</TestQueryProvider>
+    <TestQueryProvider>
+      <AuthProvider>
+        <ToastProvider>{children}</ToastProvider>
+      </AuthProvider>
+    </TestQueryProvider>
   </MemoryRouter>
 );
 

@@ -15,7 +15,7 @@ describe('SessionService', () => {
 
     it('should throw error when fetch fails', async () => {
       server.use(
-        http.get(`${API_BASE_URL}/api/agents/1/sessions`, () => {
+        http.get(`${API_BASE_URL}/api/chat/1/sessions`, () => {
           return HttpResponse.json({ message: 'Not found' }, { status: 404 });
         })
       );
@@ -34,7 +34,7 @@ describe('SessionService', () => {
 
     it('should throw error when create fails', async () => {
       server.use(
-        http.post(`${API_BASE_URL}/api/agents/1/sessions`, () => {
+        http.post(`${API_BASE_URL}/api/chat/1/sessions`, () => {
           return HttpResponse.json(
             { message: 'Internal server error' },
             { status: 500 }
@@ -69,9 +69,8 @@ describe('SessionService', () => {
 
   describe('deleteSession', () => {
     it('should delete session successfully', async () => {
-      await expect(
-        SessionService.deleteSession(1, 1)
-      ).resolves.toBeUndefined();
+      const result = await SessionService.deleteSession(1, 1);
+      expect(result).toBeUndefined();
     });
 
     it('should throw error when delete fails', async () => {

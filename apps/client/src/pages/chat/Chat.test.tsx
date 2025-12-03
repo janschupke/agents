@@ -5,11 +5,11 @@ import Chat from './Chat';
 import { TestQueryProvider } from '../../test/utils/test-query-provider';
 import { ROUTES } from '../../constants/routes.constants';
 
-// Mock useChat
-const mockUseChat = vi.fn();
+// Mock useChatRoute
+const mockUseChatRoute = vi.fn();
 vi.mock('./hooks/use-chat-route', () => ({
-  useChat: (agentId: number | null, sessionId: number | null) =>
-    mockUseChat(agentId, sessionId),
+  useChatRoute: (agentId: number | null, sessionId: number | null) =>
+    mockUseChatRoute(agentId, sessionId),
 }));
 
 // Mock useAgents and useAgentSessions
@@ -32,7 +32,7 @@ vi.mock('../../utils/localStorage', () => ({
 }));
 
 // Mock ChatAgent
-vi.mock('./components/chat/ChatAgent', () => ({
+vi.mock('./components/chat/ChatAgent/ChatAgent', () => ({
   default: ({
     sessionId,
     agentId,
@@ -47,12 +47,12 @@ vi.mock('./components/chat/ChatAgent', () => ({
 }));
 
 // Mock ChatLoadingState
-vi.mock('./components/chat/ChatLoadingState', () => ({
+vi.mock('./components/chat/ChatLoadingState/ChatLoadingState', () => ({
   default: () => <div data-testid="chat-loading">Loading...</div>,
 }));
 
 // Mock ChatErrorState
-vi.mock('./components/chat/ChatErrorState', () => ({
+vi.mock('./components/chat/ChatErrorState/ChatErrorState', () => ({
   default: ({ message }: { message: string }) => (
     <div data-testid="chat-error">Error: {message}</div>
   ),
@@ -98,7 +98,7 @@ vi.mock('@clerk/clerk-react', () => ({
 }));
 
 // Mock useTokenReady
-vi.mock('../../hooks/use-token-ready', () => ({
+vi.mock('../../hooks/utils/use-token-ready', () => ({
   useTokenReady: () => true,
 }));
 
@@ -143,7 +143,7 @@ describe('Chat', () => {
       data: [],
       isLoading: false,
     });
-    mockUseChat.mockReturnValue({
+    mockUseChatRoute.mockReturnValue({
       loading: false,
       error: null,
     });
@@ -167,7 +167,7 @@ describe('Chat', () => {
 
   it('should show error state when error occurs', () => {
     mockUseParams.mockReturnValue({ agentId: '1', sessionId: '123' });
-    mockUseChat.mockReturnValue({
+    mockUseChatRoute.mockReturnValue({
       loading: false,
       error: 'Session not found',
     });
@@ -191,7 +191,7 @@ describe('Chat', () => {
       data: [],
       isLoading: false,
     });
-    mockUseChat.mockReturnValue({
+    mockUseChatRoute.mockReturnValue({
       loading: false,
       error: null,
     });
@@ -213,7 +213,7 @@ describe('Chat', () => {
       data: [],
       isLoading: false,
     });
-    mockUseChat.mockReturnValue({
+    mockUseChatRoute.mockReturnValue({
       loading: false,
       error: null,
     });
@@ -231,7 +231,7 @@ describe('Chat', () => {
 
   it('should render ChatAgent with sessionId and agentId when both exist', () => {
     mockUseParams.mockReturnValue({ agentId: '7', sessionId: '123' });
-    mockUseChat.mockReturnValue({
+    mockUseChatRoute.mockReturnValue({
       loading: false,
       error: null,
     });
@@ -267,7 +267,7 @@ describe('Chat', () => {
 
   it('should navigate to chat route when sessionId is invalid', () => {
     mockUseParams.mockReturnValue({ agentId: '1', sessionId: 'invalid' });
-    mockUseChat.mockReturnValue({
+    mockUseChatRoute.mockReturnValue({
       loading: false,
       error: null,
     });

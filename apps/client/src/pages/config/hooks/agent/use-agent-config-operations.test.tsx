@@ -1,47 +1,54 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
+import { ToastProvider } from '../../../../contexts/ToastContext';
 import { useAgentConfigOperations } from './use-agent-config-operations';
 import { Agent } from '../../../../types/chat.types';
 import { AgentFormValues } from './use-agent-form';
 
 // Mock useConfirm
 const mockConfirm = vi.fn();
-vi.mock('../../../../hooks/useConfirm', () => ({
+vi.mock('../../../../../hooks/ui/useConfirm', () => ({
   useConfirm: () => ({
     confirm: mockConfirm,
     ConfirmDialog: null,
   }),
 }));
 
-// Mock mutation hooks
-const mockCreateAgent = vi.fn();
-const mockUpdateAgent = vi.fn();
-const mockDeleteAgent = vi.fn();
+// Mock mutation hooks - use hoisted to ensure stable references
+const { mockCreateAgent, mockUpdateAgent, mockDeleteAgent, createAgentMutation, updateAgentMutation, deleteAgentMutation } = vi.hoisted(() => {
+  const mockCreateAgent = vi.fn();
+  const mockUpdateAgent = vi.fn();
+  const mockDeleteAgent = vi.fn();
+  
+  const createAgentMutation = {
+    mutateAsync: mockCreateAgent,
+    isPending: false,
+  };
+  
+  const updateAgentMutation = {
+    mutateAsync: mockUpdateAgent,
+    isPending: false,
+  };
+  
+  const deleteAgentMutation = {
+    mutateAsync: mockDeleteAgent,
+    isPending: false,
+  };
+  
+  return { mockCreateAgent, mockUpdateAgent, mockDeleteAgent, createAgentMutation, updateAgentMutation, deleteAgentMutation };
+});
 
-const mockUseCreateAgent = vi.fn(() => ({
-  mutateAsync: mockCreateAgent,
-  isPending: false,
-}));
-
-const mockUseUpdateAgent = vi.fn(() => ({
-  mutateAsync: mockUpdateAgent,
-  isPending: false,
-}));
-
-const mockUseDeleteAgent = vi.fn(() => ({
-  mutateAsync: mockDeleteAgent,
-  isPending: false,
-}));
-
-vi.mock('../../../../hooks/mutations/use-agent-mutations', () => ({
-  useCreateAgent: () => mockUseCreateAgent(),
-  useUpdateAgent: () => mockUseUpdateAgent(),
-  useDeleteAgent: () => mockUseDeleteAgent(),
+vi.mock('../../../../../hooks/mutations/use-agent-mutations', () => ({
+  useCreateAgent: () => createAgentMutation,
+  useUpdateAgent: () => updateAgentMutation,
+  useDeleteAgent: () => deleteAgentMutation,
 }));
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <TestQueryProvider>{children}</TestQueryProvider>
+  <TestQueryProvider>
+    <ToastProvider>{children}</ToastProvider>
+  </TestQueryProvider>
 );
 
 describe('useAgentConfigOperations', () => {
@@ -341,10 +348,9 @@ describe('useAgentConfigOperations', () => {
   });
 
   it('should return saving state', () => {
-    mockUseCreateAgent.mockReturnValue({
-      mutateAsync: mockCreateAgent,
-      isPending: true,
-    });
+    // Temporarily modify the mutation objects to have isPending: true
+    createAgentMutation.isPending = true;
+    updateAgentMutation.isPending = false;
 
     const { result } = renderHook(
       () =>
@@ -359,6 +365,9 @@ describe('useAgentConfigOperations', () => {
     );
 
     expect(result.current.saving).toBe(true);
+    
+    // Restore original values
+    createAgentMutation.isPending = false;
   });
 
   it('should handle save errors gracefully', async () => {

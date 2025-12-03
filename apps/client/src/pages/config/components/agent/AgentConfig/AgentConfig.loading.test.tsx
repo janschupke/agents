@@ -4,6 +4,8 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import AgentConfig from './AgentConfig';
 import { TestQueryProvider } from '../../../../../test/utils/test-query-provider';
+import { AuthProvider } from '../../../../../contexts/AuthContext';
+import { ToastProvider } from '../../../../../contexts/ToastContext';
 import { Agent } from '../../../../../types/chat.types';
 
 // Mock Clerk
@@ -15,12 +17,12 @@ vi.mock('@clerk/clerk-react', () => ({
 }));
 
 // Mock useTokenReady
-vi.mock('../../../../hooks/use-token-ready', () => ({
+vi.mock('../../../../../hooks/utils/use-token-ready', () => ({
   useTokenReady: () => true,
 }));
 
 // Mock AgentService
-vi.mock('../../../../services/agent.service', () => ({
+vi.mock('../../../../../services/agent/agent.service', () => ({
   AgentService: {
     getAllAgents: vi.fn(),
     getAgent: vi.fn(),
@@ -81,14 +83,14 @@ vi.mock('../../hooks/form/use-new-agent-form', () => ({
   })),
 }));
 
-vi.mock('../../../../hooks/use-unsaved-changes-warning', () => ({
+vi.mock('../../../../../hooks/ui/use-unsaved-changes-warning', () => ({
   useUnsavedChangesWarning: vi.fn(),
 }));
 
 const mockUseAgents = vi.fn();
 const mockUseAgent = vi.fn();
 const mockUseAgentMemories = vi.fn();
-vi.mock('../../../../hooks/queries/use-agents', () => ({
+vi.mock('../../../../../hooks/queries/use-agents', () => ({
   useAgents: () => mockUseAgents(),
   useAgent: () => mockUseAgent(),
   useAgentMemories: () => mockUseAgentMemories(),
@@ -96,7 +98,11 @@ vi.mock('../../../../hooks/queries/use-agents', () => ({
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter>
-    <TestQueryProvider>{children}</TestQueryProvider>
+    <TestQueryProvider>
+      <AuthProvider>
+        <ToastProvider>{children}</ToastProvider>
+      </AuthProvider>
+    </TestQueryProvider>
   </MemoryRouter>
 );
 
@@ -177,6 +183,7 @@ describe('AgentConfig Loading States', () => {
           createdAt: '2024-01-01T00:00:00.000Z',
         },
         isLoading: false,
+        isError: false,
       });
 
       // Cache is set by useAgents hook returning data
@@ -344,12 +351,14 @@ describe('AgentConfig Loading States', () => {
           createdAt: '2024-01-01T00:00:00.000Z',
         },
         isLoading: false,
+        isError: false,
       });
 
       // Mock useAgentMemories for AgentConfigForm
       mockUseAgentMemories.mockReturnValue({
         data: [],
         isLoading: false,
+        isError: false,
       });
 
       // Cache is set by useAgents hook returning data

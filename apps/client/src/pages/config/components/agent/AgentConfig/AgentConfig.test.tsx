@@ -25,35 +25,44 @@ vi.mock('@clerk/clerk-react', () => ({
 }));
 
 // Mock useTokenReady
-vi.mock('../../../../hooks/use-token-ready', () => ({
+vi.mock('../../../../../hooks/utils/use-token-ready', () => ({
   useTokenReady: () => true,
 }));
 
 // Mock AgentService
-vi.mock('../../../../services/agent/agent.service', () => ({
+const { mockGetAllAgents, mockGetAgent, mockCreateAgent, mockUpdateAgent, mockDeleteAgent } = vi.hoisted(() => {
+  const mockGetAllAgents = vi.fn();
+  const mockGetAgent = vi.fn(() =>
+    Promise.resolve({
+      id: 1,
+      name: 'Test Agent',
+      description: 'Test',
+      createdAt: '2024-01-01T00:00:00Z',
+      configs: {
+        temperature: 0.7,
+        system_prompt: '',
+        behavior_rules: [],
+      },
+    })
+  );
+  const mockCreateAgent = vi.fn();
+  const mockUpdateAgent = vi.fn();
+  const mockDeleteAgent = vi.fn();
+  return { mockGetAllAgents, mockGetAgent, mockCreateAgent, mockUpdateAgent, mockDeleteAgent };
+});
+
+vi.mock('../../../../../services/agent/agent.service', () => ({
   AgentService: {
-    getAllAgents: vi.fn(),
-    getAgent: vi.fn(() =>
-      Promise.resolve({
-        id: 1,
-        name: 'Test Agent',
-        description: 'Test',
-        createdAt: '2024-01-01T00:00:00Z',
-        configs: {
-          temperature: 0.7,
-          system_prompt: '',
-          behavior_rules: [],
-        },
-      })
-    ),
-    createAgent: vi.fn(),
-    updateAgent: vi.fn(),
-    deleteAgent: vi.fn(),
+    getAllAgents: mockGetAllAgents,
+    getAgent: mockGetAgent,
+    createAgent: mockCreateAgent,
+    updateAgent: mockUpdateAgent,
+    deleteAgent: mockDeleteAgent,
   },
 }));
 
 // Mock SessionService
-vi.mock('../../../../services/chat/session/session.service', () => ({
+vi.mock('../../../../../services/chat/session/session.service', () => ({
   SessionService: {
     getSessions: vi.fn(() => Promise.resolve([])),
   },
@@ -135,7 +144,6 @@ const TestWrapper = ({
 );
 
 describe('AgentConfig', () => {
-  const mockGetAllAgents = vi.mocked(AgentService.getAllAgents);
 
   const mockAgents: Agent[] = [
     {

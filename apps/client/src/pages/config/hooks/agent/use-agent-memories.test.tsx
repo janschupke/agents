@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useAgentMemories } from './use-agent-memories';
 import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
+import { ToastProvider } from '../../../../contexts/ToastContext';
 
 // Mock dependencies
 const mockConfirm = vi.fn();
@@ -9,19 +10,25 @@ const mockUpdateMemory = vi.fn();
 const mockDeleteMemory = vi.fn();
 const mockInvalidateQueries = vi.fn();
 
-vi.mock('../../../../hooks/useConfirm', () => ({
+vi.mock('../../../../../hooks/ui/useConfirm', () => ({
   useConfirm: () => ({
     confirm: mockConfirm,
   }),
 }));
 
-vi.mock('../../../../hooks/mutations/use-agent-mutations', () => ({
-  useUpdateMemory: () => ({
-    mutateAsync: mockUpdateMemory,
-  }),
-  useDeleteMemory: () => ({
-    mutateAsync: mockDeleteMemory,
-  }),
+const updateMemoryMutation = {
+  mutateAsync: mockUpdateMemory,
+  isPending: false,
+};
+
+const deleteMemoryMutation = {
+  mutateAsync: mockDeleteMemory,
+  isPending: false,
+};
+
+vi.mock('../../../../../hooks/mutations/use-agent-mutations', () => ({
+  useUpdateMemory: () => updateMemoryMutation,
+  useDeleteMemory: () => deleteMemoryMutation,
 }));
 
 vi.mock('@tanstack/react-query', async () => {
@@ -35,7 +42,9 @@ vi.mock('@tanstack/react-query', async () => {
 });
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <TestQueryProvider>{children}</TestQueryProvider>
+  <TestQueryProvider>
+    <ToastProvider>{children}</ToastProvider>
+  </TestQueryProvider>
 );
 
 describe('useAgentMemories', () => {
