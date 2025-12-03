@@ -192,6 +192,24 @@ export const handlers = [
     });
   }),
 
+  // Get session with agent ID (for routing) - place early to ensure it matches
+  // This endpoint is used by getSessionWithAgent
+  http.get(`${API_BASE}/api/sessions/:sessionId`, ({ params, request }) => {
+    const sessionId = Number(params.sessionId);
+    const session = mockSessions.find((s) => s.id === sessionId);
+    if (!session) {
+      return HttpResponse.json({ message: 'Session not found' }, { status: 404 });
+    }
+    return HttpResponse.json({
+      session: {
+        id: session.id,
+        session_name: session.session_name,
+        createdAt: '2024-01-01T00:00:00.000Z',
+      },
+      agentId: session.agent_id,
+    });
+  }),
+
   http.post(`${API_BASE}/api/chat/:agentId`, async ({ params, request }) => {
     const agentId = Number(params.agentId);
     const url = new URL(request.url);
@@ -262,23 +280,6 @@ export const handlers = [
       return new HttpResponse(null, { status: 204 });
     }
   ),
-
-  // Get session with agent ID (for routing)
-  http.get(`${API_BASE}/api/sessions/:sessionId`, ({ params }) => {
-    const sessionId = Number(params.sessionId);
-    const session = mockSessions.find((s) => s.id === sessionId);
-    if (!session) {
-      return HttpResponse.json({ message: 'Session not found' }, { status: 404 });
-    }
-    return HttpResponse.json({
-      session: {
-        id: session.id,
-        session_name: session.session_name,
-        createdAt: '2024-01-01T00:00:00.000Z',
-      },
-      agentId: session.agent_id,
-    }, { status: 200 });
-  }),
 
   // User endpoints
   http.get(`${API_BASE}/api/user/me`, () => {
