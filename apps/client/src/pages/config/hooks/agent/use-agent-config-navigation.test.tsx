@@ -13,7 +13,7 @@ vi.mock('react-router-dom', () => ({
 
 vi.mock('../../../../utils/localStorage', () => ({
   LocalStorageManager: {
-    setSelectedAgentIdConfig: mockSetSelectedAgentIdConfig,
+    setSelectedAgentIdConfig: (agentId: number | null) => mockSetSelectedAgentIdConfig(agentId),
   },
 }));
 

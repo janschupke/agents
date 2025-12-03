@@ -466,7 +466,7 @@ describe('BehaviorRulesField', () => {
     it('should not update rules when JSON is invalid', async () => {
       const user = userEvent.setup();
       const mockOnChange = vi.fn();
-      const { rerender } = render(
+      render(
         <TestWrapper
           rules={['Original Rule']}
           onChange={mockOnChange}

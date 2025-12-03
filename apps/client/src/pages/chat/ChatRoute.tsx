@@ -1,4 +1,4 @@
-import { useParams, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { ROUTES } from '../../constants/routes.constants';
 import ChatAgent from './components/chat/ChatAgent';

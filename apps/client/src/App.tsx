@@ -21,7 +21,7 @@ import PageLoadingState from './components/layout/PageLoadingState';
 // Lazy load routes for code splitting
 const ChatRoute = lazy(() => import(/* webpackChunkName: "chat" */ './pages/chat/ChatRoute'));
 const ConfigRoute = lazy(() => import(/* webpackChunkName: "config" */ './pages/config/ConfigRoute'));
-const UserProfile = lazy(() => import(/* webpackChunkName: "profile" */ './pages/profile'));
+const UserProfile = lazy(() => import(/* webpackChunkName: "profile" */ './pages/profile').then(module => ({ default: module.UserProfile })));
 
 // Memoized Footer component to prevent re-renders
 const AppFooter = memo(Footer);

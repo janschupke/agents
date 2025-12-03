@@ -11,15 +11,15 @@ describe('useFadeInOnChange', () => {
 
   it('should increment key when value changes from null to a value', () => {
     const { result, rerender } = renderHook(
-      ({ value }) => useFadeInOnChange(value),
+      ({ value }: { value: string | null }) => useFadeInOnChange(value),
       {
-        initialProps: { value: null },
+        initialProps: { value: null as string | null },
       }
     );
 
     expect(result.current).toBe(0);
 
-    rerender({ value: 'test' });
+    rerender({ value: 'test' as string | null });
 
     expect(result.current).toBe(1);
   });
@@ -58,15 +58,15 @@ describe('useFadeInOnChange', () => {
 
   it('should not increment when value changes from value to null', () => {
     const { result, rerender } = renderHook(
-      ({ value }) => useFadeInOnChange(value),
+      ({ value }: { value: string | null }) => useFadeInOnChange(value),
       {
-        initialProps: { value: 'test' },
+        initialProps: { value: 'test' as string | null },
       }
     );
 
     expect(result.current).toBe(1);
 
-    rerender({ value: null });
+    rerender({ value: null as string | null });
 
     // Should not increment when going to null
     expect(result.current).toBe(1);
@@ -74,15 +74,15 @@ describe('useFadeInOnChange', () => {
 
   it('should not increment when value changes from value to undefined', () => {
     const { result, rerender } = renderHook(
-      ({ value }) => useFadeInOnChange(value),
+      ({ value }: { value: string | undefined }) => useFadeInOnChange(value),
       {
-        initialProps: { value: 'test' },
+        initialProps: { value: 'test' as string | undefined },
       }
     );
 
     expect(result.current).toBe(1);
 
-    rerender({ value: undefined });
+    rerender({ value: undefined as string | undefined });
 
     // Should not increment when going to undefined
     expect(result.current).toBe(1);

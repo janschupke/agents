@@ -8,7 +8,7 @@ interface SidebarItemAction {
   tooltip?: string;
 }
 
-interface SidebarItemProps {
+export interface SidebarItemProps {
   isSelected: boolean;
   onClick: () => void;
   actions?: SidebarItemAction[];

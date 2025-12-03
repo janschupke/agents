@@ -88,9 +88,8 @@ export default function AgentSelector() {
       <DropdownTransition show={isOpen}>
         <div className="absolute left-0 mt-1 w-56 bg-background border border-border py-1 z-[100] max-h-64 overflow-y-auto">
           {agents.map((agent) => (
-            <Button
+            <div
               key={agent.id}
-              onClick={() => handleAgentSelect(agent.id)}
               onMouseEnter={() => {
                 // Prefetch sessions for this agent on hover
                 queryClient.prefetchQuery({
@@ -101,7 +100,10 @@ export default function AgentSelector() {
                   },
                 });
               }}
-              variant={ButtonVariant.ICON}
+            >
+              <Button
+                onClick={() => handleAgentSelect(agent.id)}
+                variant={ButtonVariant.ICON}
               className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 ${
                 agent.id === selectedAgentId
                   ? 'bg-primary text-text-inverse'
@@ -115,9 +117,10 @@ export default function AgentSelector() {
               />
               <span className="truncate">{agent.name}</span>
               {agent.id === selectedAgentId && (
-                <span className="ml-auto text-xs">✓</span>
+                <span className="ml-auto text-xs">✓                </span>
               )}
             </Button>
+            </div>
           ))}
         </div>
       </DropdownTransition>

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useLocation, useNavigate, NavigateFunction } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface UseAutoNavigateToItemOptions<T> {
   /**

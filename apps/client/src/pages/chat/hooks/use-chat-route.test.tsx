@@ -82,7 +82,7 @@ describe('useChatRoute', () => {
       error: null,
     });
 
-    const { result } = renderHook(() => useChatRoute('123'), { wrapper });
+    const { result } = renderHook(() => useChatRoute(null, 123), { wrapper });
 
     await waitFor(() => {
       expect(result.current.agentId).toBe(2);
@@ -91,81 +91,8 @@ describe('useChatRoute', () => {
     });
   });
 
-  it('should fall back to last selected agent when no sessionId', async () => {
-    mockUseSessionWithAgent.mockReturnValue({
-      agentId: null,
-      loading: false,
-      error: null,
-    });
-    mockLocalStorage.getItem.mockReturnValue('2'); // Last selected agent ID
-
-    const { result } = renderHook(() => useChatRoute(undefined), { wrapper });
-
-    await waitFor(() => {
-      expect(result.current.agentId).toBe(2);
-      expect(result.current.sessionId).toBe(null);
-    });
-  });
-
-  it('should fall back to first available agent when no sessionId and no last selected', async () => {
-    mockUseSessionWithAgent.mockReturnValue({
-      agentId: null,
-      loading: false,
-      error: null,
-    });
-    mockLocalStorage.getItem.mockReturnValue(null); // No last selected
-
-    const { result } = renderHook(() => useChatRoute(undefined), { wrapper });
-
-    await waitFor(() => {
-      expect(result.current.agentId).toBe(1); // First agent
-      expect(result.current.sessionId).toBe(null);
-    });
-
-    // Should save first agent to localStorage
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-      'selectedAgentId_chat',
-      '1'
-    );
-  });
-
-  it('should use first available agent when last selected agent no longer exists', async () => {
-    mockUseSessionWithAgent.mockReturnValue({
-      agentId: null,
-      loading: false,
-      error: null,
-    });
-    mockLocalStorage.getItem.mockReturnValue('999'); // Last selected agent that doesn't exist
-
-    const { result } = renderHook(() => useChatRoute(undefined), { wrapper });
-
-    await waitFor(() => {
-      expect(result.current.agentId).toBe(1); // First available agent
-      expect(result.current.sessionId).toBe(null);
-    });
-
-    // Should update localStorage with first available agent
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-      'selectedAgentId_chat',
-      '1'
-    );
-  });
-
-  it('should return null agentId when no agents exist and no sessionId', async () => {
-    mockUseSessionWithAgent.mockReturnValue({
-      agentId: null,
-      loading: false,
-      error: null,
-    });
-    vi.mocked(AgentService.getAllAgents).mockResolvedValue([]);
-
-    const { result } = renderHook(() => useChatRoute(undefined), { wrapper });
-
-    await waitFor(() => {
-      expect(result.current.agentId).toBe(null);
-      expect(result.current.sessionId).toBe(null);
-    });
-  });
+  // Note: Agent fallback logic has been moved to ChatRoute.tsx
+  // These tests are no longer relevant for useChatRoute hook
 
   it('should handle loading state from session', async () => {
     mockUseSessionWithAgent.mockReturnValue({
@@ -174,31 +101,13 @@ describe('useChatRoute', () => {
       error: null,
     });
 
-    const { result } = renderHook(() => useChatRoute('123'), { wrapper });
+    const { result } = renderHook(() => useChatRoute(null, 123), { wrapper });
 
     expect(result.current.loading).toBe(true);
   });
 
-  it('should handle loading state from agents when no sessionId', async () => {
-    mockUseSessionWithAgent.mockReturnValue({
-      agentId: null,
-      loading: false,
-      error: null,
-    });
-
-    // Mock useAgents to return loading state
-    vi.mocked(AgentService.getAllAgents).mockImplementation(
-      () =>
-        new Promise(() => {
-          // Never resolves - simulates loading
-        })
-    );
-
-    const { result } = renderHook(() => useChatRoute(undefined), { wrapper });
-
-    // Should be loading while agents are being fetched
-    expect(result.current.loading).toBe(true);
-  });
+  // Note: Agent loading logic has been moved to ChatRoute.tsx
+  // This test is no longer relevant for useChatRoute hook
 
   it('should propagate error from session', async () => {
     mockUseSessionWithAgent.mockReturnValue({
@@ -207,7 +116,7 @@ describe('useChatRoute', () => {
       error: 'Session not found',
     });
 
-    const { result } = renderHook(() => useChatRoute('123'), { wrapper });
+    const { result } = renderHook(() => useChatRoute(null, 123), { wrapper });
 
     await waitFor(() => {
       expect(result.current.error).toBe('Session not found');
@@ -221,26 +130,25 @@ describe('useChatRoute', () => {
       error: null,
     });
 
-    const { result } = renderHook(() => useChatRoute('456'), { wrapper });
+    const { result } = renderHook(() => useChatRoute(null, 456), { wrapper });
 
     await waitFor(() => {
       expect(result.current.sessionId).toBe(456);
     });
   });
 
-  it('should handle invalid sessionId string', async () => {
+  it('should handle null agentId and sessionId', async () => {
     mockUseSessionWithAgent.mockReturnValue({
       agentId: null,
       loading: false,
       error: null,
     });
 
-    const { result } = renderHook(() => useChatRoute('invalid'), { wrapper });
+    const { result } = renderHook(() => useChatRoute(null, null), { wrapper });
 
     await waitFor(() => {
       expect(result.current.sessionId).toBe(null);
-      // Should fall back to agents
-      expect(result.current.agentId).toBe(1);
+      expect(result.current.agentId).toBe(null); // No agentId from session, and no agentId provided
     });
   });
 });

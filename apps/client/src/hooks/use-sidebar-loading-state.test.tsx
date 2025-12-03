@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useSidebarLoadingState } from './use-sidebar-loading-state';
@@ -26,7 +26,7 @@ describe('useSidebarLoadingState', () => {
   describe('agents type', () => {
     it('should return shouldShowLoading: false when cache has agents data', () => {
       const mockAgents: Agent[] = [
-        { id: 1, name: 'Agent 1', description: 'Desc 1', avatarUrl: null },
+        { id: 1, name: 'Agent 1', description: 'Desc 1', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' },
       ];
       queryClient.setQueryData(queryKeys.agents.list(), mockAgents);
 
@@ -58,7 +58,7 @@ describe('useSidebarLoadingState', () => {
 
     it('should return shouldShowLoading: false when cache has agents even if isLoading is true (background refetch)', () => {
       const mockAgents: Agent[] = [
-        { id: 1, name: 'Agent 1', description: 'Desc 1', avatarUrl: null },
+        { id: 1, name: 'Agent 1', description: 'Desc 1', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' },
       ];
       queryClient.setQueryData(queryKeys.agents.list(), mockAgents);
 

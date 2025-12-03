@@ -32,8 +32,6 @@ export default function SessionSidebar({
 }: SessionSidebarProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
 
-  console.log('loading', loading);
-
   return (
     <Sidebar>
       <SidebarHeader

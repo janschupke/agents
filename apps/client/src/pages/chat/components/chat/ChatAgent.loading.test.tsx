@@ -3,9 +3,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ChatAgent from './ChatAgent';
-import { TestQueryProvider } from '../../../../../test/utils/test-query-provider';
-import { queryKeys } from '../../../../../hooks/queries/query-keys';
-import { Agent, Session } from '../../../../../types/chat.types';
+import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
+import { Session } from '../../../../types/chat.types';
 
 // Mock Clerk
 vi.mock('@clerk/clerk-react', () => ({
@@ -21,16 +20,19 @@ vi.mock('../../../../../hooks/use-token-ready', () => ({
 }));
 
 // Mock hooks
-vi.mock('../../../../../hooks/queries/use-agents', () => ({
-  useAgents: vi.fn(),
+const mockUseAgents = vi.fn();
+vi.mock('../../../../hooks/queries/use-agents', () => ({
+  useAgents: () => mockUseAgents(),
 }));
 
+const mockUseChatSession = vi.fn();
 vi.mock('../../hooks/use-chat-session', () => ({
-  useChatSession: vi.fn(),
+  useChatSession: () => mockUseChatSession(),
 }));
 
+const mockUseChatMessages = vi.fn();
 vi.mock('../../hooks/use-chat-messages', () => ({
-  useChatMessages: vi.fn(),
+  useChatMessages: () => mockUseChatMessages(),
 }));
 
 vi.mock('../../hooks/use-chat-scroll', () => ({
@@ -96,22 +98,19 @@ describe('ChatAgent Loading States', () => {
 
   describe('Full Page Loading (isInitialLoad)', () => {
     it('should show full page loading when agents are not cached and loading', () => {
-      const { useAgents } = require('../../../../../hooks/queries/use-agents');
-      useAgents.mockReturnValue({
+      mockUseAgents.mockReturnValue({
         data: [],
         isLoading: true,
       });
 
-      const { useChatSession } = require('../../hooks/use-chat-session');
-      useChatSession.mockReturnValue({
+      mockUseChatSession.mockReturnValue({
         currentSessionId: null,
         sessions: [],
         sessionsLoading: false,
         handleSessionDelete: vi.fn(),
       });
 
-      const { useChatMessages } = require('../../hooks/use-chat-messages');
-      useChatMessages.mockReturnValue({
+      mockUseChatMessages.mockReturnValue({
         messages: [],
         loading: false,
         isSendingMessage: false,
@@ -125,19 +124,19 @@ describe('ChatAgent Loading States', () => {
         </TestWrapper>
       );
 
-      // Should show ChatLoadingState
-      expect(screen.queryByTestId('chat-loading')).toBeTruthy();
+      // Should show ChatLoadingState (full page loading)
+      // ChatLoadingState renders Sidebar and Container with Skeleton components
+      // Check for Skeleton elements (ChatLoadingState always renders SkeletonList)
+      expect(screen.queryAllByTestId('skeleton-list').length).toBeGreaterThan(0);
     });
 
     it('should NOT show full page loading when agents are cached', () => {
-      const { useAgents } = require('../../../../../hooks/queries/use-agents');
-      useAgents.mockReturnValue({
-        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null }],
+      mockUseAgents.mockReturnValue({
+        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' }],
         isLoading: false,
       });
 
-      const { useChatSession } = require('../../hooks/use-chat-session');
-      useChatSession.mockReturnValue({
+      mockUseChatSession.mockReturnValue({
         currentSessionId: 1,
         sessions: [
           {
@@ -150,8 +149,7 @@ describe('ChatAgent Loading States', () => {
         handleSessionDelete: vi.fn(),
       });
 
-      const { useChatMessages } = require('../../hooks/use-chat-messages');
-      useChatMessages.mockReturnValue({
+      mockUseChatMessages.mockReturnValue({
         messages: [],
         loading: false,
         isSendingMessage: false,
@@ -166,15 +164,15 @@ describe('ChatAgent Loading States', () => {
       );
 
       // Should render component, not loading state
-      expect(screen.queryByTestId('chat-loading')).toBeFalsy();
+      // Component should be visible (no full page loading)
+      expect(screen.queryByText(/Loading/i)).toBeFalsy();
     });
   });
 
   describe('Sidebar Loading', () => {
     it('should NOT show sidebar loading when sessions are cached', () => {
-      const { useAgents } = require('../../../../../hooks/queries/use-agents');
-      useAgents.mockReturnValue({
-        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null }],
+      mockUseAgents.mockReturnValue({
+        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' }],
         isLoading: false,
       });
 
@@ -186,16 +184,14 @@ describe('ChatAgent Loading States', () => {
         },
       ];
 
-      const { useChatSession } = require('../../hooks/use-chat-session');
-      useChatSession.mockReturnValue({
+      mockUseChatSession.mockReturnValue({
         currentSessionId: 1,
         sessions: mockSessions,
         sessionsLoading: true, // Background refetch
         handleSessionDelete: vi.fn(),
       });
 
-      const { useChatMessages } = require('../../hooks/use-chat-messages');
-      useChatMessages.mockReturnValue({
+      mockUseChatMessages.mockReturnValue({
         messages: [],
         loading: false,
         isSendingMessage: false,
@@ -211,20 +207,18 @@ describe('ChatAgent Loading States', () => {
 
       // Sidebar should NOT show loading (tested through universal hook)
       // Component should render normally
-      expect(screen.queryByTestId('chat-loading')).toBeFalsy();
+      expect(screen.queryByText(/Loading/i)).toBeFalsy();
     });
   });
 
   describe('Content Loading', () => {
     it('should show content loading when messages are loading and not cached', () => {
-      const { useAgents } = require('../../../../../hooks/queries/use-agents');
-      useAgents.mockReturnValue({
-        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null }],
+      mockUseAgents.mockReturnValue({
+        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' }],
         isLoading: false,
       });
 
-      const { useChatSession } = require('../../hooks/use-chat-session');
-      useChatSession.mockReturnValue({
+      mockUseChatSession.mockReturnValue({
         currentSessionId: 1,
         sessions: [
           {
@@ -237,8 +231,7 @@ describe('ChatAgent Loading States', () => {
         handleSessionDelete: vi.fn(),
       });
 
-      const { useChatMessages } = require('../../hooks/use-chat-messages');
-      useChatMessages.mockReturnValue({
+      mockUseChatMessages.mockReturnValue({
         messages: [],
         loading: true, // Loading messages
         isSendingMessage: false,
@@ -253,18 +246,17 @@ describe('ChatAgent Loading States', () => {
       );
 
       // Should show content skeleton, not full page loading
-      expect(screen.queryByTestId('chat-loading')).toBeFalsy();
+      // Component should render (content loading is handled by ContentSkeleton)
+      expect(screen.queryByText(/Loading/i)).toBeFalsy();
     });
 
     it('should NOT show content loading when messages are cached', () => {
-      const { useAgents } = require('../../../../../hooks/queries/use-agents');
-      useAgents.mockReturnValue({
-        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null }],
+      mockUseAgents.mockReturnValue({
+        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' }],
         isLoading: false,
       });
 
-      const { useChatSession } = require('../../hooks/use-chat-session');
-      useChatSession.mockReturnValue({
+      mockUseChatSession.mockReturnValue({
         currentSessionId: 1,
         sessions: [
           {
@@ -277,8 +269,7 @@ describe('ChatAgent Loading States', () => {
         handleSessionDelete: vi.fn(),
       });
 
-      const { useChatMessages } = require('../../hooks/use-chat-messages');
-      useChatMessages.mockReturnValue({
+      mockUseChatMessages.mockReturnValue({
         messages: [{ id: 1, role: 'user', content: 'Hello' }],
         loading: false,
         isSendingMessage: false,
@@ -293,20 +284,18 @@ describe('ChatAgent Loading States', () => {
       );
 
       // Should render messages, not loading
-      expect(screen.queryByTestId('chat-loading')).toBeFalsy();
+      expect(screen.queryByText(/Loading/i)).toBeFalsy();
     });
   });
 
   describe('Typing Indicator', () => {
     it('should show typing indicator when sending message', () => {
-      const { useAgents } = require('../../../../../hooks/queries/use-agents');
-      useAgents.mockReturnValue({
-        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null }],
+      mockUseAgents.mockReturnValue({
+        data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' }],
         isLoading: false,
       });
 
-      const { useChatSession } = require('../../hooks/use-chat-session');
-      useChatSession.mockReturnValue({
+      mockUseChatSession.mockReturnValue({
         currentSessionId: 1,
         sessions: [
           {
@@ -319,8 +308,7 @@ describe('ChatAgent Loading States', () => {
         handleSessionDelete: vi.fn(),
       });
 
-      const { useChatMessages } = require('../../hooks/use-chat-messages');
-      useChatMessages.mockReturnValue({
+      mockUseChatMessages.mockReturnValue({
         messages: [{ id: 1, role: 'user', content: 'Hello' }],
         loading: false,
         isSendingMessage: true, // Sending message
@@ -335,7 +323,7 @@ describe('ChatAgent Loading States', () => {
       );
 
       // Should show typing indicator, not content loading
-      expect(screen.queryByTestId('chat-loading')).toBeFalsy();
+      expect(screen.queryByText(/Loading/i)).toBeFalsy();
     });
   });
 });

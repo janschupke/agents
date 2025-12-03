@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useChatSession } from './use-chat-session';
 import { TestQueryProvider } from '../../../test/utils/test-query-provider';
 import { Session } from '../../../types/chat.types';
@@ -26,13 +26,14 @@ vi.mock('../../../hooks/mutations/use-agent-mutations', () => ({
 }));
 
 vi.mock('@tanstack/react-query', async () => {
-  const actual = await vi.importActual('@tanstack/react-query');
+  const actual = await vi.importActual<typeof import('@tanstack/react-query')>('@tanstack/react-query');
   return {
     ...actual,
     useQueryClient: () => ({
       fetchQuery: mockFetchQuery,
       prefetchQuery: mockPrefetchQuery,
       invalidateQueries: mockInvalidateQueries,
+      getQueryData: vi.fn(() => undefined),
     }),
   };
 });
@@ -78,7 +79,9 @@ describe('useChatSession', () => {
     expect(result.current.currentSessionId).toBe(2);
   });
 
-  it('should auto-select most recent session when sessions load', async () => {
+  // Note: Auto-selection logic has been moved to ChatRoute.tsx
+  // This test is no longer relevant for useChatSession hook
+  it('should initialize with null sessionId when no initialSessionId', () => {
     mockUseAgentSessions.mockReturnValue({
       data: mockSessions,
       isLoading: false,
@@ -89,9 +92,8 @@ describe('useChatSession', () => {
       { wrapper }
     );
 
-    await waitFor(() => {
-      expect(result.current.currentSessionId).toBe(1); // Most recent
-    });
+    // Should start with null (no auto-selection in hook)
+    expect(result.current.currentSessionId).toBeNull();
   });
 
   it('should create new session', async () => {

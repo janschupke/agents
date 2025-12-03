@@ -44,8 +44,15 @@ export function useSidebarLoadingState({
 
   if (type === 'agents') {
     hasCachedData = queryClient.getQueryData<Agent[]>(queryKeys.agents.list()) !== undefined;
-  } else if (type === 'sessions' && agentId !== null && agentId !== undefined) {
-    hasCachedData = queryClient.getQueryData<Session[]>(queryKeys.agents.sessions(agentId)) !== undefined;
+  } else if (type === 'sessions') {
+    // For sessions, we can only check cache if agentId is provided
+    // If agentId is null, we can't determine if data exists, so don't show loading
+    if (agentId !== null && agentId !== undefined) {
+      hasCachedData = queryClient.getQueryData<Session[]>(queryKeys.agents.sessions(agentId)) !== undefined;
+    } else {
+      // No agentId means we can't check cache, so don't show loading
+      return { shouldShowLoading: false };
+    }
   }
 
   // Only show loading if cache has no data AND query is loading

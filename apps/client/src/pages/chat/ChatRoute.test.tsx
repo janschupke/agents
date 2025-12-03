@@ -8,7 +8,25 @@ import { ROUTES } from '../../constants/routes.constants';
 // Mock useChatRoute
 const mockUseChatRoute = vi.fn();
 vi.mock('./hooks/use-chat-route', () => ({
-  useChatRoute: (sessionId: string | undefined) => mockUseChatRoute(sessionId),
+  useChatRoute: (agentId: number | null, sessionId: number | null) => mockUseChatRoute(agentId, sessionId),
+}));
+
+// Mock useAgents and useAgentSessions
+const mockUseAgents = vi.fn();
+const mockUseAgentSessions = vi.fn();
+vi.mock('../../hooks/queries/use-agents', () => ({
+  useAgents: () => mockUseAgents(),
+  useAgentSessions: () => mockUseAgentSessions(),
+}));
+
+// Mock LocalStorageManager
+const mockGetSelectedAgentIdChat = vi.fn();
+const mockSetSelectedAgentIdChat = vi.fn();
+vi.mock('../../utils/localStorage', () => ({
+  LocalStorageManager: {
+    getSelectedAgentIdChat: () => mockGetSelectedAgentIdChat(),
+    setSelectedAgentIdChat: (agentId: number) => mockSetSelectedAgentIdChat(agentId),
+  },
 }));
 
 // Mock ChatAgent
@@ -51,14 +69,33 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-// Mock useTranslation
-vi.mock('@openai/i18n', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
-  I18nNamespace: {
-    CLIENT: 'client',
-  },
+// i18n is globally mocked in test/setup.ts
+
+// Mock useQueryClient
+const mockGetQueryData = vi.fn(() => undefined);
+vi.mock('@tanstack/react-query', async () => {
+  const actual = await vi.importActual<typeof import('@tanstack/react-query')>('@tanstack/react-query');
+  return {
+    ...actual,
+    useQueryClient: () => ({
+      getQueryData: mockGetQueryData,
+    }),
+  };
+});
+
+import { AuthProvider } from '../../contexts/AuthContext';
+
+// Mock Clerk
+vi.mock('@clerk/clerk-react', () => ({
+  useUser: vi.fn(() => ({
+    isSignedIn: true,
+    isLoaded: true,
+  })),
+}));
+
+// Mock useTokenReady
+vi.mock('../../hooks/use-token-ready', () => ({
+  useTokenReady: () => true,
 }));
 
 const TestWrapper = ({
@@ -70,10 +107,13 @@ const TestWrapper = ({
 }) => (
   <MemoryRouter initialEntries={initialEntries}>
     <TestQueryProvider>
-      <Routes>
-        <Route path={ROUTES.CHAT} element={children} />
-        <Route path="/chat/:sessionId" element={children} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path={ROUTES.CHAT} element={children} />
+          <Route path={ROUTES.CHAT_AGENT_PATTERN} element={children} />
+          <Route path={ROUTES.CHAT_SESSION_PATTERN} element={children} />
+        </Routes>
+      </AuthProvider>
     </TestQueryProvider>
   </MemoryRouter>
 );
@@ -82,13 +122,26 @@ describe('ChatRoute', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseParams.mockReturnValue({});
+    mockGetSelectedAgentIdChat.mockReturnValue(null);
+    mockUseAgents.mockReturnValue({
+      data: [{ id: 1, name: 'Agent 1', description: 'Desc', avatarUrl: null, createdAt: '2024-01-01T00:00:00.000Z' }],
+      isLoading: false,
+    });
+    mockUseAgentSessions.mockReturnValue({
+      data: [],
+      isLoading: false,
+    });
+    mockUseChatRoute.mockReturnValue({
+      loading: false,
+      error: null,
+    });
+    mockGetQueryData.mockReturnValue(undefined);
   });
 
   it('should show loading state when loading', () => {
-    mockUseChatRoute.mockReturnValue({
-      agentId: null,
-      loading: true,
-      error: null,
+    mockUseAgents.mockReturnValue({
+      data: [],
+      isLoading: true,
     });
 
     render(
@@ -101,14 +154,15 @@ describe('ChatRoute', () => {
   });
 
   it('should show error state when error occurs', () => {
+    mockUseParams.mockReturnValue({ agentId: '1', sessionId: '123' });
     mockUseChatRoute.mockReturnValue({
-      agentId: null,
       loading: false,
       error: 'Session not found',
     });
+    mockGetQueryData.mockReturnValue(undefined); // No cached sessions
 
     render(
-      <TestWrapper>
+      <TestWrapper initialEntries={['/chat/1/123']}>
         <ChatRoute />
       </TestWrapper>
     );
@@ -117,13 +171,18 @@ describe('ChatRoute', () => {
     expect(screen.getByText(/Session not found/)).toBeInTheDocument();
   });
 
-  it('should show error state when sessionId exists but no agentId', () => {
+  it('should handle route with only agentId (no sessionId)', () => {
+    // Route /chat/123 matches /chat/:agentId pattern
+    // So urlAgentId='123', urlSessionId=undefined
+    mockUseParams.mockReturnValue({ agentId: '123' });
+    mockUseAgentSessions.mockReturnValue({
+      data: [],
+      isLoading: false,
+    });
     mockUseChatRoute.mockReturnValue({
-      agentId: null,
       loading: false,
       error: null,
     });
-    mockUseParams.mockReturnValue({ sessionId: '123' });
 
     render(
       <TestWrapper initialEntries={['/chat/123']}>
@@ -131,56 +190,58 @@ describe('ChatRoute', () => {
       </TestWrapper>
     );
 
-    expect(screen.getByTestId('chat-error')).toBeInTheDocument();
+    // When no sessions, ChatRoute shows ChatAgent directly
+    expect(screen.getByTestId('chat-agent')).toBeInTheDocument();
+    expect(screen.getByText(/agentId: 123/)).toBeInTheDocument();
   });
 
   it('should render ChatAgent with agentId when no sessionId', () => {
+    mockUseParams.mockReturnValue({ agentId: '5' });
+    mockUseAgentSessions.mockReturnValue({
+      data: [],
+      isLoading: false,
+    });
     mockUseChatRoute.mockReturnValue({
-      agentId: 5,
       loading: false,
       error: null,
     });
-    mockUseParams.mockReturnValue({});
 
     render(
-      <TestWrapper>
+      <TestWrapper initialEntries={['/chat/5']}>
         <ChatRoute />
       </TestWrapper>
     );
 
-    const chatAgent = screen.getByTestId('chat-agent');
-    expect(chatAgent).toBeInTheDocument();
-    expect(chatAgent).toHaveTextContent('agentId: 5');
-    expect(chatAgent).toHaveTextContent('sessionId: none');
+    // When no sessions, ChatRoute shows ChatAgent directly
+    expect(screen.getByTestId('chat-agent')).toBeInTheDocument();
+    expect(screen.getByText(/agentId: 5/)).toBeInTheDocument();
   });
 
   it('should render ChatAgent with sessionId and agentId when both exist', () => {
+    mockUseParams.mockReturnValue({ agentId: '7', sessionId: '123' });
     mockUseChatRoute.mockReturnValue({
-      agentId: 7,
       loading: false,
       error: null,
     });
-    mockUseParams.mockReturnValue({ sessionId: '456' });
 
     render(
-      <TestWrapper initialEntries={['/chat/456']}>
+      <TestWrapper initialEntries={['/chat/7/123']}>
         <ChatRoute />
       </TestWrapper>
     );
 
     const chatAgent = screen.getByTestId('chat-agent');
     expect(chatAgent).toBeInTheDocument();
+    expect(chatAgent).toHaveTextContent('sessionId: 123');
     expect(chatAgent).toHaveTextContent('agentId: 7');
-    expect(chatAgent).toHaveTextContent('sessionId: 456');
   });
 
   it('should handle null agentId gracefully when no sessionId', () => {
-    mockUseChatRoute.mockReturnValue({
-      agentId: null,
-      loading: false,
-      error: null,
-    });
     mockUseParams.mockReturnValue({});
+    mockUseAgents.mockReturnValue({
+      data: [],
+      isLoading: false,
+    });
 
     render(
       <TestWrapper>
@@ -188,27 +249,26 @@ describe('ChatRoute', () => {
       </TestWrapper>
     );
 
-    const chatAgent = screen.getByTestId('chat-agent');
-    expect(chatAgent).toBeInTheDocument();
-    expect(chatAgent).toHaveTextContent('agentId: none');
+    // Will show loading while trying to redirect (no agents available)
+    expect(screen.getByTestId('chat-loading')).toBeInTheDocument();
   });
 
   it('should navigate to chat route when sessionId is invalid', () => {
+    mockUseParams.mockReturnValue({ agentId: '1', sessionId: 'invalid' });
     mockUseChatRoute.mockReturnValue({
-      agentId: null,
       loading: false,
       error: null,
     });
-    mockUseParams.mockReturnValue({ sessionId: 'invalid' });
+    // When parsedSessionId is null (invalid), it navigates to CHAT_AGENT
+    // The Navigate component will render
 
     const { container } = render(
-      <TestWrapper initialEntries={['/chat/invalid']}>
+      <TestWrapper initialEntries={['/chat/1/invalid']}>
         <ChatRoute />
       </TestWrapper>
     );
 
-    // Should navigate away (Navigate component)
-    // In a real test, you'd check the URL, but for now we just verify it doesn't crash
+    // Should navigate away (Navigate component renders)
     expect(container).toBeTruthy();
   });
 });

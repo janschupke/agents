@@ -42,13 +42,17 @@ vi.mock('../../../../services/chat.service', () => ({
   },
 }));
 
+import { MemoryRouter } from 'react-router-dom';
+
 // Test wrapper
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <QueryProvider>
-    <AuthProvider>
-      <AppProvider>{children}</AppProvider>
-    </AuthProvider>
-  </QueryProvider>
+  <MemoryRouter>
+    <QueryProvider>
+      <AuthProvider>
+        <AppProvider>{children}</AppProvider>
+      </AuthProvider>
+    </QueryProvider>
+  </MemoryRouter>
 );
 
 // Helper to wait for agents to load

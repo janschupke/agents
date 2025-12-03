@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import SessionSidebar from './SessionSidebar';
 import { Session } from '../../../../types/chat.types';
+import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
 
 describe('SessionSidebar', () => {
   const mockSessions: Session[] = [
@@ -20,12 +21,15 @@ describe('SessionSidebar', () => {
     const onNewSession = vi.fn();
 
     render(
-      <SessionSidebar
-        sessions={mockSessions}
-        currentSessionId={1}
-        onSessionSelect={onSessionSelect}
-        onNewSession={onNewSession}
-      />
+      <TestQueryProvider>
+        <SessionSidebar
+          sessions={mockSessions}
+          agentId={1}
+          currentSessionId={1}
+          onSessionSelect={onSessionSelect}
+          onNewSession={onNewSession}
+        />
+      </TestQueryProvider>
     );
 
     expect(screen.getByText('chat.sessions')).toBeInTheDocument();
@@ -39,12 +43,15 @@ describe('SessionSidebar', () => {
     const onNewSession = vi.fn();
 
     render(
-      <SessionSidebar
-        sessions={mockSessions}
-        currentSessionId={2}
-        onSessionSelect={onSessionSelect}
-        onNewSession={onNewSession}
-      />
+      <TestQueryProvider>
+        <SessionSidebar
+          sessions={mockSessions}
+          agentId={1}
+          currentSessionId={2}
+          onSessionSelect={onSessionSelect}
+          onNewSession={onNewSession}
+        />
+      </TestQueryProvider>
     );
 
     // Session 2 should be selected (highlighted)
@@ -64,12 +71,15 @@ describe('SessionSidebar', () => {
     const onNewSession = vi.fn();
 
     render(
-      <SessionSidebar
-        sessions={mockSessions}
-        currentSessionId={1}
-        onSessionSelect={onSessionSelect}
-        onNewSession={onNewSession}
-      />
+      <TestQueryProvider>
+        <SessionSidebar
+          sessions={mockSessions}
+          agentId={1}
+          currentSessionId={1}
+          onSessionSelect={onSessionSelect}
+          onNewSession={onNewSession}
+        />
+      </TestQueryProvider>
     );
 
     const session2 = screen.getByText('Session 2');
@@ -85,12 +95,15 @@ describe('SessionSidebar', () => {
     const onNewSession = vi.fn();
 
     render(
-      <SessionSidebar
-        sessions={mockSessions}
-        currentSessionId={1}
-        onSessionSelect={onSessionSelect}
-        onNewSession={onNewSession}
-      />
+      <TestQueryProvider>
+        <SessionSidebar
+          sessions={mockSessions}
+          agentId={1}
+          currentSessionId={1}
+          onSessionSelect={onSessionSelect}
+          onNewSession={onNewSession}
+        />
+      </TestQueryProvider>
     );
 
     const newSessionButton = screen.getByTitle('chat.newSession');
@@ -104,16 +117,22 @@ describe('SessionSidebar', () => {
     const onNewSession = vi.fn();
 
     render(
-      <SessionSidebar
-        sessions={[]}
-        currentSessionId={null}
-        onSessionSelect={onSessionSelect}
-        onNewSession={onNewSession}
-      />
+      <TestQueryProvider>
+        <SessionSidebar
+          sessions={[]}
+          agentId={null}
+          currentSessionId={null}
+          onSessionSelect={onSessionSelect}
+          onNewSession={onNewSession}
+        />
+      </TestQueryProvider>
     );
 
-    expect(screen.getByText('chat.noSessions')).toBeInTheDocument();
-    expect(screen.getByText('chat.createNewSession')).toBeInTheDocument();
+    // The empty message should be rendered by SidebarContent
+    // Since we're using translation keys, check for the key text
+    // Use regex to match the translation keys
+    expect(screen.getByText(/chat\.noSessions/i)).toBeInTheDocument();
+    expect(screen.getByText(/chat\.createNewSession/i)).toBeInTheDocument();
   });
 
   it('should show loading skeleton when loading', () => {
@@ -123,6 +142,7 @@ describe('SessionSidebar', () => {
     render(
       <SessionSidebar
         sessions={[]}
+        agentId={null}
         currentSessionId={null}
         onSessionSelect={onSessionSelect}
         onNewSession={onNewSession}
@@ -139,13 +159,16 @@ describe('SessionSidebar', () => {
     const onNewSession = vi.fn();
 
     render(
-      <SessionSidebar
-        sessions={mockSessions}
-        currentSessionId={1}
-        onSessionSelect={onSessionSelect}
-        onNewSession={onNewSession}
-        loading={true}
-      />
+      <TestQueryProvider>
+        <SessionSidebar
+          sessions={mockSessions}
+          agentId={1}
+          currentSessionId={1}
+          onSessionSelect={onSessionSelect}
+          onNewSession={onNewSession}
+          loading={true}
+        />
+      </TestQueryProvider>
     );
 
     const newSessionButton = screen.getByTitle('chat.newSession');
@@ -157,12 +180,15 @@ describe('SessionSidebar', () => {
     const onNewSession = vi.fn();
 
     render(
-      <SessionSidebar
-        sessions={mockSessions}
-        currentSessionId={null}
-        onSessionSelect={onSessionSelect}
-        onNewSession={onNewSession}
-      />
+      <TestQueryProvider>
+        <SessionSidebar
+          sessions={mockSessions}
+          agentId={1}
+          currentSessionId={null}
+          onSessionSelect={onSessionSelect}
+          onNewSession={onNewSession}
+        />
+      </TestQueryProvider>
     );
 
     mockSessions.forEach((session) => {

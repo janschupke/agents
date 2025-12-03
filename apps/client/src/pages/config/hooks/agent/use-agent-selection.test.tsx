@@ -10,7 +10,7 @@ const mockSetSelectedAgentIdConfig = vi.fn();
 vi.mock('../../../../utils/localStorage', () => ({
   LocalStorageManager: {
     getSelectedAgentIdConfig: () => mockGetSelectedAgentIdConfig(),
-    setSelectedAgentIdConfig: mockSetSelectedAgentIdConfig,
+    setSelectedAgentIdConfig: (agentId: number | null) => mockSetSelectedAgentIdConfig(agentId),
   },
 }));
 
@@ -67,7 +67,7 @@ describe('useAgentSelection', () => {
     });
   });
 
-  it('should validate stored agent exists', async () => {
+  it('should validate stored agent exists and auto-select first agent if invalid', async () => {
     mockGetSelectedAgentIdConfig.mockReturnValue(999); // Non-existent agent
 
     const { result } = renderHook(() =>
@@ -79,7 +79,9 @@ describe('useAgentSelection', () => {
     );
 
     await waitFor(() => {
-      expect(result.current.currentAgentId).toBeNull();
+      // When stored agent doesn't exist, it clears the selection
+      // Then auto-selects the first available agent
+      expect(result.current.currentAgentId).toBe(1); // First agent
     });
   });
 

@@ -77,18 +77,35 @@ describe('useAutoOpenAgent', () => {
     expect(mockSetCurrentAgentId).toHaveBeenCalledWith(null);
   });
 
-  it('should call onNewAgent when selected agent does not exist', () => {
-    renderHook(() =>
-      useAutoOpenAgent({
-        agents: [],
-        currentAgentId: 999, // Invalid agent ID
-        setCurrentAgentId: mockSetCurrentAgentId,
-        loadingAgents: false,
-        onNewAgent: mockOnNewAgent,
-      })
+  it('should call onNewAgent when selected agent does not exist', async () => {
+    const { waitFor } = await import('@testing-library/react');
+    
+    const { rerender } = renderHook(
+      ({ currentAgentId }) =>
+        useAutoOpenAgent({
+          agents: [],
+          currentAgentId,
+          setCurrentAgentId: mockSetCurrentAgentId,
+          loadingAgents: false,
+          onNewAgent: mockOnNewAgent,
+        }),
+      {
+        initialProps: { currentAgentId: 999 }, // Invalid agent ID
+      }
     );
 
-    expect(mockOnNewAgent).toHaveBeenCalledTimes(1);
+    // First effect run: clears invalid selection (returns early, resets ref)
+    await waitFor(() => {
+      expect(mockSetCurrentAgentId).toHaveBeenCalledWith(null);
+    }, { timeout: 1000 });
+    
+    // Second effect run: currentAgentId is now null, should call onNewAgent
+    // We need to rerender with null to trigger the second effect
+    rerender({ currentAgentId: null });
+    
+    await waitFor(() => {
+      expect(mockOnNewAgent).toHaveBeenCalledTimes(1);
+    }, { timeout: 2000 });
   });
 
   it('should not call onNewAgent multiple times', () => {

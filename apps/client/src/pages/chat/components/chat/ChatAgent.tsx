@@ -23,7 +23,6 @@ import ChatContent from './ChatContent';
 import ChatLoadingState from './ChatLoadingState';
 import ChatEmptyState from './ChatEmptyState';
 import ChatErrorState from './ChatErrorState';
-import SidebarSkeleton from './SidebarSkeleton';
 import ContainerSkeleton from './ContainerSkeleton';
 import ContentSkeleton from './ContentSkeleton';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
@@ -54,7 +53,7 @@ function ChatAgentContent({
       ? parseInt(urlSessionId, 10)
       : null);
 
-  const { data: agents = [], isLoading: agentsLoading } = useAgents();
+  const { isLoading: agentsLoading } = useAgents();
 
   const { handleSessionSelect, handleNewSession } = useChatAgentNavigation({
     agentId,

@@ -22,40 +22,38 @@ describe('useChatScroll', () => {
 
   it('should scroll to bottom on initial load', () => {
     const messages = [{ id: 1 }, { id: 2 }];
-    const div = document.createElement('div');
-    const ref = { current: div };
 
-    renderHook(() =>
-      useChatScroll({ messages, sessionId: 1 })
-    );
-
-    // Manually set ref and trigger scroll
     const { result } = renderHook(() =>
       useChatScroll({ messages, sessionId: 1 })
     );
-    result.current.messagesEndRef.current = div;
 
-    // Re-render to trigger effect
-    renderHook(() =>
-      useChatScroll({ messages, sessionId: 1 })
-    );
-
+    expect(result.current.messagesEndRef).toBeDefined();
     // The scroll should be called with auto behavior on initial load
     // Note: This is a simplified test - actual behavior depends on refs
   });
 
   it('should reset when sessionId changes', () => {
     const messages = [{ id: 1 }];
-    const { rerender } = renderHook(
-      ({ sessionId }) => useChatScroll({ messages, sessionId }),
+    const { result, rerender } = renderHook(
+      ({ sessionId, messages: msgs }) => useChatScroll({ messages: msgs, sessionId }),
       {
-        initialProps: { sessionId: 1 },
+        initialProps: { sessionId: 1, messages },
       }
     );
 
-    rerender({ sessionId: 2 });
+    // Create a div and attach it to the ref
+    const div = document.createElement('div');
+    // Access the ref object and set current (refs are mutable in tests)
+    const ref = result.current.messagesEndRef as { current: HTMLDivElement | null };
+    ref.current = div;
 
-    // Should reset internal state when session changes
+    // Change sessionId - this resets the initial load flag
+    rerender({ sessionId: 2, messages });
+
+    // Add a new message - this should trigger scroll with 'auto' behavior (initial load)
+    rerender({ sessionId: 2, messages: [{ id: 1 }, { id: 2 }] });
+
+    // Should scroll on initial load after session change
     expect(mockScrollIntoView).toHaveBeenCalled();
   });
 });

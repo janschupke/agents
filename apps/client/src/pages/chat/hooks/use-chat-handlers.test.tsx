@@ -88,7 +88,9 @@ describe('useChatHandlers', () => {
       await result.current.handleSessionSelectWrapper(1);
     });
 
-    expect(mockSetMessages).toHaveBeenCalledWith([]);
+    // Messages are cleared in useChatMessages when sessionId changes, not here
+    // This prevents race conditions
+    expect(mockSetMessages).not.toHaveBeenCalled();
     expect(mockHandleSessionSelect).toHaveBeenCalledWith(1);
   });
 
