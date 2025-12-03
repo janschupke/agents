@@ -1,4 +1,4 @@
-import { AgentMemory } from '../../../../types/chat.types';
+import { AgentMemory } from '../../../../../../types/chat.types';
 import { IconRefresh, SectionHeader } from '@openai/ui';
 import MemoriesList from './MemoriesList';
 

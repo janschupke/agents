@@ -1,6 +1,6 @@
 import { useLayoutEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import { tokenProvider } from '../../services/api/token-provider';
+import { tokenProvider } from '../../../services/api/token-provider';
 
 /**
  * Component that sets up token provider for API requests

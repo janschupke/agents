@@ -1,6 +1,6 @@
 import { PageHeader, PageContent, EmptyState } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { ROUTES } from '../../../../constants/routes.constants';
+import { ROUTES } from '../../../../../../constants/routes.constants';
 import { Link } from 'react-router-dom';
 
 interface AgentConfigErrorStateProps {

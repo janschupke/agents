@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BehaviorRulesField } from './BehaviorRulesField';
-import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
+import { TestQueryProvider } from '../../../../../../test/utils/test-query-provider';
 
 // Mock i18n
 vi.mock('@openai/i18n', () => ({

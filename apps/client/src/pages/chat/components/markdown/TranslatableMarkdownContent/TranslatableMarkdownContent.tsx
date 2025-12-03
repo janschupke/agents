@@ -2,10 +2,10 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import { WordTranslation } from '../../../../types/chat.types';
-import WordPresenter from '../translation/WordPresenter';
-import MarkdownContent from './MarkdownContent';
-import { createMarkdownComponents } from './markdown-components';
+import { WordTranslation } from '../../../../../types/chat.types';
+import WordPresenter from '../../translation/WordPresenter/WordPresenter';
+import MarkdownContent from '../MarkdownContent/MarkdownContent';
+import { createMarkdownComponents } from '../markdown-components';
 
 interface TranslatableMarkdownContentProps {
   content: string;

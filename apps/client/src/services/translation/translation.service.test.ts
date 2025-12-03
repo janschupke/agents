@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { http, HttpResponse } from 'msw';
-import { server } from '../test/mocks/server';
+import { server } from '../../test/mocks/server';
 import { TranslationService } from './translation.service';
-import { API_BASE_URL } from '../constants/api.constants';
+import { API_BASE_URL } from '../../constants/api.constants';
 
 describe('TranslationService', () => {
   describe('translateMessage', () => {

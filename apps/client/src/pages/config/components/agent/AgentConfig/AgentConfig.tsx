@@ -14,17 +14,17 @@ import {
   ButtonType,
   ButtonVariant,
 } from '@openai/ui';
-import { useAgents } from '../../../../hooks/queries/use-agents';
-import { useSidebarLoadingState } from '../../../../hooks/utils/use-sidebar-loading-state';
-import { useAgentConfigData } from '../../hooks/agent/use-agent-config-data';
-import { useAgentConfigNavigation } from '../../hooks/agent/use-agent-config-navigation';
+import { useAgents } from '../../../../../hooks/queries/use-agents';
+import { useSidebarLoadingState } from '../../../../../hooks/utils/use-sidebar-loading-state';
+import { useAgentConfigData } from '../../../hooks/agent/use-agent-config-data';
+import { useAgentConfigNavigation } from '../../../hooks/agent/use-agent-config-navigation';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { useIsNewAgent } from '../../hooks/agent/use-is-new-agent';
-import { useNewAgentForm } from '../../hooks/form/use-new-agent-form';
-import { useUnsavedChangesWarning } from '../../../../hooks/ui/use-unsaved-changes-warning';
-import { useAgentSave } from '../../hooks/agent/use-agent-save';
-import { useAgentDelete } from '../../hooks/agent/use-agent-delete';
-import { useAgentConfigState } from '../../hooks/agent/use-agent-config-state';
+import { useIsNewAgent } from '../../../hooks/agent/use-is-new-agent';
+import { useNewAgentForm } from '../../../hooks/form/use-new-agent-form';
+import { useUnsavedChangesWarning } from '../../../../../hooks/ui/use-unsaved-changes-warning';
+import { useAgentSave } from '../../../hooks/agent/use-agent-save';
+import { useAgentDelete } from '../../../hooks/agent/use-agent-delete';
+import { useAgentConfigState } from '../../../hooks/agent/use-agent-config-state';
 
 interface AgentConfigProps {
   agentId?: number;

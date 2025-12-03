@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTokenReady } from '../use-token-ready';
+import { useTokenReady } from '../utils/use-token-ready';
 import { AgentService } from '../../services/agent/agent.service';
 import { SessionService } from '../../services/chat/session/session.service';
 import { MemoryService } from '../../services/memory/memory.service';

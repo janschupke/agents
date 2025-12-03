@@ -1,4 +1,4 @@
-import { AgentMemory } from '../../../../types/chat.types';
+import { AgentMemory } from '../../../../../../types/chat.types';
 import {
   IconClose,
   IconEdit,
@@ -9,7 +9,7 @@ import {
   ButtonVariant,
 } from '@openai/ui';
 import { formatRelativeDate } from '@openai/utils';
-import { useMemoryEditing } from '../../hooks/memory/use-memory-editing';
+import { useMemoryEditing } from '../../../../hooks/memory/use-memory-editing';
 
 interface MemoriesListProps {
   memories: AgentMemory[];

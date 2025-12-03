@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useMessageTranslation } from './use-message-translation';
-import { MessageRole, Message } from '../../../types/chat.types';
-import { TranslationService } from '../../../services/translation/translation.service';
-import { WordTranslationService } from '../../../services/translation/word-translation.service';
+import { MessageRole, Message } from '../../../../../../types/chat.types';
+import { TranslationService } from '../../../../../../services/translation/translation.service';
+import { WordTranslationService } from '../../../../../../services/translation/word-translation.service';
 
 // Mock services
-vi.mock('../../../services/translation/translation.service');
-vi.mock('../../../services/translation/word-translation.service');
+vi.mock('../../../../../../services/translation/translation.service');
+vi.mock('../../../../../../services/translation/word-translation.service');
 
 describe('useMessageTranslation', () => {
   const mockUserMessage: Message = {

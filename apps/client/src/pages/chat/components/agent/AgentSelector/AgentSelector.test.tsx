@@ -3,9 +3,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import AgentSelector from './AgentSelector';
-import { AppProvider } from '../../../../contexts/AppContext';
-import { AuthProvider } from '../../../../contexts/AuthContext';
-import { QueryProvider } from '../../../../providers/QueryProvider';
+import { AppProvider } from '../../../../../contexts/AppContext';
+import { AuthProvider } from '../../../../../contexts/AuthContext';
+import { QueryProvider } from '../../../../../providers/QueryProvider';
 
 // Mock Clerk
 vi.mock('@clerk/clerk-react', () => ({

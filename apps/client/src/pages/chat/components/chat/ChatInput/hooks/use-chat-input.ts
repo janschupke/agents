@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { ChatInputRef } from '../ChatInput';
-import { SendMessageResponse } from '../../../../../types/chat.types';
+import { SendMessageResponse } from '../../../../../../types/chat.types';
 import { useChatInputFocus } from './use-chat-input-focus';
 
 interface UseChatInputOptions {

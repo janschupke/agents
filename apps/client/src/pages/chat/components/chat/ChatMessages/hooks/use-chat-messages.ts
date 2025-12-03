@@ -3,9 +3,9 @@ import {
   Message,
   MessageRole,
   SendMessageResponse,
-} from '../../../../../types/chat.types';
-import { useChatHistory } from '../../../../../hooks/queries/use-chat';
-import { useSendMessage } from '../../../../../hooks/mutations/use-chat-mutations';
+} from '../../../../../../types/chat.types';
+import { useChatHistory } from '../../../../../../hooks/queries/use-chat';
+import { useSendMessage } from '../../../../../../hooks/mutations/use-chat-mutations';
 
 interface UseChatMessagesOptions {
   agentId: number | null;

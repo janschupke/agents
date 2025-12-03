@@ -2,8 +2,8 @@ import { memo } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { MainTitle, IconChat, IconSettings } from '@openai/ui';
-import UserDropdown from '../auth/UserDropdown';
-import { ROUTES } from '../../constants/routes.constants';
+import UserDropdown from '../../auth/UserDropdown/UserDropdown';
+import { ROUTES } from '../../../constants/routes.constants';
 
 /**
  * Top navigation bar component.

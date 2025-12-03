@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { apiManager } from './api-manager';
-import { server } from '../test/mocks/server';
+import { server } from '../../test/mocks/server';
 import { http, HttpResponse } from 'msw';
-import { API_BASE_URL } from '../constants/api.constants';
+import { API_BASE_URL } from '../../constants/api.constants';
 
 describe('ApiManager', () => {
   describe('GET requests', () => {

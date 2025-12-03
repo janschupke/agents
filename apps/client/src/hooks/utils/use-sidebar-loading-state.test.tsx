@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useSidebarLoadingState } from './use-sidebar-loading-state';
-import { queryKeys } from './queries/query-keys';
-import { Agent, Session } from '../types/chat.types';
+import { queryKeys } from '../queries/query-keys';
+import { Agent, Session } from '../../types/chat.types';
 
 describe('useSidebarLoadingState', () => {
   let queryClient: QueryClient;

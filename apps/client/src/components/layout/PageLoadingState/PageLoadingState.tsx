@@ -1,5 +1,5 @@
 import { PageContainer, Skeleton } from '@openai/ui';
-import TopNavigation from './TopNavigation';
+import TopNavigation from '../TopNavigation/TopNavigation';
 import { Footer } from '@openai/ui';
 import { memo } from 'react';
 

@@ -4,17 +4,17 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import AgentConfig from './AgentConfig';
-import { AppProvider } from '../../../../contexts/AppContext';
-import { AuthProvider } from '../../../../contexts/AuthContext';
-import { ToastProvider } from '../../../../contexts/ToastContext';
+import { AppProvider } from '../../../../../contexts/AppContext';
+import { AuthProvider } from '../../../../../contexts/AuthContext';
+import { ToastProvider } from '../../../../../contexts/ToastContext';
 import {
   TestQueryProvider,
   useTestQueryClient,
-} from '../../../../test/utils/test-query-provider';
-import { queryKeys } from '../../../../hooks/queries/query-keys';
-import { AgentService } from '../../../../services/agent/agent.service';
-import { Agent } from '../../../../types/chat.types';
-import { ROUTES } from '../../../../constants/routes.constants';
+} from '../../../../../test/utils/test-query-provider';
+import { queryKeys } from '../../../../../hooks/queries/query-keys';
+import { AgentService } from '../../../../../services/agent/agent.service';
+import { Agent } from '../../../../../types/chat.types';
+import { ROUTES } from '../../../../../constants/routes.constants';
 
 // Mock Clerk
 vi.mock('@clerk/clerk-react', () => ({

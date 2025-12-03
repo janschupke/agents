@@ -12,7 +12,7 @@ import {
   ButtonType,
 } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { parseBehaviorRules } from '../../utils/agent.utils';
+import { parseBehaviorRules } from '../../../../utils/agent.utils';
 
 interface BehaviorRulesFieldProps {
   rules: string[];

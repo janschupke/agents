@@ -1,4 +1,4 @@
-import { Session } from '../../../../types/chat.types';
+import { Session } from '../../../../../types/chat.types';
 import {
   IconPlus,
   SkeletonList,

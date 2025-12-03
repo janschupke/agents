@@ -1,7 +1,7 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import { createMarkdownComponents } from './markdown-components';
+import { createMarkdownComponents } from '../markdown-components';
 
 interface MarkdownContentProps {
   content: string;

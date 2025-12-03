@@ -1,4 +1,4 @@
-import { Agent } from '../../../../types/chat.types';
+import { Agent } from '../../../../../types/chat.types';
 import {
   IconPlus,
   IconTrash,

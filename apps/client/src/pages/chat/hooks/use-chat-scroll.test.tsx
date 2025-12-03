@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useChatScroll } from './use-chat-scroll';
+import { useChatScroll } from '../components/chat/ChatMessages/hooks/use-chat-scroll';
 
 describe('useChatScroll', () => {
   let mockScrollIntoView: ReturnType<typeof vi.fn>;

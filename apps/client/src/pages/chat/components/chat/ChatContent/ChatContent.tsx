@@ -1,4 +1,4 @@
-import { Message } from '../../../../types/chat.types';
+import { Message } from '../../../../../types/chat.types';
 import ChatMessages from '../ChatMessages/ChatMessages';
 import ChatInput, { ChatInputRef } from '../ChatInput/ChatInput';
 import ChatPlaceholder from '../ChatPlaceholder/ChatPlaceholder';

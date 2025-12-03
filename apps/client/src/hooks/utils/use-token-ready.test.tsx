@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useTokenReady } from './use-token-ready';
-import { tokenProvider } from '../services/token-provider';
+import { tokenProvider } from '../../services/api/token-provider';
 
 // Mock AuthContext
 const mockAuth = {

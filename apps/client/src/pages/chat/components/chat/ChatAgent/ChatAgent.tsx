@@ -1,16 +1,17 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useConfirm } from '../../../../hooks/ui/useConfirm';
-import { useChatAgentNavigation } from '../../hooks/use-chat-agent-navigation';
-import { useChatModals } from '../../hooks/use-chat-modals';
-import { useChatHandlers } from '../../hooks/use-chat-handlers';
+import { useConfirm } from '../../../../../hooks/ui/useConfirm';
+import { useChatAgentNavigation } from '../../../hooks/use-chat-agent-navigation';
+import { useChatModals } from '../../../hooks/use-chat-modals';
+import { useChatHandlers } from '../../../hooks/use-chat-handlers';
 import { useChatInput } from '../ChatInput/hooks/use-chat-input';
-import { useChatSession } from '../../hooks/use-chat-session';
+import { useChatSession } from '../../../hooks/use-chat-session';
 import { useChatMessages } from '../ChatMessages/hooks/use-chat-messages';
 import { useChatScroll } from '../ChatMessages/hooks/use-chat-scroll';
-import { useChatLoadingState } from '../../hooks/use-chat-loading-state';
-import { useAgents } from '../../../../hooks/queries/use-agents';
-import SessionSidebar from '../session/SessionSidebar/SessionSidebar';
-import SessionNameModal from '../session/SessionNameModal/SessionNameModal';
+import { useChatLoadingState } from '../../../hooks/use-chat-loading-state';
+import { useAgents } from '../../../../../hooks/queries/use-agents';
+import { Session } from '../../../../../types/chat.types';
+import SessionSidebar from '../../session/SessionSidebar/SessionSidebar';
+import SessionNameModal from '../../session/SessionNameModal/SessionNameModal';
 import {
   Sidebar,
   Container,
@@ -220,7 +221,7 @@ function ChatAgentContent({
           isOpen={sessionNameModal.isOpen}
           onClose={closeSessionNameModal}
           currentName={
-            sessions.find((s) => s.id === sessionNameModal.sessionId)
+            sessions.find((s: Session) => s.id === sessionNameModal.sessionId)
               ?.session_name || null
           }
           onSave={handleSessionNameSave}

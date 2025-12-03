@@ -1,5 +1,5 @@
-import { WordTranslation } from '../../../../types/chat.types';
-import WordTooltip from './WordTooltip';
+import { WordTranslation } from '../../../../../types/chat.types';
+import WordTooltip from '../WordTooltip/WordTooltip';
 
 interface WordPresenterProps {
   text: string;

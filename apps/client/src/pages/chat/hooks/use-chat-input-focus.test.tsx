@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useChatInputFocus } from './use-chat-input-focus';
-import { ChatInputRef } from '../components/chat/ChatInput';
+import { useChatInputFocus } from '../components/chat/ChatInput/hooks/use-chat-input-focus';
+import { ChatInputRef } from '../components/chat/ChatInput/ChatInput';
 
 // Mock ChatInputRef focus method
 const mockFocus = vi.fn();

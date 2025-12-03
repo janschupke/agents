@@ -3,8 +3,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ChatAgent from './ChatAgent';
-import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
-import { Session } from '../../../../types/chat.types';
+import { TestQueryProvider } from '../../../../../test/utils/test-query-provider';
+import { Session } from '../../../../../types/chat.types';
 
 // Mock Clerk
 vi.mock('@clerk/clerk-react', () => ({

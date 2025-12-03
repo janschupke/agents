@@ -14,7 +14,7 @@ import {
   ButtonVariant,
 } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { useApiKey } from '../hooks/use-api-key';
+import { useApiKey } from '../../hooks/use-api-key';
 
 /**
  * API Key management section component

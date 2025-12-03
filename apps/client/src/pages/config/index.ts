@@ -1,1 +1,1 @@
-export { default as AgentConfig } from './components/agent/AgentConfig';
+export { default as AgentConfig } from './components/agent/AgentConfig/AgentConfig';

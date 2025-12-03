@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { http, HttpResponse } from 'msw';
-import { server } from '../test/mocks/server';
+import { server } from '../../test/mocks/server';
 import { AgentService } from './agent.service';
-import { CreateAgentRequest, UpdateAgentRequest } from '../types/chat.types';
-import { API_BASE_URL } from '../constants/api.constants';
+import { CreateAgentRequest, UpdateAgentRequest } from '../../types/chat.types';
+import { API_BASE_URL } from '../../constants/api.constants';
 
 describe('AgentService', () => {
   describe('getAllAgents', () => {

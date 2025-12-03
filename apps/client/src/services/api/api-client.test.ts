@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { http, HttpResponse } from 'msw';
-import { server } from '../test/mocks/server';
+import { server } from '../../test/mocks/server';
 import { apiClient } from './api-client';
 import { tokenProvider } from './token-provider';
-import { API_BASE_URL } from '../constants/api.constants';
+import { API_BASE_URL } from '../../constants/api.constants';
 
 describe('ApiClient', () => {
   beforeEach(() => {

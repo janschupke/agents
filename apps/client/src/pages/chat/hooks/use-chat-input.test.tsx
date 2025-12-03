@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useChatInput } from './use-chat-input';
+import { useChatInput } from '../components/chat/ChatInput/hooks/use-chat-input';
 
 // Mock the focus hook since we test it separately
-vi.mock('./use-chat-input-focus', () => ({
+vi.mock('../components/chat/ChatInput/hooks/use-chat-input-focus', () => ({
   useChatInputFocus: vi.fn(),
 }));
 
@@ -30,6 +30,7 @@ describe('useChatInput', () => {
         currentSessionId: 1,
         messagesLoading: false,
         showChatPlaceholder: false,
+        agentId: 1,
         sendMessage: mockSendMessage,
       })
     );
@@ -44,6 +45,7 @@ describe('useChatInput', () => {
         currentSessionId: 1,
         messagesLoading: false,
         showChatPlaceholder: false,
+        agentId: 1,
         sendMessage: mockSendMessage,
       })
     );
@@ -54,7 +56,7 @@ describe('useChatInput', () => {
   });
 
   it('should pass correct props to useChatInputFocus', async () => {
-    const { useChatInputFocus } = await import('./use-chat-input-focus');
+    const { useChatInputFocus } = await import('../components/chat/ChatInput/hooks/use-chat-input-focus');
     
     const { rerender } = renderHook<
       ReturnType<typeof useChatInput>,
@@ -65,6 +67,7 @@ describe('useChatInput', () => {
           currentSessionId,
           messagesLoading,
           showChatPlaceholder: false,
+          agentId: 1,
           sendMessage: mockSendMessage,
         }),
       {
@@ -102,6 +105,7 @@ describe('useChatInput', () => {
         currentSessionId: 1,
         messagesLoading: false,
         showChatPlaceholder: false,
+        agentId: 1,
         sendMessage: mockSendMessage,
       })
     );
@@ -119,6 +123,7 @@ describe('useChatInput', () => {
         currentSessionId: 1,
         messagesLoading: false,
         showChatPlaceholder: false,
+        agentId: 1,
         sendMessage: mockSendMessage,
       })
     );
@@ -140,6 +145,7 @@ describe('useChatInput', () => {
         currentSessionId: 1,
         messagesLoading: false,
         showChatPlaceholder: false,
+        agentId: 1,
         sendMessage: mockSendMessage,
       })
     );
@@ -165,6 +171,7 @@ describe('useChatInput', () => {
         currentSessionId: 1,
         messagesLoading: false,
         showChatPlaceholder: false,
+        agentId: 1,
         sendMessage: mockSendMessage,
       })
     );
@@ -198,6 +205,7 @@ describe('useChatInput', () => {
         currentSessionId: 1,
         messagesLoading: false,
         showChatPlaceholder: false,
+        agentId: 1,
         sendMessage: mockSendMessageError,
       })
     );
@@ -230,7 +238,7 @@ describe('useChatInput', () => {
   // Focus behavior (including typing indicator) is tested in use-chat-input-focus.test.tsx
   // This test just verifies that useChatInput correctly passes showTypingIndicator to useChatInputFocus
   it('should pass showTypingIndicator to useChatInputFocus', async () => {
-    const { useChatInputFocus } = await import('./use-chat-input-focus');
+    const { useChatInputFocus } = await import('../components/chat/ChatInput/hooks/use-chat-input-focus');
     
     const { rerender } = renderHook<
       ReturnType<typeof useChatInput>,
@@ -242,6 +250,7 @@ describe('useChatInput', () => {
           messagesLoading: false,
           showChatPlaceholder: false,
           showTypingIndicator,
+          agentId: 1,
           sendMessage: mockSendMessage,
         }),
       {

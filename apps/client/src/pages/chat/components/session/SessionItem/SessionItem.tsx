@@ -1,10 +1,10 @@
-import { Session } from '../../../../types/chat.types';
+import { Session } from '../../../../../types/chat.types';
 import { IconTrash, IconPencil, SidebarItem } from '@openai/ui';
 import { formatDate, formatTime } from '@openai/utils';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '../../../../hooks/queries/query-keys';
-import { MessageService } from '../../../../services/chat/message/message.service';
+import { queryKeys } from '../../../../../hooks/queries/query-keys';
+import { MessageService } from '../../../../../services/chat/message/message.service';
 
 interface SessionItemProps {
   session: Session;

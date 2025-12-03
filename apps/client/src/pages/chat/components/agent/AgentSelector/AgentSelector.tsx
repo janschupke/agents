@@ -9,7 +9,7 @@ import {
 } from '@openai/ui';
 import { useAgents } from '../../../../../hooks/queries/use-agents';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { useClickOutside } from '../../../config/hooks/ui/use-click-outside';
+import { useClickOutside } from '../../../../config/hooks/ui/use-click-outside';
 import { LocalStorageManager } from '../../../../../utils/localStorage';
 import { ROUTES, isChatRoute } from '../../../../../constants/routes.constants';
 import { useQueryClient } from '@tanstack/react-query';

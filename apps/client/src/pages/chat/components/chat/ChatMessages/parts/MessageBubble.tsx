@@ -1,4 +1,4 @@
-import { Message, MessageRole } from '../../../../types/chat.types';
+import { Message, MessageRole } from '../../../../../../types/chat.types';
 import {
   IconSearch,
   IconTranslate,
@@ -8,8 +8,8 @@ import {
   Card,
 } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import TranslatableMarkdownContent from '../markdown/TranslatableMarkdownContent';
-import MarkdownContent from '../markdown/MarkdownContent';
+import TranslatableMarkdownContent from '../../../markdown/TranslatableMarkdownContent/TranslatableMarkdownContent';
+import MarkdownContent from '../../../markdown/MarkdownContent/MarkdownContent';
 import { useMessageTranslation } from '../hooks/use-message-translation';
 
 interface MessageBubbleProps {

@@ -7,7 +7,7 @@ import {
   IconChevronDown,
   DropdownTransition,
 } from '@openai/ui';
-import { useUser } from '../../hooks/queries/use-user';
+import { useUser } from '../../../hooks/queries/use-user';
 
 export default function UserDropdown() {
   const { data: userInfo } = useUser();

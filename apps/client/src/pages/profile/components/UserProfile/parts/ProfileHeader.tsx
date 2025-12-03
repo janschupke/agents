@@ -1,4 +1,4 @@
-import { User } from '../../../types/chat.types';
+import { User } from '../../../../../types/chat.types';
 import { Avatar } from '@openai/ui';
 
 interface ProfileHeaderProps {

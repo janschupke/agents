@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useChatMessages } from './use-chat-messages';
+import { useChatMessages } from '../components/chat/ChatMessages/hooks/use-chat-messages';
 import { TestQueryProvider } from '../../../test/utils/test-query-provider';
 import { MessageRole, ChatHistoryResponse } from '../../../types/chat.types';
 

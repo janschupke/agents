@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Input, Card, ModalHeader, ModalFooter } from '@openai/ui';
-import { NUMERIC_CONSTANTS } from '../../../../constants/numeric.constants';
-import { useUpdateSession } from '../../../../hooks/mutations/use-agent-mutations';
+import { NUMERIC_CONSTANTS } from '../../../../../constants/numeric.constants';
+import { useUpdateSession } from '../../../../../hooks/mutations/use-agent-mutations';
 import { useFormValidation } from '@openai/utils';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import {

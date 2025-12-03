@@ -1,4 +1,4 @@
-import { Message, MessageRole } from '../../../../types/chat.types';
+import { Message, MessageRole } from '../../../../../types/chat.types';
 import MessageBubble from './parts/MessageBubble';
 import { IconChat, FadeIn, TypingIndicator } from '@openai/ui';
 import { useRef, useEffect } from 'react';
