@@ -5,9 +5,9 @@ module.exports = {
   keySeparator: '.',
   output: 'src/locales/$LOCALE/$NAMESPACE.json',
   input: [
-    '../client/src/**/*.{ts,tsx}',
-    '../admin/src/**/*.{ts,tsx}',
-    '../api/src/**/*.{ts}',
+    '../../apps/client/src/**/*.{ts,tsx}',
+    '../../apps/admin/src/**/*.{ts,tsx}',
+    '../../apps/api/src/**/*.{ts}',
     '!**/node_modules/**',
     '!**/dist/**',
   ],

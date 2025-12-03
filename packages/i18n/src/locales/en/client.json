@@ -3,7 +3,8 @@
     "chat": "Chat",
     "config": "Config",
     "agentConfiguration": "Agent Configuration",
-    "profile": "Profile"
+    "profile": "Profile",
+    "savedWords": "Saved Words"
   },
   "chat": {
     "title": "Chat",
@@ -48,7 +49,6 @@
   },
   "config": {
     "title": "Agent Configuration",
-    "description": "Configure your AI agent settings",
     "save": "Save Configuration",
     "saved": "Configuration saved successfully",
     "error": "Failed to save configuration",
@@ -118,12 +118,49 @@
     "profile": "Profile",
     "settings": "Settings"
   },
+  "savedWords": {
+    "title": "Saved Words",
+    "saveWord": "Save Word",
+    "editWord": "Edit Word",
+    "originalWord": "Original Word",
+    "pinyin": "Pinyin",
+    "translation": "Translation",
+    "enterTranslation": "Enter translation",
+    "sentenceContext": "Sentence Context",
+    "existingSentences": "Existing Sentences",
+    "sentences": "Sentences",
+    "noSentences": "No sentences",
+    "context": "Context",
+    "agent": "Agent",
+    "session": "Session",
+    "searchPlaceholder": "Search words...",
+    "pageSize": "Page Size",
+    "totalWords": "Total: {{count}} word",
+    "totalWords_plural": "Total: {{count}} words",
+    "noWords": "No saved words yet",
+    "noWordsFound": "No words found matching your search",
+    "pageInfo": "Page {{current}} of {{total}} ({{start}}-{{end}})",
+    "confirmDelete": "Are you sure you want to delete this word?",
+    "saveSuccess": "Word saved successfully",
+    "saveError": "Failed to save word",
+    "updateSuccess": "Word updated successfully",
+    "updateError": "Failed to update word",
+    "deleteSuccess": "Word deleted successfully",
+    "deleteError": "Failed to delete word"
+  },
   "common": {
     "confirm": "Confirm",
     "cancel": "Cancel",
     "save": "Save",
     "close": "Close",
     "edit": "Edit",
-    "delete": "Delete"
+    "delete": "Delete",
+    "loading": "Loading...",
+    "previous": "Previous",
+    "next": "Next",
+    "actions": "Actions",
+    "createdAt": "Created At",
+    "saving": "Saving...",
+    "add": "Add"
   }
 }

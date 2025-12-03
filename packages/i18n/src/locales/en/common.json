@@ -3,20 +3,44 @@
     "accessDenied": "app.accessDenied",
     "adminRoleRequired": "app.adminRoleRequired",
     "checkingAccess": "app.checkingAccess",
+    "failedToLoadUserData": "app.failedToLoadUserData",
     "loading": "Loading...",
     "pleaseSignIn": "app.pleaseSignIn",
     "pleaseSignInToContinue": "app.pleaseSignInToContinue",
-    "saving": "Saving...",
     "signIn": "Sign in to continue",
     "signOut": "app.signOut",
     "title": "OpenAI Chat",
     "welcome": "Welcome"
   },
   "chat": {
+    "chooseSession": "chat.chooseSession",
+    "createAgentFirst": "chat.createAgentFirst",
+    "createNewSession": "chat.createNewSession",
+    "defaultSessionName": "chat.defaultSessionName",
+    "deleteSessionTooltip": "chat.deleteSessionTooltip",
+    "editSessionName": "chat.editSessionName",
+    "editSessionNameTooltip": "chat.editSessionNameTooltip",
+    "enterSessionName": "chat.enterSessionName",
+    "errors": {
+      "fetchSessionFailed": "chat.errors.fetchSessionFailed",
+      "sessionNotFound": "chat.errors.sessionNotFound"
+    },
     "message": {
       "viewRequestJson": "chat.message.viewRequestJson",
       "viewResponseJson": "chat.message.viewResponseJson"
     },
+    "newSession": "chat.newSession",
+    "noAgents": "chat.noAgents",
+    "noSessions": "chat.noSessions",
+    "openaiRequest": "chat.openaiRequest",
+    "openaiResponse": "chat.openaiResponse",
+    "placeholder": "chat.placeholder",
+    "selectSession": "chat.selectSession",
+    "send": "chat.send",
+    "session": "chat.session",
+    "sessionName": "chat.sessionName",
+    "sessions": "chat.sessions",
+    "title": "chat.title",
     "translation": {
       "clickToTranslate": "chat.translation.clickToTranslate",
       "hideTranslation": "chat.translation.hideTranslation",
@@ -25,15 +49,117 @@
       "translating": "chat.translation.translating"
     }
   },
+  "common": {
+    "actions": "common.actions",
+    "cancel": "common.cancel",
+    "delete": "common.delete",
+    "edit": "common.edit",
+    "leave": "common.leave",
+    "loading": "common.loading",
+    "next": "common.next",
+    "previous": "common.previous",
+    "save": "common.save"
+  },
+  "config": {
+    "addRule": "config.addRule",
+    "agentName": "config.agentName",
+    "behaviorRules": "config.behaviorRules",
+    "confirm": {
+      "unsavedChangesMessage": "config.confirm.unsavedChangesMessage",
+      "unsavedChangesTitle": "config.confirm.unsavedChangesTitle"
+    },
+    "createAgent": "config.createAgent",
+    "description": "config.description",
+    "enterAgentName": "config.enterAgentName",
+    "enterDescription": "config.enterDescription",
+    "enterSystemPrompt": "config.enterSystemPrompt",
+    "errors": {
+      "agentNotFound": "config.errors.agentNotFound",
+      "createFailed": "config.errors.createFailed"
+    },
+    "jsonInvalidError": "config.jsonInvalidError",
+    "jsonPlaceholder": "config.jsonPlaceholder",
+    "messages": {
+      "agentCreated": "config.messages.agentCreated"
+    },
+    "removeRule": "config.removeRule",
+    "rulePlaceholder": "config.rulePlaceholder",
+    "rulesDescription": "config.rulesDescription",
+    "saveButton": "config.saveButton",
+    "saving": "config.saving",
+    "selectAgent": "config.selectAgent",
+    "systemPrompt": "config.systemPrompt",
+    "systemPromptDescription": "config.systemPromptDescription",
+    "temperature": "config.temperature",
+    "temperatureBalanced": "config.temperatureBalanced",
+    "temperatureCreative": "config.temperatureCreative",
+    "temperatureDeterministic": "config.temperatureDeterministic",
+    "title": "config.title",
+    "viewForm": "config.viewForm",
+    "viewJson": "config.viewJson"
+  },
   "navigation": {
     "systemRules": "navigation.systemRules",
     "users": "navigation.users"
   },
-  "leave": "Leave",
+  "profile": {
+    "apiKey": {
+      "apiKeySet": "profile.apiKey.apiKeySet",
+      "deleteApiKey": "profile.apiKey.deleteApiKey",
+      "editApiKey": "profile.apiKey.editApiKey",
+      "enterApiKey": "profile.apiKey.enterApiKey",
+      "openaiPlatform": "profile.apiKey.openaiPlatform",
+      "requiredLabel": "profile.apiKey.requiredLabel",
+      "requiredMessage": "profile.apiKey.requiredMessage",
+      "saveTooltip": "profile.apiKey.saveTooltip",
+      "saving": "profile.apiKey.saving",
+      "securityNote": "profile.apiKey.securityNote",
+      "title": "profile.apiKey.title"
+    }
+  },
+  "savedWords": {
+    "agent": "savedWords.agent",
+    "confirmDelete": "savedWords.confirmDelete",
+    "context": "savedWords.context",
+    "deleteError": "savedWords.deleteError",
+    "deleteSuccess": "savedWords.deleteSuccess",
+    "editWord": "savedWords.editWord",
+    "enterTranslation": "savedWords.enterTranslation",
+    "existingSentences": "savedWords.existingSentences",
+    "noSentences": "savedWords.noSentences",
+    "noWords": "savedWords.noWords",
+    "noWordsFound": "savedWords.noWordsFound",
+    "originalWord": "savedWords.originalWord",
+    "pageInfo": "savedWords.pageInfo",
+    "pageSize": "savedWords.pageSize",
+    "pinyin": "savedWords.pinyin",
+    "saveError": "savedWords.saveError",
+    "saveSuccess": "savedWords.saveSuccess",
+    "saveWord": "savedWords.saveWord",
+    "searchPlaceholder": "savedWords.searchPlaceholder",
+    "sentenceContext": "savedWords.sentenceContext",
+    "sentences": "savedWords.sentences",
+    "session": "savedWords.session",
+    "title": "savedWords.title",
+    "totalWords_one": "savedWords.totalWords",
+    "totalWords_other": "savedWords.totalWords",
+    "translation": "savedWords.translation",
+    "updateError": "savedWords.updateError",
+    "updateSuccess": "savedWords.updateSuccess"
+  },
   "users": {
     "accessDenied": "users.accessDenied",
+    "admin": "users.admin",
+    "columns": {
+      "created": "users.columns.created",
+      "email": "users.columns.email",
+      "roles": "users.columns.roles",
+      "user": "users.columns.user"
+    },
     "error": "users.error",
     "loading": "users.loading",
+    "noRoles": "users.noRoles",
+    "noUsersFound": "users.noUsersFound",
     "title": "users.title",
     "total_one": "users.total",
     "total_other": "users.total"
