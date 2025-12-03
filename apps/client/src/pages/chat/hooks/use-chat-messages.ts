@@ -36,28 +36,28 @@ export function useChatMessages({
   const sendMessageMutation = useSendMessage();
   const [messages, setMessages] = useState<Message[]>([]);
 
-  // Update messages from chat history
-  useEffect(() => {
-    if (chatHistory && agentId) {
-      if (sessionId) {
-        const historySessionId = chatHistory.session?.id;
-        // Only update messages if the history matches the current session
-        if (historySessionId === sessionId && chatHistory.messages) {
-          setMessages(chatHistory.messages);
-        }
-      } else {
-        // No sessionId - use messages from history (will be empty if no session exists)
-        setMessages(chatHistory.messages || []);
-      }
-    } else if (!sessionId) {
-      setMessages([]);
-    }
-  }, [chatHistory, agentId, sessionId]);
-
   // Clear messages when session or agent changes
   useEffect(() => {
     setMessages([]);
   }, [sessionId, agentId]);
+
+  // Update messages from chat history
+  useEffect(() => {
+    if (!chatHistory || !agentId) {
+      return;
+    }
+
+    if (sessionId) {
+      const historySessionId = chatHistory.session?.id;
+      // Only update if history matches current session
+      if (historySessionId === sessionId && chatHistory.messages) {
+        setMessages(chatHistory.messages);
+      }
+    } else {
+      // No sessionId - use messages from history (will be empty if no session exists)
+      setMessages(chatHistory.messages || []);
+    }
+  }, [chatHistory, agentId, sessionId]);
 
   const sendMessage = async (message: string) => {
     if (!message.trim() || !agentId) return;

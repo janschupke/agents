@@ -4,6 +4,8 @@ import AgentConfig from './components/agent/AgentConfig';
 import { useConfigRoute } from './hooks/route/use-config-route';
 import AgentConfigErrorState from './components/agent/AgentConfigErrorState';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
+import { useAgents } from '../../hooks/queries/use-agents';
+import { useSidebarLoadingState } from '../../hooks/use-sidebar-loading-state';
 import {
   Sidebar,
   Container,
@@ -38,10 +40,20 @@ export default function ConfigRoute() {
   const { agentId } = useParams<{ agentId?: string }>();
   const location = useLocation();
   const { t } = useTranslation(I18nNamespace.CLIENT);
-  const { loading, error, lastSelectedAgentId } = useConfigRoute(agentId);
+  const { error, lastSelectedAgentId } = useConfigRoute(agentId);
+  const { isLoading: loadingAgents } = useAgents();
+  
+  // Use universal sidebar loading state - only show full page loading if agents aren't cached
+  // If agents are cached, always render AgentConfig (even if loading specific agent)
+  const { shouldShowLoading: shouldShowFullPageLoading } = useSidebarLoadingState({
+    type: 'agents',
+    isLoading: loadingAgents,
+  });
 
-  // Business logic moved to hook
-  if (loading) {
+  // Only show full page loading if we don't have cached agents
+  // This ensures sidebar stays visible when agents are cached
+  // If agents are cached, AgentConfig will handle its own loading state for specific agent
+  if (shouldShowFullPageLoading) {
     return <AgentConfigLoadingState />;
   }
 

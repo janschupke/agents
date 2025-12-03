@@ -4,6 +4,7 @@ import AgentSidebar from './AgentSidebar';
 import AgentConfigForm, { AgentConfigFormRef } from './AgentConfigForm';
 import AgentConfigErrorState from './AgentConfigErrorState';
 import AgentConfigLoadingState from './AgentConfigLoadingState';
+import AgentConfigFormSkeleton from './AgentConfigFormSkeleton';
 import {
   Sidebar,
   Container,
@@ -14,6 +15,7 @@ import {
   ButtonVariant,
 } from '@openai/ui';
 import { useAgents } from '../../../../hooks/queries/use-agents';
+import { useSidebarLoadingState } from '../../../../hooks/use-sidebar-loading-state';
 import { useAgentConfigData } from '../../hooks/agent/use-agent-config-data';
 import { useAgentConfigNavigation } from '../../hooks/agent/use-agent-config-navigation';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
@@ -26,14 +28,12 @@ import { useAgentConfigState } from '../../hooks/agent/use-agent-config-state';
 
 interface AgentConfigProps {
   agentId?: number;
-  loading?: boolean;
   error?: string;
   isNewAgent?: boolean;
 }
 
 export default function AgentConfig({
   agentId: propAgentId,
-  loading: propLoading,
   error: propError,
   isNewAgent: propIsNewAgent,
 }: AgentConfigProps) {
@@ -59,6 +59,10 @@ export default function AgentConfig({
   });
 
   const { data: agents = [], isLoading: loadingAgents } = useAgents();
+  const { shouldShowLoading: shouldShowSidebarLoading } = useSidebarLoadingState({
+    type: 'agents',
+    isLoading: loadingAgents,
+  });
   const formRef = useRef<AgentConfigFormRef>(null);
   const [canSave, setCanSave] = useState(false);
 
@@ -90,8 +94,19 @@ export default function AgentConfig({
     setCanSave(canSaveValue);
   };
 
-  // Loading state
-  if ((propLoading || loading || loadingAgents) && !isNewAgent) {
+  // Loading state - only show full page loading if we don't have cached agents
+  // This ensures sidebar stays visible when agents are cached
+  // If agents are cached, always render the component (even if loading specific agent)
+  const { shouldShowLoading: shouldShowFullPageLoading } = useSidebarLoadingState({
+    type: 'agents',
+    isLoading: loadingAgents,
+  });
+  
+  // Only show full page loading if:
+  // 1. We don't have cached agents AND agents are loading
+  // 2. OR we're loading a specific agent AND we don't have cached agents
+  // If agents are cached, always show the component (sidebar will be visible)
+  if (shouldShowFullPageLoading && !isNewAgent) {
     return <AgentConfigLoadingState />;
   }
 
@@ -104,7 +119,7 @@ export default function AgentConfig({
           onAgentSelect={handleAgentSelect}
           onNewAgent={handleNewAgent}
           onAgentDelete={handleDelete}
-          loading={loadingAgents}
+          loading={shouldShowSidebarLoading}
           isNewAgentRoute={isNewAgent}
         />
       </Sidebar>
@@ -145,13 +160,17 @@ export default function AgentConfig({
               animateOnChange={isNewAgent ? 'new' : agentId}
               enableAnimation={true}
             >
-              <AgentConfigForm
-                ref={formRef}
-                agent={currentAgent}
-                saving={isSaving}
-                onSaveClick={handleSave}
-                onFormStateChange={handleFormStateChange}
-              />
+              {loading && !isNewAgent && !currentAgent ? (
+                <AgentConfigFormSkeleton />
+              ) : (
+                <AgentConfigForm
+                  ref={formRef}
+                  agent={currentAgent}
+                  saving={isSaving}
+                  onSaveClick={handleSave}
+                  onFormStateChange={handleFormStateChange}
+                />
+              )}
             </PageContent>
           </>
         )}

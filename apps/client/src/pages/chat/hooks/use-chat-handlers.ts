@@ -44,8 +44,8 @@ export function useChatHandlers({
   const queryClient = useQueryClient();
 
   const handleSessionSelectWrapper = async (sessionId: number) => {
-    // Clear messages immediately when switching sessions to prevent stale data
-    setMessages([]);
+    // Don't clear messages here - let useChatMessages handle it based on sessionId change
+    // This prevents race conditions where messages are cleared but new ones haven't loaded yet
     await handleSessionSelect(sessionId);
   };
 

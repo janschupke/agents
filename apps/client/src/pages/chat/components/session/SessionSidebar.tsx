@@ -32,6 +32,8 @@ export default function SessionSidebar({
 }: SessionSidebarProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
 
+  console.log('loading', loading);
+
   return (
     <Sidebar>
       <SidebarHeader
@@ -44,8 +46,8 @@ export default function SessionSidebar({
         }}
       />
       <SidebarContent
-        loading={loading && sessions.length === 0}
-        empty={!loading && sessions.length === 0}
+        loading={loading}
+        empty={sessions.length === 0}
         loadingComponent={
           <div className="p-3">
             <SkeletonList count={5} />

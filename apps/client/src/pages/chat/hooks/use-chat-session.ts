@@ -8,6 +8,7 @@ import {
 } from '../../../hooks/mutations/use-agent-mutations';
 import { Session, ChatHistoryResponse } from '../../../types/chat.types';
 import { ChatService } from '../../../services/chat.service';
+import { useSidebarLoadingState } from '../../../hooks/use-sidebar-loading-state';
 
 interface UseChatSessionOptions {
   agentId: number | null;
@@ -38,8 +39,14 @@ export function useChatSession({
   initialSessionId,
 }: UseChatSessionOptions): UseChatSessionReturn {
   const queryClient = useQueryClient();
-  const { data: sessions = [], isLoading: sessionsLoading } =
-    useAgentSessions(agentId);
+  const { data: sessions = [], isLoading: sessionsLoading } = useAgentSessions(agentId);
+  
+  // Use universal sidebar loading state hook - automatically checks cache
+  const { shouldShowLoading: actualSessionsLoading } = useSidebarLoadingState({
+    type: 'sessions',
+    agentId,
+    isLoading: sessionsLoading,
+  });
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(
     initialSessionId ?? null
   );
@@ -149,7 +156,7 @@ export function useChatSession({
   return {
     currentSessionId,
     sessions,
-    sessionsLoading,
+    sessionsLoading: actualSessionsLoading,
     setCurrentSessionId,
     handleSessionSelect,
     handleNewSession,

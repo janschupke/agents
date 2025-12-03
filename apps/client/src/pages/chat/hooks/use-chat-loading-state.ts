@@ -1,7 +1,8 @@
 import { useAgents } from '../../../hooks/queries/use-agents';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../hooks/queries/query-keys';
-import { Session } from '../../../types/chat.types';
+import { Session, Agent } from '../../../types/chat.types';
+import { useSidebarLoadingState } from '../../../hooks/use-sidebar-loading-state';
 
 interface UseChatLoadingStateOptions {
   agentId: number | null;
@@ -10,7 +11,6 @@ interface UseChatLoadingStateOptions {
   sessionsLoading: boolean;
   messagesLoading: boolean;
   isSendingMessage: boolean;
-  hasMessages: boolean;
 }
 
 interface UseChatLoadingStateReturn {
@@ -45,19 +45,28 @@ export function useChatLoadingState({
   sessionsLoading,
   messagesLoading,
   isSendingMessage,
-  hasMessages,
 }: UseChatLoadingStateOptions): UseChatLoadingStateReturn {
   const queryClient = useQueryClient();
-  const { data: agents = [] } = useAgents();
+  // Call useAgents to ensure query runs (but check cache directly, not the returned data)
+  useAgents();
 
-  // Check if we have cached data
-  const hasCachedAgents = agents.length > 0;
-  const hasCachedSessions =
-    agentId !== null
-      ? queryClient.getQueryData<Session[]>(
-          queryKeys.agents.sessions(agentId)
-        ) !== undefined
-      : false;
+  // Use universal sidebar loading state hook
+  const { shouldShowLoading: shouldShowAgentsLoading } = useSidebarLoadingState({
+    type: 'agents',
+    isLoading: agentsLoading,
+  });
+  const { shouldShowLoading: shouldShowSessionsLoading } = useSidebarLoadingState({
+    type: 'sessions',
+    agentId,
+    isLoading: sessionsLoading,
+  });
+
+  // Check React Query cache directly (not array length)
+  // Cache is source of truth - persists across render cycles
+  const hasCachedAgents = queryClient.getQueryData<Agent[]>(queryKeys.agents.list()) !== undefined;
+  const hasCachedSessionsForCurrentAgent = agentId !== null
+    ? queryClient.getQueryData<Session[]>(queryKeys.agents.sessions(agentId)) !== undefined
+    : false;
   const hasCachedMessages =
     agentId !== null && sessionId !== null
       ? queryClient.getQueryData(
@@ -66,17 +75,25 @@ export function useChatLoadingState({
       : false;
 
   // Full page loading (only on initial load)
-  // Only true if no agents AND no sessions AND no messages
+  // Check cache directly, not array length or props
+  // Only true if cache has NO data for agents OR sessions
+  // Messages loading should NOT trigger full page load - only content loading
+  // This ensures sidebar stays visible when loading messages
   const isInitialLoad =
-    !hasCachedAgents &&
-    !hasCachedSessions &&
-    !hasMessages &&
-    (agentsLoading || sessionsLoading || messagesLoading);
+    (!hasCachedAgents && agentsLoading) ||
+    (!hasCachedSessionsForCurrentAgent && sessionsLoading && agentId !== null);
 
   // Sidebar loading (only if agents/sessions unavailable)
-  // Only true if agents loading OR (sessions loading AND no cached sessions)
-  const sidebarLoading =
-    agentsLoading || (sessionsLoading && !hasCachedSessions);
+  // CRITICAL: Check React Query cache directly, not array length or hasSessions prop
+  // Array length can be 0 during render cycles even when cache has data
+  // Cache is the source of truth - if cache has data for current agent, we're not loading
+  
+  // Use universal sidebar loading state - automatically checks cache
+  // This prevents sidebar from showing loading when:
+  // - Clicking a session (which loads message history, not sessions)
+  // - Navigating between sessions (sessions are already in cache)
+  // - Background refetches of sessions (cache has data, so not loading)
+  const sidebarLoading = shouldShowAgentsLoading || shouldShowSessionsLoading;
 
   // Container loading (only if agents unavailable)
   // Only true if agents loading AND no cached agents

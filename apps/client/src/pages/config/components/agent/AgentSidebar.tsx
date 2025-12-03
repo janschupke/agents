@@ -44,8 +44,8 @@ export default function AgentSidebar({
         }}
       />
       <SidebarContent
-        loading={loading && agents.length === 0}
-        empty={!loading && agents.length === 0 && !isNewAgentSelected}
+        loading={loading}
+        empty={agents.length === 0 && !isNewAgentSelected}
         loadingComponent={
           <div className="p-3">
             <SkeletonList count={5} />

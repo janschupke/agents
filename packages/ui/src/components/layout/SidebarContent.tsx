@@ -11,6 +11,8 @@ interface SidebarContentProps {
 
 /**
  * Sidebar scrollable content area with loading and empty states
+ * CRITICAL: Never show loading if children exist - data is already loaded
+ * This prevents sidebar from disappearing when navigating/clicking items
  */
 export default function SidebarContent({
   children,
@@ -20,15 +22,21 @@ export default function SidebarContent({
   emptyMessage,
   loadingComponent,
 }: SidebarContentProps) {
+  // If we have children, we have data - never show loading
+  // This is the universal fix: if data exists, don't show loading skeleton
+  const hasChildren = Boolean(children);
+  const shouldShowLoading = loading && !hasChildren;
+  const shouldShowEmpty = !shouldShowLoading && empty && !hasChildren;
+
   return (
     <div className={`flex-1 overflow-y-auto ${className}`}>
-      {loading && loadingComponent}
-      {!loading && empty && emptyMessage && (
+      {shouldShowLoading && loadingComponent}
+      {shouldShowEmpty && emptyMessage && (
         <div className="p-4 text-text-tertiary text-center text-sm">
           {emptyMessage}
         </div>
       )}
-      {!loading && !empty && children}
+      {hasChildren && children}
     </div>
   );
 }

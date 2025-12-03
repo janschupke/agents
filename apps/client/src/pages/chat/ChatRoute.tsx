@@ -41,6 +41,15 @@ export default function ChatRoute() {
     parsedSessionId
   );
 
+  // Check React Query cache directly for sessions (not isLoading)
+  // Cache is source of truth - persists across render cycles
+  const hasCachedSessionsForAgent = parsedAgentId !== null
+    ? queryClient.getQueryData<Session[]>(queryKeys.agents.sessions(parsedAgentId)) !== undefined
+    : false;
+  
+  // Only consider sessions loading if cache has no data AND query is loading
+  const actualSessionsLoading = hasCachedSessionsForAgent ? false : sessionsLoading;
+
   // Handle /chat route (no agentId)
   useEffect(() => {
     if (!urlAgentId && !loadingAgents) {
@@ -67,13 +76,13 @@ export default function ChatRoute() {
 
   // Handle /chat/:agentId route (no sessionId) - auto-select most recent session
   useEffect(() => {
-    if (parsedAgentId && !urlSessionId && !sessionsLoading && sessions.length > 0) {
+    if (parsedAgentId && !urlSessionId && !actualSessionsLoading && sessions.length > 0) {
       const mostRecent = sessions[0];
       navigate(ROUTES.CHAT_SESSION(parsedAgentId, mostRecent.id), {
         replace: true,
       });
     }
-  }, [parsedAgentId, urlSessionId, sessionsLoading, sessions, navigate]);
+  }, [parsedAgentId, urlSessionId, actualSessionsLoading, sessions, navigate]);
 
   // Update localStorage when agentId changes
   useEffect(() => {
@@ -98,8 +107,8 @@ export default function ChatRoute() {
 
   // Handle /chat/:agentId route (no sessionId)
   if (!urlSessionId) {
-    // Show loading while redirecting
-    if (sessionsLoading) {
+    // Show loading only if cache has no data AND query is loading
+    if (actualSessionsLoading) {
       return <ChatLoadingState />;
     }
 

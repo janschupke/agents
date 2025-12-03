@@ -115,6 +115,8 @@ function ChatAgentContent({
   });
 
   // Unified loading state management
+  // Loading state is now calculated based on React Query cache, not array length
+  // This ensures sidebar doesn't show loading when data exists in cache
   const {
     isInitialLoad,
     sidebarLoading,
@@ -128,7 +130,6 @@ function ChatAgentContent({
     sessionsLoading,
     messagesLoading,
     isSendingMessage,
-    hasMessages: messages.length > 0,
   });
 
   // Chat input management
@@ -165,20 +166,16 @@ function ChatAgentContent({
   return (
     <>
       <Sidebar>
-        {sidebarLoading ? (
-          <SidebarSkeleton />
-        ) : (
-          <SessionSidebar
-            sessions={sessions}
-            agentId={agentId}
-            currentSessionId={currentSessionId}
-            onSessionSelect={handleSessionSelectWrapper}
-            onNewSession={handleNewSessionWrapper}
-            onSessionDelete={handleSessionDeleteWrapper}
-            onSessionEdit={openSessionNameModal}
-            loading={false}
-          />
-        )}
+        <SessionSidebar
+          sessions={sessions}
+          agentId={agentId}
+          currentSessionId={currentSessionId}
+          onSessionSelect={handleSessionSelectWrapper}
+          onNewSession={handleNewSessionWrapper}
+          onSessionDelete={handleSessionDeleteWrapper}
+          onSessionEdit={openSessionNameModal}
+          loading={sidebarLoading}
+        />
       </Sidebar>
       <Container>
         {containerLoading ? (
