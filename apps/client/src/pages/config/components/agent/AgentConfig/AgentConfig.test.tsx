@@ -12,7 +12,6 @@ import {
   useTestQueryClient,
 } from '../../../../../test/utils/test-query-provider';
 import { queryKeys } from '../../../../../hooks/queries/query-keys';
-import { AgentService } from '../../../../../services/agent/agent.service';
 import { Agent } from '../../../../../types/chat.types';
 import { ROUTES } from '../../../../../constants/routes.constants';
 

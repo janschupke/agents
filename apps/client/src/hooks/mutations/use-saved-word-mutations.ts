@@ -4,8 +4,6 @@ import {
   CreateSavedWordRequest,
   UpdateSavedWordRequest,
   AddSentenceRequest,
-  SavedWord,
-  SavedWordSentence,
 } from '../../types/saved-word.types';
 import { queryKeys } from '../queries/query-keys';
 

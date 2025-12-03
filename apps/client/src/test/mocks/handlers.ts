@@ -194,7 +194,7 @@ export const handlers = [
 
   // Get session with agent ID (for routing) - place early to ensure it matches
   // This endpoint is used by getSessionWithAgent
-  http.get(`${API_BASE}/api/sessions/:sessionId`, ({ params, request }) => {
+  http.get(`${API_BASE}/api/sessions/:sessionId`, ({ params }) => {
     const sessionId = Number(params.sessionId);
     const session = mockSessions.find((s) => s.id === sessionId);
     if (!session) {

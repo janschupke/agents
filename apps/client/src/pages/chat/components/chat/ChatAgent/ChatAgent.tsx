@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useConfirm } from '../../../../../hooks/ui/useConfirm';
 import { useChatAgentNavigation } from '../../../hooks/use-chat-agent-navigation';
 import { useChatModals } from '../../../hooks/use-chat-modals';
 import { useChatHandlers } from '../../../hooks/use-chat-handlers';

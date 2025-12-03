@@ -43,6 +43,7 @@ describe('use-chat', () => {
           session_name: 'Session 1',
         },
         messages: [],
+        savedWordMatches: [],
       };
 
       vi.mocked(MessageService.getChatHistory).mockResolvedValue(mockChatHistory);
@@ -66,6 +67,7 @@ describe('use-chat', () => {
         },
         session: null,
         messages: [],
+        savedWordMatches: [],
       };
 
       vi.mocked(MessageService.getChatHistory).mockResolvedValue(mockChatHistory);

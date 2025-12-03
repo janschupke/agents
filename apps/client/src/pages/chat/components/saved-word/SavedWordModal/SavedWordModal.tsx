@@ -4,8 +4,6 @@ import {
   ModalHeader,
   ModalFooter,
   Input,
-  Button,
-  FormContainer,
   FormField,
   FormButton,
 } from '@openai/ui';

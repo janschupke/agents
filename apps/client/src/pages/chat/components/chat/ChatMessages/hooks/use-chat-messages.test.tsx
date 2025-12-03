@@ -47,6 +47,7 @@ describe('useChatMessages', () => {
         id: 2,
       },
     ],
+    savedWordMatches: [],
   };
 
   beforeEach(() => {

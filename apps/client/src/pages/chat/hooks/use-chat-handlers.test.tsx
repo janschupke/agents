@@ -53,6 +53,7 @@ describe('useChatHandlers', () => {
       session_name: 'Session 1',
     },
     messages: [],
+    savedWordMatches: [],
   };
 
   const mockHandleSessionSelect = vi.fn(async (_sessionId: number) => {

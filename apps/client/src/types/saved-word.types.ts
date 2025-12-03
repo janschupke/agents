@@ -29,6 +29,7 @@ export interface SavedWordMatch {
 export interface CreateSavedWordRequest {
   originalWord: string;
   translation: string;
+  pinyin?: string;
   agentId?: number;
   sessionId?: number;
   sentence?: string;

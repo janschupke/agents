@@ -1,5 +1,5 @@
 import { Container, PageHeader, PageContent } from '@openai/ui';
-import { useUserDisplay } from '../hooks/use-user-display';
+import { useUserDisplay } from '../../hooks/use-user-display';
 import ProfileHeader from './parts/ProfileHeader';
 import UserDetails from './parts/UserDetails';
 import ApiKeySection from '../ApiKeySection/ApiKeySection';
