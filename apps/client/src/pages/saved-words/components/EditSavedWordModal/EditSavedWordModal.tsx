@@ -62,7 +62,8 @@ export default function EditSavedWordModal({
       });
       onClose();
     } catch (error) {
-      console.error('Failed to update word:', error);
+      // Error is handled by mutation's onError handler (shows toast)
+      // Don't close modal on error so user can retry
     }
   };
 
@@ -72,7 +73,8 @@ export default function EditSavedWordModal({
         await deleteMutation.mutateAsync(word.id);
         onClose();
       } catch (error) {
-        console.error('Failed to delete word:', error);
+        // Error is handled by mutation's onError handler (shows toast)
+        // Don't close modal on error so user can retry
       }
     }
   };
@@ -85,7 +87,7 @@ export default function EditSavedWordModal({
       });
       setSentences((prev) => prev.filter((s) => s.id !== sentenceId));
     } catch (error) {
-      console.error('Failed to remove sentence:', error);
+      // Error is handled by mutation's onError handler (shows toast)
     }
   };
 

@@ -6,9 +6,13 @@ import {
   AddSentenceRequest,
 } from '../../types/saved-word.types';
 import { queryKeys } from '../queries/query-keys';
+import { useToast } from '../../contexts/ToastContext';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 export function useCreateSavedWord() {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return useMutation({
     mutationFn: (data: CreateSavedWordRequest) =>
@@ -22,12 +26,25 @@ export function useCreateSavedWord() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.savedWords.matchingPrefix(),
       });
+      // Invalidate all chat history queries to update highlights in real-time
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.chat.all,
+      });
+      showToast(t('savedWords.saveSuccess') || 'Word saved successfully', 'success');
+    },
+    onError: (error: { message?: string }) => {
+      showToast(
+        error.message || t('savedWords.saveError') || 'Failed to save word',
+        'error'
+      );
     },
   });
 }
 
 export function useUpdateSavedWord() {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return useMutation({
     mutationFn: ({
@@ -45,12 +62,29 @@ export function useUpdateSavedWord() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.savedWords.all(),
       });
+      // Invalidate matching words queries
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.savedWords.matchingPrefix(),
+      });
+      // Invalidate all chat history queries to update highlights in real-time
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.chat.all,
+      });
+      showToast(t('savedWords.updateSuccess') || 'Word updated successfully', 'success');
+    },
+    onError: (error: { message?: string }) => {
+      showToast(
+        error.message || t('savedWords.updateError') || 'Failed to update word',
+        'error'
+      );
     },
   });
 }
 
 export function useDeleteSavedWord() {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return useMutation({
     mutationFn: (id: number) => SavedWordService.deleteSavedWord(id),
@@ -59,6 +93,21 @@ export function useDeleteSavedWord() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.savedWords.all(),
       });
+      // Invalidate matching words queries
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.savedWords.matchingPrefix(),
+      });
+      // Invalidate all chat history queries to update highlights in real-time
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.chat.all,
+      });
+      showToast(t('savedWords.deleteSuccess') || 'Word deleted successfully', 'success');
+    },
+    onError: (error: { message?: string }) => {
+      showToast(
+        error.message || t('savedWords.deleteError') || 'Failed to delete word',
+        'error'
+      );
     },
   });
 }
@@ -75,9 +124,12 @@ export function useAddSentence() {
       data: AddSentenceRequest;
     }) => SavedWordService.addSentence(savedWordId, data),
     onSuccess: (_, variables) => {
-      // Invalidate specific word
+      // Invalidate specific word and list
       queryClient.invalidateQueries({
         queryKey: queryKeys.savedWords.detail(variables.savedWordId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.savedWords.all(),
       });
     },
   });
@@ -95,9 +147,12 @@ export function useRemoveSentence() {
       sentenceId: number;
     }) => SavedWordService.removeSentence(savedWordId, sentenceId),
     onSuccess: (_, variables) => {
-      // Invalidate specific word
+      // Invalidate specific word and list
       queryClient.invalidateQueries({
         queryKey: queryKeys.savedWords.detail(variables.savedWordId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.savedWords.all(),
       });
     },
   });

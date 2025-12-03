@@ -97,7 +97,8 @@ export default function SavedWordModal({
       }
       onClose();
     } catch (error) {
-      console.error('Failed to save word:', error);
+      // Error is handled by mutation's onError handler (shows toast)
+      // Don't close modal on error so user can retry
     }
   };
 
