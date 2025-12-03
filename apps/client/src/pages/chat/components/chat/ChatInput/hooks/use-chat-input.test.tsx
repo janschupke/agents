@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useChatInput } from '../components/chat/ChatInput/hooks/use-chat-input';
+import { useChatInput } from './use-chat-input';
 
 // Mock the focus hook since we test it separately
-vi.mock('../components/chat/ChatInput/hooks/use-chat-input-focus', () => ({
+vi.mock('./use-chat-input-focus', () => ({
   useChatInputFocus: vi.fn(),
 }));
 
@@ -56,7 +56,7 @@ describe('useChatInput', () => {
   });
 
   it('should pass correct props to useChatInputFocus', async () => {
-    const { useChatInputFocus } = await import('../components/chat/ChatInput/hooks/use-chat-input-focus');
+    const { useChatInputFocus } = await import('./use-chat-input-focus');
     
     const { rerender } = renderHook<
       ReturnType<typeof useChatInput>,
@@ -238,7 +238,7 @@ describe('useChatInput', () => {
   // Focus behavior (including typing indicator) is tested in use-chat-input-focus.test.tsx
   // This test just verifies that useChatInput correctly passes showTypingIndicator to useChatInputFocus
   it('should pass showTypingIndicator to useChatInputFocus', async () => {
-    const { useChatInputFocus } = await import('../components/chat/ChatInput/hooks/use-chat-input-focus');
+    const { useChatInputFocus } = await import('./use-chat-input-focus');
     
     const { rerender } = renderHook<
       ReturnType<typeof useChatInput>,

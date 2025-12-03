@@ -1,19 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useChatMessages } from '../components/chat/ChatMessages/hooks/use-chat-messages';
-import { TestQueryProvider } from '../../../test/utils/test-query-provider';
-import { MessageRole, ChatHistoryResponse } from '../../../types/chat.types';
+import { useChatMessages } from './use-chat-messages';
+import { TestQueryProvider } from '../../../../../../test/utils/test-query-provider';
+import { MessageRole, ChatHistoryResponse } from '../../../../../../types/chat.types';
 
 // Mock dependencies
 const mockUseChatHistory = vi.fn();
 const mockSendMessage = vi.fn();
 
-vi.mock('../../../hooks/queries/use-chat', () => ({
+vi.mock('../../../../../../hooks/queries/use-chat', () => ({
   useChatHistory: (agentId: number | null, sessionId: number | null) =>
     mockUseChatHistory(agentId, sessionId),
 }));
 
-vi.mock('../../../hooks/mutations/use-chat-mutations', () => ({
+vi.mock('../../../../../../hooks/mutations/use-chat-mutations', () => ({
   useSendMessage: () => ({
     mutateAsync: mockSendMessage,
     isPending: false,
