@@ -13,6 +13,7 @@ import { AgentMemoryService } from '../memory/agent-memory.service';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
 import { MessageTranslationService } from '../message-translation/message-translation.service';
 import { WordTranslationService } from '../message-translation/word-translation.service';
+import { SavedWordService } from '../saved-word/saved-word.service';
 import { MessageRole } from '../common/enums/message-role.enum';
 import { MEMORY_CONFIG } from '../common/constants/api.constants.js';
 import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
@@ -38,6 +39,7 @@ export class ChatService {
     private readonly apiCredentialsService: ApiCredentialsService,
     private readonly messageTranslationService: MessageTranslationService,
     private readonly wordTranslationService: WordTranslationService,
+    private readonly savedWordService: SavedWordService,
     private readonly messagePreparationService: MessagePreparationService,
     private readonly openaiChatService: OpenAIChatService
   ) {}
@@ -129,6 +131,7 @@ export class ChatService {
           },
           session: null,
           messages: [],
+          savedWordMatches: [],
         };
       }
     }
@@ -155,6 +158,36 @@ export class ChatService {
       await this.wordTranslationService.getWordTranslationsForMessages(
         assistantMessageIds
       );
+
+    // Find saved word matches for all words in assistant messages
+    let savedWordMatches: Array<{
+      originalWord: string;
+      savedWordId: number;
+      translation: string;
+      pinyin: string | null;
+    }> = [];
+    try {
+      // Extract all unique words from word translations
+      const allWords = new Set<string>();
+      wordTranslations.forEach((wts) => {
+        wts.forEach((wt) => {
+          allWords.add(wt.originalWord);
+        });
+      });
+
+      if (allWords.size > 0) {
+        savedWordMatches = await this.savedWordService.findMatchingWords(
+          userId,
+          Array.from(allWords)
+        );
+        this.logger.debug(
+          `Found ${savedWordMatches.length} saved word matches for session ${session.id}`
+        );
+      }
+    } catch (error) {
+      this.logger.error('Error finding saved word matches:', error);
+      // Continue without saved word matches
+    }
 
     const messages = messageRecords.map(
       (msg: {
@@ -196,6 +229,7 @@ export class ChatService {
         session_name: session.sessionName,
       },
       messages,
+      savedWordMatches,
     };
   }
 
@@ -317,6 +351,35 @@ export class ChatService {
     );
     this.logger.debug(`Saved assistant message ${assistantMessage.id}`);
 
+    // Find saved word matches if word translations exist
+    let savedWordMatches: Array<{
+      originalWord: string;
+      savedWordId: number;
+      translation: string;
+      pinyin: string | null;
+    }> = [];
+    try {
+      // Check if word translations exist for this message
+      const wordTranslations =
+        await this.wordTranslationService.getWordTranslationsForMessage(
+          assistantMessage.id
+        );
+      if (wordTranslations.length > 0) {
+        // Extract words from word translations
+        const words = wordTranslations.map((wt) => wt.originalWord);
+        savedWordMatches = await this.savedWordService.findMatchingWords(
+          userId,
+          words
+        );
+        this.logger.debug(
+          `Found ${savedWordMatches.length} saved word matches for message ${assistantMessage.id}`
+        );
+      }
+    } catch (error) {
+      this.logger.error('Error finding saved word matches:', error);
+      // Continue without saved word matches
+    }
+
     // Translations are now on-demand only - no automatic background translation
 
     // Save memory periodically (every N messages, or on first message)
@@ -371,6 +434,7 @@ export class ChatService {
       rawResponse: completion,
       userMessageId: userMessage.id,
       assistantMessageId: assistantMessage.id,
+      savedWordMatches: savedWordMatches.length > 0 ? savedWordMatches : undefined,
     };
   }
 

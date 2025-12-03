@@ -45,6 +45,14 @@ export class ChatHistoryResponseDto {
     session_name: string | null;
   } | null;
   messages!: MessageResponseDto[];
+  savedWordMatches!: SavedWordMatchDto[]; // All saved words that match words in this session
+}
+
+export class SavedWordMatchDto {
+  originalWord!: string;
+  savedWordId!: number;
+  translation!: string;
+  pinyin!: string | null;
 }
 
 export class SendMessageResponseDto {
@@ -63,6 +71,7 @@ export class SendMessageResponseDto {
     translation: string;
     sentenceContext?: string;
   }>; // Word translations (for assistant messages)
+  savedWordMatches?: SavedWordMatchDto[]; // Saved word matches for highlighting
 }
 
 // Re-export SendMessageDto for convenience

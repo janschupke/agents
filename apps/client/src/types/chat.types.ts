@@ -41,6 +41,12 @@ export interface ChatHistoryResponse {
     session_name: string | null;
   } | null;
   messages: Message[];
+  savedWordMatches: Array<{
+    originalWord: string;
+    savedWordId: number;
+    translation: string;
+    pinyin: string | null;
+  }>;
 }
 
 export interface SendMessageRequest {
@@ -57,6 +63,12 @@ export interface SendMessageResponse {
   rawResponse?: unknown; // Raw OpenAI response JSON
   userMessageId?: number;
   assistantMessageId?: number;
+  savedWordMatches?: Array<{
+    originalWord: string;
+    savedWordId: number;
+    translation: string;
+    pinyin: string | null;
+  }>; // Saved word matches for highlighting
 }
 
 export interface Agent {

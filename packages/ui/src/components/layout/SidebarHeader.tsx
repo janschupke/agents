@@ -30,7 +30,7 @@ export default function SidebarHeader({
           onClick={action.onClick}
           disabled={action.disabled}
           variant="ghost"
-          size="xs"
+          size="sm"
           className="h-6 w-6 p-0 text-text-primary hover:text-text-primary"
           tooltip={action.tooltip}
         >

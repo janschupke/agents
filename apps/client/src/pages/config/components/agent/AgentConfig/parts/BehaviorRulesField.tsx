@@ -143,7 +143,7 @@ export function BehaviorRulesField({
                   const newRules = rules.filter((_, i) => i !== index);
                   onChange(newRules);
                 }}
-                variant="icon-compact"
+                variant="icon"
                 size="sm"
                 className="w-8 p-0"
                 tooltip={t('config.removeRule')}

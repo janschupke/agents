@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Message,
   MessageRole,
   SendMessageResponse,
 } from '../../../../../../types/chat.types';
+import { SavedWordMatch } from '../../../../../../types/saved-word.types';
 import { useChatHistory } from '../../../../../../hooks/queries/use-chat';
 import { useSendMessage } from '../../../../../../hooks/mutations/use-chat-mutations';
+import { queryKeys } from '../../../../../../hooks/queries/query-keys';
 
 interface UseChatMessagesOptions {
   agentId: number | null;
@@ -14,6 +17,7 @@ interface UseChatMessagesOptions {
 
 interface UseChatMessagesReturn {
   messages: Message[];
+  savedWordMatches: Map<string, SavedWordMatch>; // Map of word (lowercase) -> saved word data
   loading: boolean;
   isSendingMessage: boolean;
   sendMessage: (message: string) => Promise<SendMessageResponse | undefined>;
@@ -28,6 +32,7 @@ export function useChatMessages({
   agentId,
   sessionId,
 }: UseChatMessagesOptions): UseChatMessagesReturn {
+  const queryClient = useQueryClient();
   const {
     data: chatHistory,
     isLoading: loadingChatHistory,
@@ -40,6 +45,23 @@ export function useChatMessages({
   useEffect(() => {
     setMessages([]);
   }, [sessionId, agentId]);
+
+  // Build saved word matches map from chat history
+  const savedWordMatches = useMemo(() => {
+    if (!chatHistory?.savedWordMatches) {
+      return new Map<string, SavedWordMatch>();
+    }
+
+    const map = new Map<string, SavedWordMatch>();
+    for (const match of chatHistory.savedWordMatches) {
+      const lowerKey = match.originalWord.toLowerCase();
+      // Only add if not already in map (first match wins)
+      if (!map.has(lowerKey)) {
+        map.set(lowerKey, match);
+      }
+    }
+    return map;
+  }, [chatHistory?.savedWordMatches]);
 
   // Update messages from chat history
   useEffect(() => {
@@ -83,6 +105,31 @@ export function useChatMessages({
         rawResponse: result.rawResponse,
         id: result.assistantMessageId,
       };
+
+      // Update saved word matches if new matches were returned
+      if (result.savedWordMatches && result.savedWordMatches.length > 0) {
+        // Update the chat history query cache with new saved word matches
+        const queryKey = queryKeys.chat.history(agentId, sessionId || undefined);
+        queryClient.setQueryData(queryKey, (oldData: any) => {
+          if (!oldData) return oldData;
+          const existingMatches = oldData.savedWordMatches || [];
+          const newMatches = result.savedWordMatches || [];
+          
+          // Merge matches, avoiding duplicates
+          const matchMap = new Map<string, any>();
+          [...existingMatches, ...newMatches].forEach((match) => {
+            const key = match.originalWord.toLowerCase();
+            if (!matchMap.has(key)) {
+              matchMap.set(key, match);
+            }
+          });
+          
+          return {
+            ...oldData,
+            savedWordMatches: Array.from(matchMap.values()),
+          };
+        });
+      }
 
       setMessages((prev) => {
         // Update last user message with ID if available
@@ -130,6 +177,7 @@ export function useChatMessages({
 
   return {
     messages,
+    savedWordMatches,
     loading,
     isSendingMessage,
     sendMessage,

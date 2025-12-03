@@ -63,4 +63,13 @@ export const API_ROUTES = {
   HEALTHCHECK: {
     BASE: 'api/healthcheck',
   },
+
+  SAVED_WORDS: {
+    BASE: 'api/saved-words',
+    MATCHING: 'api/saved-words/matching',
+    BY_ID: (id: number) => `api/saved-words/${id}`,
+    SENTENCES: (id: number) => `api/saved-words/${id}/sentences`,
+    SENTENCE: (id: number, sentenceId: number) =>
+      `api/saved-words/${id}/sentences/${sentenceId}`,
+  },
 } as const;

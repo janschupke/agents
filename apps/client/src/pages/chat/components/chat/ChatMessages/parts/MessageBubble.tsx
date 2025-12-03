@@ -1,4 +1,5 @@
 import { Message, MessageRole } from '../../../../../../types/chat.types';
+import { SavedWordMatch } from '../../../../../../types/saved-word.types';
 import {
   IconSearch,
   IconTranslate,
@@ -14,12 +15,22 @@ import { useMessageTranslation } from '../hooks/use-message-translation';
 
 interface MessageBubbleProps {
   message: Message;
+  savedWordMatches?: Map<string, SavedWordMatch>;
+  onWordClick?: (
+    word: string,
+    translation: string,
+    pinyin: string | null,
+    savedWordId?: number,
+    sentence?: string
+  ) => void;
   onShowJson: (title: string, data: unknown) => void;
   messageId?: number;
 }
 
 export default function MessageBubble({
   message,
+  savedWordMatches,
+  onWordClick,
   onShowJson,
   messageId,
 }: MessageBubbleProps) {
@@ -56,6 +67,8 @@ export default function MessageBubble({
             <TranslatableMarkdownContent
               content={message.content}
               wordTranslations={wordTranslations}
+              savedWordMatches={savedWordMatches}
+              onWordClick={onWordClick}
             />
           ) : (
             <MarkdownContent content={message.content} />

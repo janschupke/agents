@@ -9,6 +9,7 @@ export const ROUTES = {
   CONFIG_NEW: '/config/new',
   CONFIG_AGENT: (agentId: number) => `/config/${agentId}`,
   PROFILE: '/profile',
+  SAVED_WORDS: '/saved-words',
 
   // Route patterns for React Router (with :paramName syntax)
   CHAT_AGENT_PATTERN: '/chat/:agentId',

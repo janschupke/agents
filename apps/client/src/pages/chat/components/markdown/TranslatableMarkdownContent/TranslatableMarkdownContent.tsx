@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { WordTranslation } from '../../../../../types/chat.types';
+import { SavedWordMatch } from '../../../../../types/saved-word.types';
 import WordPresenter from '../../translation/WordPresenter/WordPresenter';
 import MarkdownContent from '../MarkdownContent/MarkdownContent';
 import { createMarkdownComponents } from '../markdown-components';
@@ -10,6 +11,14 @@ import { createMarkdownComponents } from '../markdown-components';
 interface TranslatableMarkdownContentProps {
   content: string;
   wordTranslations?: WordTranslation[];
+  savedWordMatches?: Map<string, SavedWordMatch>;
+  onWordClick?: (
+    word: string,
+    translation: string,
+    pinyin: string | null,
+    savedWordId?: number,
+    sentence?: string
+  ) => void;
   className?: string;
 }
 
@@ -20,6 +29,8 @@ interface TranslatableMarkdownContentProps {
 export default function TranslatableMarkdownContent({
   content,
   wordTranslations = [],
+  savedWordMatches,
+  onWordClick,
   className = '',
 }: TranslatableMarkdownContentProps) {
   // If no translations, use regular markdown
@@ -30,7 +41,14 @@ export default function TranslatableMarkdownContent({
   // Custom text processor that wraps text with WordPresenter
   const processTextNode = (node: React.ReactNode): React.ReactNode => {
     if (typeof node === 'string' && node.trim().length > 0) {
-      return <WordPresenter text={node} wordTranslations={wordTranslations} />;
+      return (
+        <WordPresenter
+          text={node}
+          wordTranslations={wordTranslations}
+          savedWordMatches={savedWordMatches}
+          onWordClick={onWordClick}
+        />
+      );
     }
     return node;
   };
@@ -41,7 +59,14 @@ export default function TranslatableMarkdownContent({
   const textComponent = (props: any) => {
     const value = props.value;
     if (typeof value === 'string' && value.trim().length > 0) {
-      return <WordPresenter text={value} wordTranslations={wordTranslations} />;
+      return (
+        <WordPresenter
+          text={value}
+          wordTranslations={wordTranslations}
+          savedWordMatches={savedWordMatches}
+          onWordClick={onWordClick}
+        />
+      );
     }
     return <>{value}</>;
   };

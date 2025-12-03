@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useConfirm } from '../../../../../hooks/ui/useConfirm';
 import { useChatAgentNavigation } from '../../../hooks/use-chat-agent-navigation';
 import { useChatModals } from '../../../hooks/use-chat-modals';
@@ -12,6 +13,7 @@ import { useAgents } from '../../../../../hooks/queries/use-agents';
 import { Session } from '../../../../../types/chat.types';
 import SessionSidebar from '../../session/SessionSidebar/SessionSidebar';
 import SessionNameModal from '../../session/SessionNameModal/SessionNameModal';
+import SavedWordModal from '../../saved-word/SavedWordModal/SavedWordModal';
 import {
   Sidebar,
   Container,
@@ -67,6 +69,7 @@ function ChatAgentContent({
 
   const {
     messages,
+    savedWordMatches,
     loading: messagesLoading,
     isSendingMessage,
     sendMessage,
@@ -90,6 +93,50 @@ function ChatAgentContent({
     openSessionNameModal,
     closeSessionNameModal,
   } = useChatModals();
+
+  // Saved word modal state
+  const [savedWordModal, setSavedWordModal] = useState<{
+    isOpen: boolean;
+    originalWord: string;
+    translation: string;
+    pinyin: string | null;
+    sentence?: string;
+    messageId?: number;
+    savedWordId?: number;
+  }>({
+    isOpen: false,
+    originalWord: '',
+    translation: '',
+    pinyin: null,
+  });
+
+  const handleWordClick = (
+    word: string,
+    translation: string,
+    pinyin: string | null,
+    savedWordId?: number,
+    sentence?: string,
+    messageId?: number
+  ) => {
+    setSavedWordModal({
+      isOpen: true,
+      originalWord: word,
+      translation,
+      pinyin,
+      sentence,
+      messageId,
+      savedWordId,
+    });
+  };
+
+  const closeSavedWordModal = () => {
+    setSavedWordModal({
+      isOpen: false,
+      originalWord: '',
+      translation: '',
+      pinyin: null,
+    });
+  };
 
   // Session handlers with confirmations and message clearing
   // Use navigation handlers instead of internal ones
@@ -193,6 +240,8 @@ function ChatAgentContent({
               ) : (
                 <ChatContent
                   messages={messages}
+                  savedWordMatches={savedWordMatches}
+                  onWordClick={handleWordClick}
                   showTypingIndicator={showTypingIndicator}
                   contentLoading={false}
                   showPlaceholder={showChatPlaceholder}
@@ -230,6 +279,20 @@ function ChatAgentContent({
         />
       )}
       {ConfirmDialog}
+      {savedWordModal.isOpen && (
+        <SavedWordModal
+          isOpen={savedWordModal.isOpen}
+          onClose={closeSavedWordModal}
+          originalWord={savedWordModal.originalWord}
+          translation={savedWordModal.translation}
+          pinyin={savedWordModal.pinyin}
+          sentence={savedWordModal.sentence}
+          messageId={savedWordModal.messageId}
+          agentId={agentId}
+          sessionId={currentSessionId}
+          savedWordId={savedWordModal.savedWordId}
+        />
+      )}
     </>
   );
 }

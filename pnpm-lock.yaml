@@ -144,6 +144,9 @@ importers:
       openai:
         specifier: ^4.20.0
         version: 4.104.0(ws@8.18.3)
+      pinyin-pro:
+        specifier: ^3.27.0
+        version: 3.27.0
       reflect-metadata:
         specifier: ^0.1.13
         version: 0.1.14
@@ -4289,6 +4292,9 @@ packages:
   pify@2.3.0:
     resolution: {integrity: sha512-udgsAY+fTnvv7kI7aaxbqwWNb0AHiB0qBO89PZKPkoTmGOgdbrHDKD+0B2X4uTfJ/FT1R09r9gTsjUjNJotuog==}
     engines: {node: '>=0.10.0'}
+
+  pinyin-pro@3.27.0:
+    resolution: {integrity: sha512-Osdgjwe7Rm17N2paDMM47yW+jUIUH3+0RGo8QP39ZTLpTaJVDK0T58hOLaMQJbcMmAebVuK2ePunTEVEx1clNQ==}
 
   pirates@4.0.7:
     resolution: {integrity: sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==}
@@ -10182,6 +10188,8 @@ snapshots:
   picomatch@4.0.1: {}
 
   pify@2.3.0: {}
+
+  pinyin-pro@3.27.0: {}
 
   pirates@4.0.7: {}
 

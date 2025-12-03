@@ -38,6 +38,9 @@ const Profile = lazy(() =>
     (module) => ({ default: module.Profile })
   )
 );
+const SavedWords = lazy(
+  () => import(/* webpackChunkName: "saved-words" */ './pages/saved-words/SavedWords')
+);
 
 // Memoized Footer component to prevent re-renders
 const AppFooter = memo(Footer);
@@ -169,6 +172,7 @@ function AppContent() {
               element={<Config />}
             />
             <Route path={ROUTES.PROFILE} element={<Profile />} />
+            <Route path={ROUTES.SAVED_WORDS} element={<SavedWords />} />
           </Routes>
         </Suspense>
       </RouteTransitionWrapper>

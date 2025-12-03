@@ -11,6 +11,8 @@ enum QueryKey {
   ME = 'me',
   API_KEY = 'apiKey',
   SYSTEM = 'system',
+  SAVED_WORDS = 'savedWords',
+  MATCHING = 'matching',
 }
 
 export const queryKeys = {
@@ -48,5 +50,18 @@ export const queryKeys = {
     all: [QueryKey.SESSIONS] as const,
     withAgent: (sessionId: number) =>
       [...queryKeys.sessions.all, 'with-agent', sessionId] as const,
+  },
+  savedWords: {
+    all: () => [QueryKey.SAVED_WORDS] as const,
+    details: () => [...queryKeys.savedWords.all(), QueryKey.DETAIL] as const,
+    detail: (id: number) => [...queryKeys.savedWords.details(), id] as const,
+    matching: (words: string[]) =>
+      [
+        ...queryKeys.savedWords.all(),
+        QueryKey.MATCHING,
+        words.sort().join(','),
+      ] as const,
+    matchingPrefix: () =>
+      [...queryKeys.savedWords.all(), QueryKey.MATCHING] as const,
   },
 } as const;

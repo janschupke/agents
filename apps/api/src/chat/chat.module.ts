@@ -13,6 +13,7 @@ import { UserModule } from '../user/user.module';
 import { ApiCredentialsModule } from '../api-credentials/api-credentials.module';
 import { SystemConfigModule } from '../system-config/system-config.module';
 import { MessageTranslationModule } from '../message-translation/message-translation.module';
+import { SavedWordModule } from '../saved-word/saved-word.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { MessageTranslationModule } from '../message-translation/message-transla
     SystemConfigModule,
     MessageTranslationModule,
     AgentMemoryModule,
+    SavedWordModule,
   ],
   controllers: [ChatController],
   providers: [

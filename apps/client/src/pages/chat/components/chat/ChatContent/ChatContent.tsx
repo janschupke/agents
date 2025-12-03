@@ -1,10 +1,19 @@
 import { Message } from '../../../../../types/chat.types';
+import { SavedWordMatch } from '../../../../../types/saved-word.types';
 import ChatMessages from '../ChatMessages/ChatMessages';
 import ChatInput, { ChatInputRef } from '../ChatInput/ChatInput';
 import ChatPlaceholder from '../ChatPlaceholder/ChatPlaceholder';
 
 interface ChatContentProps {
   messages: Message[];
+  savedWordMatches?: Map<string, SavedWordMatch>;
+  onWordClick?: (
+    word: string,
+    translation: string,
+    pinyin: string | null,
+    savedWordId?: number,
+    sentence?: string
+  ) => void;
   showTypingIndicator: boolean;
   contentLoading?: boolean;
   showPlaceholder: boolean;
@@ -23,6 +32,8 @@ interface ChatContentProps {
  */
 export default function ChatContent({
   messages,
+  savedWordMatches,
+  onWordClick,
   showTypingIndicator,
   contentLoading = false,
   showPlaceholder,
@@ -51,6 +62,8 @@ export default function ChatContent({
             <ChatMessages
               key={sessionId || 'no-session'}
               messages={messages}
+              savedWordMatches={savedWordMatches}
+              onWordClick={onWordClick}
               showTypingIndicator={showTypingIndicator}
               onShowJson={onShowJson}
               sessionId={sessionId}

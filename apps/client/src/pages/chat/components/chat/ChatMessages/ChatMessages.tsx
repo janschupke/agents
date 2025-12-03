@@ -1,10 +1,19 @@
 import { Message, MessageRole } from '../../../../../types/chat.types';
+import { SavedWordMatch } from '../../../../../types/saved-word.types';
 import MessageBubble from './parts/MessageBubble';
 import { IconChat, FadeIn, TypingIndicator } from '@openai/ui';
 import { useRef, useEffect } from 'react';
 
 interface ChatMessagesProps {
   messages: Message[];
+  savedWordMatches?: Map<string, SavedWordMatch>;
+  onWordClick?: (
+    word: string,
+    translation: string,
+    pinyin: string | null,
+    savedWordId?: number,
+    sentence?: string
+  ) => void;
   showTypingIndicator?: boolean;
   onShowJson: (title: string, data: unknown) => void;
   sessionId?: number | null;
@@ -12,6 +21,8 @@ interface ChatMessagesProps {
 
 export default function ChatMessages({
   messages,
+  savedWordMatches,
+  onWordClick,
   showTypingIndicator = false,
   onShowJson,
   sessionId,
@@ -70,6 +81,8 @@ export default function ChatMessages({
             <MessageBubble
               message={message}
               messageId={message.id}
+              savedWordMatches={savedWordMatches}
+              onWordClick={onWordClick}
               onShowJson={onShowJson}
             />
           </FadeIn>
@@ -78,6 +91,8 @@ export default function ChatMessages({
             <MessageBubble
               message={message}
               messageId={message.id}
+              savedWordMatches={savedWordMatches}
+              onWordClick={onWordClick}
               onShowJson={onShowJson}
             />
           </div>

@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { MainTitle, IconChat, IconSettings } from '@openai/ui';
+import { MainTitle, IconChat, IconSettings, IconSearch } from '@openai/ui';
 import UserDropdown from '../../auth/UserDropdown/UserDropdown';
 import { ROUTES } from '../../../constants/routes.constants';
 
@@ -17,7 +17,8 @@ const TopNavigation = memo(function TopNavigation() {
   const isActiveRoute = (path: string) =>
     location.pathname === path ||
     (path === ROUTES.CHAT && location.pathname.startsWith('/chat/')) ||
-    (path === ROUTES.CONFIG && location.pathname.startsWith('/config/'));
+    (path === ROUTES.CONFIG && location.pathname.startsWith('/config/')) ||
+    (path === ROUTES.SAVED_WORDS && location.pathname === ROUTES.SAVED_WORDS);
 
   return (
     <header className="bg-background px-6 py-3 border-b border-border flex items-center justify-between">
@@ -50,6 +51,20 @@ const TopNavigation = memo(function TopNavigation() {
             <IconSettings className="w-4 h-4" />
             <span className="hidden sm:inline">
               {tClient('navigation.config')}
+            </span>
+          </Link>
+          <Link
+            to={ROUTES.SAVED_WORDS}
+            className={`h-8 px-3 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
+              isActiveRoute(ROUTES.SAVED_WORDS)
+                ? 'bg-primary text-text-inverse'
+                : 'bg-background text-text-primary hover:bg-background-secondary'
+            }`}
+            title={tClient('navigation.savedWords')}
+          >
+            <IconSearch className="w-4 h-4" />
+            <span className="hidden sm:inline">
+              {tClient('navigation.savedWords')}
             </span>
           </Link>
         </div>

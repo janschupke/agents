@@ -39,4 +39,13 @@ export const API_ENDPOINTS = {
   SESSIONS: {
     BY_ID: (sessionId: number) => `/api/sessions/${sessionId}`,
   },
+  SAVED_WORDS: {
+    BASE: '/api/saved-words',
+    MATCHING: (words: string[]) =>
+      `/api/saved-words/matching?words=${words.join(',')}`,
+    BY_ID: (id: number) => `/api/saved-words/${id}`,
+    SENTENCES: (id: number) => `/api/saved-words/${id}/sentences`,
+    SENTENCE: (id: number, sentenceId: number) =>
+      `/api/saved-words/${id}/sentences/${sentenceId}`,
+  },
 } as const;
