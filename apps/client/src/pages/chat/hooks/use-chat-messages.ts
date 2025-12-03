@@ -15,6 +15,7 @@ interface UseChatMessagesOptions {
 interface UseChatMessagesReturn {
   messages: Message[];
   loading: boolean;
+  isSendingMessage: boolean;
   sendMessage: (message: string) => Promise<SendMessageResponse | undefined>;
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
 }
@@ -34,17 +35,6 @@ export function useChatMessages({
   } = useChatHistory(agentId, sessionId);
   const sendMessageMutation = useSendMessage();
   const [messages, setMessages] = useState<Message[]>([]);
-  const previousMessageCountRef = useRef(0);
-  const isInitialLoadRef = useRef(true);
-  const loadingSessionIdRef = useRef<number | null>(null);
-
-  // Clear messages immediately when sessionId or agentId changes
-  useEffect(() => {
-    if (sessionId !== loadingSessionIdRef.current) {
-      setMessages([]);
-      loadingSessionIdRef.current = sessionId;
-    }
-  }, [sessionId, agentId]);
 
   // Update messages from chat history
   useEffect(() => {
@@ -54,25 +44,20 @@ export function useChatMessages({
         // Only update messages if the history matches the current session
         if (historySessionId === sessionId && chatHistory.messages) {
           setMessages(chatHistory.messages);
-          loadingSessionIdRef.current = sessionId;
         }
       } else {
         // No sessionId - use messages from history (will be empty if no session exists)
         setMessages(chatHistory.messages || []);
-        loadingSessionIdRef.current = null;
       }
     } else if (!sessionId) {
       setMessages([]);
-      loadingSessionIdRef.current = null;
     }
   }, [chatHistory, agentId, sessionId]);
 
-  // Reset initial load flag when session changes
+  // Clear messages when session or agent changes
   useEffect(() => {
-    isInitialLoadRef.current = true;
-    previousMessageCountRef.current = 0;
-    loadingSessionIdRef.current = sessionId;
-  }, [sessionId]);
+    setMessages([]);
+  }, [sessionId, agentId]);
 
   const sendMessage = async (message: string) => {
     if (!message.trim() || !agentId) return;
@@ -129,8 +114,7 @@ export function useChatMessages({
   };
 
   // Only show loading if:
-  // 1. We're loading/fetching AND (we have no messages yet OR the history matches current session), OR
-  // 2. We're sending a message
+  // 1. We're loading/fetching AND (we have no messages yet OR the history matches current session)
   // This prevents showing loading state for stale/previous sessions when rapidly switching
   // React Query's useChatHistory automatically handles query key changes, so isLoading should
   // only be true for the current session's query. We add an extra check to ensure we don't
@@ -139,11 +123,15 @@ export function useChatMessages({
   const isLoadingForCurrentSession =
     (loadingChatHistory || fetchingChatHistory) &&
     (isInitialLoad || chatHistory?.session?.id === sessionId);
-  const loading = isLoadingForCurrentSession || sendMessageMutation.isPending;
+  const loading = isLoadingForCurrentSession;
+
+  // Separate isSendingMessage from loading to distinguish between initial load and message sending
+  const isSendingMessage = sendMessageMutation.isPending;
 
   return {
     messages,
     loading,
+    isSendingMessage,
     sendMessage,
     setMessages,
   };

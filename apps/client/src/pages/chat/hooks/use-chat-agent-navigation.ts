@@ -20,9 +20,10 @@ export function useChatAgentNavigation({
 
   const handleSessionSelect = useCallback(
     (sessionId: number) => {
-      navigate(ROUTES.CHAT_SESSION(sessionId));
+      if (!agentId) return;
+      navigate(ROUTES.CHAT_SESSION(agentId, sessionId));
     },
-    [navigate]
+    [agentId, navigate]
   );
 
   const handleNewSession = useCallback(async () => {
@@ -30,7 +31,7 @@ export function useChatAgentNavigation({
 
     try {
       const newSession = await createSessionMutation.mutateAsync(agentId);
-      navigate(ROUTES.CHAT_SESSION(newSession.id));
+      navigate(ROUTES.CHAT_SESSION(agentId, newSession.id));
       return newSession;
     } catch (error) {
       console.error('Error creating session:', error);

@@ -45,7 +45,6 @@ export function useChatSession({
   );
   const createSessionMutation = useCreateSession();
   const deleteSessionMutation = useDeleteSession();
-  const sessionsInitializedRef = useRef(false);
   const pendingNewSessionIdRef = useRef<number | null>(null);
 
   // Update sessionId when initialSessionId changes (from URL)
@@ -56,57 +55,12 @@ export function useChatSession({
     }
   }, [initialSessionId, agentId]);
 
-  // Auto-select most recent session when sessions first load or when agent changes
-  // Only if no initialSessionId is provided
+  // Clear sessionId when agent changes - the old session doesn't belong to the new agent
   useEffect(() => {
-    if (!agentId || sessionsLoading || initialSessionId !== undefined) {
-      return;
-    }
-
-    // When sessions first load for this agent, select the most recent one
-    if (sessions.length > 0) {
-      const mostRecentSessionId = sessions[0].id; // Sessions are ordered by last message date desc (freshest first, new sessions with no messages are freshest)
-
-      // If we have a pending new session, select it once it appears in the list
-      if (pendingNewSessionIdRef.current) {
-        const pendingSessionExists = sessions.some(
-          (s) => s.id === pendingNewSessionIdRef.current
-        );
-        if (pendingSessionExists) {
-          setCurrentSessionId(pendingNewSessionIdRef.current);
-          pendingNewSessionIdRef.current = null;
-          sessionsInitializedRef.current = true;
-          return;
-        }
-      }
-
-      // On first load or when agent changes, always select most recent session
-      if (!sessionsInitializedRef.current || !currentSessionId) {
-        setCurrentSessionId(mostRecentSessionId);
-        sessionsInitializedRef.current = true;
-      } else {
-        // After initialization, validate current session still exists
-        const sessionExists = sessions.some((s) => s.id === currentSessionId);
-        if (!sessionExists) {
-          // Current session no longer exists, select most recent
-          setCurrentSessionId(mostRecentSessionId);
-        }
-        sessionsInitializedRef.current = true;
-      }
-    } else if (sessions.length === 0) {
-      // No sessions available
+    if (agentId === null) {
       setCurrentSessionId(null);
-      sessionsInitializedRef.current = true;
+      pendingNewSessionIdRef.current = null;
     }
-  }, [agentId, sessionsLoading, sessions, currentSessionId, initialSessionId]);
-
-  // Reset initialization flag and pending session when agent changes
-  // Also clear currentSessionId since it belongs to the old agent
-  useEffect(() => {
-    sessionsInitializedRef.current = false;
-    pendingNewSessionIdRef.current = null;
-    // Clear sessionId when agent changes - the old session doesn't belong to the new agent
-    setCurrentSessionId(null);
   }, [agentId]);
 
   // Prefetch chat history when session changes
@@ -143,14 +97,11 @@ export function useChatSession({
 
     try {
       const newSession = await createSessionMutation.mutateAsync(agentId);
-      // Mark this session as pending selection - it will be selected when sessions refetch
-      pendingNewSessionIdRef.current = newSession.id;
-      // Optimistically set it immediately in case sessions are already loaded
+      // Optimistically set it immediately
       setCurrentSessionId(newSession.id);
       return newSession;
     } catch (error) {
       console.error('Error creating session:', error);
-      pendingNewSessionIdRef.current = null;
       throw error;
     }
   }, [agentId, createSessionMutation]);

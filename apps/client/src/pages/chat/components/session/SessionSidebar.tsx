@@ -11,6 +11,7 @@ import SessionItem from './SessionItem';
 
 interface SessionSidebarProps {
   sessions: Session[];
+  agentId: number | null;
   currentSessionId: number | null;
   onSessionSelect: (sessionId: number) => void;
   onNewSession: () => void;
@@ -21,6 +22,7 @@ interface SessionSidebarProps {
 
 export default function SessionSidebar({
   sessions,
+  agentId,
   currentSessionId,
   onSessionSelect,
   onNewSession,
@@ -61,6 +63,7 @@ export default function SessionSidebar({
             <SessionItem
               key={session.id}
               session={session}
+              agentId={agentId}
               isSelected={currentSessionId === session.id}
               onSelect={onSessionSelect}
               onDelete={onSessionDelete}

@@ -2,9 +2,12 @@ import { Session } from '../../../../types/chat.types';
 import { IconTrash, IconPencil, SidebarItem } from '@openai/ui';
 import { formatDate, formatTime } from '@openai/utils';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../../../../hooks/queries/query-keys';
 
 interface SessionItemProps {
   session: Session;
+  agentId: number | null;
   isSelected: boolean;
   onSelect: (sessionId: number) => void;
   onDelete?: (sessionId: number) => void;
@@ -13,12 +16,14 @@ interface SessionItemProps {
 
 export default function SessionItem({
   session,
+  agentId,
   isSelected,
   onSelect,
   onDelete,
   onEdit,
 }: SessionItemProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
+  const queryClient = useQueryClient();
 
   const formatSessionName = (session: Session): string => {
     if (session.session_name) {
@@ -45,12 +50,26 @@ export default function SessionItem({
     });
   }
 
+  const handleMouseEnter = () => {
+    // Prefetch chat history for this session on hover
+    if (agentId) {
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.chat.history(agentId, session.id),
+        queryFn: async () => {
+          const { ChatService } = await import('../../../../services/chat.service');
+          return ChatService.getChatHistory(agentId, session.id);
+        },
+      });
+    }
+  };
+
   return (
     <SidebarItem
       isSelected={isSelected}
       title={formatSessionName(session)}
       description={formatDate(session.createdAt)}
       onClick={() => onSelect(session.id)}
+      onMouseEnter={handleMouseEnter}
       actions={actions.length > 0 ? actions : undefined}
     />
   );

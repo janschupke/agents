@@ -6,6 +6,7 @@ import { ChatService } from '../../services/chat.service';
 import { MemoryService } from '../../services/memory.service';
 import { Agent, Session, AgentMemory } from '../../types/chat.types';
 import { queryKeys } from './query-keys';
+import { AGENTS_STALE_TIME, SESSIONS_STALE_TIME } from '../../constants/cache.constants';
 
 export function useAgents() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -15,6 +16,7 @@ export function useAgents() {
     queryKey: queryKeys.agents.list(),
     queryFn: () => AgentService.getAllAgents(),
     enabled: isSignedIn && isLoaded && tokenReady, // Only fetch when auth is ready and token provider is set up
+    staleTime: AGENTS_STALE_TIME,
   });
 }
 
@@ -43,6 +45,7 @@ export function useAgentSessions(agentId: number | null) {
     queryKey: queryKeys.agents.sessions(agentId!),
     queryFn: () => ChatService.getSessions(agentId!),
     enabled: isValidAgentId && isSignedIn && isLoaded && tokenReady,
+    staleTime: SESSIONS_STALE_TIME,
   });
 }
 

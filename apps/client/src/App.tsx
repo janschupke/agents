@@ -1,4 +1,4 @@
-import { memo, useEffect, useState, useRef, ReactNode } from 'react';
+import { memo, useEffect, useState, useRef, ReactNode, lazy, Suspense } from 'react';
 import {
   BrowserRouter,
   Routes,
@@ -8,9 +8,6 @@ import {
 } from 'react-router-dom';
 import { SignIn } from '@clerk/clerk-react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import ChatRoute from './pages/chat/ChatRoute';
-import ConfigRoute from './pages/config/ConfigRoute';
-import { UserProfile } from './pages/profile';
 import { ROUTES } from './constants/routes.constants';
 import TopNavigation from './components/layout/TopNavigation';
 import { Footer, Skeleton, PageContainer } from '@openai/ui';
@@ -19,6 +16,12 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { QueryProvider } from './providers/QueryProvider';
 import { useApiKeyStatus } from './hooks/queries/use-user';
+import PageLoadingState from './components/layout/PageLoadingState';
+
+// Lazy load routes for code splitting
+const ChatRoute = lazy(() => import(/* webpackChunkName: "chat" */ './pages/chat/ChatRoute'));
+const ConfigRoute = lazy(() => import(/* webpackChunkName: "config" */ './pages/config/ConfigRoute'));
+const UserProfile = lazy(() => import(/* webpackChunkName: "profile" */ './pages/profile'));
 
 // Memoized Footer component to prevent re-renders
 const AppFooter = memo(Footer);
@@ -36,11 +39,12 @@ function RouteTransitionWrapper({ children }: { children: ReactNode }) {
   const previousBaseRouteRef = useRef<string>('');
 
   useEffect(() => {
-    // Extract base route by removing parameters (e.g., /chat/123 -> /chat)
+    // Extract base route by removing parameters (e.g., /chat/123/456 -> /chat, /config/123 -> /config)
     const baseRoute = location.pathname
-      .replace(/\/chat\/\d+/, '/chat')
-      .replace(/\/config\/\d+/, '/config')
-      .replace(/\/config\/new/, '/config');
+      .replace(/\/chat\/\d+\/\d+/, '/chat') // /chat/:agentId/:sessionId -> /chat
+      .replace(/\/chat\/\d+/, '/chat') // /chat/:agentId -> /chat
+      .replace(/\/config\/\d+/, '/config') // /config/:agentId -> /config
+      .replace(/\/config\/new/, '/config'); // /config/new -> /config
 
     // Only animate if the base route actually changed (not just parameters)
     if (
@@ -53,7 +57,7 @@ function RouteTransitionWrapper({ children }: { children: ReactNode }) {
   }, [location.pathname]);
 
   return (
-    <div key={routeKey} className="flex flex-1 overflow-hidden animate-fade-in">
+    <div key={routeKey} className="flex flex-row flex-1 overflow-hidden animate-fade-in">
       {children}
     </div>
   );
@@ -130,18 +134,21 @@ function AppContent() {
     <PageContainer>
       <TopNavigation />
       <RouteTransitionWrapper>
-        <Routes>
-          <Route
-            path={ROUTES.ROOT}
-            element={<Navigate to={ROUTES.CHAT} replace />}
-          />
-          <Route path={ROUTES.CHAT} element={<ChatRoute />} />
-          <Route path="/chat/:sessionId" element={<ChatRoute />} />
-          <Route path={ROUTES.CONFIG} element={<ConfigRoute />} />
-          <Route path={ROUTES.CONFIG_NEW} element={<ConfigRoute />} />
-          <Route path="/config/:agentId" element={<ConfigRoute />} />
-          <Route path={ROUTES.PROFILE} element={<UserProfile />} />
-        </Routes>
+        <Suspense fallback={<PageLoadingState />}>
+          <Routes>
+            <Route
+              path={ROUTES.ROOT}
+              element={<Navigate to={ROUTES.CHAT} replace />}
+            />
+            <Route path={ROUTES.CHAT} element={<ChatRoute />} />
+            <Route path={ROUTES.CHAT_AGENT_PATTERN} element={<ChatRoute />} />
+            <Route path={ROUTES.CHAT_SESSION_PATTERN} element={<ChatRoute />} />
+            <Route path={ROUTES.CONFIG} element={<ConfigRoute />} />
+            <Route path={ROUTES.CONFIG_NEW} element={<ConfigRoute />} />
+            <Route path={ROUTES.CONFIG_AGENT_PATTERN} element={<ConfigRoute />} />
+            <Route path={ROUTES.PROFILE} element={<UserProfile />} />
+          </Routes>
+        </Suspense>
       </RouteTransitionWrapper>
       <AppFooter />
     </PageContainer>

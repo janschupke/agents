@@ -1,7 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useConfirm } from '../../../../hooks/useConfirm';
-import { useAutoNavigateToItem } from '../../../../hooks/use-auto-navigate-to-item';
-import { useChatAgentData } from '../../hooks/use-chat-agent-data';
 import { useChatAgentNavigation } from '../../hooks/use-chat-agent-navigation';
 import { useChatModals } from '../../hooks/use-chat-modals';
 import { useChatHandlers } from '../../hooks/use-chat-handlers';
@@ -9,6 +7,8 @@ import { useChatInput } from '../../hooks/use-chat-input';
 import { useChatSession } from '../../hooks/use-chat-session';
 import { useChatMessages } from '../../hooks/use-chat-messages';
 import { useChatScroll } from '../../hooks/use-chat-scroll';
+import { useChatLoadingState } from '../../hooks/use-chat-loading-state';
+import { useAgents } from '../../../../hooks/queries/use-agents';
 import SessionSidebar from '../session/SessionSidebar';
 import SessionNameModal from '../session/SessionNameModal';
 import {
@@ -23,8 +23,10 @@ import ChatContent from './ChatContent';
 import ChatLoadingState from './ChatLoadingState';
 import ChatEmptyState from './ChatEmptyState';
 import ChatErrorState from './ChatErrorState';
+import SidebarSkeleton from './SidebarSkeleton';
+import ContainerSkeleton from './ContainerSkeleton';
+import ContentSkeleton from './ContentSkeleton';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { ROUTES } from '../../../../constants/routes.constants';
 
 interface ChatAgentContentProps {
   sessionId?: number;
@@ -44,12 +46,15 @@ function ChatAgentContent({
   const navigate = useNavigate();
   const { sessionId: urlSessionId } = useParams<{ sessionId?: string }>();
 
-  // Business logic moved to hooks
-  const { sessionId, agentId, loading, error } = useChatAgentData({
-    propSessionId,
-    urlSessionId,
-    propAgentId,
-  });
+  // Determine agentId and sessionId from props or URL
+  const agentId = propAgentId ?? null;
+  const sessionId =
+    propSessionId ||
+    (urlSessionId && !isNaN(parseInt(urlSessionId, 10))
+      ? parseInt(urlSessionId, 10)
+      : null);
+
+  const { data: agents = [], isLoading: agentsLoading } = useAgents();
 
   const { handleSessionSelect, handleNewSession } = useChatAgentNavigation({
     agentId,
@@ -61,20 +66,10 @@ function ChatAgentContent({
   const { currentSessionId, sessions, sessionsLoading, handleSessionDelete } =
     useChatSession({ agentId, initialSessionId: sessionId ?? undefined });
 
-  // Auto-navigate to most recent session when accessing /chat without sessionId
-  // and sessions exist for the selected agent
-  useAutoNavigateToItem({
-    baseRoute: ROUTES.CHAT,
-    selectedItemId: currentSessionId,
-    buildTargetRoute: ROUTES.CHAT_SESSION,
-    isLoading: sessionsLoading,
-    resetDependencies: [agentId],
-    shouldNavigate: () => agentId !== null,
-  });
-
   const {
     messages,
     loading: messagesLoading,
+    isSendingMessage,
     sendMessage,
     setMessages,
   } = useChatMessages({
@@ -119,25 +114,42 @@ function ChatAgentContent({
     setMessages,
   });
 
+  // Unified loading state management
+  const {
+    isInitialLoad,
+    sidebarLoading,
+    containerLoading,
+    contentLoading,
+    showTypingIndicator,
+  } = useChatLoadingState({
+    agentId,
+    sessionId: currentSessionId,
+    agentsLoading,
+    sessionsLoading,
+    messagesLoading,
+    isSendingMessage,
+    hasMessages: messages.length > 0,
+  });
+
   // Chat input management
   const showChatPlaceholder = agentId !== null && currentSessionId === null;
   const { input, setInput, chatInputRef, handleSubmit } = useChatInput({
     currentSessionId,
-    messagesLoading,
+    messagesLoading: false, // Don't disable input based on loading
     showChatPlaceholder,
     sendMessage,
   });
 
-  // Loading state
-  if (propLoading || messagesLoading || sessionsLoading) {
+  // Full page loading (only on initial load)
+  if (isInitialLoad || propLoading) {
     return <ChatLoadingState />;
   }
 
   // Error state - show in page content
-  if (propError || error) {
+  if (propError) {
     return (
       <ChatErrorState
-        message={propError || error || t('chat.errors.sessionNotFound')}
+        message={propError || t('chat.errors.sessionNotFound')}
       />
     );
   }
@@ -153,36 +165,52 @@ function ChatAgentContent({
   return (
     <>
       <Sidebar>
-        <SessionSidebar
-          sessions={sessions}
-          currentSessionId={currentSessionId}
-          onSessionSelect={handleSessionSelectWrapper}
-          onNewSession={handleNewSessionWrapper}
-          onSessionDelete={handleSessionDeleteWrapper}
-          onSessionEdit={openSessionNameModal}
-          loading={sessionsLoading}
-        />
+        {sidebarLoading ? (
+          <SidebarSkeleton />
+        ) : (
+          <SessionSidebar
+            sessions={sessions}
+            agentId={agentId}
+            currentSessionId={currentSessionId}
+            onSessionSelect={handleSessionSelectWrapper}
+            onNewSession={handleNewSessionWrapper}
+            onSessionDelete={handleSessionDeleteWrapper}
+            onSessionEdit={openSessionNameModal}
+            loading={false}
+          />
+        )}
       </Sidebar>
       <Container>
-        <PageHeader leftContent={<AgentSelector />} />
-        <PageContent
-          animateOnChange={currentSessionId}
-          enableAnimation={true}
-          disableScroll={true}
-        >
-          <ChatContent
-            messages={messages}
-            loading={loading}
-            showPlaceholder={showChatPlaceholder}
-            sessionId={currentSessionId}
-            input={input}
-            inputRef={chatInputRef}
-            messagesEndRef={messagesEndRef}
-            onInputChange={setInput}
-            onSubmit={handleSubmit}
-            onShowJson={openJsonModal}
-          />
-        </PageContent>
+        {containerLoading ? (
+          <ContainerSkeleton />
+        ) : (
+          <>
+            <PageHeader leftContent={<AgentSelector />} />
+            <PageContent
+              animateOnChange={currentSessionId}
+              enableAnimation={true}
+              disableScroll={true}
+            >
+              {contentLoading ? (
+                <ContentSkeleton />
+              ) : (
+                <ChatContent
+                  messages={messages}
+                  showTypingIndicator={showTypingIndicator}
+                  contentLoading={false}
+                  showPlaceholder={showChatPlaceholder}
+                  sessionId={currentSessionId}
+                  input={input}
+                  inputRef={chatInputRef}
+                  messagesEndRef={messagesEndRef}
+                  onInputChange={setInput}
+                  onSubmit={handleSubmit}
+                  onShowJson={openJsonModal}
+                />
+              )}
+            </PageContent>
+          </>
+        )}
       </Container>
       <JsonModal
         isOpen={jsonModal.isOpen}

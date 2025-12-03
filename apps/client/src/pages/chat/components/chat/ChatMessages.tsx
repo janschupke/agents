@@ -5,14 +5,14 @@ import { useRef, useEffect } from 'react';
 
 interface ChatMessagesProps {
   messages: Message[];
-  loading?: boolean;
+  showTypingIndicator?: boolean;
   onShowJson: (title: string, data: unknown) => void;
   sessionId?: number | null;
 }
 
 export default function ChatMessages({
   messages,
-  loading,
+  showTypingIndicator = false,
   onShowJson,
   sessionId,
 }: ChatMessagesProps) {
@@ -45,7 +45,7 @@ export default function ChatMessages({
   };
 
   // Show empty state with chat bubble icon if no messages
-  if (filteredMessages.length === 0 && !loading) {
+  if (filteredMessages.length === 0 && !showTypingIndicator) {
     return (
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="text-center">
@@ -83,7 +83,7 @@ export default function ChatMessages({
           </div>
         );
       })}
-      {loading && (
+      {showTypingIndicator && (
         <div className="flex max-w-[80%] self-start">
           <div className="px-3 py-2 rounded-lg bg-message-assistant text-message-assistant-text text-sm">
             <TypingIndicator />

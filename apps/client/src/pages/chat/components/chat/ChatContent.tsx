@@ -5,7 +5,8 @@ import ChatPlaceholder from './ChatPlaceholder';
 
 interface ChatContentProps {
   messages: Message[];
-  loading: boolean;
+  showTypingIndicator: boolean;
+  contentLoading?: boolean;
   showPlaceholder: boolean;
   sessionId: number | null;
   input: string;
@@ -21,7 +22,8 @@ interface ChatContentProps {
  */
 export default function ChatContent({
   messages,
-  loading,
+  showTypingIndicator,
+  contentLoading = false,
   showPlaceholder,
   sessionId,
   input,
@@ -34,14 +36,20 @@ export default function ChatContent({
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 relative">
-        {showPlaceholder && !loading ? (
+        {contentLoading ? (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            </div>
+          </div>
+        ) : showPlaceholder ? (
           <ChatPlaceholder />
         ) : (
           <>
             <ChatMessages
               key={sessionId || 'no-session'}
               messages={messages}
-              loading={loading}
+              showTypingIndicator={showTypingIndicator}
               onShowJson={onShowJson}
               sessionId={sessionId}
             />
@@ -55,7 +63,7 @@ export default function ChatContent({
           input={input}
           onInputChange={onInputChange}
           onSubmit={onSubmit}
-          disabled={loading}
+          disabled={showTypingIndicator}
         />
       )}
     </div>

@@ -13,6 +13,7 @@ interface SidebarItemProps {
   onClick: () => void;
   actions?: SidebarItemAction[];
   className?: string;
+  onMouseEnter?: () => void;
   // New API
   title?: string | ReactNode;
   description?: string | ReactNode;
@@ -32,6 +33,7 @@ export default function SidebarItem({
   onClick,
   actions,
   className = '',
+  onMouseEnter,
   title,
   description,
   children,
@@ -52,6 +54,7 @@ export default function SidebarItem({
             ? 'bg-primary text-text-inverse'
             : 'bg-background text-text-primary hover:bg-background-tertiary'
         } ${className}`}
+        onMouseEnter={onMouseEnter}
       >
         {children}
       </div>
@@ -66,6 +69,7 @@ export default function SidebarItem({
           ? 'bg-primary text-text-inverse'
           : 'bg-background text-text-primary hover:bg-background-tertiary'
       } ${className}`}
+      onMouseEnter={onMouseEnter}
     >
       <button
         onClick={onClick}

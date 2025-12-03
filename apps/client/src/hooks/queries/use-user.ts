@@ -5,6 +5,7 @@ import { UserService } from '../../services/user.service';
 import { ApiCredentialsService } from '../../services/api-credentials.service';
 import { User } from '../../types/chat.types';
 import { queryKeys } from './query-keys';
+import { USER_STALE_TIME } from '../../constants/cache.constants';
 
 export function useUser() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -28,7 +29,7 @@ export function useApiKeyStatus() {
       return { hasApiKey: hasKey };
     },
     enabled: isSignedIn && isLoaded && tokenReady, // Only fetch when auth is ready and token provider is set up
-    staleTime: 30000, // Cache for 30 seconds to avoid multiple calls
+    staleTime: USER_STALE_TIME,
     refetchOnWindowFocus: false, // Don't refetch on window focus to reduce calls
   });
 }
