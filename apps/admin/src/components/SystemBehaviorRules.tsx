@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
+import { Button } from '@openai/ui';
 import {
   useSystemRules,
   useUpdateSystemRules,
@@ -117,24 +118,28 @@ export default function SystemBehaviorRules() {
                   index: (index + 1).toString(),
                 })}
               />
-              <button
+              <Button
                 type="button"
+                variant="icon"
+                size="sm"
                 onClick={() => handleRemoveRule(index)}
-                className="h-8 w-8 flex items-center justify-center text-text-tertiary hover:text-red-600 hover:bg-background-tertiary rounded transition-colors flex-shrink-0"
-                title={tAdmin('systemRules.removeRule')}
+                tooltip={tAdmin('systemRules.removeRule')}
+                className="flex-shrink-0 hover:text-red-600"
               >
                 <IconTrash className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           ))}
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
             onClick={handleAddRule}
-            className="w-full h-8 px-3 bg-background border border-border rounded-md text-sm text-text-primary hover:bg-background-tertiary transition-colors flex items-center justify-center gap-1.5"
+            className="w-full"
           >
             <IconPlus className="w-4 h-4" />
             <span>{tAdmin('systemRules.addRule')}</span>
-          </button>
+          </Button>
         </div>
         <p className="text-xs text-text-tertiary mt-2">
           {tAdmin('systemRules.placeholder')}
@@ -142,15 +147,16 @@ export default function SystemBehaviorRules() {
       </div>
 
       <div className="flex justify-end">
-        <button
+        <Button
           onClick={handleSave}
           disabled={updateMutation.isPending}
-          className="px-4 py-2 bg-primary text-text-inverse rounded-md text-sm font-medium hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          loading={updateMutation.isPending}
+          size="sm"
         >
           {updateMutation.isPending
             ? tCommon('app.saving')
             : tAdmin('systemRules.save')}
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { AgentArchetype } from '../types/agent-archetype.types';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
+import { Button, Avatar, Badge } from '@openai/ui';
 import { IconEdit, IconTrash } from './ui/Icons';
 
 interface AgentArchetypeListProps {
@@ -45,17 +46,13 @@ export default function AgentArchetypeList({
           key={archetype.id}
           className="flex items-center gap-4 p-4 bg-background-secondary rounded-lg border border-border"
         >
-          {archetype.avatarUrl ? (
-            <img
-              src={archetype.avatarUrl}
-              alt={archetype.name}
-              className="w-12 h-12 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-text-inverse font-semibold">
-              {archetype.name.charAt(0).toUpperCase()}
-            </div>
-          )}
+          <Avatar
+            src={archetype.avatarUrl || undefined}
+            name={archetype.name}
+            size="md"
+            borderWidth="none"
+            className="w-12 h-12"
+          />
           <div className="flex-1">
             <h3 className="font-semibold text-text-primary">{archetype.name}</h3>
             {archetype.description && (
@@ -65,32 +62,31 @@ export default function AgentArchetypeList({
             )}
             <div className="flex gap-2 mt-2">
               {archetype.agentType && (
-                <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded">
-                  {archetype.agentType}
-                </span>
+                <Badge variant="primary">{archetype.agentType}</Badge>
               )}
               {archetype.language && (
-                <span className="text-xs px-2 py-1 bg-background-tertiary text-text-secondary rounded">
-                  {archetype.language}
-                </span>
+                <Badge variant="secondary">{archetype.language}</Badge>
               )}
             </div>
           </div>
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="icon"
+              size="sm"
               onClick={() => onEdit(archetype)}
-              className="p-2 text-text-secondary hover:text-primary hover:bg-background-tertiary rounded transition-colors"
-              title={t('archetypes.edit')}
+              tooltip={t('archetypes.edit')}
             >
               <IconEdit className="w-5 h-5" />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="icon"
+              size="sm"
               onClick={() => onDelete(archetype.id)}
-              className="p-2 text-text-secondary hover:text-red-500 hover:bg-background-tertiary rounded transition-colors"
-              title={t('archetypes.delete')}
+              tooltip={t('archetypes.delete')}
+              className="hover:text-red-500"
             >
               <IconTrash className="w-5 h-5" />
-            </button>
+            </Button>
           </div>
         </div>
       ))}

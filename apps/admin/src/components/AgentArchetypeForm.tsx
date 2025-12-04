@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@openai/ui';
 import { AgentArchetypeService } from '../services/agent-archetype.service';
 import { AgentArchetype } from '../types/agent-archetype.types';
 import {
@@ -404,26 +405,24 @@ export default function AgentArchetypeForm({
                   className="flex-1 px-3 py-2 border border-border rounded-md bg-background text-text-primary"
                   placeholder={t('archetypes.form.addRule')}
                 />
-                <button
-                  type="button"
-                  onClick={addBehaviorRule}
-                  className="px-4 py-2 bg-primary text-text-inverse rounded-md text-sm font-medium hover:bg-primary-hover transition-colors"
-                >
+                <Button type="button" onClick={addBehaviorRule} size="sm">
                   {t('archetypes.form.add')}
-                </button>
+                </Button>
               </div>
               {formValues.behaviorRules.length > 0 && (
                 <div className="space-y-1">
                   {formValues.behaviorRules.map((rule, index) => (
                     <div key={index} className="flex items-center gap-2 p-2 bg-background rounded border border-border">
                       <span className="flex-1 text-sm text-text-primary">{rule}</span>
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => removeBehaviorRule(index)}
-                        className="text-red-500 hover:text-red-700 text-sm"
+                        className="text-red-500 hover:text-red-700"
                       >
                         {t('archetypes.form.remove')}
-                      </button>
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -553,18 +552,15 @@ export default function AgentArchetypeForm({
             </label>
             <div className="flex flex-wrap gap-2">
               {INTERESTS.map((interest) => (
-                <button
+                <Button
                   key={interest}
                   type="button"
+                  variant={formValues.interests.includes(interest) ? 'primary' : 'secondary'}
+                  size="xs"
                   onClick={() => toggleInterest(interest)}
-                  className={`px-3 py-1 rounded-md text-sm transition-colors ${
-                    formValues.interests.includes(interest)
-                      ? 'bg-primary text-text-inverse'
-                      : 'bg-background border border-border text-text-primary hover:bg-background-secondary'
-                  }`}
                 >
                   {interest}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -572,21 +568,23 @@ export default function AgentArchetypeForm({
 
         {/* Actions */}
         <div className="flex gap-2 pt-4 border-t border-border">
-          <button
+          <Button
             type="submit"
             disabled={isLoading}
-            className="px-4 py-2 bg-primary text-text-inverse rounded-md text-sm font-medium hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            loading={isLoading}
+            size="sm"
           >
             {isLoading ? t('archetypes.saving') : t('archetypes.save')}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="secondary"
             onClick={onCancel}
             disabled={isLoading}
-            className="px-4 py-2 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            size="sm"
           >
             {t('archetypes.cancel')}
-          </button>
+          </Button>
         </div>
       </div>
     </form>

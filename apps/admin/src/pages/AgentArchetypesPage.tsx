@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@openai/ui';
 import { AgentArchetypeService } from '../services/agent-archetype.service';
 import { AgentArchetype } from '../types/agent-archetype.types';
 import AgentArchetypeList from '../components/AgentArchetypeList';
@@ -63,13 +64,10 @@ export default function AgentArchetypesPage() {
           {t('archetypes.title')}
         </h2>
         {!isCreating && !editingArchetype && (
-          <button
-            onClick={handleCreate}
-            className="px-4 py-2 bg-primary text-text-inverse rounded-md text-sm font-medium hover:bg-primary-hover transition-colors flex items-center gap-2"
-          >
+          <Button onClick={handleCreate} size="sm">
             <IconPlus className="w-4 h-4" />
             {t('archetypes.create')}
-          </button>
+          </Button>
         )}
       </div>
       {isCreating || editingArchetype ? (

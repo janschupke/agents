@@ -1,6 +1,7 @@
 import { User } from '../types/user.types';
 import { formatDate } from '@openai/utils';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
+import { Avatar, Badge } from '@openai/ui';
 
 interface UserListProps {
   users: User[];
@@ -54,27 +55,18 @@ export default function UserList({ users, loading }: UserListProps) {
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-3">
-                    {user.imageUrl ? (
-                      <img
-                        src={user.imageUrl}
-                        alt={
-                          user.firstName ||
-                          user.email ||
-                          t('users.columns.user')
-                        }
-                        className="w-10 h-10 rounded-full"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-text-inverse font-semibold">
-                        {(
-                          user.firstName ||
-                          user.email ||
-                          t('users.columns.user')
-                        )
-                          .charAt(0)
-                          .toUpperCase()}
-                      </div>
-                    )}
+                    <Avatar
+                      src={user.imageUrl || undefined}
+                      name={
+                        user.firstName ||
+                        user.lastName ||
+                        user.email ||
+                        t('users.columns.user')
+                      }
+                      size="md"
+                      borderWidth="none"
+                      className="w-10 h-10"
+                    />
                     <div>
                       <div className="text-sm font-medium text-text-primary">
                         {user.firstName || user.lastName
@@ -96,16 +88,12 @@ export default function UserList({ users, loading }: UserListProps) {
                   <div className="flex flex-wrap gap-2">
                     {user.roles && user.roles.length > 0 ? (
                       user.roles.map((role, index) => (
-                        <span
+                        <Badge
                           key={index}
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            role === 'admin'
-                              ? 'bg-primary text-text-inverse'
-                              : 'bg-background-tertiary text-text-secondary'
-                          }`}
+                          variant={role === 'admin' ? 'primary' : 'secondary'}
                         >
                           {role}
-                        </span>
+                        </Badge>
                       ))
                     ) : (
                       <span className="text-xs text-text-tertiary">

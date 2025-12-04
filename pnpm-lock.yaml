@@ -29,6 +29,9 @@ importers:
       '@openai/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
+      '@openai/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@openai/utils':
         specifier: workspace:*
         version: link:../../packages/utils
