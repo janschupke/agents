@@ -1,16 +1,17 @@
 # OpenAI Chat Monorepo
 
-A fullstack monorepo with a NestJS API and React client for OpenAI chat functionality.
+A fullstack monorepo with a NestJS API and React client for AI-powered chat functionality. Features include multi-agent conversations, message translation, vocabulary management, and persistent memory using vector embeddings.
 
 ## Structure
 
 ```
 .
 ├── apps/
-│   ├── api/         # NestJS API
-│   ├── client/      # React + Vite client
+│   ├── api/         # NestJS API with Prisma ORM
+│   ├── client/      # React + Vite client application
 │   └── admin/       # Admin portal
 ├── packages/
+│   ├── ui/          # Shared UI components and design system
 │   ├── i18n/        # Internationalization package
 │   └── utils/       # Shared utilities package
 ├── pnpm-workspace.yaml
@@ -118,49 +119,172 @@ VITE_API_URL=http://localhost:3001
 
 ## Development
 
-Run API, client, and admin in development mode:
+Run all apps in development mode:
 
 ```bash
 pnpm dev
 ```
+
+This starts the API, client, and admin concurrently.
 
 Or run them separately:
 
-API:
-
+**API:**
 ```bash
-cd apps/api
-pnpm dev
+pnpm dev:api
+# or
+cd apps/api && pnpm dev
 ```
 
-Note: The API uses NestJS. Make sure you have `@nestjs/cli` installed globally or use `pnpm` to run the commands.
-
-Client:
-
+**Client:**
 ```bash
-cd apps/client
-pnpm dev
+pnpm dev:client
+# or
+cd apps/client && pnpm dev
 ```
 
-## Build
+**Admin:**
+```bash
+pnpm dev:admin
+# or
+cd apps/admin && pnpm dev
+```
 
-Build all packages:
+**Note:** The API uses NestJS. Make sure you have `@nestjs/cli` installed globally or use `pnpm` to run the commands.
 
+### Building Packages
+
+Build all packages and apps:
 ```bash
 pnpm build
 ```
+
+Build specific package:
+```bash
+pnpm --filter @openai/ui build
+pnpm --filter @openai/utils build
+pnpm --filter @openai/i18n build
+```
+
+### Code Quality
+
+Run linting, type checking, and tests:
+```bash
+pnpm lint          # Lint all packages
+pnpm typecheck     # Type check all packages
+pnpm test          # Run all tests
+pnpm check         # Run lint, typecheck, test, and build
+```
+
+Run for specific scope:
+```bash
+pnpm lint:apps     # Lint only apps
+pnpm lint:packages # Lint only packages
+```
+
+### Internationalization
+
+Extract translation keys from code:
+```bash
+pnpm i18n:extract        # Extract once
+pnpm i18n:extract:watch  # Watch mode
+```
+
+
+## Packages
+
+### `@openai/ui`
+
+Shared UI component library with design system components, layout primitives, and theming support via CSS variables.
+
+**Key features:**
+- Layout components: `PageContainer`, `PageHeader`, `Card`, `Container`, `Sidebar`, etc.
+- Form components: `Input`, `Button`, `Textarea`, `FormField`, etc.
+- Feedback components: `Toast`, `Skeleton`, `EmptyState`, etc.
+- Theming via CSS variables (apps can override brand colors)
+
+### `@openai/utils`
+
+Shared utility functions for date/time formatting, validation, and form handling.
+
+**Available utilities:**
+- Date/time formatting (using Luxon)
+- Form validation hooks
+- Validation utilities
+
+### `@openai/i18n`
+
+Internationalization package with support for multiple languages and namespaces.
+
+**Namespaces:**
+- `CLIENT` - Client app translations
+- `ADMIN` - Admin app translations
+- `API` - API translations
+- `COMMON` - Common translations
 
 ## API Endpoints
 
 ### Health Check
 
-- `GET /api/healthcheck` - Check database connection and bot status
+- `GET /api/healthcheck` - Check database connection and system status
+
+### Agents
+
+- `GET /api/agents` - List all agents
+- `GET /api/agents/:id` - Get agent details
+- `POST /api/agents` - Create a new agent
+- `PUT /api/agents/:id` - Update an agent
+- `GET /api/agents/:id/memories` - Get agent memories
+- `POST /api/agents/:id/memories/summarize` - Summarize agent memories
 
 ### Chat
 
-- `GET /api/chat/:botId` - Get chat history for a bot
-- `POST /api/chat/:botId` - Send a message to a bot
-  - Body: `{ "message": "your message" }`
+- `GET /api/chat/:agentId` - Get chat history for an agent
+- `POST /api/chat/:agentId` - Send a message to an agent
+  - Body: `{ "message": "your message", "sessionId": 123 }` (sessionId optional)
+- `GET /api/chat/:agentId/sessions` - Get all sessions for an agent
+- `GET /api/chat/:agentId/sessions/:sessionId` - Get specific session
+
+### Sessions
+
+- `GET /api/sessions/:id` - Get session details
+- `PUT /api/sessions/:id` - Update session (e.g., rename)
+- `DELETE /api/sessions/:id` - Delete session
+
+### Messages
+
+- `POST /api/messages/:id/translate` - Translate a message
+- `POST /api/messages/:id/translate-with-words` - Translate message with word-level translations
+- `GET /api/messages/:id/word-translations` - Get word translations for a message
+- `POST /api/messages/:id/words/translate` - Translate words in a message
+- `GET /api/messages/translations` - Get all translations
+
+### Saved Words
+
+- `GET /api/saved-words` - List saved words
+- `POST /api/saved-words` - Create a saved word
+- `GET /api/saved-words/:id` - Get saved word details
+- `PUT /api/saved-words/:id` - Update a saved word
+- `DELETE /api/saved-words/:id` - Delete a saved word
+- `GET /api/saved-words/matching` - Find matching saved words
+- `GET /api/saved-words/:id/sentences` - Get sentences for a saved word
+- `POST /api/saved-words/:id/sentences` - Add a sentence to a saved word
+
+### User
+
+- `GET /api/user/me` - Get current user
+- `GET /api/user/all` - Get all users (admin only)
+
+### API Credentials
+
+- `GET /api/api-credentials/openai` - Get OpenAI API key
+- `POST /api/api-credentials/openai` - Set OpenAI API key
+- `POST /api/api-credentials/openai/check` - Check if API key is valid
+
+### System Config
+
+- `GET /api/system-config/behavior-rules` - Get system behavior rules
+- `PUT /api/system-config/behavior-rules` - Update system behavior rules
 
 ## Deployment
 
