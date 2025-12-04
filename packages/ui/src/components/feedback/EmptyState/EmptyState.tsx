@@ -21,7 +21,13 @@ export default function EmptyState({
       <div className="text-center">
         {icon && <div className="mb-4 mx-auto">{icon}</div>}
         {title && <p className="text-text-secondary mb-2">{title}</p>}
-        {message && <p className="text-sm text-text-tertiary">{message}</p>}
+        {message && (
+          typeof message === 'string' ? (
+            <p className="text-sm text-text-tertiary">{message}</p>
+          ) : (
+            <div className="text-sm text-text-tertiary">{message}</div>
+          )
+        )}
       </div>
     </div>
   );
