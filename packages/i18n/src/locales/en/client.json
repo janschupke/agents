@@ -4,7 +4,8 @@
     "config": "Config",
     "agentConfiguration": "Agent Configuration",
     "profile": "Profile",
-    "savedWords": "Saved Words"
+    "savedWords": "Saved Words",
+    "flashcards": "Flashcards"
   },
   "chat": {
     "title": "Chat",
@@ -147,6 +148,16 @@
     "updateError": "Failed to update word",
     "deleteSuccess": "Word deleted successfully",
     "deleteError": "Failed to delete word"
+  },
+  "flashcards": {
+    "title": "Flashcards",
+    "noWords": "No saved words available for flashcards",
+    "noWordsDescription": "Save some words first to start practicing with flashcards",
+    "clickToFlip": "Click or press Enter/Space to flip",
+    "clickForNext": "Click or press Enter/Space for next card",
+    "originalWord": "Original",
+    "pinyin": "Pinyin",
+    "translation": "Translation"
   },
   "common": {
     "confirm": "Confirm",

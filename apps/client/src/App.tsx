@@ -41,6 +41,9 @@ const Profile = lazy(() =>
 const SavedWords = lazy(
   () => import(/* webpackChunkName: "saved-words" */ './pages/saved-words/SavedWords')
 );
+const Flashcards = lazy(
+  () => import(/* webpackChunkName: "flashcards" */ './pages/flashcards/Flashcards')
+);
 
 // Memoized Footer component to prevent re-renders
 const AppFooter = memo(Footer);
@@ -173,6 +176,7 @@ function AppContent() {
             />
             <Route path={ROUTES.PROFILE} element={<Profile />} />
             <Route path={ROUTES.SAVED_WORDS} element={<SavedWords />} />
+            <Route path={ROUTES.FLASHCARDS} element={<Flashcards />} />
           </Routes>
         </Suspense>
       </RouteTransitionWrapper>
