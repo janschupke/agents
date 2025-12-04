@@ -5,6 +5,7 @@ import { Agent } from '../../../../types/chat.types';
 import { AgentFormValues } from './use-agent-form';
 import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
 import { createMockAgent, createMockAgentFormValues } from '../../../../test/utils/mock-factories';
+import { AgentType } from '../../../../types/agent.types';
 
 // Mock dependencies
 const mockNavigate = vi.fn();
@@ -93,7 +94,7 @@ describe('useAgentSave', () => {
       name: 'Test Agent',
       description: 'Test Description',
       avatarUrl: null,
-      agentType: 'general',
+      agentType: AgentType.GENERAL,
       language: null,
       configs: {
         temperature: 0.7,
@@ -106,7 +107,7 @@ describe('useAgentSave', () => {
       name: 'Test Agent',
       description: 'Test Description',
       avatarUrl: undefined,
-      agentType: 'general',
+      agentType: AgentType.GENERAL,
       language: undefined,
       configs: {
         temperature: 0.7,
@@ -143,7 +144,7 @@ describe('useAgentSave', () => {
         name: 'Test Agent',
         description: 'Test Description',
         avatarUrl: undefined,
-        agentType: 'general',
+        agentType: AgentType.GENERAL,
         language: undefined,
         configs: {
           temperature: 0.7,

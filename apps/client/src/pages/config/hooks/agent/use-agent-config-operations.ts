@@ -54,7 +54,7 @@ export function useAgentConfigOperations({
     );
     const configs = {
       temperature: values.temperature,
-      system_prompt: values.systemPrompt.trim() || undefined,
+      system_prompt: (typeof values.description === 'string' ? values.description.trim() : '') || undefined,
       behavior_rules: validRules.length > 0 ? validRules : undefined,
     };
 

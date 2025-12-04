@@ -101,6 +101,49 @@ class ApiClient {
   }
 
   /**
+   * Extract error message from nested API error structure
+   */
+  private extractErrorMessage(data: unknown): string {
+    if (typeof data !== 'object' || data === null) {
+      return 'An unexpected error occurred';
+    }
+
+    // Handle nested message structure (NestJS validation errors)
+    // Format: { message: { message: ["error1", "error2"], error: "Bad Request", statusCode: 400 } }
+    if ('message' in data) {
+      const message = data.message;
+      
+      // If message is an array, join the messages
+      if (Array.isArray(message)) {
+        return message.join(', ');
+      }
+      
+      // If message is an object, check for nested message array
+      if (typeof message === 'object' && message !== null) {
+        if ('message' in message && Array.isArray(message.message)) {
+          return message.message.join(', ');
+        }
+        // If it's an object but not an array, try to stringify it
+        if ('error' in message && typeof message.error === 'string') {
+          return message.error;
+        }
+      }
+      
+      // If message is a string, use it
+      if (typeof message === 'string') {
+        return message;
+      }
+    }
+
+    // Fallback to error field if present
+    if ('error' in data && typeof data.error === 'string') {
+      return data.error;
+    }
+
+    return 'An unexpected error occurred';
+  }
+
+  /**
    * Handle error response
    */
   private async handleError(response: Response): Promise<ApiError> {
@@ -113,10 +156,7 @@ class ApiClient {
     try {
       const data = await response.json();
       apiError.data = data;
-
-      if (typeof data === 'object' && data !== null && 'message' in data) {
-        apiError.message = String(data.message);
-      }
+      apiError.message = this.extractErrorMessage(data);
     } catch {
       // If response is not JSON, use status text
       apiError.message = response.statusText || 'An unexpected error occurred';

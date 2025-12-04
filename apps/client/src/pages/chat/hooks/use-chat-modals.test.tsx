@@ -7,7 +7,6 @@ describe('useChatModals', () => {
     const { result } = renderHook(() => useChatModals());
 
     expect(result.current.jsonModal.isOpen).toBe(false);
-    expect(result.current.sessionNameModal.isOpen).toBe(false);
   });
 
   it('should open and close JSON modal', () => {
@@ -30,23 +29,6 @@ describe('useChatModals', () => {
     expect(result.current.jsonModal.data).toBeNull();
   });
 
-  it('should open and close session name modal', () => {
-    const { result } = renderHook(() => useChatModals());
-
-    act(() => {
-      result.current.openSessionNameModal(5);
-    });
-
-    expect(result.current.sessionNameModal.isOpen).toBe(true);
-    expect(result.current.sessionNameModal.sessionId).toBe(5);
-
-    act(() => {
-      result.current.closeSessionNameModal();
-    });
-
-    expect(result.current.sessionNameModal.isOpen).toBe(false);
-    expect(result.current.sessionNameModal.sessionId).toBeNull();
-  });
 
   it('should handle multiple modal operations', () => {
     const { result } = renderHook(() => useChatModals());
@@ -58,17 +40,9 @@ describe('useChatModals', () => {
     expect(result.current.jsonModal.isOpen).toBe(true);
 
     act(() => {
-      result.current.openSessionNameModal(10);
-    });
-
-    expect(result.current.jsonModal.isOpen).toBe(true);
-    expect(result.current.sessionNameModal.isOpen).toBe(true);
-
-    act(() => {
       result.current.closeJsonModal();
     });
 
     expect(result.current.jsonModal.isOpen).toBe(false);
-    expect(result.current.sessionNameModal.isOpen).toBe(true);
   });
 });

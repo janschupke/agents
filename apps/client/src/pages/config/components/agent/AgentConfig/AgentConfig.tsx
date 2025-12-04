@@ -133,7 +133,7 @@ export default function AgentConfig({
         ) : (
           <>
             <PageHeader
-              title={
+              leftContent={
                 currentAgent ? (
                   <EditableAgentNameHeader
                     name={currentAgent.name}
@@ -144,7 +144,9 @@ export default function AgentConfig({
                     }}
                     isSaving={isSaving}
                   />
-                ) : (
+                ) : null
+              }
+              title={currentAgent ? undefined : (
                   t('config.title')
                 )
               }

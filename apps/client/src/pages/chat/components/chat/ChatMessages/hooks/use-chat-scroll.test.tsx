@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import { useChatScroll } from './use-chat-scroll';
 
 describe('useChatScroll', () => {
@@ -42,9 +42,21 @@ describe('useChatScroll', () => {
   it('should scroll to bottom on initial load when messages appear', async () => {
     const messages = [{ id: 1 }, { id: 2 }];
     const container = document.createElement('div');
-    container.scrollTop = 0;
-    container.scrollHeight = 1000;
-    container.clientHeight = 500;
+    Object.defineProperty(container, 'scrollTop', {
+      get: () => mockScrollTop,
+      set: (val) => {
+        mockScrollTop = val;
+      },
+      configurable: true,
+    });
+    Object.defineProperty(container, 'scrollHeight', {
+      get: () => mockScrollHeight,
+      configurable: true,
+    });
+    Object.defineProperty(container, 'clientHeight', {
+      get: () => mockClientHeight,
+      configurable: true,
+    });
     Object.defineProperty(container, 'scrollTop', {
       get: () => mockScrollTop,
       set: (val) => {
@@ -57,13 +69,10 @@ describe('useChatScroll', () => {
       configurable: true,
     });
 
-    const messagesContainerRef = { current: container };
-
-    const { result } = renderHook(() =>
+    renderHook(() =>
       useChatScroll({
         messages,
         sessionId: 1,
-        messagesContainerRef,
       })
     );
 
@@ -93,14 +102,11 @@ describe('useChatScroll', () => {
       configurable: true,
     });
 
-    const messagesContainerRef = { current: container };
-
     const { rerender } = renderHook(
       ({ messages: msgs }) =>
         useChatScroll({
           messages: msgs,
           sessionId: 1,
-          messagesContainerRef,
         }),
       { initialProps: { messages: initialMessages } }
     );
@@ -146,14 +152,11 @@ describe('useChatScroll', () => {
       configurable: true,
     });
 
-    const messagesContainerRef = { current: container };
-
     const { rerender } = renderHook(
       ({ messages: msgs }) =>
         useChatScroll({
           messages: msgs,
           sessionId: 1,
-          messagesContainerRef,
         }),
       { initialProps: { messages: initialMessages } }
     );

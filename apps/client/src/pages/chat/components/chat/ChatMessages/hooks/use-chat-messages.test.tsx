@@ -151,10 +151,12 @@ describe('useChatMessages', () => {
     });
 
     const container = document.createElement('div');
-    container.scrollTop = 0; // At top
-    container.scrollHeight = 1000;
     Object.defineProperty(container, 'scrollTop', {
       get: () => 0,
+      configurable: true,
+    });
+    Object.defineProperty(container, 'scrollHeight', {
+      get: () => 1000,
       configurable: true,
     });
 
@@ -164,7 +166,8 @@ describe('useChatMessages', () => {
     );
 
     // Attach container ref
-    result.current.messagesContainerRef.current = container;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (result.current.messagesContainerRef as any).current = container;
 
     // Simulate scroll to top
     await act(async () => {
@@ -239,7 +242,8 @@ describe('useChatMessages', () => {
       { wrapper }
     );
 
-    result.current.messagesContainerRef.current = container;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (result.current.messagesContainerRef as any).current = container;
 
     // Trigger initial scroll
     await act(async () => {
@@ -312,9 +316,8 @@ describe('useChatMessages', () => {
       { wrapper }
     );
 
-    result.current.messagesContainerRef.current = container;
-    const initialScrollTop = scrollTop;
-    const initialScrollHeight = 1000;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (result.current.messagesContainerRef as any).current = container;
 
     // Simulate page 2 being loaded (scrollHeight increases)
     Object.defineProperty(container, 'scrollHeight', {

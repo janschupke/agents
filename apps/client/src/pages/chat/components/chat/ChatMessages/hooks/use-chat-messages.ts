@@ -1,8 +1,7 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Message,
-  MessageRole,
   SendMessageResponse,
   ChatHistoryResponse,
 } from '../../../../../../types/chat.types';
@@ -96,7 +95,7 @@ export function useChatMessages({
           const newMatches = result.savedWordMatches || [];
           
           // Merge matches, avoiding duplicates
-          const matchMap = new Map<string, any>();
+          const matchMap = new Map<string, SavedWordMatch>();
           [...existingMatches, ...newMatches].forEach((match) => {
             const key = match.originalWord.toLowerCase();
             if (!matchMap.has(key)) {

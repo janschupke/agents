@@ -49,7 +49,7 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
       useAgentMemoriesQuery(agent?.id || null);
 
     // Form management hook
-    const { values, errors, touched, setValue, setTouched, validateAll } =
+    const { values, errors, touched: _touched, setValue, setTouched, validateAll } =
       useAgentForm({ agent, agentData: agentData || null });
 
     // Memory operations hook
@@ -188,7 +188,7 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
               />
               <PersonalityField
                 value={values.personality}
-                onChange={(val) => setValue('personality', val)}
+                onChange={(val) => setValue('personality', val as typeof values.personality)}
               />
               <SentimentField
                 value={values.sentiment}

@@ -6,7 +6,7 @@ import { useAgents } from '../../hooks/queries/use-agents';
 
 export default function Chat() {
   const { agentId: urlAgentId } = useParams<{ agentId?: string }>();
-  const { data: agents = [], isLoading: loadingAgents } = useAgents();
+  const { isLoading: loadingAgents } = useAgents();
 
   const parsedAgentId = urlAgentId
     ? isNaN(parseInt(urlAgentId, 10)) ? null : parseInt(urlAgentId, 10)

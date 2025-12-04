@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 interface EditableAgentNameHeaderProps {
   name: string;

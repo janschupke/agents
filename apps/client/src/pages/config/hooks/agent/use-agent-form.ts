@@ -9,7 +9,7 @@ import {
   Sentiment,
   Availability,
 } from '../../../../types/agent.types';
-import { PersonalityType } from '../../../../constants/personality-types.constants';
+import { PersonalityType, PERSONALITY_TYPES } from '../../../../constants/personality-types.constants';
 
 export interface AgentFormValues extends Record<string, unknown> {
   name: string;
@@ -72,13 +72,13 @@ export function useAgentForm({
           typeof config.temperature === 'number' ? config.temperature : 0.7,
         behaviorRules: parseBehaviorRules(config.behavior_rules),
         // New fields
-        responseLength: config.response_length || null,
+        responseLength: (config.response_length && Object.values(ResponseLength).includes(config.response_length as ResponseLength)) ? config.response_length as ResponseLength : null,
         age: typeof config.age === 'number' ? config.age : null,
-        gender: config.gender || null,
-        personality: config.personality || null,
-        sentiment: config.sentiment || null,
+        gender: (config.gender && Object.values(Gender).includes(config.gender as Gender)) ? config.gender as Gender : null,
+        personality: (config.personality && PERSONALITY_TYPES.includes(config.personality as PersonalityType)) ? config.personality as PersonalityType : null,
+        sentiment: (config.sentiment && Object.values(Sentiment).includes(config.sentiment as Sentiment)) ? config.sentiment as Sentiment : null,
         interests: Array.isArray(config.interests) ? config.interests : [],
-        availability: config.availability || null,
+        availability: (config.availability && Object.values(Availability).includes(config.availability as Availability)) ? config.availability as Availability : null,
       };
     } else if (agent && agent.id < 0) {
       // New agent
@@ -163,16 +163,16 @@ export function useAgentForm({
       );
       setValue('behaviorRules', parseBehaviorRules(config.behavior_rules));
       // New fields
-      setValue('responseLength', config.response_length || null);
+      setValue('responseLength', (config.response_length && Object.values(ResponseLength).includes(config.response_length as ResponseLength)) ? config.response_length as ResponseLength : null);
       setValue('age', typeof config.age === 'number' ? config.age : null);
-      setValue('gender', config.gender || null);
-      setValue('personality', config.personality || null);
-      setValue('sentiment', config.sentiment || null);
+      setValue('gender', (config.gender && Object.values(Gender).includes(config.gender as Gender)) ? config.gender as Gender : null);
+      setValue('personality', (config.personality && PERSONALITY_TYPES.includes(config.personality as PersonalityType)) ? config.personality as PersonalityType : null);
+      setValue('sentiment', (config.sentiment && Object.values(Sentiment).includes(config.sentiment as Sentiment)) ? config.sentiment as Sentiment : null);
       setValue(
         'interests',
         Array.isArray(config.interests) ? config.interests : []
       );
-      setValue('availability', config.availability || null);
+      setValue('availability', (config.availability && Object.values(Availability).includes(config.availability as Availability)) ? config.availability as Availability : null);
     } else if (agent && agent.id < 0) {
       setValue('name', agent.name || '');
       setValue('description', '');

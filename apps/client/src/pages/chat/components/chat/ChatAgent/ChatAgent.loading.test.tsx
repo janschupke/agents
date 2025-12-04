@@ -6,7 +6,6 @@ import ChatAgent from './ChatAgent';
 import { TestQueryProvider } from '../../../../../test/utils/test-query-provider';
 import { AuthProvider } from '../../../../../contexts/AuthContext';
 import { ToastProvider } from '../../../../../contexts/ToastContext';
-import { Session } from '../../../../../types/chat.types';
 
 // Mock Clerk
 vi.mock('@clerk/clerk-react', () => ({
@@ -149,7 +148,7 @@ describe('ChatAgent Loading States', () => {
 
       render(
         <TestWrapper>
-          <ChatAgent agentId={1} sessionId={1} />
+          <ChatAgent agentId={1} />
         </TestWrapper>
       );
 
@@ -189,7 +188,7 @@ describe('ChatAgent Loading States', () => {
 
       render(
         <TestWrapper>
-          <ChatAgent agentId={1} sessionId={1} />
+          <ChatAgent agentId={1} />
         </TestWrapper>
       );
 
@@ -229,7 +228,7 @@ describe('ChatAgent Loading States', () => {
 
       render(
         <TestWrapper>
-          <ChatAgent agentId={1} sessionId={1} />
+          <ChatAgent agentId={1} />
         </TestWrapper>
       );
 
@@ -267,7 +266,7 @@ describe('ChatAgent Loading States', () => {
 
       render(
         <TestWrapper>
-          <ChatAgent agentId={1} sessionId={1} />
+          <ChatAgent agentId={1} />
         </TestWrapper>
       );
 
@@ -306,7 +305,7 @@ describe('ChatAgent Loading States', () => {
 
       render(
         <TestWrapper>
-          <ChatAgent agentId={1} sessionId={1} />
+          <ChatAgent agentId={1} />
         </TestWrapper>
       );
 

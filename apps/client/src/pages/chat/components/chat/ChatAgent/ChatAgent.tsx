@@ -20,7 +20,7 @@ import {
 } from '@openai/ui';
 import ChatContent from '../ChatContent/ChatContent';
 import ChatLoadingState from '../ChatLoadingState/ChatLoadingState';
-import ChatEmptyState from '../ChatEmptyState/ChatEmptyState';
+import ChatErrorState from '../ChatErrorState/ChatErrorState';
 import ContainerSkeleton from '../Skeletons/ContainerSkeleton';
 import ContentSkeleton from '../Skeletons/ContentSkeleton';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
@@ -60,18 +60,16 @@ function ChatAgentContent({
     loading: messagesLoading,
     isSendingMessage,
     sendMessage,
-    setMessages,
     messagesContainerRef,
-    isFetchingMore, // Get isFetchingMore to prevent scroll when loading older messages
     sessionId, // Get sessionId from useChatMessages (comes from query data)
   } = useChatMessages({
     agentId,
-    sessionId: undefined, // Pass undefined - backend will return first session
+    sessionId: null, // Pass null - backend will return first session
   });
 
   const { messagesEndRef } = useChatScroll({
     messages,
-    sessionId,
+    sessionId: sessionId ?? null,
   });
 
   // Modal management

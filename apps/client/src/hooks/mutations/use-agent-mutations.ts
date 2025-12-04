@@ -16,8 +16,12 @@ export function useCreateAgent() {
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.all });
       showToast('Agent created successfully', 'success');
     },
-    onError: (error: { message?: string }) => {
-      showToast(error.message || 'Failed to create agent', 'error');
+    onError: (error: unknown) => {
+      const errorMessage =
+        (error && typeof error === 'object' && 'message' in error
+          ? String(error.message)
+          : null) || 'Failed to create agent';
+      showToast(errorMessage, 'error');
     },
   });
 }
@@ -41,8 +45,12 @@ export function useUpdateAgent() {
       });
       showToast('Agent updated successfully', 'success');
     },
-    onError: (error: { message?: string }) => {
-      showToast(error.message || 'Failed to update agent', 'error');
+    onError: (error: unknown) => {
+      const errorMessage =
+        (error && typeof error === 'object' && 'message' in error
+          ? String(error.message)
+          : null) || 'Failed to update agent';
+      showToast(errorMessage, 'error');
     },
   });
 }
@@ -57,8 +65,12 @@ export function useDeleteAgent() {
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.all });
       showToast('Agent deleted successfully', 'success');
     },
-    onError: (error: { message?: string }) => {
-      showToast(error.message || 'Failed to delete agent', 'error');
+    onError: (error: unknown) => {
+      const errorMessage =
+        (error && typeof error === 'object' && 'message' in error
+          ? String(error.message)
+          : null) || 'Failed to delete agent';
+      showToast(errorMessage, 'error');
     },
   });
 }
