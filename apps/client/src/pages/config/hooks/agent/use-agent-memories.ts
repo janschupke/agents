@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useDeleteMemory } from '../../../../hooks/mutations/use-agent-mutations';
 import { queryKeys } from '../../../../hooks/queries/query-keys';
@@ -12,6 +13,7 @@ interface UseAgentMemoriesReturn {
   deletingId: number | null;
   handleDeleteMemory: (memoryId: number) => Promise<void>;
   handleRefreshMemories: () => void;
+  ConfirmDialog: React.ReactNode;
 }
 
 /**
@@ -20,7 +22,7 @@ interface UseAgentMemoriesReturn {
 export function useAgentMemories({
   agentId,
 }: UseAgentMemoriesOptions): UseAgentMemoriesReturn {
-  const { confirm } = useConfirm();
+  const { confirm, ConfirmDialog } = useConfirm();
   const queryClient = useQueryClient();
   const deleteMemoryMutation = useDeleteMemory();
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -62,5 +64,6 @@ export function useAgentMemories({
     deletingId,
     handleDeleteMemory,
     handleRefreshMemories,
+    ConfirmDialog,
   };
 }

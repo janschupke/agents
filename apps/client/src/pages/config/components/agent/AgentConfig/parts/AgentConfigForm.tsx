@@ -122,6 +122,7 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
       deletingId,
       handleDeleteMemory,
       handleRefreshMemories,
+      ConfirmDialog: MemoryConfirmDialog,
     } = useAgentMemoryOperations({ agentId: agent?.id || null });
 
     const loadingConfig = loadingAgent && agent !== null && agent.id > 0;
@@ -197,104 +198,107 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
     }
 
     return (
-      <FormContainer saving={saving}>
-        {loadingConfig ? (
-          <AgentConfigFormSkeleton />
-        ) : (
-          <form
-            ref={formRef}
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSave();
-            }}
-            className="space-y-5"
-          >
-            {/* Archetype selector - only show for new agents */}
-            {isNewAgent && (
-              <ArchetypeSelector
-                selectedArchetypeId={selectedArchetypeId}
-                onArchetypeSelect={handleArchetypeSelect}
-              />
-            )}
+      <>
+        <FormContainer saving={saving}>
+          {loadingConfig ? (
+            <AgentConfigFormSkeleton />
+          ) : (
+            <form
+              ref={formRef}
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSave();
+              }}
+              className="space-y-5"
+            >
+              {/* Archetype selector - only show for new agents */}
+              {isNewAgent && (
+                <ArchetypeSelector
+                  selectedArchetypeId={selectedArchetypeId}
+                  onArchetypeSelect={handleArchetypeSelect}
+                />
+              )}
 
-            <AgentNameAndAvatar
-              avatarUrl={values.avatarUrl}
-              description={values.description}
-              descriptionError={errors.description ?? undefined}
-              saving={saving}
-              onAvatarChange={(url) => setValue('avatarUrl', url)}
-              onDescriptionChange={(val) => setValue('description', val)}
-            />
+              <AgentNameAndAvatar
+                avatarUrl={values.avatarUrl}
+                description={values.description}
+                descriptionError={errors.description ?? undefined}
+                saving={saving}
+                onAvatarChange={(url) => setValue('avatarUrl', url)}
+                onDescriptionChange={(val) => setValue('description', val)}
+              />
 
-            {/* 2-column layout for language, agent type, temperature */}
-            <div className="grid grid-cols-2 gap-5">
-              <AgentTypeField
-                value={values.agentType}
-                onChange={(val) => setValue('agentType', val)}
-              />
-              <LanguageField
-                value={values.language}
-                agentType={values.agentType}
-                onChange={(val) => setValue('language', val)}
-              />
-              <TemperatureField
-                value={values.temperature}
-                onChange={(val) => setValue('temperature', val)}
-              />
-            </div>
+              {/* 2-column layout for language, agent type, temperature */}
+              <div className="grid grid-cols-2 gap-5">
+                <AgentTypeField
+                  value={values.agentType}
+                  onChange={(val) => setValue('agentType', val)}
+                />
+                <LanguageField
+                  value={values.language}
+                  agentType={values.agentType}
+                  onChange={(val) => setValue('language', val)}
+                />
+                <TemperatureField
+                  value={values.temperature}
+                  onChange={(val) => setValue('temperature', val)}
+                />
+              </div>
 
-            {/* 2-column layout for new simple fields */}
-            <div className="grid grid-cols-2 gap-5">
-              <ResponseLengthField
-                value={values.responseLength}
-                onChange={(val) => setValue('responseLength', val)}
-              />
-              <AgeField
-                value={values.age}
-                onChange={(val) => setValue('age', val)}
-              />
-              <GenderField
-                value={values.gender}
-                onChange={(val) => setValue('gender', val)}
-              />
-              <PersonalityField
-                value={values.personality}
-                onChange={(val) =>
-                  setValue('personality', val as typeof values.personality)
-                }
-              />
-              <SentimentField
-                value={values.sentiment}
-                onChange={(val) => setValue('sentiment', val)}
-              />
-              <AvailabilityField
-                value={values.availability}
-                onChange={(val) => setValue('availability', val)}
-              />
-            </div>
+              {/* 2-column layout for new simple fields */}
+              <div className="grid grid-cols-2 gap-5">
+                <ResponseLengthField
+                  value={values.responseLength}
+                  onChange={(val) => setValue('responseLength', val)}
+                />
+                <AgeField
+                  value={values.age}
+                  onChange={(val) => setValue('age', val)}
+                />
+                <GenderField
+                  value={values.gender}
+                  onChange={(val) => setValue('gender', val)}
+                />
+                <PersonalityField
+                  value={values.personality}
+                  onChange={(val) =>
+                    setValue('personality', val as typeof values.personality)
+                  }
+                />
+                <SentimentField
+                  value={values.sentiment}
+                  onChange={(val) => setValue('sentiment', val)}
+                />
+                <AvailabilityField
+                  value={values.availability}
+                  onChange={(val) => setValue('availability', val)}
+                />
+              </div>
 
-            {/* Full width interests dashboard */}
-            <InterestsDashboard
-              selectedInterests={values.interests}
-              onChange={(interests) => setValue('interests', interests)}
-            />
+              {/* Full width interests dashboard */}
+              <InterestsDashboard
+                selectedInterests={values.interests}
+                onChange={(interests) => setValue('interests', interests)}
+              />
 
-            <BehaviorRulesField
-              rules={values.behaviorRules}
-              onChange={(rules) => setValue('behaviorRules', rules)}
-            />
+              <BehaviorRulesField
+                rules={values.behaviorRules}
+                onChange={(rules) => setValue('behaviorRules', rules)}
+              />
 
-            <MemoriesSection
-              agentId={agent.id}
-              memories={memories}
-              loading={loadingMemories}
-              deletingId={deletingId}
-              onDelete={handleDeleteMemory}
-              onRefresh={handleRefreshMemories}
-            />
-          </form>
-        )}
-      </FormContainer>
+              <MemoriesSection
+                agentId={agent.id}
+                memories={memories}
+                loading={loadingMemories}
+                deletingId={deletingId}
+                onDelete={handleDeleteMemory}
+                onRefresh={handleRefreshMemories}
+              />
+            </form>
+          )}
+        </FormContainer>
+        {MemoryConfirmDialog}
+      </>
     );
   }
 );
