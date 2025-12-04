@@ -4,10 +4,12 @@ import { queryKeys } from './query-keys';
 import { SESSIONS_STALE_TIME, CHAT_HISTORY_STALE_TIME } from '../../constants/cache.constants';
 import { SavedWord, SavedWordMatch } from '../../types/saved-word.types';
 
-export function useSavedWords() {
+export function useSavedWords(language?: string | null) {
   return useQuery<SavedWord[]>({
-    queryKey: queryKeys.savedWords.all(),
-    queryFn: () => SavedWordService.getSavedWords(),
+    queryKey: language 
+      ? queryKeys.savedWords.byLanguage(language)
+      : queryKeys.savedWords.all(),
+    queryFn: () => SavedWordService.getSavedWords(language),
     staleTime: SESSIONS_STALE_TIME, // Use constant: 5 minutes
   });
 }

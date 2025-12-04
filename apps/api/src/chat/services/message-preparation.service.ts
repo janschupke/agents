@@ -2,6 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { MessageRole } from '../../common/enums/message-role.enum';
 import { BehaviorRulesUtil } from '../../common/utils/behavior-rules.util';
 import { SystemConfigRepository } from '../../system-config/system-config.repository';
+import { ConfigurationRulesService } from './configuration-rules.service';
+import { LanguageAssistantService } from '../../agent/services/language-assistant.service';
+import { AgentWithConfig } from '../../common/interfaces/agent.interface';
+import { AgentType } from '../../common/enums/agent-type.enum';
 
 export interface MessageForOpenAI {
   role: MessageRole;
@@ -11,6 +15,11 @@ export interface MessageForOpenAI {
 export interface AgentConfig {
   system_prompt?: string;
   behavior_rules?: string;
+  temperature?: number;
+  model?: string;
+  max_tokens?: number;
+  agentType?: AgentType | null;
+  language?: string | null;
 }
 
 @Injectable()
@@ -18,21 +27,31 @@ export class MessagePreparationService {
   private readonly logger = new Logger(MessagePreparationService.name);
 
   constructor(
-    private readonly systemConfigRepository: SystemConfigRepository
+    private readonly systemConfigRepository: SystemConfigRepository,
+    private readonly configurationRulesService: ConfigurationRulesService,
+    private readonly languageAssistantService: LanguageAssistantService
   ) {}
 
   /**
    * Prepare messages array for OpenAI API call
    * Handles: system prompts, behavior rules, memory context, and user messages
+   * 
+   * Rule Order:
+   * 1. System prompt
+   * 2. Admin-defined system behavior rules
+   * 3. Configuration rules (datetime, language) - from ConfigurationRulesService
+   * 4. User-defined behavior rules
+   * 5. Word parsing instruction (only for language assistants)
    */
   async prepareMessagesForOpenAI(
     existingMessages: MessageForOpenAI[],
     agentConfig: AgentConfig,
     userMessage: string,
-    relevantMemories: string[]
+    relevantMemories: string[],
+    currentDateTime: Date = new Date()
   ): Promise<MessageForOpenAI[]> {
     this.logger.debug(
-      `Preparing messages for OpenAI. Existing messages: ${existingMessages.length}, Memories: ${relevantMemories.length}`
+      `Preparing messages for OpenAI. Agent type: ${agentConfig.agentType || AgentType.GENERAL}, Language: ${agentConfig.language || 'none'}`
     );
 
     // Start with existing messages
@@ -50,18 +69,26 @@ export class MessagePreparationService {
       this.addSystemPrompt(messagesForAPI, String(agentConfig.system_prompt));
     }
 
-    // Add system-wide behavior rules
+    // Add system-wide behavior rules (admin-defined)
     await this.addSystemBehaviorRules(messagesForAPI, agentConfig);
 
-    // Add agent-specific behavior rules
+    // Add configuration rules (datetime, language) - AFTER admin rules, BEFORE user rules
+    this.addConfigurationRules(messagesForAPI, agentConfig, currentDateTime);
+
+    // Add agent-specific behavior rules (user-defined)
     if (agentConfig.behavior_rules) {
       this.logger.debug('Adding agent-specific behavior rules');
       this.addAgentBehaviorRules(messagesForAPI, agentConfig);
     }
 
-    // Add word parsing instruction for assistant responses
-    // This requests OpenAI to parse words in the response for immediate highlighting
-    this.addWordParsingInstruction(messagesForAPI);
+    // Add word parsing instruction ONLY for language assistants
+    const isLanguageAssistant = this.languageAssistantService.isLanguageAssistant({
+      agentType: agentConfig.agentType,
+    });
+    if (isLanguageAssistant) {
+      this.logger.debug('Adding word parsing instruction for language assistant');
+      this.addWordParsingInstruction(messagesForAPI);
+    }
 
     // Add user message
     messagesForAPI.push({
@@ -226,8 +253,72 @@ export class MessagePreparationService {
   }
 
   /**
+   * Add configuration rules (datetime, language)
+   * These come after admin-defined system rules but before user-defined behavior rules
+   */
+  private addConfigurationRules(
+    messagesForAPI: MessageForOpenAI[],
+    agentConfig: AgentConfig,
+    currentDateTime: Date
+  ): void {
+    const agent: AgentWithConfig = {
+      id: 0, // Not needed for configuration rules
+      name: '',
+      description: null,
+      avatarUrl: null,
+      agentType: agentConfig.agentType || AgentType.GENERAL,
+      language: agentConfig.language || null,
+      configs: {},
+    };
+
+    const configurationRules = this.configurationRulesService.generateConfigurationRules(
+      agent,
+      currentDateTime
+    );
+
+    if (configurationRules.length === 0) {
+      return;
+    }
+
+    const configurationRulesMessage =
+      this.configurationRulesService.formatConfigurationRules(configurationRules);
+
+    if (configurationRulesMessage.length > 0) {
+      // Check if configuration rules are already present
+      if (
+        !messagesForAPI.some(
+          (m) =>
+            m.role === MessageRole.SYSTEM &&
+            m.content === configurationRulesMessage
+        )
+      ) {
+        // Find insertion point: after system prompt and admin rules, before user behavior rules
+        // Insert after the last system message (which should be admin rules)
+        const lastSystemIndex = messagesForAPI
+          .map((m, i) => ({ role: m.role, index: i }))
+          .filter((m) => m.role === MessageRole.SYSTEM)
+          .pop()?.index;
+
+        if (lastSystemIndex !== undefined) {
+          // Insert after last system message
+          messagesForAPI.splice(lastSystemIndex + 1, 0, {
+            role: MessageRole.SYSTEM,
+            content: configurationRulesMessage,
+          });
+        } else {
+          // No system messages found, add at the beginning
+          messagesForAPI.unshift({
+            role: MessageRole.SYSTEM,
+            content: configurationRulesMessage,
+          });
+        }
+      }
+    }
+  }
+
+  /**
    * Add instruction for assistant to include translations in response (required)
-   * This ensures translations are included in the initial response, eliminating need for second API call
+   * ONLY called for language assistants
    */
   private addWordParsingInstruction(
     messagesForAPI: MessageForOpenAI[]

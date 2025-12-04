@@ -43,6 +43,7 @@ export const API_ENDPOINTS = {
   },
   SAVED_WORDS: {
     BASE: '/api/saved-words',
+    BY_LANGUAGE: (language: string) => `/api/saved-words?language=${language}`,
     MATCHING: (words: string[]) =>
       `/api/saved-words/matching?words=${words.join(',')}`,
     BY_ID: (id: number) => `/api/saved-words/${id}`,

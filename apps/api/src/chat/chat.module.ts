@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 import { MessagePreparationService } from './services/message-preparation.service';
+import { ConfigurationRulesService } from './services/configuration-rules.service';
 import { OpenAIChatService } from './services/openai-chat.service';
 import { AgentModule } from '../agent/agent.module';
 import { SessionRepository } from '../session/session.repository';
@@ -29,6 +30,7 @@ import { SavedWordModule } from '../saved-word/saved-word.module';
   providers: [
     ChatService,
     MessagePreparationService,
+    ConfigurationRulesService,
     OpenAIChatService,
     SessionService,
     SessionRepository,

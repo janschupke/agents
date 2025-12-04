@@ -6,8 +6,11 @@ import {
   Min,
   Max,
   ValidateNested,
+  IsEnum,
+  Length,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { AgentType } from '../enums/agent-type.enum';
 
 export class AgentConfigDto {
   @IsOptional()
@@ -47,6 +50,15 @@ export class CreateAgentDto {
   avatarUrl?: string;
 
   @IsOptional()
+  @IsEnum(AgentType)
+  agentType?: AgentType;
+
+  @IsOptional()
+  @IsString()
+  @Length(2, 10)
+  language?: string; // ISO 639-1 language code (e.g., 'zh', 'en', 'ja')
+
+  @IsOptional()
   @ValidateNested()
   @Type(() => AgentConfigDto)
   configs?: AgentConfigDto;
@@ -64,6 +76,15 @@ export class UpdateAgentDto {
   @IsOptional()
   @IsString()
   avatarUrl?: string;
+
+  @IsOptional()
+  @IsEnum(AgentType)
+  agentType?: AgentType;
+
+  @IsOptional()
+  @IsString()
+  @Length(2, 10)
+  language?: string;
 
   @IsOptional()
   @ValidateNested()

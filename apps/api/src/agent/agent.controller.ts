@@ -54,6 +54,8 @@ export class AgentController {
       body.name,
       body.description,
       body.avatarUrl,
+      body.agentType,
+      body.language,
       configs
     );
   }
@@ -72,6 +74,8 @@ export class AgentController {
       body.name,
       body.description,
       body.avatarUrl,
+      body.agentType,
+      body.language,
       configs
     );
   }

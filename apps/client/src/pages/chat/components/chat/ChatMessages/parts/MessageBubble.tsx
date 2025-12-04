@@ -1,4 +1,4 @@
-import { Message, MessageRole } from '../../../../../../types/chat.types';
+import { Message, MessageRole, Agent } from '../../../../../../types/chat.types';
 import { SavedWordMatch } from '../../../../../../types/saved-word.types';
 import {
   IconSearch,
@@ -12,6 +12,7 @@ import { useTranslation, I18nNamespace } from '@openai/i18n';
 import TranslatableMarkdownContent from '../../../markdown/TranslatableMarkdownContent/TranslatableMarkdownContent';
 import MarkdownContent from '../../../markdown/MarkdownContent/MarkdownContent';
 import { useMessageTranslation } from '../hooks/use-message-translation';
+import { useLanguageAssistant } from '../../../../../../hooks/agent/use-language-assistant';
 
 interface MessageBubbleProps {
   message: Message;
@@ -23,6 +24,7 @@ interface MessageBubbleProps {
     savedWordId?: number,
     sentence?: string
   ) => void;
+  agent?: Agent | null;
   onShowJson: (title: string, data: unknown) => void;
   messageId?: number;
 }
@@ -33,8 +35,10 @@ export default function MessageBubble({
   onWordClick,
   onShowJson,
   messageId,
+  agent,
 }: MessageBubbleProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
+  const { isLanguageAssistant, language } = useLanguageAssistant(agent);
   const {
     isTranslating,
     showTranslation,
@@ -42,6 +46,9 @@ export default function MessageBubble({
     wordTranslations,
     handleTranslate,
   } = useMessageTranslation({ message, messageId });
+
+  // Only enable translation features for language assistants
+  const enableTranslation = isLanguageAssistant;
 
   const hasRawData =
     message.role === MessageRole.USER
@@ -61,7 +68,8 @@ export default function MessageBubble({
         }`}
       >
         <div className="markdown-wrapper">
-          {message.role === MessageRole.ASSISTANT &&
+          {enableTranslation &&
+          message.role === MessageRole.ASSISTANT &&
           wordTranslations &&
           wordTranslations.length > 0 ? (
             <TranslatableMarkdownContent
@@ -69,6 +77,7 @@ export default function MessageBubble({
               wordTranslations={wordTranslations}
               savedWordMatches={savedWordMatches}
               onWordClick={onWordClick}
+              language={language}
             />
           ) : (
             <MarkdownContent content={message.content} />
@@ -76,6 +85,8 @@ export default function MessageBubble({
         </div>
 
         {/* Action buttons container - overlay text with background when visible */}
+        {/* Only show translation button for language assistants */}
+        {enableTranslation && (
         <div
           className={`absolute top-2 right-2 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity ${
             message.role === MessageRole.USER
@@ -131,10 +142,11 @@ export default function MessageBubble({
             </Button>
           )}
         </div>
+        )}
       </div>
 
       {/* Translation bubble - appears below original message */}
-      {translation && (
+      {enableTranslation && translation && (
         <FadeTransition show={showTranslation}>
           <Card
             variant="outlined"

@@ -39,10 +39,11 @@ export class SavedWordController {
 
   @Get()
   async getSavedWords(
-    @User() user: AuthenticatedUser
+    @User() user: AuthenticatedUser,
+    @Query('language') language?: string
   ): Promise<SavedWordResponseDto[]> {
-    this.logger.debug(`Getting saved words for user ${user.id}`);
-    return this.savedWordService.getSavedWords(user.id);
+    this.logger.debug(`Getting saved words for user ${user.id}, language: ${language || 'all'}`);
+    return this.savedWordService.getSavedWordsByLanguage(user.id, language);
   }
 
   @Get('matching')

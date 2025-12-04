@@ -42,6 +42,8 @@ export function useAgentSave({
           name: values.name,
           description: values.description || null,
           avatarUrl: values.avatarUrl || null,
+          agentType: values.agentType,
+          language: values.language || null,
           configs: {
             temperature: values.temperature,
             system_prompt: values.systemPrompt,
@@ -54,6 +56,8 @@ export function useAgentSave({
           name: values.name.trim(),
           description: values.description.trim() || undefined,
           avatarUrl: values.avatarUrl || undefined,
+          agentType: values.agentType,
+          language: values.language || undefined,
           configs: {
             temperature: values.temperature,
             system_prompt: values.systemPrompt.trim() || undefined,
@@ -73,6 +77,8 @@ export function useAgentSave({
             name: values.name.trim(),
             description: values.description.trim() || undefined,
             avatarUrl: values.avatarUrl || undefined,
+            agentType: values.agentType,
+            language: values.language || undefined,
             configs: {
               temperature: values.temperature,
               system_prompt: values.systemPrompt.trim() || undefined,

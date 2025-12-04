@@ -68,6 +68,17 @@
     "systemPrompt": "System Prompt",
     "enterSystemPrompt": "Enter system prompt for the agent",
     "systemPromptDescription": "This prompt defines the agent's role and behavior",
+    "agentType": {
+      "label": "Agent Type",
+      "general": "General Agent",
+      "languageAssistant": "Language Assistant",
+      "description": "Language assistants enable translation features and word highlighting. General agents return messages based on behavior rules only."
+    },
+    "language": {
+      "label": "Language",
+      "none": "None (Default)",
+      "description": "Optional language setting. If set, the agent will always respond in this language."
+    },
     "behaviorRules": "Behavior Rules",
     "addRule": "Add Rule",
     "removeRule": "Remove rule",
@@ -151,6 +162,9 @@
   },
   "flashcards": {
     "title": "Flashcards",
+    "allLanguages": "All Languages",
+    "selectLanguage": "Select Language",
+    "selectLanguageDescription": "Filter flashcards by language. Shows words from agents using the selected language.",
     "noWords": "No saved words available for flashcards",
     "noWordsDescription": "Save some words first to start practicing with flashcards",
     "clickToFlip": "Click or press Enter/Space to flip",

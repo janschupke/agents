@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { LanguageFormattingService } from '../../../../../services/language-formatting/language-formatting.service';
 
 interface WordTooltipProps {
   translation?: string;
@@ -8,6 +9,7 @@ interface WordTooltipProps {
   savedWordId?: number; // If word is already saved
   onClick?: () => void;
   children: React.ReactNode;
+  language?: string | null; // Agent language
 }
 
 export default function WordTooltip({
@@ -17,6 +19,7 @@ export default function WordTooltip({
   savedWordId,
   onClick,
   children,
+  language,
 }: WordTooltipProps) {
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
@@ -32,7 +35,11 @@ export default function WordTooltip({
     }
   }, [showTooltip]);
 
-  const hasContent = translation || pinyin;
+  // Only show pinyin if language formatting config says so
+  const shouldShowPinyin = LanguageFormattingService.shouldShowPinyin(language ?? null);
+  const displayPinyin = shouldShowPinyin ? pinyin : null;
+
+  const hasContent = translation || displayPinyin;
   const isSaved = savedWordId !== undefined;
 
   // Always show highlighting for saved words, even without translation
@@ -51,8 +58,8 @@ export default function WordTooltip({
       }}
     >
       <div className="font-semibold mb-1">{originalWord}</div>
-      {pinyin && (
-        <div className="text-gray-300 mb-1 text-[10px]">{pinyin}</div>
+      {displayPinyin && (
+        <div className="text-gray-300 mb-1 text-[10px]">{displayPinyin}</div>
       )}
       {translation && <div className="text-gray-100">{translation}</div>}
       <div

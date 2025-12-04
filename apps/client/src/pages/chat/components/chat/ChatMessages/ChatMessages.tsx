@@ -1,4 +1,4 @@
-import { Message, MessageRole } from '../../../../../types/chat.types';
+import { Message, MessageRole, Agent } from '../../../../../types/chat.types';
 import { SavedWordMatch } from '../../../../../types/saved-word.types';
 import MessageBubble from './parts/MessageBubble';
 import { IconChat, FadeIn, TypingIndicator } from '@openai/ui';
@@ -17,6 +17,7 @@ interface ChatMessagesProps {
   showTypingIndicator?: boolean;
   onShowJson: (title: string, data: unknown) => void;
   sessionId?: number | null;
+  agent?: Agent | null;
 }
 
 export default function ChatMessages({
@@ -26,6 +27,7 @@ export default function ChatMessages({
   showTypingIndicator = false,
   onShowJson,
   sessionId,
+  agent,
 }: ChatMessagesProps) {
   const filteredMessages = messages.filter(
     (msg) => msg.role !== MessageRole.SYSTEM
@@ -84,6 +86,7 @@ export default function ChatMessages({
               savedWordMatches={savedWordMatches}
               onWordClick={onWordClick}
               onShowJson={onShowJson}
+              agent={agent}
             />
           </FadeIn>
         ) : (
@@ -94,6 +97,7 @@ export default function ChatMessages({
               savedWordMatches={savedWordMatches}
               onWordClick={onWordClick}
               onShowJson={onShowJson}
+              agent={agent}
             />
           </div>
         );

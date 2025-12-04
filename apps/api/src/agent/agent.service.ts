@@ -8,6 +8,7 @@ import { AgentRepository } from './agent.repository';
 import { AgentResponse } from '../common/interfaces/agent.interface';
 import { AgentNotFoundException } from '../common/exceptions';
 import { ERROR_MESSAGES } from '../common/constants/error-messages.constants.js';
+import { AgentType } from '../common/enums/agent-type.enum';
 
 @Injectable()
 export class AgentService {
@@ -17,7 +18,17 @@ export class AgentService {
 
   async findAll(userId: string): Promise<AgentResponse[]> {
     this.logger.debug(`Finding all agents for user ${userId}`);
-    return this.agentRepository.findAll(userId);
+    const agents = await this.agentRepository.findAll(userId);
+    return agents.map((agent) => ({
+      id: agent.id,
+      userId: agent.userId,
+      name: agent.name,
+      description: agent.description,
+      avatarUrl: agent.avatarUrl,
+      agentType: agent.agentType as AgentType | null,
+      language: agent.language,
+      createdAt: agent.createdAt,
+    }));
   }
 
   async findById(id: number, userId: string): Promise<AgentResponse> {
@@ -28,13 +39,20 @@ export class AgentService {
       throw new AgentNotFoundException(id);
     }
     // Convert AgentWithConfig to AgentResponse
-    const agentResponse = await this.agentRepository.findById(id);
-    if (!agentResponse) {
+    const agentRecord = await this.agentRepository.findById(id);
+    if (!agentRecord) {
       this.logger.warn(`Agent ${id} not found`);
       throw new AgentNotFoundException(id);
     }
     return {
-      ...agentResponse,
+      id: agentRecord.id,
+      userId: agentRecord.userId,
+      name: agentRecord.name,
+      description: agentRecord.description,
+      avatarUrl: agentRecord.avatarUrl,
+      agentType: agentRecord.agentType as AgentType | null,
+      language: agentRecord.language,
+      createdAt: agentRecord.createdAt,
       configs: agent.configs,
     };
   }
@@ -44,6 +62,8 @@ export class AgentService {
     name: string,
     description?: string,
     avatarUrl?: string,
+    agentType?: AgentType,
+    language?: string,
     configs?: Record<string, unknown>
   ): Promise<AgentResponse> {
     this.logger.log(`Creating agent "${name}" for user ${userId}`);
@@ -66,7 +86,9 @@ export class AgentService {
       userId,
       name,
       description,
-      avatarUrl
+      avatarUrl,
+      agentType || AgentType.GENERAL, // Default to 'general'
+      language
     );
     this.logger.log(`Created agent ${agent.id} "${name}"`);
 
@@ -76,7 +98,16 @@ export class AgentService {
       this.logger.debug(`Updated configs for agent ${agent.id}`);
     }
 
-    return agent;
+    return {
+      id: agent.id,
+      userId: agent.userId,
+      name: agent.name,
+      description: agent.description,
+      avatarUrl: agent.avatarUrl,
+      agentType: agent.agentType as AgentType | null,
+      language: agent.language,
+      createdAt: agent.createdAt,
+    };
   }
 
   async update(
@@ -85,6 +116,8 @@ export class AgentService {
     name: string,
     description?: string,
     avatarUrl?: string,
+    agentType?: AgentType,
+    language?: string,
     configs?: Record<string, unknown>
   ): Promise<AgentResponse> {
     this.logger.log(`Updating agent ${id} for user ${userId}`);
@@ -115,7 +148,9 @@ export class AgentService {
       userId,
       name,
       description,
-      avatarUrl
+      avatarUrl,
+      agentType,
+      language
     );
     if (!updated) {
       this.logger.warn(`Failed to update agent ${id}`);
@@ -129,7 +164,19 @@ export class AgentService {
     }
 
     this.logger.log(`Successfully updated agent ${id}`);
-    return updated;
+    if (!updated) {
+      throw new AgentNotFoundException(id);
+    }
+    return {
+      id: updated.id,
+      userId: updated.userId,
+      name: updated.name,
+      description: updated.description,
+      avatarUrl: updated.avatarUrl,
+      agentType: updated.agentType as AgentType | null,
+      language: updated.language,
+      createdAt: updated.createdAt,
+    };
   }
 
   async delete(id: number, userId: string): Promise<void> {

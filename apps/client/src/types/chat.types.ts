@@ -73,11 +73,15 @@ export interface SendMessageResponse {
   }>; // Saved word matches for highlighting
 }
 
+import { AgentType } from './agent.types';
+
 export interface Agent {
   id: number;
   name: string;
   description: string | null;
   avatarUrl: string | null;
+  agentType: AgentType | null;
+  language: string | null;
   createdAt: string;
   configs?: {
     temperature?: number;
@@ -104,6 +108,8 @@ export interface CreateAgentRequest {
   name: string;
   description?: string;
   avatarUrl?: string;
+  agentType?: AgentType;
+  language?: string;
   configs?: {
     temperature?: number;
     system_prompt?: string;
@@ -115,6 +121,8 @@ export interface UpdateAgentRequest {
   name: string;
   description?: string;
   avatarUrl?: string;
+  agentType?: AgentType;
+  language?: string;
   configs?: {
     temperature?: number;
     system_prompt?: string;

@@ -51,6 +51,20 @@ export class SavedWordService {
     return savedWords.map((word) => this.mapToResponseDto(word));
   }
 
+  async getSavedWordsByLanguage(
+    userId: string,
+    language?: string
+  ): Promise<SavedWordResponseDto[]> {
+    this.logger.debug(
+      `Getting saved words for user ${userId}, language: ${language || 'all'}`
+    );
+    const savedWords = await this.savedWordRepository.findAllByLanguage(
+      userId,
+      language
+    );
+    return savedWords.map((word) => this.mapToResponseDto(word));
+  }
+
   async getSavedWord(
     id: number,
     userId: string

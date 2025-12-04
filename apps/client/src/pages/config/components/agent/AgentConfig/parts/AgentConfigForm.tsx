@@ -14,6 +14,8 @@ import {
 import AgentConfigFormSkeleton from './AgentConfigFormSkeleton';
 import AgentNameAndAvatar from './AgentNameAndAvatar';
 import MemoriesSection from './MemoriesSection';
+import AgentTypeField from './AgentTypeField';
+import LanguageField from './LanguageField';
 import { forwardRef, useImperativeHandle, useEffect, useRef } from 'react';
 
 interface AgentConfigFormProps {
@@ -148,6 +150,15 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
             <DescriptionField
               value={values.description}
               onChange={(val) => setValue('description', val)}
+            />
+            <AgentTypeField
+              value={values.agentType}
+              onChange={(val) => setValue('agentType', val)}
+            />
+            <LanguageField
+              value={values.language}
+              agentType={values.agentType}
+              onChange={(val) => setValue('language', val)}
             />
             <TemperatureField
               value={values.temperature}

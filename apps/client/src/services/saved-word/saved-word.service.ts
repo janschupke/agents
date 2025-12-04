@@ -23,9 +23,12 @@ export class SavedWordService {
   }
 
   /**
-   * Get all saved words for current user
+   * Get all saved words for current user, optionally filtered by language
    */
-  static async getSavedWords(): Promise<SavedWord[]> {
+  static async getSavedWords(language?: string | null): Promise<SavedWord[]> {
+    if (language) {
+      return apiManager.get<SavedWord[]>(API_ENDPOINTS.SAVED_WORDS.BY_LANGUAGE(language));
+    }
     return apiManager.get<SavedWord[]>(API_ENDPOINTS.SAVED_WORDS.BASE);
   }
 

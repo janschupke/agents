@@ -2,11 +2,14 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Agent } from '../../../../types/chat.types';
 import { useFormValidation, validationRules } from '@openai/utils';
 import { parseBehaviorRules } from '../../utils/agent.utils';
+import { AgentType } from '../../../../types/agent.types';
 
 export interface AgentFormValues extends Record<string, unknown> {
   name: string;
   description: string;
   avatarUrl: string | null;
+  agentType: AgentType;
+  language: string | null;
   temperature: number;
   systemPrompt: string;
   behaviorRules: string[];
@@ -48,6 +51,8 @@ export function useAgentForm({
         name: agent.name,
         description: agent.description || '',
         avatarUrl: agent.avatarUrl || null,
+        agentType: agent.agentType || AgentType.GENERAL,
+        language: agent.language || null,
         temperature:
           typeof config.temperature === 'number' ? config.temperature : 0.7,
         systemPrompt:
@@ -60,6 +65,8 @@ export function useAgentForm({
         name: agent.name || '',
         description: agent.description || '',
         avatarUrl: agent.avatarUrl || null,
+        agentType: agent.agentType || AgentType.GENERAL,
+        language: agent.language || null,
         temperature: 0.7,
         systemPrompt: '',
         behaviorRules: [],
@@ -69,6 +76,8 @@ export function useAgentForm({
       name: '',
       description: '',
       avatarUrl: null,
+      agentType: AgentType.GENERAL,
+      language: null,
       temperature: 0.7,
       systemPrompt: '',
       behaviorRules: [],
@@ -108,6 +117,8 @@ export function useAgentForm({
       setValue('name', agent.name);
       setValue('description', agent.description || '');
       setValue('avatarUrl', agent.avatarUrl || null);
+      setValue('agentType', agent.agentType || AgentType.GENERAL);
+      setValue('language', agent.language || null);
       setValue(
         'temperature',
         typeof config.temperature === 'number' ? config.temperature : 0.7
@@ -121,6 +132,8 @@ export function useAgentForm({
       setValue('name', agent.name || '');
       setValue('description', agent.description || '');
       setValue('avatarUrl', agent.avatarUrl || null);
+      setValue('agentType', agent.agentType || AgentType.GENERAL);
+      setValue('language', agent.language || null);
       setValue('temperature', 0.7);
       setValue('systemPrompt', '');
       setValue('behaviorRules', []);

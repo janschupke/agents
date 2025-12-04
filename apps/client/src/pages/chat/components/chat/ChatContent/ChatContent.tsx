@@ -1,4 +1,4 @@
-import { Message } from '../../../../../types/chat.types';
+import { Message, Agent } from '../../../../../types/chat.types';
 import { SavedWordMatch } from '../../../../../types/saved-word.types';
 import ChatMessages from '../ChatMessages/ChatMessages';
 import ChatInput, { ChatInputRef } from '../ChatInput/ChatInput';
@@ -18,6 +18,7 @@ interface ChatContentProps {
   contentLoading?: boolean;
   showPlaceholder: boolean;
   sessionId: number | null;
+  agent?: Agent | null;
   input: string;
   inputRef: React.RefObject<ChatInputRef>;
   messagesEndRef: React.RefObject<HTMLDivElement>;
@@ -38,6 +39,7 @@ export default function ChatContent({
   contentLoading = false,
   showPlaceholder,
   sessionId,
+  agent,
   input,
   inputRef,
   messagesEndRef,
@@ -67,6 +69,7 @@ export default function ChatContent({
               showTypingIndicator={showTypingIndicator}
               onShowJson={onShowJson}
               sessionId={sessionId}
+              agent={agent}
             />
             <div ref={messagesEndRef} />
           </>

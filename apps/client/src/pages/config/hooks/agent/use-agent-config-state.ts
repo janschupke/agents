@@ -26,6 +26,8 @@ export function useAgentConfigState({
         name: formData.name || '',
         description: formData.description || null,
         avatarUrl: formData.avatarUrl || null,
+        agentType: formData.agentType || null,
+        language: formData.language || null,
         createdAt: new Date().toISOString(),
         configs: formData.configs || {
           temperature: 1,

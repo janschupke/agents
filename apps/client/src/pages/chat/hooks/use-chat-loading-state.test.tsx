@@ -72,9 +72,11 @@ describe('useChatLoadingState', () => {
           id: 1,
           name: 'Agent 1',
           description: 'Desc 1',
-          avatarUrl: null,
-          createdAt: '2024-01-01T00:00:00.000Z',
-        },
+        avatarUrl: null,
+        agentType: null,
+        language: null,
+        createdAt: '2024-01-01T00:00:00.000Z',
+      },
       ];
       queryClient.setQueryData(queryKeys.agents.list(), mockAgents);
 
@@ -126,9 +128,11 @@ describe('useChatLoadingState', () => {
           id: 1,
           name: 'Agent 1',
           description: 'Desc 1',
-          avatarUrl: null,
-          createdAt: '2024-01-01T00:00:00.000Z',
-        },
+        avatarUrl: null,
+        agentType: null,
+        language: null,
+        createdAt: '2024-01-01T00:00:00.000Z',
+      },
       ];
       const mockSessions: Session[] = [
         {
@@ -198,9 +202,11 @@ describe('useChatLoadingState', () => {
           id: 1,
           name: 'Agent 1',
           description: 'Desc 1',
-          avatarUrl: null,
-          createdAt: '2024-01-01T00:00:00.000Z',
-        },
+        avatarUrl: null,
+        agentType: null,
+        language: null,
+        createdAt: '2024-01-01T00:00:00.000Z',
+      },
       ];
       queryClient.setQueryData(queryKeys.agents.list(), mockAgents);
 
@@ -252,9 +258,11 @@ describe('useChatLoadingState', () => {
           id: 1,
           name: 'Agent 1',
           description: 'Desc 1',
-          avatarUrl: null,
-          createdAt: '2024-01-01T00:00:00.000Z',
-        },
+        avatarUrl: null,
+        agentType: null,
+        language: null,
+        createdAt: '2024-01-01T00:00:00.000Z',
+      },
       ];
       const mockSessions: Session[] = [
         {
@@ -307,9 +315,11 @@ describe('useChatLoadingState', () => {
           id: 1,
           name: 'Agent 1',
           description: 'Desc 1',
-          avatarUrl: null,
-          createdAt: '2024-01-01T00:00:00.000Z',
-        },
+        avatarUrl: null,
+        agentType: null,
+        language: null,
+        createdAt: '2024-01-01T00:00:00.000Z',
+      },
       ];
       queryClient.setQueryData(queryKeys.agents.list(), mockAgents);
 

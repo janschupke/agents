@@ -54,6 +54,8 @@ describe('SessionService', () => {
         description: 'Test',
         userId,
         avatarUrl: null,
+        agentType: null,
+        language: null,
         createdAt: new Date(),
         configs: {},
       };
@@ -122,6 +124,8 @@ describe('SessionService', () => {
         description: 'Test',
         userId,
         avatarUrl: null,
+        agentType: null,
+        language: null,
         createdAt: new Date(),
         configs: {},
       };
@@ -174,6 +178,8 @@ describe('SessionService', () => {
         description: 'Test',
         userId,
         avatarUrl: null,
+        agentType: null,
+        language: null,
         createdAt: new Date(),
       };
       const mockSession = {
@@ -237,6 +243,8 @@ describe('SessionService', () => {
         description: 'Test',
         userId,
         avatarUrl: null,
+        agentType: null,
+        language: null,
         createdAt: new Date(),
       };
 
@@ -261,6 +269,8 @@ describe('SessionService', () => {
         description: 'Test',
         userId,
         avatarUrl: null,
+        agentType: null,
+        language: null,
         createdAt: new Date(),
       };
       const mockSession = {
@@ -295,6 +305,8 @@ describe('SessionService', () => {
         description: 'Test',
         userId,
         avatarUrl: null,
+        agentType: null,
+        language: null,
         createdAt: new Date(),
       };
       const mockSession = {
@@ -340,6 +352,8 @@ describe('SessionService', () => {
         description: 'Test',
         userId,
         avatarUrl: null,
+        agentType: null,
+        language: null,
         createdAt: new Date(),
       };
 
@@ -364,6 +378,8 @@ describe('SessionService', () => {
         description: 'Test',
         userId,
         avatarUrl: null,
+        agentType: null,
+        language: null,
         createdAt: new Date(),
       };
       const mockSession = {

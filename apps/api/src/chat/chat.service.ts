@@ -15,6 +15,7 @@ import { MessageTranslationService } from '../message-translation/message-transl
 import { WordTranslationService } from '../message-translation/word-translation.service';
 import { SavedWordService } from '../saved-word/saved-word.service';
 import { MessageRole } from '../common/enums/message-role.enum';
+import { AgentType } from '../common/enums/agent-type.enum';
 import { MEMORY_CONFIG } from '../common/constants/api.constants.js';
 import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
 import {
@@ -22,7 +23,7 @@ import {
   ChatHistoryResponseDto,
   SendMessageResponseDto,
 } from '../common/dto/chat.dto';
-import { MessagePreparationService } from './services/message-preparation.service';
+import { MessagePreparationService, AgentConfig } from './services/message-preparation.service';
 import { OpenAIChatService } from './services/openai-chat.service';
 
 @Injectable()
@@ -70,6 +71,8 @@ export class ChatService {
     id: number;
     name: string;
     description: string | null;
+    agentType: AgentType | null;
+    language: string | null;
     configs: Record<string, unknown>;
   }> {
     const agent = await this.agentRepository.findByIdWithConfig(
@@ -257,7 +260,16 @@ export class ChatService {
 
     // Load agent with config
     const agent = await this.validateAgentAccess(agentId, userId);
-    const agentConfig = this.agentConfigService.mergeAgentConfig(agent.configs);
+    const mergedConfig = this.agentConfigService.mergeAgentConfig(agent.configs);
+    const agentConfig: AgentConfig = {
+      system_prompt: mergedConfig.system_prompt as string | undefined,
+      behavior_rules: mergedConfig.behavior_rules as string | undefined,
+      temperature: mergedConfig.temperature as number | undefined,
+      model: mergedConfig.model as string | undefined,
+      max_tokens: mergedConfig.max_tokens as number | undefined,
+      agentType: agent.agentType,
+      language: agent.language,
+    };
     this.logger.debug(`Loaded agent ${agentId} with config`);
 
     // Get or create session

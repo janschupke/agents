@@ -136,6 +136,8 @@ describe('AgentService', () => {
         name,
         description,
         undefined,
+        undefined,
+        undefined,
         configs
       );
 
@@ -234,6 +236,8 @@ describe('AgentService', () => {
         userId,
         name,
         description,
+        undefined,
+        undefined,
         undefined,
         configs
       );

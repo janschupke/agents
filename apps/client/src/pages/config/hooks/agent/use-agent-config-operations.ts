@@ -152,6 +152,8 @@ export function useAgentConfigOperations({
       name: '',
       description: null,
       avatarUrl: null,
+      agentType: null,
+      language: null,
       createdAt: new Date().toISOString(),
     };
     setLocalAgents((prev) => [newAgent, ...prev]);

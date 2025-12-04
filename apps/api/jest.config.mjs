@@ -1,43 +1,37 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
-import fs from 'fs';
+import { createRequire } from 'module';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const require = createRequire(import.meta.url);
 
-// Resolve ts-jest from workspace root for pnpm workspace compatibility
-const workspaceRoot = path.resolve(__dirname, '../..');
-const pnpmPath = path.join(workspaceRoot, 'node_modules/.pnpm');
-let tsJestPath = 'ts-jest'; // Default fallback
-
-if (fs.existsSync(pnpmPath)) {
-  const tsJestDirs = fs.readdirSync(pnpmPath).filter(d => d.startsWith('ts-jest@'));
-  if (tsJestDirs.length > 0) {
-    const fullPath = path.join(pnpmPath, tsJestDirs[0], 'node_modules/ts-jest');
-    if (fs.existsSync(fullPath)) {
-      // Use absolute path
-      tsJestPath = fullPath;
-    }
-  }
+// Resolve ts-jest using require.resolve which works with pnpm
+let tsJestPath = 'ts-jest';
+try {
+  tsJestPath = require.resolve('ts-jest');
+} catch (e) {
+  // Fallback to string if resolution fails
+  tsJestPath = 'ts-jest';
 }
 
 export default {
   moduleFileExtensions: ['js', 'json', 'ts'],
-  rootDir: path.resolve(__dirname, 'src'),
-  testRegex: '.*\\.spec\\.ts$',
+  rootDir: __dirname,
+  testMatch: ['<rootDir>/src/**/*.spec.ts'],
   transform: {
     '^.+\\.(t|j)s$': tsJestPath,
   },
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   collectCoverageFrom: [
-    '**/*.(t|j)s',
-    '!**/*.spec.ts',
-    '!**/*.interface.ts',
-    '!**/*.dto.ts',
-    '!**/main.ts',
-    '!**/node_modules/**',
+    '<rootDir>/src/**/*.(t|j)s',
+    '!<rootDir>/src/**/*.spec.ts',
+    '!<rootDir>/src/**/*.interface.ts',
+    '!<rootDir>/src/**/*.dto.ts',
+    '!<rootDir>/src/main.ts',
+    '!<rootDir>/src/**/node_modules/**',
   ],
-  coverageDirectory: '../coverage',
+  coverageDirectory: '<rootDir>/coverage',
   testEnvironment: 'node',
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',

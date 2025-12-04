@@ -1,13 +1,16 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Container, PageHeader, PageContent, Card, CardFlip } from '@openai/ui';
+import { Container, PageHeader, PageContent, Card, CardFlip, FormField } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useSavedWords } from '../../hooks/queries/use-saved-words';
+import { LanguageFormattingService } from '../../services/language-formatting/language-formatting.service';
+import { LANGUAGE_OPTIONS } from '../../constants/language.constants';
 
 const FLIP_ANIMATION_DURATION_MS = 600;
 
 export default function Flashcards() {
   const { t } = useTranslation(I18nNamespace.CLIENT);
-  const { data: savedWords = [], isLoading } = useSavedWords();
+  const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
+  const { data: savedWords = [], isLoading } = useSavedWords(selectedLanguage);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -15,7 +18,13 @@ export default function Flashcards() {
   const [backWordIndex, setBackWordIndex] = useState(0);
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Filter words that have Chinese characters (originalWord)
+  // Get formatting config for selected language
+  const formattingConfig = useMemo(
+    () => LanguageFormattingService.getFormattingConfig(selectedLanguage),
+    [selectedLanguage]
+  );
+
+  // Filter words that have valid content
   const validWords = useMemo(() => {
     return savedWords.filter((word) => word.originalWord && word.originalWord.trim().length > 0);
   }, [savedWords]);
@@ -128,7 +137,28 @@ export default function Flashcards() {
 
   return (
     <Container>
-      <PageHeader title={t('flashcards.title')} />
+      <PageHeader
+        title={t('flashcards.title')}
+        actions={
+          <FormField
+            label={t('flashcards.selectLanguage')}
+            hint={t('flashcards.selectLanguageDescription')}
+          >
+            <select
+              value={selectedLanguage || ''}
+              onChange={(e) => setSelectedLanguage(e.target.value || null)}
+              className="w-full px-3 py-2 border border-border-input rounded-md text-text-primary bg-background focus:outline-none focus:border-border-focus disabled:bg-disabled-bg disabled:cursor-not-allowed"
+            >
+              <option value="">{t('flashcards.allLanguages')}</option>
+              {LANGUAGE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </FormField>
+        }
+      />
       <PageContent>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="w-full max-w-2xl">
@@ -164,7 +194,7 @@ export default function Flashcards() {
                       <div className="text-4xl font-bold text-text-primary mb-2">
                         {backWord?.originalWord}
                       </div>
-                      {backWord?.pinyin && (
+                      {backWord?.pinyin && formattingConfig.showPinyin && (
                         <div className="text-2xl text-text-secondary mb-2">
                           {backWord.pinyin}
                         </div>

@@ -13,6 +13,7 @@ interface WordPresenterProps {
     savedWordId?: number,
     sentence?: string
   ) => void;
+  language?: string | null; // Agent language
 }
 
 /**
@@ -26,6 +27,7 @@ export default function WordPresenter({
   wordTranslations,
   savedWordMatches,
   onWordClick,
+  language,
 }: WordPresenterProps) {
   // If no translations, return plain text
   if (!wordTranslations || wordTranslations.length === 0) {
@@ -117,6 +119,7 @@ export default function WordPresenter({
             pinyin={pinyin}
             originalWord={part.text}
             savedWordId={savedMatch?.savedWordId}
+            language={language}
             onClick={
               onWordClick
                 ? () =>

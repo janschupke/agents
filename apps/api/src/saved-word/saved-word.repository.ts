@@ -114,6 +114,62 @@ export class SavedWordRepository {
     });
   }
 
+  async findAllByLanguage(
+    userId: string,
+    language?: string
+  ): Promise<SavedWord[]> {
+    const where: Prisma.SavedWordWhereInput = {
+      userId,
+    };
+
+    if (language) {
+      // Find all agents with this language
+      const agentsWithLanguage = await this.prisma.agent.findMany({
+        where: {
+          userId,
+          language: {
+            equals: language,
+          },
+        },
+        select: { id: true },
+      });
+
+      const agentIds = agentsWithLanguage.map((agent) => agent.id);
+
+      if (agentIds.length > 0) {
+        // Filter words by agents with this language
+        where.agentId = { in: agentIds };
+      } else {
+        // No agents with this language, return empty array
+        return [];
+      }
+    }
+
+    return this.prisma.savedWord.findMany({
+      where,
+      include: {
+        sentences: {
+          orderBy: {
+            createdAt: 'asc',
+          },
+        },
+        agent: {
+          select: {
+            name: true,
+          },
+        },
+        session: {
+          select: {
+            sessionName: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
   async findMatchingWords(
     userId: string,
     words: string[]

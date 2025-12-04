@@ -35,6 +35,8 @@ model Agent {
   name        String
   description String?
   avatarUrl   String?       @map("avatar_url")
+  agentType   String?       @map("agent_type") // 'general' | 'language_assistant' | null (defaults to 'general')
+  language    String?       // Optional language code (e.g., 'zh', 'en', 'ja')
   createdAt   DateTime      @default(now()) @map("created_at")
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   configs     AgentConfig[]
@@ -43,6 +45,8 @@ model Agent {
   savedWords  SavedWord[]
 
   @@index([userId])
+  @@index([agentType])
+  @@index([language])
   @@map("agents")
 }
 

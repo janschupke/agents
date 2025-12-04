@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type { Agent, Prisma } from '@prisma/client';
 import { AgentWithConfig } from '../common/interfaces/agent.interface';
+import { AgentType } from '../common/enums/agent-type.enum';
 
 @Injectable()
 export class AgentRepository {
@@ -25,6 +26,8 @@ export class AgentRepository {
         name: true,
         description: true,
         avatarUrl: true,
+        agentType: true,
+        language: true,
         createdAt: true,
       },
     });
@@ -73,7 +76,12 @@ export class AgentRepository {
     }
 
     return {
-      ...agent,
+      id: agent.id,
+      name: agent.name,
+      description: agent.description,
+      avatarUrl: agent.avatarUrl,
+      agentType: agent.agentType as AgentType | null,
+      language: agent.language,
       configs: config,
     };
   }
@@ -89,7 +97,9 @@ export class AgentRepository {
     userId: string,
     name: string,
     description?: string,
-    avatarUrl?: string
+    avatarUrl?: string,
+    agentType: AgentType = AgentType.GENERAL,
+    language?: string
   ): Promise<Agent> {
     return this.prisma.agent.create({
       data: {
@@ -97,6 +107,8 @@ export class AgentRepository {
         name,
         description: description || null,
         avatarUrl: avatarUrl || null,
+        agentType,
+        language: language || null,
       },
     });
   }
@@ -106,12 +118,14 @@ export class AgentRepository {
     userId: string,
     name: string,
     description?: string,
-    avatarUrl?: string
-  ): Promise<Agent> {
+    avatarUrl?: string,
+    agentType?: AgentType,
+    language?: string
+  ): Promise<Agent | null> {
     // First verify the agent belongs to the user
     const agent = await this.findByIdAndUserId(id, userId);
     if (!agent) {
-      return null as unknown as Agent; // Will be handled by service
+      return null;
     }
 
     return this.prisma.agent.update({
@@ -120,6 +134,8 @@ export class AgentRepository {
         name,
         description: description || null,
         avatarUrl: avatarUrl !== undefined ? avatarUrl || null : undefined,
+        agentType: agentType !== undefined ? agentType : undefined,
+        language: language !== undefined ? language || null : undefined,
       },
     });
   }

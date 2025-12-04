@@ -13,6 +13,7 @@ enum QueryKey {
   SYSTEM = 'system',
   SAVED_WORDS = 'savedWords',
   MATCHING = 'matching',
+  LANGUAGE = 'language',
 }
 
 export const queryKeys = {
@@ -53,6 +54,8 @@ export const queryKeys = {
   },
   savedWords: {
     all: () => [QueryKey.SAVED_WORDS] as const,
+    byLanguage: (language: string) =>
+      [...queryKeys.savedWords.all(), QueryKey.LANGUAGE, language] as const,
     details: () => [...queryKeys.savedWords.all(), QueryKey.DETAIL] as const,
     detail: (id: number) => [...queryKeys.savedWords.details(), id] as const,
     matching: (words: string[]) =>

@@ -54,7 +54,8 @@ function ChatAgentContent({
       ? parseInt(urlSessionId, 10)
       : null);
 
-  const { isLoading: agentsLoading } = useAgents();
+  const { data: agents = [], isLoading: agentsLoading } = useAgents();
+  const agent = agentId ? agents.find((a) => a.id === agentId) || null : null;
 
   const { handleSessionSelect, handleNewSession } = useChatAgentNavigation({
     agentId,
@@ -245,6 +246,7 @@ function ChatAgentContent({
                   contentLoading={false}
                   showPlaceholder={showChatPlaceholder}
                   sessionId={currentSessionId}
+                  agent={agent}
                   input={input}
                   inputRef={chatInputRef}
                   messagesEndRef={messagesEndRef}

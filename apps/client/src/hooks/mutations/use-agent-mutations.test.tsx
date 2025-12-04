@@ -42,6 +42,8 @@ describe('use-agent-mutations', () => {
         name: 'New Agent',
         description: 'New Description',
         avatarUrl: null,
+        agentType: null,
+        language: null,
         createdAt: '2024-01-01T00:00:00.000Z',
       };
 
@@ -90,6 +92,8 @@ describe('use-agent-mutations', () => {
         name: 'Updated Agent',
         description: 'Updated Description',
         avatarUrl: null,
+        agentType: null,
+        language: null,
         createdAt: '2024-01-01T00:00:00.000Z',
       };
 

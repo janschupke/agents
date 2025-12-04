@@ -20,6 +20,7 @@ interface TranslatableMarkdownContentProps {
     sentence?: string
   ) => void;
   className?: string;
+  language?: string | null; // Agent language
 }
 
 /**
@@ -32,6 +33,7 @@ export default function TranslatableMarkdownContent({
   savedWordMatches,
   onWordClick,
   className = '',
+  language,
 }: TranslatableMarkdownContentProps) {
   // If no translations, use regular markdown
   if (wordTranslations.length === 0) {
@@ -47,6 +49,7 @@ export default function TranslatableMarkdownContent({
           wordTranslations={wordTranslations}
           savedWordMatches={savedWordMatches}
           onWordClick={onWordClick}
+          language={language}
         />
       );
     }
@@ -65,6 +68,7 @@ export default function TranslatableMarkdownContent({
           wordTranslations={wordTranslations}
           savedWordMatches={savedWordMatches}
           onWordClick={onWordClick}
+          language={language}
         />
       );
     }
