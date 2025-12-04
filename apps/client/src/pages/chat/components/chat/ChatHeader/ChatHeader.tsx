@@ -1,9 +1,48 @@
-import AgentSelector from '../../agent/AgentSelector/AgentSelector';
+import { useNavigate } from 'react-router-dom';
+import { Avatar, Button, IconSettings } from '@openai/ui';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
+import { ROUTES } from '../../../../../constants/routes.constants';
+import { Agent } from '../../../../../types/chat.types';
 
-export default function ChatHeader() {
+interface ChatHeaderProps {
+  agent: Agent | null;
+  agentId: number | null;
+}
+
+export default function ChatHeader({ agent, agentId }: ChatHeaderProps) {
+  const { t } = useTranslation(I18nNamespace.CLIENT);
+  const navigate = useNavigate();
+
+  const handleConfigure = () => {
+    if (agentId) {
+      navigate(ROUTES.CONFIG_AGENT(agentId));
+    }
+  };
+
   return (
-    <div className="px-5 py-3 bg-background border-b border-border">
-      <AgentSelector />
+    <div className="px-5 py-3 bg-background border-b border-border flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        {agent && (
+          <>
+            <Avatar
+              src={agent.avatarUrl || undefined}
+              name={agent.name}
+              size="md"
+            />
+            <h2 className="text-lg font-semibold text-text-secondary">
+              {agent.name}
+            </h2>
+          </>
+        )}
+      </div>
+      <Button
+        variant="icon"
+        onClick={handleConfigure}
+        disabled={!agentId}
+        tooltip={agentId ? t('chat.configureAgent') : undefined}
+      >
+        <IconSettings size="md" />
+      </Button>
     </div>
   );
 }

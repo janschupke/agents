@@ -41,13 +41,13 @@ interface UseAutoNavigateToItemOptions<T> {
  * without an item ID. Useful for auto-selecting the most recent/first item.
  *
  * @example
- * // Auto-navigate to most recent session when accessing /chat
+ * // Auto-navigate to most recent agent when accessing /chat
  * useAutoNavigateToItem({
  *   baseRoute: ROUTES.CHAT,
- *   selectedItemId: currentSessionId,
- *   buildTargetRoute: ROUTES.CHAT_SESSION,
- *   isLoading: sessionsLoading,
- *   resetDependencies: [agentId],
+ *   selectedItemId: currentAgentId,
+ *   buildTargetRoute: ROUTES.CHAT_AGENT,
+ *   isLoading: agentsLoading,
+ *   resetDependencies: [],
  * });
  */
 export function useAutoNavigateToItem<T extends number | string>({

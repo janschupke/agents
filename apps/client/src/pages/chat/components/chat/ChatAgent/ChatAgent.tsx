@@ -1,17 +1,14 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useChatAgentNavigation } from '../../../hooks/use-chat-agent-navigation';
-import { useChatModals } from '../../../hooks/use-chat-modals';
-import { useChatHandlers } from '../../../hooks/use-chat-handlers';
 import { useChatInput } from '../ChatInput/hooks/use-chat-input';
-import { useChatSession } from '../../../hooks/use-chat-session';
 import { useChatMessages } from '../ChatMessages/hooks/use-chat-messages';
 import { useChatScroll } from '../ChatMessages/hooks/use-chat-scroll';
 import { useChatLoadingState } from '../../../hooks/use-chat-loading-state';
 import { useAgents } from '../../../../../hooks/queries/use-agents';
-import { Session } from '../../../../../types/chat.types';
-import SessionSidebar from '../../session/SessionSidebar/SessionSidebar';
-import SessionNameModal from '../../session/SessionNameModal/SessionNameModal';
+import { useChatHistory } from '../../../../../hooks/queries/use-chat';
+import { useChatModals } from '../../../hooks/use-chat-modals';
+import AgentSidebar from '../../agent/AgentSidebar/AgentSidebar';
+import ChatHeader from '../ChatHeader/ChatHeader';
 import SavedWordModal from '../../saved-word/SavedWordModal/SavedWordModal';
 import {
   Sidebar,
@@ -20,52 +17,46 @@ import {
   PageContent,
   JsonModal,
 } from '@openai/ui';
-import AgentSelector from '../../agent/AgentSelector/AgentSelector';
 import ChatContent from '../ChatContent/ChatContent';
 import ChatLoadingState from '../ChatLoadingState/ChatLoadingState';
 import ChatEmptyState from '../ChatEmptyState/ChatEmptyState';
-import ChatErrorState from '../ChatErrorState/ChatErrorState';
 import ContainerSkeleton from '../Skeletons/ContainerSkeleton';
 import ContentSkeleton from '../Skeletons/ContentSkeleton';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
+import { ROUTES } from '../../../../../constants/routes.constants';
 
 interface ChatAgentContentProps {
-  sessionId?: number;
-  agentId?: number;
+  agentId?: number | null;
   loading?: boolean;
   error?: string;
 }
 
 function ChatAgentContent({
-  sessionId: propSessionId,
   agentId: propAgentId,
   loading: propLoading,
   error: propError,
 }: ChatAgentContentProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
   const navigate = useNavigate();
-  const { sessionId: urlSessionId } = useParams<{ sessionId?: string }>();
+  const { agentId: urlAgentId } = useParams<{ agentId?: string }>();
 
-  // Determine agentId and sessionId from props or URL
-  const agentId = propAgentId ?? null;
-  const sessionId =
-    propSessionId ||
-    (urlSessionId && !isNaN(parseInt(urlSessionId, 10))
-      ? parseInt(urlSessionId, 10)
+  // Determine agentId from props or URL
+  const agentId =
+    propAgentId ??
+    (urlAgentId && !isNaN(parseInt(urlAgentId, 10))
+      ? parseInt(urlAgentId, 10)
       : null);
 
   const { data: agents = [], isLoading: agentsLoading } = useAgents();
   const agent = agentId ? agents.find((a) => a.id === agentId) || null : null;
 
-  const { handleSessionSelect, handleNewSession } = useChatAgentNavigation({
+  // Backend automatically returns first session for agent
+  // UI is completely agnostic to sessions - backend handles multiple sessions internally
+  const { data: chatHistory, isLoading: chatHistoryLoading } = useChatHistory(
     agentId,
-    navigate,
-  });
-
-  // Session and message management - use sessionId from URL/params
-  // Convert null to undefined so useChatSession can properly detect when to auto-select
-  const { currentSessionId, sessions, sessionsLoading, handleSessionDelete } =
-    useChatSession({ agentId, initialSessionId: sessionId ?? undefined });
+    undefined
+  );
+  const sessionId = chatHistory?.session?.id ?? null;
 
   const {
     messages,
@@ -74,24 +65,22 @@ function ChatAgentContent({
     isSendingMessage,
     sendMessage,
     setMessages,
+    messagesContainerRef,
   } = useChatMessages({
     agentId,
-    sessionId: currentSessionId,
+    sessionId,
   });
 
   const { messagesEndRef } = useChatScroll({
     messages,
-    sessionId: currentSessionId,
+    sessionId,
   });
 
   // Modal management
   const {
     jsonModal,
-    sessionNameModal,
     openJsonModal,
     closeJsonModal,
-    openSessionNameModal,
-    closeSessionNameModal,
   } = useChatModals();
 
   // Saved word modal state
@@ -138,32 +127,15 @@ function ChatAgentContent({
     });
   };
 
-  // Session handlers with confirmations and message clearing
-  // Use navigation handlers instead of internal ones
-  const {
-    handleSessionSelectWrapper,
-    handleNewSessionWrapper,
-    handleSessionDeleteWrapper,
-    handleSessionNameSave,
-    ConfirmDialog,
-  } = useChatHandlers({
-    agentId,
-    sessions,
-    handleSessionSelect: async (sessionId: number) => {
-      handleSessionSelect(sessionId);
-      return undefined;
-    },
-    handleNewSession: async () => {
-      await handleNewSession();
-      return undefined;
-    },
-    handleSessionDelete,
-    setMessages,
-  });
+  const handleAgentSelect = (newAgentId: number) => {
+    navigate(ROUTES.CHAT_AGENT(newAgentId));
+  };
+
+  const handleNewAgent = () => {
+    navigate(ROUTES.CONFIG_NEW);
+  };
 
   // Unified loading state management
-  // Loading state is now calculated based on React Query cache, not array length
-  // This ensures sidebar doesn't show loading when data exists in cache
   const {
     isInitialLoad,
     sidebarLoading,
@@ -172,23 +144,24 @@ function ChatAgentContent({
     showTypingIndicator,
   } = useChatLoadingState({
     agentId,
-    sessionId: currentSessionId,
+    sessionId,
     agentsLoading,
-    sessionsLoading,
+    sessionsLoading: false, // No session loading - backend handles it
     messagesLoading,
     isSendingMessage,
   });
 
   // Chat input management
-  const showChatPlaceholder = agentId !== null && currentSessionId === null;
-  const { input, setInput, chatInputRef, handleSubmit, onRefReady } = useChatInput({
-    currentSessionId,
-    messagesLoading: false, // Don't disable input based on loading
-    showChatPlaceholder,
-    showTypingIndicator,
-    agentId,
-    sendMessage,
-  });
+  const showChatPlaceholder = agentId !== null && sessionId === null;
+  const { input, setInput, chatInputRef, handleSubmit, onRefReady } =
+    useChatInput({
+      currentSessionId: sessionId,
+      messagesLoading: false, // Don't disable input based on loading
+      showChatPlaceholder,
+      showTypingIndicator,
+      agentId,
+      sendMessage,
+    });
 
   // Full page loading (only on initial load)
   if (isInitialLoad || propLoading) {
@@ -202,26 +175,40 @@ function ChatAgentContent({
     );
   }
 
-  if (sessionId && !agentId) {
-    return <ChatErrorState message={t('chat.errors.sessionNotFound')} />;
-  }
-
+  // Handle null agentId - show empty state
   if (!agentId) {
-    return <ChatEmptyState />;
+    return (
+      <>
+        <Sidebar>
+          <AgentSidebar
+            agents={agents}
+            currentAgentId={null}
+            onAgentSelect={handleAgentSelect}
+            onNewAgent={handleNewAgent}
+            loading={agentsLoading}
+          />
+        </Sidebar>
+        <Container>
+          <PageHeader leftContent={<ChatHeader agent={null} agentId={null} />} />
+          <PageContent>
+            <div className="flex flex-col items-center justify-center h-full">
+              <p className="text-text-secondary">{t('chat.noChatSelected')}</p>
+            </div>
+          </PageContent>
+        </Container>
+      </>
+    );
   }
 
   return (
     <>
       <Sidebar>
-        <SessionSidebar
-          sessions={sessions}
-          agentId={agentId}
-          currentSessionId={currentSessionId}
-          onSessionSelect={handleSessionSelectWrapper}
-          onNewSession={handleNewSessionWrapper}
-          onSessionDelete={handleSessionDeleteWrapper}
-          onSessionEdit={openSessionNameModal}
-          loading={sidebarLoading}
+        <AgentSidebar
+          agents={agents}
+          currentAgentId={agentId}
+          onAgentSelect={handleAgentSelect}
+          onNewAgent={handleNewAgent}
+          loading={sidebarLoading || agentsLoading}
         />
       </Sidebar>
       <Container>
@@ -229,9 +216,9 @@ function ChatAgentContent({
           <ContainerSkeleton />
         ) : (
           <>
-            <PageHeader leftContent={<AgentSelector />} />
+            <PageHeader leftContent={<ChatHeader agent={agent} agentId={agentId} />} />
             <PageContent
-              animateOnChange={currentSessionId}
+              animateOnChange={sessionId}
               enableAnimation={true}
               disableScroll={true}
             >
@@ -245,11 +232,12 @@ function ChatAgentContent({
                   showTypingIndicator={showTypingIndicator}
                   contentLoading={false}
                   showPlaceholder={showChatPlaceholder}
-                  sessionId={currentSessionId}
+                  sessionId={sessionId}
                   agent={agent}
                   input={input}
                   inputRef={chatInputRef}
                   messagesEndRef={messagesEndRef}
+                  messagesContainerRef={messagesContainerRef}
                   onInputChange={setInput}
                   onSubmit={handleSubmit}
                   onShowJson={openJsonModal}
@@ -266,21 +254,7 @@ function ChatAgentContent({
         title={jsonModal.title}
         data={jsonModal.data}
       />
-      {sessionNameModal.sessionId && agentId && (
-        <SessionNameModal
-          isOpen={sessionNameModal.isOpen}
-          onClose={closeSessionNameModal}
-          currentName={
-            sessions.find((s: Session) => s.id === sessionNameModal.sessionId)
-              ?.session_name || null
-          }
-          onSave={handleSessionNameSave}
-          agentId={agentId}
-          sessionId={sessionNameModal.sessionId}
-        />
-      )}
-      {ConfirmDialog}
-      {savedWordModal.isOpen && (
+      {savedWordModal.isOpen && agentId && (
         <SavedWordModal
           isOpen={savedWordModal.isOpen}
           onClose={closeSavedWordModal}
@@ -290,7 +264,7 @@ function ChatAgentContent({
           sentence={savedWordModal.sentence}
           messageId={savedWordModal.messageId}
           agentId={agentId}
-          sessionId={currentSessionId}
+          sessionId={sessionId}
           savedWordId={savedWordModal.savedWordId}
         />
       )}
@@ -299,17 +273,11 @@ function ChatAgentContent({
 }
 
 export default function ChatAgent({
-  sessionId,
   agentId,
   loading,
   error,
 }: ChatAgentContentProps) {
   return (
-    <ChatAgentContent
-      sessionId={sessionId}
-      agentId={agentId}
-      loading={loading}
-      error={error}
-    />
+    <ChatAgentContent agentId={agentId} loading={loading} error={error} />
   );
 }

@@ -52,18 +52,28 @@ export class ChatController {
   async getChatHistory(
     @Param('agentId', ParseIntPipe) agentId: number,
     @User() user: AuthenticatedUser,
-    @Query('sessionId') sessionId?: string
+    @Query('sessionId') sessionId?: string,
+    @Query('limit') limit?: string,
+    @Query('cursor') cursor?: string
   ): Promise<ChatHistoryResponseDto> {
     const parsedSessionId = sessionId
       ? parseInt(sessionId, MAGIC_STRINGS.PARSE_INT_BASE)
       : undefined;
-    this.logger.log(
-      `Getting chat history for agent ${agentId}, user ${user.id}, sessionId: ${parsedSessionId || 'latest'}`
+    const parsedLimit = limit
+      ? parseInt(limit, MAGIC_STRINGS.PARSE_INT_BASE)
+      : 20; // Default to 20 messages
+    const parsedCursor = cursor
+      ? parseInt(cursor, MAGIC_STRINGS.PARSE_INT_BASE)
+      : undefined;
+    this.logger.debug(
+      `Getting chat history for agent ${agentId}, user ${user.id}, sessionId: ${parsedSessionId || 'latest'}, limit: ${parsedLimit}, cursor: ${parsedCursor || 'none'}`
     );
     return await this.chatService.getChatHistory(
       agentId,
       user.id,
-      parsedSessionId
+      parsedSessionId,
+      parsedLimit,
+      parsedCursor
     );
   }
 

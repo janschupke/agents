@@ -106,10 +106,12 @@ export class ChatService {
   async getChatHistory(
     agentId: number,
     userId: string,
-    sessionId?: number
+    sessionId?: number,
+    limit: number = 20,
+    cursor?: number
   ): Promise<ChatHistoryResponseDto> {
     this.logger.debug(
-      `Getting chat history for agent ${agentId}, user ${userId}, sessionId: ${sessionId || 'latest'}`
+      `Getting chat history for agent ${agentId}, user ${userId}, sessionId: ${sessionId || 'latest'}, limit: ${limit}, cursor: ${cursor || 'none'}`
     );
     // Load agent with config
     const agent = await this.validateAgentAccess(agentId, userId);
@@ -135,13 +137,18 @@ export class ChatService {
           session: null,
           messages: [],
           savedWordMatches: [],
+          hasMore: false,
         };
       }
     }
 
-    // Load messages with raw data
-    const messageRecords =
-      await this.messageRepository.findAllBySessionIdWithRawData(session.id);
+    // Load messages with cursor-based pagination
+    const { messages: messageRecords, hasMore } =
+      await this.messageRepository.findAllBySessionIdWithCursor(
+        session.id,
+        limit,
+        cursor
+      );
 
     // Get all message IDs
     const messageIds = messageRecords.map((m) => m.id);
@@ -233,6 +240,7 @@ export class ChatService {
       },
       messages,
       savedWordMatches,
+      hasMore,
     };
   }
 

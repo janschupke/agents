@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTokenReady } from '../utils/use-token-ready';
 import { MessageService } from '../../services/chat/message/message.service';
@@ -13,9 +13,24 @@ export function useChatHistory(
   const { isSignedIn, isLoaded } = useAuth();
   const tokenReady = useTokenReady();
 
-  return useQuery<ChatHistoryResponse>({
+  return useInfiniteQuery<ChatHistoryResponse>({
     queryKey: queryKeys.chat.history(agentId!, sessionId || undefined),
-    queryFn: () => MessageService.getChatHistory(agentId!, sessionId || undefined),
+    queryFn: ({ pageParam }) =>
+      MessageService.getChatHistory(
+        agentId!,
+        sessionId || undefined,
+        20, // limit
+        pageParam // cursor (message ID)
+      ),
+    getNextPageParam: (lastPage) => {
+      // Return oldest message ID as cursor for next page, or undefined if no more
+      if (lastPage.messages.length === 0 || !lastPage.hasMore) {
+        return undefined;
+      }
+      // Get the oldest message ID from current page (first message in array)
+      return lastPage.messages[0]?.id;
+    },
+    initialPageParam: undefined, // No cursor for first page
     enabled: agentId !== null && isSignedIn && isLoaded && tokenReady,
     staleTime: CHAT_HISTORY_STALE_TIME,
   });

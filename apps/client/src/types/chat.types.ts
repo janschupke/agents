@@ -47,6 +47,7 @@ export interface ChatHistoryResponse {
     translation: string;
     pinyin: string | null;
   }>;
+  hasMore: boolean;
 }
 
 export interface SendMessageRequest {

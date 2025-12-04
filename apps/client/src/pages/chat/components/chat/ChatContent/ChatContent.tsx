@@ -22,6 +22,7 @@ interface ChatContentProps {
   input: string;
   inputRef: React.RefObject<ChatInputRef>;
   messagesEndRef: React.RefObject<HTMLDivElement>;
+  messagesContainerRef?: React.RefObject<HTMLDivElement>;
   onInputChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => Promise<void>;
   onShowJson: (title: string, data: unknown) => void;
@@ -43,6 +44,7 @@ export default function ChatContent({
   input,
   inputRef,
   messagesEndRef,
+  messagesContainerRef,
   onInputChange,
   onSubmit,
   onShowJson,
@@ -50,7 +52,10 @@ export default function ChatContent({
 }: ChatContentProps) {
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 relative">
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 relative"
+      >
         {contentLoading ? (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">

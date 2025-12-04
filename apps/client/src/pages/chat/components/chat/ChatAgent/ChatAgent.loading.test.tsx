@@ -27,10 +27,7 @@ vi.mock('../../../../hooks/queries/use-agents', () => ({
   useAgents: () => mockUseAgents(),
 }));
 
-const mockUseChatSession = vi.fn();
-vi.mock('../../hooks/use-chat-session', () => ({
-  useChatSession: () => mockUseChatSession(),
-}));
+// use-chat-session hook removed - sessions are backend-managed
 
 const mockUseChatMessages = vi.fn();
 vi.mock('../../hooks/use-chat-messages', () => ({
@@ -52,22 +49,12 @@ vi.mock('../../hooks/use-chat-scroll', () => ({
 vi.mock('../../hooks/use-chat-modals', () => ({
   useChatModals: vi.fn(() => ({
     jsonModal: { isOpen: false, title: '', data: null },
-    sessionNameModal: { isOpen: false, sessionId: null },
     openJsonModal: vi.fn(),
     closeJsonModal: vi.fn(),
-    openSessionNameModal: vi.fn(),
-    closeSessionNameModal: vi.fn(),
   })),
 }));
 
-vi.mock('../../hooks/use-chat-handlers', () => ({
-  useChatHandlers: vi.fn(() => ({
-    handleSessionSelectWrapper: vi.fn(),
-    handleNewSessionWrapper: vi.fn(),
-    handleSessionDeleteWrapper: vi.fn(),
-    handleSessionNameSave: vi.fn(),
-  })),
-}));
+// use-chat-handlers hook removed - session handlers no longer needed
 
 vi.mock('../../hooks/use-chat-input', () => ({
   useChatInput: vi.fn(() => ({
@@ -78,12 +65,7 @@ vi.mock('../../hooks/use-chat-input', () => ({
   })),
 }));
 
-vi.mock('../../hooks/use-chat-agent-navigation', () => ({
-  useChatAgentNavigation: vi.fn(() => ({
-    handleSessionSelect: vi.fn(),
-    handleNewSession: vi.fn(),
-  })),
-}));
+// use-chat-agent-navigation hook removed - navigation handled directly
 
 vi.mock('../../../../../hooks/ui/useConfirm', () => ({
   useConfirm: vi.fn(() => ({
@@ -113,19 +95,17 @@ describe('ChatAgent Loading States', () => {
         isLoading: true,
       });
 
-      mockUseChatSession.mockReturnValue({
-        currentSessionId: null,
-        sessions: [],
-        sessionsLoading: false,
-        handleSessionDelete: vi.fn(),
-      });
-
       mockUseChatMessages.mockReturnValue({
         messages: [],
+        savedWordMatches: new Map(),
         loading: false,
         isSendingMessage: false,
         sendMessage: vi.fn(),
         setMessages: vi.fn(),
+        messagesContainerRef: { current: null },
+        isFetchingMore: false,
+        hasNextPage: false,
+        fetchNextPage: vi.fn(),
       });
 
       render(
@@ -154,25 +134,17 @@ describe('ChatAgent Loading States', () => {
         isLoading: false,
       });
 
-      mockUseChatSession.mockReturnValue({
-        currentSessionId: 1,
-        sessions: [
-          {
-            id: 1,
-            session_name: 'Session 1',
-            createdAt: '2024-01-01T00:00:00.000Z',
-          },
-        ],
-        sessionsLoading: false,
-        handleSessionDelete: vi.fn(),
-      });
-
       mockUseChatMessages.mockReturnValue({
         messages: [],
+        savedWordMatches: new Map(),
         loading: false,
         isSendingMessage: false,
         sendMessage: vi.fn(),
         setMessages: vi.fn(),
+        messagesContainerRef: { current: null },
+        isFetchingMore: false,
+        hasNextPage: false,
+        fetchNextPage: vi.fn(),
       });
 
       render(
@@ -202,27 +174,17 @@ describe('ChatAgent Loading States', () => {
         isLoading: false,
       });
 
-      const mockSessions: Session[] = [
-        {
-          id: 1,
-          session_name: 'Session 1',
-          createdAt: '2024-01-01T00:00:00.000Z',
-        },
-      ];
-
-      mockUseChatSession.mockReturnValue({
-        currentSessionId: 1,
-        sessions: mockSessions,
-        sessionsLoading: true, // Background refetch
-        handleSessionDelete: vi.fn(),
-      });
-
       mockUseChatMessages.mockReturnValue({
         messages: [],
+        savedWordMatches: new Map(),
         loading: false,
         isSendingMessage: false,
         sendMessage: vi.fn(),
         setMessages: vi.fn(),
+        messagesContainerRef: { current: null },
+        isFetchingMore: false,
+        hasNextPage: false,
+        fetchNextPage: vi.fn(),
       });
 
       render(
@@ -252,25 +214,17 @@ describe('ChatAgent Loading States', () => {
         isLoading: false,
       });
 
-      mockUseChatSession.mockReturnValue({
-        currentSessionId: 1,
-        sessions: [
-          {
-            id: 1,
-            session_name: 'Session 1',
-            createdAt: '2024-01-01T00:00:00.000Z',
-          },
-        ],
-        sessionsLoading: false,
-        handleSessionDelete: vi.fn(),
-      });
-
       mockUseChatMessages.mockReturnValue({
         messages: [],
+        savedWordMatches: new Map(),
         loading: true, // Loading messages
         isSendingMessage: false,
         sendMessage: vi.fn(),
         setMessages: vi.fn(),
+        messagesContainerRef: { current: null },
+        isFetchingMore: false,
+        hasNextPage: false,
+        fetchNextPage: vi.fn(),
       });
 
       render(
@@ -298,25 +252,17 @@ describe('ChatAgent Loading States', () => {
         isLoading: false,
       });
 
-      mockUseChatSession.mockReturnValue({
-        currentSessionId: 1,
-        sessions: [
-          {
-            id: 1,
-            session_name: 'Session 1',
-            createdAt: '2024-01-01T00:00:00.000Z',
-          },
-        ],
-        sessionsLoading: false,
-        handleSessionDelete: vi.fn(),
-      });
-
       mockUseChatMessages.mockReturnValue({
         messages: [{ id: 1, role: 'user', content: 'Hello' }],
+        savedWordMatches: new Map(),
         loading: false,
         isSendingMessage: false,
         sendMessage: vi.fn(),
         setMessages: vi.fn(),
+        messagesContainerRef: { current: null },
+        isFetchingMore: false,
+        hasNextPage: false,
+        fetchNextPage: vi.fn(),
       });
 
       render(
@@ -345,25 +291,17 @@ describe('ChatAgent Loading States', () => {
         isLoading: false,
       });
 
-      mockUseChatSession.mockReturnValue({
-        currentSessionId: 1,
-        sessions: [
-          {
-            id: 1,
-            session_name: 'Session 1',
-            createdAt: '2024-01-01T00:00:00.000Z',
-          },
-        ],
-        sessionsLoading: false,
-        handleSessionDelete: vi.fn(),
-      });
-
       mockUseChatMessages.mockReturnValue({
         messages: [{ id: 1, role: 'user', content: 'Hello' }],
+        savedWordMatches: new Map(),
         loading: false,
         isSendingMessage: true, // Sending message
         sendMessage: vi.fn(),
         setMessages: vi.fn(),
+        messagesContainerRef: { current: null },
+        isFetchingMore: false,
+        hasNextPage: false,
+        fetchNextPage: vi.fn(),
       });
 
       render(

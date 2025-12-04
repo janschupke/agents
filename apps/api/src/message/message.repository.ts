@@ -86,6 +86,58 @@ export class MessageRepository {
     });
   }
 
+  /**
+   * Get messages with cursor-based pagination
+   * Returns messages in chronological order (oldest first) for consistency
+   * - Initial load (no cursor): Get newest 20 messages, reverse to oldest first
+   * - Pagination (with cursor): Get messages older than cursor (id < cursor), reverse to oldest first
+   */
+  async findAllBySessionIdWithCursor(
+    sessionId: number,
+    limit: number = 20,
+    cursor?: number
+  ): Promise<{ messages: Message[]; hasMore: boolean }> {
+    // For initial load (no cursor), get newest messages
+    // For pagination (with cursor), get messages older than cursor
+    const whereClause: Prisma.MessageWhereInput = cursor
+      ? {
+          sessionId,
+          id: {
+            lt: cursor, // Get messages with ID less than cursor (older messages)
+          },
+        }
+      : { sessionId };
+
+    // Get one extra message to check if there are more
+    // Order by id DESC to get newest messages first (works for both initial and pagination)
+    // Since IDs are auto-incrementing, id DESC gives us newest first
+    const messages = await this.prisma.message.findMany({
+      where: whereClause,
+      orderBy: { id: 'desc' }, // Newest first (highest ID first)
+      take: limit + 1, // Get one extra to check hasMore
+      select: {
+        id: true,
+        sessionId: true,
+        role: true,
+        content: true,
+        metadata: true,
+        rawRequest: true,
+        rawResponse: true,
+        createdAt: true,
+      },
+    });
+
+    const hasMore = messages.length > limit;
+    const resultMessages = hasMore ? messages.slice(0, limit) : messages;
+
+    // Reverse to get chronological order (oldest first) for consistency
+    // This ensures messages are always returned in chronological order
+    return {
+      messages: resultMessages.reverse(),
+      hasMore,
+    };
+  }
+
   async findById(messageId: number): Promise<Message | null> {
     return this.prisma.message.findUnique({
       where: { id: messageId },

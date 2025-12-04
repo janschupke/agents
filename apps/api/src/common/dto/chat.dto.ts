@@ -46,6 +46,7 @@ export class ChatHistoryResponseDto {
   } | null;
   messages!: MessageResponseDto[];
   savedWordMatches!: SavedWordMatchDto[]; // All saved words that match words in this session
+  hasMore!: boolean; // Indicates if there are more messages to load
 }
 
 export class SavedWordMatchDto {

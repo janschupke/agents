@@ -61,9 +61,8 @@ function RouteTransitionWrapper({ children }: { children: ReactNode }) {
   const previousBaseRouteRef = useRef<string>('');
 
   useEffect(() => {
-    // Extract base route by removing parameters (e.g., /chat/123/456 -> /chat, /config/123 -> /config)
+    // Extract base route by removing parameters (e.g., /chat/123 -> /chat, /config/123 -> /config)
     const baseRoute = location.pathname
-      .replace(/\/chat\/\d+\/\d+/, '/chat') // /chat/:agentId/:sessionId -> /chat
       .replace(/\/chat\/\d+/, '/chat') // /chat/:agentId -> /chat
       .replace(/\/config\/\d+/, '/config') // /config/:agentId -> /config
       .replace(/\/config\/new/, '/config'); // /config/new -> /config
@@ -167,7 +166,6 @@ function AppContent() {
             />
             <Route path={ROUTES.CHAT} element={<Chat />} />
             <Route path={ROUTES.CHAT_AGENT_PATTERN} element={<Chat />} />
-            <Route path={ROUTES.CHAT_SESSION_PATTERN} element={<Chat />} />
             <Route path={ROUTES.CONFIG} element={<Config />} />
             <Route path={ROUTES.CONFIG_NEW} element={<Config />} />
             <Route

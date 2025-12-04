@@ -9,12 +9,16 @@ import { AgentResponse } from '../common/interfaces/agent.interface';
 import { AgentNotFoundException } from '../common/exceptions';
 import { ERROR_MESSAGES } from '../common/constants/error-messages.constants.js';
 import { AgentType } from '../common/enums/agent-type.enum';
+import { SessionRepository } from '../session/session.repository';
 
 @Injectable()
 export class AgentService {
   private readonly logger = new Logger(AgentService.name);
 
-  constructor(private readonly agentRepository: AgentRepository) {}
+  constructor(
+    private readonly agentRepository: AgentRepository,
+    private readonly sessionRepository: SessionRepository
+  ) {}
 
   async findAll(userId: string): Promise<AgentResponse[]> {
     this.logger.debug(`Finding all agents for user ${userId}`);
@@ -91,6 +95,15 @@ export class AgentService {
       language
     );
     this.logger.log(`Created agent ${agent.id} "${name}"`);
+
+    // Auto-create initial session for the agent
+    const session = await this.sessionRepository.create(
+      userId,
+      agent.id
+    );
+    this.logger.log(
+      `Created initial session ${session.id} for agent ${agent.id}`
+    );
 
     // Set configs if provided
     if (configs) {
