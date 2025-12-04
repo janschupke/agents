@@ -93,8 +93,8 @@ describe('useAgentSave', () => {
       name: 'Test Agent',
       description: 'Test Description',
       avatarUrl: null,
-      agentType: mockFormValues.agentType,
-      language: mockFormValues.language || null,
+      agentType: 'general',
+      language: null,
       configs: {
         temperature: 0.7,
         system_prompt: 'You are helpful',
@@ -106,8 +106,8 @@ describe('useAgentSave', () => {
       name: 'Test Agent',
       description: 'Test Description',
       avatarUrl: undefined,
-      agentType: mockFormValues.agentType,
-      language: mockFormValues.language || undefined,
+      agentType: 'general',
+      language: undefined,
       configs: {
         temperature: 0.7,
         system_prompt: 'You are helpful',
@@ -143,8 +143,8 @@ describe('useAgentSave', () => {
         name: 'Test Agent',
         description: 'Test Description',
         avatarUrl: undefined,
-        agentType: mockFormValues.agentType,
-        language: mockFormValues.language || undefined,
+        agentType: 'general',
+        language: undefined,
         configs: {
           temperature: 0.7,
           system_prompt: 'You are helpful',

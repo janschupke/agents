@@ -50,7 +50,12 @@ CREATE INDEX IF NOT EXISTS "agent_memories_agent_id_user_id_created_at_idx" ON "
 
 -- Rename unique constraints
 ALTER TABLE IF EXISTS "agent_configs" DROP CONSTRAINT IF EXISTS "bot_configs_bot_id_config_key_key";
-ALTER TABLE IF EXISTS "agent_configs" ADD CONSTRAINT "agent_configs_agent_id_config_key_key" UNIQUE ("agent_id", "config_key");
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'agent_configs_agent_id_config_key_key') THEN
+    ALTER TABLE IF EXISTS "agent_configs" ADD CONSTRAINT "agent_configs_agent_id_config_key_key" UNIQUE ("agent_id", "config_key");
+  END IF;
+END $$;
 
 -- Rename foreign key constraints
 ALTER TABLE IF EXISTS "agent_configs" DROP CONSTRAINT IF EXISTS "bot_configs_bot_id_fkey";
