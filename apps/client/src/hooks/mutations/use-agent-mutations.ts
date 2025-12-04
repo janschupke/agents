@@ -75,7 +75,7 @@ export function useDeleteAgent() {
   });
 }
 
-function useCreateSession() {
+export function useCreateSession() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
@@ -96,7 +96,7 @@ function useCreateSession() {
   });
 }
 
-function useUpdateSession() {
+export function useUpdateSession() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 
@@ -131,7 +131,7 @@ function useUpdateSession() {
   });
 }
 
-function useDeleteSession() {
+export function useDeleteSession() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
 

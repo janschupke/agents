@@ -25,7 +25,7 @@ export function useSavedWord(id: number | null) {
   });
 }
 
-function useMatchingSavedWords(words: string[]) {
+export function useMatchingSavedWords(words: string[]) {
   return useQuery<SavedWordMatch[]>({
     queryKey: queryKeys.savedWords.matching(words),
     queryFn: () => SavedWordService.findMatchingWords(words),

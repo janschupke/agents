@@ -20,10 +20,6 @@ export interface Message {
   wordTranslations?: WordTranslation[]; // Word-level translations (assistant only)
 }
 
-interface ChatAgentProps {
-  agentId?: number;
-}
-
 export interface Session {
   id: number;
   session_name: string | null;

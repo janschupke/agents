@@ -14,7 +14,3 @@ export const ROUTES = {
   CHAT_AGENT_PATTERN: '/chat/:agentId',
   CONFIG_AGENT_PATTERN: '/config/:agentId',
 } as const;
-
-// Helper to check if route matches pattern
-const isChatRoute = (path: string) => path.startsWith('/chat');
-const isConfigRoute = (path: string) => path.startsWith('/config');
