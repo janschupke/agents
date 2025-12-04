@@ -6,6 +6,7 @@ import { ConfigurationRulesService } from './configuration-rules.service';
 import { LanguageAssistantService } from '../../agent/services/language-assistant.service';
 import { AgentWithConfig } from '../../common/interfaces/agent.interface';
 import { AgentType } from '../../common/enums/agent-type.enum';
+import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants';
 
 export interface MessageForOpenAI {
   role: MessageRole;
@@ -54,8 +55,20 @@ export class MessagePreparationService {
       `Preparing messages for OpenAI. Agent type: ${agentConfig.agentType || AgentType.GENERAL}, Language: ${agentConfig.language || 'none'}`
     );
 
-    // Start with existing messages
-    const messagesForAPI = [...existingMessages];
+    // Limit conversation history to most recent messages (user/assistant only)
+    // System messages will be added separately, so we only limit conversation history
+    const conversationMessages = existingMessages.filter(
+      (msg) => msg.role === MessageRole.USER || msg.role === MessageRole.ASSISTANT
+    );
+    const limitedConversationMessages = conversationMessages.slice(
+      -NUMERIC_CONSTANTS.OPENAI_CHAT_CONTEXT_MESSAGES
+    );
+    this.logger.debug(
+      `Limited conversation history from ${conversationMessages.length} to ${limitedConversationMessages.length} messages`
+    );
+
+    // Start with limited conversation messages
+    const messagesForAPI = [...limitedConversationMessages];
 
     // Add memory context if found
     if (relevantMemories.length > 0) {

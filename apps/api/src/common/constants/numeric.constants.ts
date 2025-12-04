@@ -20,6 +20,7 @@ export const NUMERIC_CONSTANTS = {
   TRANSLATION_CONTEXT_MESSAGES: 10,
   MEMORY_EXTRACTION_MESSAGES: 10,
   MEMORY_SUMMARIZATION_LIMIT: 100,
+  OPENAI_CHAT_CONTEXT_MESSAGES: 20, // Number of conversation messages (user/assistant pairs) to include in OpenAI requests
 
   // Timeouts (milliseconds)
   UI_DEBOUNCE_DELAY: 100,
