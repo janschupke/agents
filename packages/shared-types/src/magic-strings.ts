@@ -12,4 +12,8 @@ export const MAGIC_STRINGS = {
 
   // Parse base
   PARSE_INT_BASE: 10,
+
+  // Authentication
+  BEARER_TOKEN_PREFIX: 'Bearer ',
+  TEST_TOKEN_PREFIX: 'test-token-',
 } as const;

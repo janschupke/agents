@@ -1,3 +1,4 @@
+import { HTTP_STATUS, NUMERIC_CONSTANTS } from '@openai/shared-types';
 import { API_BASE_URL } from '../../constants/api.constants';
 import { tokenProvider } from './token-provider';
 
@@ -83,7 +84,9 @@ class ApiClient {
         if (tokenProvider.isReady()) {
           break;
         }
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise((resolve) =>
+          setTimeout(resolve, NUMERIC_CONSTANTS.RETRY_DELAY_SHORT)
+        );
       }
     }
 
@@ -93,7 +96,9 @@ class ApiClient {
     // If no token and token provider is ready, wait a bit and retry once (only in non-test)
     if (!token && tokenProvider.isReady() && !isTest) {
       // Small delay to allow token to be fetched
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) =>
+        setTimeout(resolve, NUMERIC_CONSTANTS.RETRY_DELAY_MEDIUM)
+      );
       token = await tokenProvider.getToken();
     }
 
@@ -163,7 +168,7 @@ class ApiClient {
     }
 
     // Handle 401 errors
-    if (response.status === 401) {
+    if (response.status === HTTP_STATUS.UNAUTHORIZED) {
       const token = await tokenProvider.getToken();
       if (!token) {
         apiError.message = 'Authentication required';
@@ -225,8 +230,8 @@ class ApiClient {
 
       // Handle empty responses (e.g., 204 No Content or DELETE requests)
       if (
-        response.status === 204 ||
-        (response.status === 201 &&
+        response.status === HTTP_STATUS.NO_CONTENT ||
+        (response.status === HTTP_STATUS.CREATED &&
           response.headers.get('content-length') === '0')
       ) {
         return {} as T;

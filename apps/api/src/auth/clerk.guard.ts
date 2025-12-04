@@ -11,9 +11,10 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { createClerkClient, verifyToken } from '@clerk/backend';
+import { extractBearerToken } from '@openai/utils';
+import { MAGIC_STRINGS } from '@openai/shared-types';
 import { UserService } from '../user/user.service';
 import { AuthenticatedUser } from '../common/types/auth.types';
-import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
 import { AuthCacheService, CachedUser } from './services/auth-cache.service';
 
 const IS_PUBLIC_KEY = 'isPublic';
@@ -73,7 +74,7 @@ export class ClerkGuard implements CanActivate {
 
     try {
       // Extract token from "Bearer <token>" format
-      const token = authHeader.replace('Bearer ', '').trim();
+      const token = extractBearerToken(authHeader);
 
       if (!token) {
         throw new UnauthorizedException('Invalid authorization token');

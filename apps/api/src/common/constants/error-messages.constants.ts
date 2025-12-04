@@ -45,9 +45,6 @@ export const ERROR_MESSAGES = {
     'Failed to create agent memory: no result returned',
 } as const;
 
-import { MAGIC_STRINGS as SHARED_MAGIC_STRINGS } from '@openai/shared-types';
-
 // Re-export shared magic strings for backward compatibility
-export const MAGIC_STRINGS = {
-  ...SHARED_MAGIC_STRINGS,
-} as const;
+// Note: Import directly from @openai/shared-types in new code
+export { MAGIC_STRINGS } from '@openai/shared-types';

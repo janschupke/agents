@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
+import { NUMERIC_CONSTANTS, HTTP_STATUS } from '@openai/shared-types';
 import { Button } from '@openai/ui';
 import {
   useSystemRules,
@@ -29,7 +30,10 @@ export default function SystemBehaviorRules() {
   useEffect(() => {
     if (updateMutation.isSuccess) {
       setSuccess(true);
-      const timer = setTimeout(() => setSuccess(false), 3000);
+      const timer = setTimeout(
+        () => setSuccess(false),
+        NUMERIC_CONSTANTS.UI_NOTIFICATION_DURATION
+      );
       return () => clearTimeout(timer);
     }
     return undefined;
@@ -45,7 +49,7 @@ export default function SystemBehaviorRules() {
 
   const error =
     queryError && typeof queryError === 'object' && 'status' in queryError
-      ? queryError.status === 404
+      ? queryError.status === HTTP_STATUS.NOT_FOUND
         ? null // 404 is expected when no rules are set
         : ('message' in queryError && queryError.message) ||
           tAdmin('systemRules.error')
@@ -91,13 +95,13 @@ export default function SystemBehaviorRules() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm">
+        <div className="bg-message-error border border-border text-text-primary px-4 py-3 rounded-md text-sm">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-md text-sm">
+        <div className="bg-message-success border border-border text-text-primary px-4 py-3 rounded-md text-sm">
           {tAdmin('systemRules.saved')}
         </div>
       )}

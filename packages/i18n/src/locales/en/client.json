@@ -143,7 +143,11 @@
       "editApiKey": "Edit API key",
       "deleteApiKey": "Delete API key",
       "saving": "Saving...",
-      "saveTooltip": "Save API key"
+      "saveTooltip": "Save API key",
+      "updated": "API key updated successfully",
+      "deleted": "API key deleted successfully",
+      "updateFailed": "Failed to update API key",
+      "deleteFailed": "Failed to delete API key"
     }
   },
   "auth": {

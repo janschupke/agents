@@ -10,6 +10,12 @@ export const NUMERIC_CONSTANTS = {
   UI_MODAL_DELAY: 200,
   CACHE_TIMEOUT_MS: 5 * 60 * 1000, // 5 minutes
 
+  // Retry delays (milliseconds)
+  RETRY_DELAY_SHORT: 50,
+  RETRY_DELAY_MEDIUM: 100,
+  RETRY_DELAY_LONG: 150,
+  RETRY_DELAY_VERY_LONG: 300,
+
   // Polling intervals (milliseconds)
   POLLING_INTERVAL_START: 1000, // 1 second
 
@@ -20,4 +26,10 @@ export const NUMERIC_CONSTANTS = {
   // Pagination defaults
   DEFAULT_PAGE_SIZE: 20,
   DEFAULT_PAGE: 1,
+
+  // Port numbers
+  DEFAULT_API_PORT: 3001,
+  DEFAULT_CLIENT_PORT: 3000,
+  DEFAULT_DB_PORT: 5432,
+  DEFAULT_DB_POOLER_PORT: 6543,
 } as const;

@@ -27,6 +27,7 @@
     "check": "pnpm typecheck && pnpm test && pnpm lint && pnpm format && pnpm build"
   },
   "dependencies": {
+    "@openai/shared-types": "workspace:*",
     "luxon": "^3.7.2",
     "react": "^18.2.0"
   },

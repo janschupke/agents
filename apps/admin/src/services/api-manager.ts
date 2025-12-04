@@ -1,3 +1,4 @@
+import { HTTP_STATUS, NUMERIC_CONSTANTS } from '@openai/shared-types';
 import { API_BASE_URL } from '../constants/api.constants.js';
 import { tokenProvider } from './token-provider.js';
 
@@ -56,7 +57,7 @@ class ApiManager {
         data: errorData,
       };
 
-      if (response.status === 401) {
+      if (response.status === HTTP_STATUS.UNAUTHORIZED) {
         const token = await getClerkToken();
         if (!token) {
           throw {
@@ -90,7 +91,9 @@ class ApiManager {
     let token = await getClerkToken();
     if (!token) {
       // Wait a bit and try again (token provider might not be ready yet)
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) =>
+        setTimeout(resolve, NUMERIC_CONSTANTS.RETRY_DELAY_MEDIUM)
+      );
       token = await getClerkToken();
     }
 

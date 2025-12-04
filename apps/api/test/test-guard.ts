@@ -8,6 +8,8 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { extractBearerToken } from '@openai/utils';
+import { MAGIC_STRINGS } from '@openai/shared-types';
 import { UserService } from '../src/user/user.service';
 import { AuthenticatedUser } from '../src/common/types/auth.types';
 
@@ -49,7 +51,7 @@ export class TestGuard implements CanActivate {
 
     try {
       // Extract token from "Bearer <token>" format
-      const token = authHeader.replace('Bearer ', '').trim();
+      const token = extractBearerToken(authHeader);
 
       if (!token) {
         throw new UnauthorizedException('Invalid authorization token');
@@ -57,8 +59,8 @@ export class TestGuard implements CanActivate {
 
       // Extract user ID from test token format: "test-token-{userId}"
       let userId: string;
-      if (token.startsWith('test-token-')) {
-        userId = token.replace('test-token-', '');
+      if (token.startsWith(MAGIC_STRINGS.TEST_TOKEN_PREFIX)) {
+        userId = token.replace(MAGIC_STRINGS.TEST_TOKEN_PREFIX, '');
       } else {
         // Fallback: use token as userId for backward compatibility
         userId = token;

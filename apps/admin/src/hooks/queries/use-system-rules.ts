@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useUser } from '@clerk/clerk-react';
+import { HTTP_STATUS } from '@openai/shared-types';
 import { useTokenReady } from '../use-token-ready';
 import { systemConfigService } from '../../services/system-config.service';
 import { queryKeys } from './query-keys';
@@ -19,7 +20,7 @@ export function useSystemRules() {
     retry: (failureCount, error) => {
       // Don't retry on 404 (no rules set yet)
       const err = error as { status?: number };
-      if (err?.status === 404) {
+      if (err?.status === HTTP_STATUS.NOT_FOUND) {
         return false;
       }
       return failureCount < 2;
