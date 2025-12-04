@@ -1,10 +1,16 @@
 {
   "root": true,
-  "extends": ["../../.eslintrc.json"],
+  "extends": [
+    "../../.eslintrc.json",
+    "plugin:storybook/recommended"
+  ],
   "env": {
     "node": true,
     "browser": true,
     "es2020": true
   },
-  "ignorePatterns": ["dist", "node_modules"]
+  "ignorePatterns": [
+    "dist",
+    "node_modules"
+  ]
 }

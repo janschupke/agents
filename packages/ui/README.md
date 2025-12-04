@@ -8,6 +8,7 @@ Shared UI components package for the OpenAI monorepo.
 - **Tailwind CSS**: Centralized theme configuration
 - **React**: React 18+ compatible components
 - **Vite**: Fast build tooling
+- **Storybook**: Component documentation and testing
 
 ## Theme Configuration
 
@@ -101,4 +102,10 @@ pnpm test
 
 # Format
 pnpm format
+
+# Storybook
+pnpm storybook
+
+# Build Storybook
+pnpm build-storybook
 ```
