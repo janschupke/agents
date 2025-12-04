@@ -32,5 +32,8 @@ export const SESSIONS_STALE_TIME = 5 * MINUTE; // 5 minutes
 // Chat History - can be invalidated on new messages
 export const CHAT_HISTORY_STALE_TIME = 5 * MINUTE; // 5 minutes
 
+// Memories - can be created frequently during chat
+export const MEMORIES_STALE_TIME = 2 * MINUTE; // 2 minutes
+
 // User/API Key - frequently checked, shorter cache
 export const USER_STALE_TIME = 30 * 1000; // 30 seconds

@@ -111,6 +111,23 @@ export class AgentMemoryRepository {
     userId: string,
     limit?: number
   ): Promise<AgentMemoryWithVector[]> {
+    this.logger.debug(
+      `Finding memories for agent ${agentId}, user ${userId}, limit: ${limit || 'none'}`
+    );
+
+    // Build query with proper parameterization for LIMIT
+    let query = `SELECT id, agent_id, user_id, key_point, context, vector_embedding, created_at, updated_at, update_count
+       FROM agent_memories
+       WHERE agent_id = $1 AND user_id = $2
+       ORDER BY created_at DESC`;
+    
+    const params: unknown[] = [agentId, userId];
+    
+    if (limit && limit > 0) {
+      query += ` LIMIT $3`;
+      params.push(limit);
+    }
+
     const chunks = await this.prisma.$queryRawUnsafe<
       Array<{
         id: number;
@@ -123,14 +140,10 @@ export class AgentMemoryRepository {
         updated_at: Date;
         update_count: number;
       }>
-    >(
-      `SELECT id, agent_id, user_id, key_point, context, vector_embedding, created_at, updated_at, update_count
-       FROM agent_memories
-       WHERE agent_id = $1 AND user_id = $2
-       ORDER BY created_at DESC
-       ${limit ? `LIMIT ${limit}` : ''}`,
-      agentId,
-      userId
+    >(query, ...params);
+
+    this.logger.debug(
+      `Found ${chunks.length} memories for agent ${agentId}, user ${userId}`
     );
 
     return chunks.map((chunk) => ({

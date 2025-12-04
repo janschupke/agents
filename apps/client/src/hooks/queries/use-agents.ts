@@ -9,6 +9,7 @@ import { queryKeys } from './query-keys';
 import {
   AGENTS_STALE_TIME,
   SESSIONS_STALE_TIME,
+  MEMORIES_STALE_TIME,
 } from '../../constants/cache.constants';
 
 export function useAgents() {
@@ -63,5 +64,8 @@ export function useAgentMemories(agentId: number | null) {
     queryKey: queryKeys.agents.memories(agentId!),
     queryFn: () => MemoryService.getMemories(agentId!),
     enabled: isValidAgentId && isSignedIn && isLoaded && tokenReady,
+    staleTime: MEMORIES_STALE_TIME,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }

@@ -522,7 +522,11 @@ export class ChatService {
 
     if (shouldSaveMemory) {
       try {
-        await this.agentMemoryService.createMemory(
+        this.logger.debug(
+          `Attempting to save memories for agent ${agentId}, session ${session.id} (${allMessages.length} messages, interval: ${MEMORY_CONFIG.MEMORY_SAVE_INTERVAL})`
+        );
+
+        const createdCount = await this.agentMemoryService.createMemory(
           agentId,
           userId,
           session.id,
@@ -531,27 +535,40 @@ export class ChatService {
           apiKey
         );
 
-        // Check if summarization is needed
-        const shouldSummarize = await this.agentMemoryService.shouldSummarize(
-          agentId,
-          userId
-        );
-        if (shouldSummarize) {
-          // Run summarization asynchronously (don't wait)
-          this.agentMemoryService
-            .summarizeMemories(agentId, userId, apiKey)
-            .catch((error) => {
-              this.logger.error('Error during memory summarization:', error);
-            });
-        }
+        if (createdCount > 0) {
+          this.logger.log(
+            `Successfully created ${createdCount} memories for agent ${agentId}, session ${session.id} (${allMessages.length} messages)`
+          );
 
-        this.logger.log(
-          `Saved memories for agent ${agentId}, session ${session.id} (${allMessages.length} messages)`
-        );
+          // Check if summarization is needed
+          const shouldSummarize = await this.agentMemoryService.shouldSummarize(
+            agentId,
+            userId
+          );
+          if (shouldSummarize) {
+            // Run summarization asynchronously (don't wait)
+            this.agentMemoryService
+              .summarizeMemories(agentId, userId, apiKey)
+              .catch((error) => {
+                this.logger.error('Error during memory summarization:', error);
+              });
+          }
+        } else {
+          this.logger.debug(
+            `No memories created for agent ${agentId}, session ${session.id} (likely no insights extracted)`
+          );
+        }
       } catch (error) {
-        this.logger.error('Error saving memories:', error);
+        this.logger.error(
+          `Error saving memories for agent ${agentId}, session ${session.id}:`,
+          error
+        );
         // Continue even if memory save fails
       }
+    } else {
+      this.logger.debug(
+        `Skipping memory save for agent ${agentId}, session ${session.id} (${allMessages.length} messages, not at interval)`
+      );
     }
 
     return {

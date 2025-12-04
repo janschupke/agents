@@ -40,19 +40,31 @@ export class AgentMemoryService {
     sessionName: string | null,
     messages: Array<{ role: string; content: string }>,
     apiKey: string
-  ): Promise<void> {
+  ): Promise<number> {
+    this.logger.debug(
+      `Attempting to create memories for agent ${agentId}, user ${userId}, session ${sessionId} (${messages.length} messages)`
+    );
+
     const insights = await this.extractKeyInsights(messages, apiKey);
 
     if (insights.length === 0) {
-      this.logger.log('No insights extracted, skipping memory creation');
-      return;
+      this.logger.log(
+        `No insights extracted for agent ${agentId}, user ${userId}, session ${sessionId} - skipping memory creation`
+      );
+      return 0;
     }
+
+    this.logger.debug(
+      `Extracted ${insights.length} insights for agent ${agentId}, user ${userId}`
+    );
 
     const context = {
       sessionId,
       sessionName,
       messageCount: messages.length,
     };
+
+    let createdCount = 0;
 
     // Create a memory for each insight
     for (const insight of insights) {
@@ -70,15 +82,29 @@ export class AgentMemoryService {
             context,
             embedding
           );
+          createdCount++;
           this.logger.log(
-            `Created memory for agent ${agentId}, user ${userId}: ${insight.substring(0, 50)}...`
+            `Created memory ${createdCount}/${insights.length} for agent ${agentId}, user ${userId}: ${insight.substring(0, 50)}...`
+          );
+        } else {
+          this.logger.warn(
+            `Failed to generate embedding for insight: ${insight.substring(0, 50)}...`
           );
         }
       } catch (error) {
-        this.logger.error('Error creating memory for insight:', error);
+        this.logger.error(
+          `Error creating memory for insight "${insight.substring(0, 50)}...":`,
+          error
+        );
         // Continue with other insights even if one fails
       }
     }
+
+    this.logger.log(
+      `Memory creation completed for agent ${agentId}, user ${userId}: ${createdCount}/${insights.length} memories created`
+    );
+
+    return createdCount;
   }
 
   async shouldSummarize(agentId: number, userId: string): Promise<boolean> {

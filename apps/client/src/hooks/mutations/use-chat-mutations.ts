@@ -33,6 +33,11 @@ export function useSendMessage() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.agents.sessions(variables.agentId),
       });
+      // Invalidate memories to refetch after potential memory creation
+      // Memories are created every 10 messages, so we invalidate after each message
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.agents.memories(variables.agentId),
+      });
     },
     onError: (error: { message?: string }) => {
       showToast(error.message || 'Failed to send message', 'error');

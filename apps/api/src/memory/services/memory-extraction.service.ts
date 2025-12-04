@@ -78,9 +78,15 @@ export class MemoryExtractionService {
         .filter((line) => line.length <= MEMORY_CONFIG.MAX_MEMORY_LENGTH)
         .slice(0, MEMORY_CONFIG.MAX_KEY_INSIGHTS_PER_UPDATE);
 
-      this.logger.log(
-        `Extracted ${insights.length} insights from conversation`
-      );
+      if (insights.length === 0) {
+        this.logger.warn(
+          `No insights extracted from ${messages.length} messages. Response was: ${response.substring(0, 200)}...`
+        );
+      } else {
+        this.logger.log(
+          `Extracted ${insights.length} insights from ${messages.length} messages`
+        );
+      }
       return insights;
     } catch (error) {
       this.logger.error('Error extracting key insights:', error);

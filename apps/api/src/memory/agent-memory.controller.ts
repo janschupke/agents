@@ -55,11 +55,17 @@ export class AgentMemoryController {
     @User() user: AuthenticatedUser,
     @Query() query: MemoryQueryDto
   ): Promise<AgentMemoryResponse[]> {
-    this.logger.debug(`Getting memories for agent ${agentId}, user ${user.id}`);
+    this.logger.debug(
+      `Getting memories for agent ${agentId}, user ${user.id}, limit: ${query.limit || 'none'}`
+    );
     const memories = await this.memoryRepository.findAllByAgentId(
       agentId,
       user.id,
       query.limit
+    );
+
+    this.logger.debug(
+      `Returning ${memories.length} memories for agent ${agentId}, user ${user.id}`
     );
 
     return memories.map((memory) => ({
