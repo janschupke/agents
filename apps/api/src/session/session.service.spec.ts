@@ -57,6 +57,18 @@ describe('SessionService', () => {
         agentType: null,
         language: null,
         createdAt: new Date(),
+        temperature: null,
+        systemPrompt: null,
+        behaviorRules: null,
+        model: null,
+        maxTokens: null,
+        responseLength: null,
+        age: null,
+        gender: null,
+        personality: null,
+        sentiment: null,
+        interests: null,
+        availability: null,
         configs: {},
       };
       const mockSessions = [
@@ -67,6 +79,7 @@ describe('SessionService', () => {
           sessionName: 'Session 1',
           createdAt: new Date(),
           updatedAt: new Date(),
+          lastMessageAt: null,
         },
         {
           id: 2,
@@ -75,6 +88,7 @@ describe('SessionService', () => {
           sessionName: 'Session 2',
           createdAt: new Date(),
           updatedAt: new Date(),
+          lastMessageAt: null,
         },
       ];
 
@@ -127,6 +141,18 @@ describe('SessionService', () => {
         agentType: null,
         language: null,
         createdAt: new Date(),
+        temperature: null,
+        systemPrompt: null,
+        behaviorRules: null,
+        model: null,
+        maxTokens: null,
+        responseLength: null,
+        age: null,
+        gender: null,
+        personality: null,
+        sentiment: null,
+        interests: null,
+        availability: null,
         configs: {},
       };
       const mockSession = {
@@ -136,6 +162,7 @@ describe('SessionService', () => {
         sessionName: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        lastMessageAt: null,
       };
 
       agentRepository.findByIdWithConfig.mockResolvedValue(mockAgent);
@@ -181,6 +208,18 @@ describe('SessionService', () => {
         agentType: null,
         language: null,
         createdAt: new Date(),
+        temperature: null,
+        systemPrompt: null,
+        behaviorRules: null,
+        model: null,
+        maxTokens: null,
+        responseLength: null,
+        age: null,
+        gender: null,
+        personality: null,
+        sentiment: null,
+        interests: null,
+        availability: null,
       };
       const mockSession = {
         id: sessionId,
@@ -189,6 +228,7 @@ describe('SessionService', () => {
         sessionName: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        lastMessageAt: null,
       };
       const updatedSession = {
         ...mockSession,
@@ -246,6 +286,18 @@ describe('SessionService', () => {
         agentType: null,
         language: null,
         createdAt: new Date(),
+        temperature: null,
+        systemPrompt: null,
+        behaviorRules: null,
+        model: null,
+        maxTokens: null,
+        responseLength: null,
+        age: null,
+        gender: null,
+        personality: null,
+        sentiment: null,
+        interests: null,
+        availability: null,
       };
 
       agentRepository.findByIdAndUserId.mockResolvedValue(mockAgent);
@@ -272,6 +324,18 @@ describe('SessionService', () => {
         agentType: null,
         language: null,
         createdAt: new Date(),
+        temperature: null,
+        systemPrompt: null,
+        behaviorRules: null,
+        model: null,
+        maxTokens: null,
+        responseLength: null,
+        age: null,
+        gender: null,
+        personality: null,
+        sentiment: null,
+        interests: null,
+        availability: null,
       };
       const mockSession = {
         id: sessionId,
@@ -280,6 +344,7 @@ describe('SessionService', () => {
         sessionName: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        lastMessageAt: null,
       };
 
       agentRepository.findByIdAndUserId.mockResolvedValue(mockAgent);
@@ -308,6 +373,18 @@ describe('SessionService', () => {
         agentType: null,
         language: null,
         createdAt: new Date(),
+        temperature: null,
+        systemPrompt: null,
+        behaviorRules: null,
+        model: null,
+        maxTokens: null,
+        responseLength: null,
+        age: null,
+        gender: null,
+        personality: null,
+        sentiment: null,
+        interests: null,
+        availability: null,
       };
       const mockSession = {
         id: sessionId,
@@ -316,6 +393,7 @@ describe('SessionService', () => {
         sessionName: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        lastMessageAt: null,
       };
 
       agentRepository.findByIdAndUserId.mockResolvedValue(mockAgent);
@@ -355,6 +433,18 @@ describe('SessionService', () => {
         agentType: null,
         language: null,
         createdAt: new Date(),
+        temperature: null,
+        systemPrompt: null,
+        behaviorRules: null,
+        model: null,
+        maxTokens: null,
+        responseLength: null,
+        age: null,
+        gender: null,
+        personality: null,
+        sentiment: null,
+        interests: null,
+        availability: null,
       };
 
       agentRepository.findByIdAndUserId.mockResolvedValue(mockAgent);
@@ -381,6 +471,18 @@ describe('SessionService', () => {
         agentType: null,
         language: null,
         createdAt: new Date(),
+        temperature: null,
+        systemPrompt: null,
+        behaviorRules: null,
+        model: null,
+        maxTokens: null,
+        responseLength: null,
+        age: null,
+        gender: null,
+        personality: null,
+        sentiment: null,
+        interests: null,
+        availability: null,
       };
       const mockSession = {
         id: sessionId,
@@ -389,6 +491,7 @@ describe('SessionService', () => {
         sessionName: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        lastMessageAt: null,
       };
 
       agentRepository.findByIdAndUserId.mockResolvedValue(mockAgent);

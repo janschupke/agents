@@ -151,7 +151,7 @@ describe('MessageTranslationService', () => {
       const message = {
         id: messageId,
         sessionId: 1,
-        role: 'user',
+        role: MessageRole.USER,
         content: 'Test message',
         metadata: null,
         rawRequest: null,
@@ -177,7 +177,7 @@ describe('MessageTranslationService', () => {
       const message = {
         id: messageId,
         sessionId: 1,
-        role: 'user',
+        role: MessageRole.USER,
         content: 'Test message',
         metadata: null,
         rawRequest: null,
@@ -191,6 +191,7 @@ describe('MessageTranslationService', () => {
         sessionName: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        lastMessageAt: null,
       };
 
       translationRepository.findByMessageId.mockResolvedValue(null);
@@ -214,7 +215,7 @@ describe('MessageTranslationService', () => {
       const message = {
         id: messageId,
         sessionId: 1,
-        role: 'user',
+        role: MessageRole.USER,
         content: 'Bonjour',
         metadata: null,
         rawRequest: null,
@@ -228,6 +229,7 @@ describe('MessageTranslationService', () => {
         sessionName: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        lastMessageAt: null,
       };
       const mockOpenAIClient = {
         chat: {
@@ -339,7 +341,7 @@ describe('MessageTranslationService', () => {
       const message = {
         id: messageId,
         sessionId: 1,
-        role: 'assistant',
+        role: MessageRole.ASSISTANT,
         content: 'Bonjour',
         metadata: null,
         rawRequest: null,
@@ -353,6 +355,7 @@ describe('MessageTranslationService', () => {
         sessionName: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        lastMessageAt: null,
       };
 
       messageRepository.findById.mockResolvedValue(message);
@@ -396,7 +399,7 @@ describe('MessageTranslationService', () => {
       const message = {
         id: messageId,
         sessionId: 1,
-        role: 'assistant',
+        role: MessageRole.ASSISTANT,
         content: 'Bonjour',
         metadata: null,
         rawRequest: null,
@@ -410,10 +413,11 @@ describe('MessageTranslationService', () => {
         sessionName: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        lastMessageAt: null,
       };
       const contextMessages = [
-        { role: 'user', content: 'Hello' },
-        { role: 'assistant', content: 'Hi!' },
+        { role: MessageRole.USER, content: 'Hello' },
+        { role: MessageRole.ASSISTANT, content: 'Hi!' },
       ];
       const mockStrategy = {
         translateMessageWithWords: jest.fn().mockResolvedValue({
@@ -475,7 +479,7 @@ describe('MessageTranslationService', () => {
       const message = {
         id: messageId,
         sessionId: 1,
-        role: 'user',
+        role: MessageRole.USER,
         content: 'Bonjour',
         metadata: null,
         rawRequest: null,
@@ -489,6 +493,7 @@ describe('MessageTranslationService', () => {
         sessionName: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        lastMessageAt: null,
       };
       const mockStrategy = {
         translateMessageWithWords: jest.fn().mockResolvedValue({

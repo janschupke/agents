@@ -52,48 +52,24 @@ export class SessionRepository {
     agentId: number,
     userId: string
   ): Promise<ChatSession[]> {
-    // Optimized: Use a subquery to get latest message date for each session
-    // This avoids loading all message data just for sorting
-    const sessionsWithActivity = await this.prisma.$queryRawUnsafe<
-      Array<{
-        id: number;
-        user_id: string;
-        agent_id: number;
-        session_name: string | null;
-        created_at: Date;
-        last_message_at: Date | null;
-      }>
-    >(
-      `SELECT 
-        cs.id,
-        cs.user_id,
-        cs.agent_id,
-        cs.session_name,
-        cs.created_at,
-        (
-          SELECT MAX(m.created_at)
-          FROM messages m
-          WHERE m.session_id = cs.id
-        ) as last_message_at
-      FROM chat_sessions cs
-      WHERE cs.agent_id = $1 AND cs.user_id = $2
-      ORDER BY 
-        COALESCE(
-          (SELECT MAX(m.created_at) FROM messages m WHERE m.session_id = cs.id),
-          cs.created_at
-        ) DESC`,
-      agentId,
-      userId
-    );
-
-    // Map back to ChatSession format
-    return sessionsWithActivity.map((row) => ({
-      id: row.id,
-      userId: row.user_id,
-      agentId: row.agent_id,
-      sessionName: row.session_name,
-      createdAt: row.created_at,
-    }));
+    // Use denormalized lastMessageAt field for better performance
+    return this.prisma.chatSession.findMany({
+      where: {
+        agentId,
+        userId,
+      },
+      orderBy: [
+        {
+          lastMessageAt: {
+            sort: 'desc',
+            nulls: 'last',
+          },
+        },
+        {
+          createdAt: 'desc',
+        },
+      ],
+    });
   }
 
   async update(

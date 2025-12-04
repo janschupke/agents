@@ -20,19 +20,33 @@ export class MessageRepository {
     rawRequest?: unknown,
     rawResponse?: unknown
   ): Promise<Message> {
-    return this.prisma.message.create({
-      data: {
-        sessionId,
-        role,
-        content,
-        metadata: metadata ? (metadata as Prisma.InputJsonValue) : undefined,
-        rawRequest: rawRequest
-          ? (rawRequest as Prisma.InputJsonValue)
-          : undefined,
-        rawResponse: rawResponse
-          ? (rawResponse as Prisma.InputJsonValue)
-          : undefined,
-      },
+    // Use transaction to create message and update session.lastMessageAt atomically
+    return this.prisma.$transaction(async (tx) => {
+      const message = await tx.message.create({
+        data: {
+          sessionId,
+          role,
+          content,
+          metadata: metadata ? (metadata as Prisma.InputJsonValue) : undefined,
+          rawRequest: rawRequest
+            ? (rawRequest as Prisma.InputJsonValue)
+            : undefined,
+          rawResponse: rawResponse
+            ? (rawResponse as Prisma.InputJsonValue)
+            : undefined,
+        },
+      });
+
+      // Update session's lastMessageAt denormalized field
+      await tx.chatSession.update({
+        where: { id: sessionId },
+        data: {
+          lastMessageAt: message.createdAt,
+          updatedAt: new Date(),
+        },
+      });
+
+      return message;
     });
   }
 

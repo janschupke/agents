@@ -7,6 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
+import { MessageRole } from '../common/enums/message-role.enum';
 
 @Injectable()
 export class OpenAIService {
@@ -134,9 +135,15 @@ export class OpenAIService {
         options.conversationHistory.length > 0
       ) {
         // Filter to only user and assistant messages, preserving order
-        const userAndAssistantMessages = options.conversationHistory.filter(
-          (msg) => msg.role === 'user' || msg.role === 'assistant'
-        ) as Array<{ role: 'user' | 'assistant'; content: string }>;
+        // Convert MessageRole enum to OpenAI API format (lowercase strings)
+        const userAndAssistantMessages = options.conversationHistory
+          .filter(
+            (msg) => msg.role === MessageRole.USER || msg.role === MessageRole.ASSISTANT
+          )
+          .map((msg) => ({
+            role: msg.role.toLowerCase() as 'user' | 'assistant',
+            content: msg.content,
+          }));
 
         // Take only the last 6 messages (3 user-assistant pairs)
         const limitedHistory = userAndAssistantMessages.slice(-6);

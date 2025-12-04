@@ -11,6 +11,17 @@ datasource db {
   directUrl = env("DIRECT_URL") // Direct connection (port 5432) - preferred for queries and migrations
 }
 
+enum AgentType {
+  GENERAL
+  LANGUAGE_ASSISTANT
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
 model User {
   id           String              @id // Clerk user ID
   email        String?
@@ -35,11 +46,26 @@ model Agent {
   name        String
   description String?
   avatarUrl   String?       @map("avatar_url")
-  agentType   String?       @map("agent_type") // 'general' | 'language_assistant' | null (defaults to 'general')
+  agentType   AgentType?    @map("agent_type") @default(GENERAL)
   language    String?       // Optional language code (e.g., 'zh', 'en', 'ja')
   createdAt   DateTime      @default(now()) @map("created_at")
+  
+  // Config fields (moved from AgentConfig)
+  temperature      Float?      // 0-2
+  systemPrompt     String?     @map("system_prompt") @db.Text
+  behaviorRules    Json?       @map("behavior_rules")
+  model            String?
+  maxTokens        Int?        @map("max_tokens")
+  responseLength   String?     @map("response_length") // 'short' | 'standard' | 'long' | 'adapt'
+  age              Int?        // 0-100
+  gender           String?     // 'male' | 'female' | 'non-binary' | 'prefer-not-to-say'
+  personality      String?
+  sentiment        String?     // 'neutral' | 'engaged' | 'friendly' | 'attracted' | 'obsessed' | 'disinterested' | 'angry'
+  interests        Json?       // Array of strings
+  availability     String?     // 'available' | 'standard' | 'busy'
+  
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  configs     AgentConfig[]
+  configs     AgentConfig[] // Keep for backward compatibility during migration
   sessions    ChatSession[]
   memories    AgentMemory[]
   savedWords  SavedWord[]
@@ -47,6 +73,9 @@ model Agent {
   @@index([userId])
   @@index([agentType])
   @@index([language])
+  @@index([responseLength])
+  @@index([age])
+  @@index([sentiment])
   @@map("agents")
 }
 
@@ -68,6 +97,8 @@ model ChatSession {
   agentId      Int           @map("agent_id")
   sessionName  String?       @map("session_name")
   createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  lastMessageAt DateTime?    @map("last_message_at") // Denormalized for performance
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   agent        Agent         @relation(fields: [agentId], references: [id], onDelete: Cascade)
   messages     Message[]
@@ -75,13 +106,14 @@ model ChatSession {
 
   @@index([userId])
   @@index([agentId])
+  @@index([agentId, userId, lastMessageAt(sort: Desc)])
   @@map("chat_sessions")
 }
 
 model Message {
   id          Int         @id @default(autoincrement())
   sessionId   Int         @map("session_id")
-  role        String // 'user' | 'assistant' | 'system'
+  role        MessageRole
   content     String
   metadata    Json?
   rawRequest  Json?       @map("raw_request") // Raw OpenAI request JSON for user messages
@@ -93,6 +125,7 @@ model Message {
   savedWordSentences SavedWordSentence[]
 
   @@index([sessionId, createdAt(sort: Desc)])
+  @@index([sessionId, role, createdAt])
   @@map("messages")
 }
 
@@ -182,6 +215,9 @@ model SavedWord {
   @@index([userId])
   @@index([originalWord])
   @@index([userId, originalWord])
+  @@index([userId, agentId])
+  @@index([userId, agentId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
   @@map("saved_words")
 }
 

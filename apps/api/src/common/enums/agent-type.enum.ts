@@ -1,4 +1,4 @@
 export enum AgentType {
-  GENERAL = 'general',
-  LANGUAGE_ASSISTANT = 'language_assistant',
+  GENERAL = 'GENERAL',
+  LANGUAGE_ASSISTANT = 'LANGUAGE_ASSISTANT',
 }

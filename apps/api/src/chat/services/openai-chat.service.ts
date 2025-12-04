@@ -40,7 +40,7 @@ export class OpenAIChatService {
     return {
       model: String(agentConfig.model || OPENAI_MODELS.DEFAULT),
       messages: messages.map((m) => ({
-        role: m.role as 'system' | 'user' | 'assistant',
+        role: m.role.toLowerCase() as 'system' | 'user' | 'assistant',
         content: m.content,
       })),
       temperature: Number(

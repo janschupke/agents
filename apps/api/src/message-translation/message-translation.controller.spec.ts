@@ -5,6 +5,7 @@ import { MessageTranslationService } from './message-translation.service';
 import { WordTranslationService } from './word-translation.service';
 import { MessageRepository } from '../message/message.repository';
 import { SessionRepository } from '../session/session.repository';
+import { MessageRole } from '../common/enums/message-role.enum';
 
 describe('MessageTranslationController', () => {
   let controller: MessageTranslationController;
@@ -174,7 +175,7 @@ describe('MessageTranslationController', () => {
       const message = {
         id: messageId,
         sessionId: 1,
-        role: 'assistant',
+        role: MessageRole.ASSISTANT,
         content: 'Bonjour',
         metadata: null,
         rawRequest: null,
@@ -188,6 +189,7 @@ describe('MessageTranslationController', () => {
         sessionName: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        lastMessageAt: null,
       };
       const wordTranslations = [
         {
@@ -234,7 +236,7 @@ describe('MessageTranslationController', () => {
       const message = {
         id: messageId,
         sessionId: 1,
-        role: 'assistant',
+        role: MessageRole.ASSISTANT,
         content: 'Bonjour',
         metadata: null,
         rawRequest: null,
@@ -260,7 +262,7 @@ describe('MessageTranslationController', () => {
       const message = {
         id: messageId,
         sessionId: 1,
-        role: 'assistant',
+        role: MessageRole.ASSISTANT,
         content: 'Bonjour',
         metadata: null,
         rawRequest: null,
@@ -274,6 +276,7 @@ describe('MessageTranslationController', () => {
         sessionName: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        lastMessageAt: null,
       };
       const translationsMap = new Map([[messageId, 'Hello']]);
       const wordTranslations = [
@@ -312,7 +315,7 @@ describe('MessageTranslationController', () => {
       const message = {
         id: messageId,
         sessionId: 1,
-        role: 'assistant',
+        role: MessageRole.ASSISTANT,
         content: 'Bonjour',
         metadata: null,
         rawRequest: null,
@@ -326,6 +329,7 @@ describe('MessageTranslationController', () => {
         sessionName: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        lastMessageAt: null,
       };
       const translationsMap = new Map();
       const wordTranslations: Array<{
