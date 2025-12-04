@@ -10,6 +10,7 @@ import {
 import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants.js';
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants.js';
 import { OPENAI_MODELS } from '../../common/constants/api.constants.js';
+import { AiRequestLogService } from '../../ai-request-log/ai-request-log.service';
 
 /**
  * Strategy for translating assistant messages with conversation context
@@ -23,7 +24,8 @@ export class InitialTranslationStrategy implements TranslationStrategy {
   constructor(
     private readonly openaiService: OpenAIService,
     private readonly wordTranslationRepository: MessageWordTranslationRepository,
-    private readonly translationRepository: MessageTranslationRepository
+    private readonly translationRepository: MessageTranslationRepository,
+    private readonly aiRequestLogService: AiRequestLogService
   ) {}
 
   async translateMessageWithWords(
@@ -48,8 +50,10 @@ export class InitialTranslationStrategy implements TranslationStrategy {
       conversationHistory
     );
 
+    // Extract userId from context if available
+    const userId = (context as any)?.userId;
     // Call to OpenAI for translation with context
-    const result = await this.translateWithContext(prompt, apiKey);
+    const result = await this.translateWithContext(prompt, apiKey, userId);
 
     // Save translations
     await this.saveTranslations(messageId, result, messageContent);
@@ -96,7 +100,8 @@ Return ONLY the JSON object, no additional text.`;
 
   private async translateWithContext(
     prompt: string,
-    apiKey: string
+    apiKey: string,
+    userId?: string
   ): Promise<{
     translation: string;
     wordTranslations: WordTranslation[];
@@ -162,6 +167,27 @@ Return ONLY the JSON object, no additional text.`;
           HttpStatus.INTERNAL_SERVER_ERROR
         );
       }
+
+      // Log the request/response
+      await this.aiRequestLogService.logRequest(
+        userId,
+        {
+          model: OPENAI_MODELS.TRANSLATION,
+          messages: [
+            {
+              role: 'system',
+              content: OPENAI_PROMPTS.WORD_TRANSLATION.SYSTEM,
+            },
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+          temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
+          response_format: { type: 'json_object' },
+        },
+        completion
+      );
 
       return {
         wordTranslations,

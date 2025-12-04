@@ -6,6 +6,8 @@ import Layout from './components/Layout';
 import UsersPage from './pages/UsersPage';
 import SystemRulesPage from './pages/SystemRulesPage';
 import AgentArchetypesPage from './pages/AgentArchetypesPage';
+import AiRequestLogsPage from './pages/AiRequestLogsPage';
+import { ROUTES } from './constants/routes.constants';
 
 function App() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
@@ -94,10 +96,11 @@ function App() {
     <BrowserRouter>
       <Layout>
         <Routes>
-          <Route path="/" element={<Navigate to="/users" replace />} />
-          <Route path="/users" element={<UsersPage />} />
-          <Route path="/system-rules" element={<SystemRulesPage />} />
-          <Route path="/agent-archetypes" element={<AgentArchetypesPage />} />
+          <Route path="/" element={<Navigate to={ROUTES.USERS} replace />} />
+          <Route path={ROUTES.USERS} element={<UsersPage />} />
+          <Route path={ROUTES.SYSTEM_RULES} element={<SystemRulesPage />} />
+          <Route path={ROUTES.AGENT_ARCHETYPES} element={<AgentArchetypesPage />} />
+          <Route path={ROUTES.AI_REQUEST_LOGS} element={<AiRequestLogsPage />} />
         </Routes>
       </Layout>
     </BrowserRouter>

@@ -1,8 +1,8 @@
 import { NUMERIC_CONSTANTS } from './numeric.constants.js';
-import { OPENAI_MODELS } from '@openai/shared-types';
+import { OPENAI_MODELS, OPENAI_MODEL_PRICING } from '@openai/shared-types';
 
 // Re-export for backward compatibility
-export { OPENAI_MODELS };
+export { OPENAI_MODELS, OPENAI_MODEL_PRICING };
 
 export const DEFAULT_AGENT_CONFIG = {
   model: OPENAI_MODELS.DEFAULT,

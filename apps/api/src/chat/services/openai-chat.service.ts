@@ -4,6 +4,7 @@ import { MessageRole } from '../../common/enums/message-role.enum';
 import { OPENAI_MODELS } from '../../common/constants/api.constants';
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants';
 import { ERROR_MESSAGES } from '../../common/constants/error-messages.constants';
+import { AiRequestLogService } from '../../ai-request-log/ai-request-log.service';
 import type OpenAI from 'openai';
 
 export interface MessageForOpenAI {
@@ -28,7 +29,10 @@ export interface OpenAIRequest {
 export class OpenAIChatService {
   private readonly logger = new Logger(OpenAIChatService.name);
 
-  constructor(private readonly openaiService: OpenAIService) {}
+  constructor(
+    private readonly openaiService: OpenAIService,
+    private readonly aiRequestLogService: AiRequestLogService
+  ) {}
 
   /**
    * Create OpenAI chat completion request
@@ -57,7 +61,8 @@ export class OpenAIChatService {
    */
   async createChatCompletion(
     apiKey: string,
-    request: OpenAIRequest
+    request: OpenAIRequest,
+    userId?: string
   ): Promise<{
     response: string;
     completion: OpenAI.Chat.Completions.ChatCompletion;
@@ -90,6 +95,22 @@ export class OpenAIChatService {
       this.logger.debug(
         `OpenAI API call successful. Response length: ${response.length}`
       );
+
+      // Log the request/response
+      await this.aiRequestLogService.logRequest(
+        userId,
+        {
+          model: request.model,
+          messages: request.messages as Array<{
+            role: 'system' | 'user' | 'assistant';
+            content: string;
+          }>,
+          temperature: request.temperature,
+          max_tokens: request.max_tokens,
+        },
+        completion
+      );
+
       return { response, completion };
     } catch (error) {
       this.logger.error('OpenAI API call failed:', error);

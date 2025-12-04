@@ -348,7 +348,7 @@ export class ChatService {
 
     // Call OpenAI API using OpenAIChatService
     const { response, completion } =
-      await this.openaiChatService.createChatCompletion(apiKey, openaiRequest);
+      await this.openaiChatService.createChatCompletion(apiKey, openaiRequest, userId);
     this.logger.log(
       `Received response from OpenAI (length: ${response.length})`
     );

@@ -23,52 +23,53 @@ enum MessageRole {
 }
 
 model User {
-  id           String              @id // Clerk user ID
-  email        String?
-  firstName    String?             @map("first_name")
-  lastName     String?             @map("last_name")
-  imageUrl     String?             @map("image_url")
-  roles        Json                @default("[]") // Array of role strings: ["user", "admin"]
-  createdAt    DateTime            @default(now()) @map("created_at")
-  updatedAt    DateTime            @updatedAt @map("updated_at")
-  agents      Agent[]
-  chatSessions ChatSession[]
+  id             String              @id // Clerk user ID
+  email          String?
+  firstName      String?             @map("first_name")
+  lastName       String?             @map("last_name")
+  imageUrl       String?             @map("image_url")
+  roles          Json                @default("[]") // Array of role strings: ["user", "admin"]
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  agents         Agent[]
+  chatSessions   ChatSession[]
   apiCredentials UserApiCredential[]
-  memories     AgentMemory[]
-  savedWords   SavedWord[]
+  memories       AgentMemory[]
+  savedWords     SavedWord[]
+  aiRequestLogs  AiRequestLog[]
 
   @@map("users")
 }
 
 model Agent {
-  id          Int           @id @default(autoincrement())
-  userId      String        @map("user_id")
+  id          Int        @id @default(autoincrement())
+  userId      String     @map("user_id")
   name        String
   description String?
-  avatarUrl   String?       @map("avatar_url")
-  agentType   AgentType?    @map("agent_type") @default(GENERAL)
-  language    String?       // Optional language code (e.g., 'zh', 'en', 'ja')
-  createdAt   DateTime      @default(now()) @map("created_at")
-  
+  avatarUrl   String?    @map("avatar_url")
+  agentType   AgentType? @default(GENERAL) @map("agent_type")
+  language    String? // Optional language code (e.g., 'zh', 'en', 'ja')
+  createdAt   DateTime   @default(now()) @map("created_at")
+
   // Config fields (moved from AgentConfig)
-  temperature      Float?      // 0-2
-  systemPrompt     String?     @map("system_prompt") @db.Text
-  behaviorRules    Json?       @map("behavior_rules")
-  model            String?
-  maxTokens        Int?        @map("max_tokens")
-  responseLength   String?     @map("response_length") // 'short' | 'standard' | 'long' | 'adapt'
-  age              Int?        // 0-100
-  gender           String?     // 'male' | 'female' | 'non-binary' | 'prefer-not-to-say'
-  personality      String?
-  sentiment        String?     // 'neutral' | 'engaged' | 'friendly' | 'attracted' | 'obsessed' | 'disinterested' | 'angry'
-  interests        Json?       // Array of strings
-  availability     String?     // 'available' | 'standard' | 'busy'
-  
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  configs     AgentConfig[] // Keep for backward compatibility during migration
-  sessions    ChatSession[]
-  memories    AgentMemory[]
-  savedWords  SavedWord[]
+  temperature    Float? // 0-2
+  systemPrompt   String? @map("system_prompt") @db.Text
+  behaviorRules  Json?   @map("behavior_rules")
+  model          String?
+  maxTokens      Int?    @map("max_tokens")
+  responseLength String? @map("response_length") // 'short' | 'standard' | 'long' | 'adapt'
+  age            Int? // 0-100
+  gender         String? // 'male' | 'female' | 'non-binary' | 'prefer-not-to-say'
+  personality    String?
+  sentiment      String? // 'neutral' | 'engaged' | 'friendly' | 'attracted' | 'obsessed' | 'disinterested' | 'angry'
+  interests      Json? // Array of strings
+  availability   String? // 'available' | 'standard' | 'busy'
+
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  configs    AgentConfig[] // Keep for backward compatibility during migration
+  sessions   ChatSession[]
+  memories   AgentMemory[]
+  savedWords SavedWord[]
 
   @@index([userId])
   @@index([agentType])
@@ -92,17 +93,17 @@ model AgentConfig {
 }
 
 model ChatSession {
-  id           Int           @id @default(autoincrement())
-  userId       String        @map("user_id")
-  agentId      Int           @map("agent_id")
-  sessionName  String?       @map("session_name")
-  createdAt    DateTime      @default(now()) @map("created_at")
-  updatedAt    DateTime      @updatedAt @map("updated_at")
-  lastMessageAt DateTime?    @map("last_message_at") // Denormalized for performance
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  agent        Agent         @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  messages     Message[]
-  savedWords   SavedWord[]
+  id            Int         @id @default(autoincrement())
+  userId        String      @map("user_id")
+  agentId       Int         @map("agent_id")
+  sessionName   String?     @map("session_name")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  lastMessageAt DateTime?   @map("last_message_at") // Denormalized for performance
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent         Agent       @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  messages      Message[]
+  savedWords    SavedWord[]
 
   @@index([userId])
   @@index([agentId])
@@ -111,17 +112,17 @@ model ChatSession {
 }
 
 model Message {
-  id          Int         @id @default(autoincrement())
-  sessionId   Int         @map("session_id")
-  role        MessageRole
-  content     String
-  metadata    Json?
-  rawRequest  Json?       @map("raw_request") // Raw OpenAI request JSON for user messages
-  rawResponse Json?       @map("raw_response") // Raw OpenAI response JSON for assistant messages
-  createdAt   DateTime    @default(now()) @map("created_at")
-  session     ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  translation MessageTranslation?
-  wordTranslations MessageWordTranslation[]
+  id                 Int                      @id @default(autoincrement())
+  sessionId          Int                      @map("session_id")
+  role               MessageRole
+  content            String
+  metadata           Json?
+  rawRequest         Json?                    @map("raw_request") // Raw OpenAI request JSON for user messages
+  rawResponse        Json?                    @map("raw_response") // Raw OpenAI response JSON for assistant messages
+  createdAt          DateTime                 @default(now()) @map("created_at")
+  session            ChatSession              @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  translation        MessageTranslation?
+  wordTranslations   MessageWordTranslation[]
   savedWordSentences SavedWordSentence[]
 
   @@index([sessionId, createdAt(sort: Desc)])
@@ -139,9 +140,9 @@ model AgentMemory {
   createdAt       DateTime                     @default(now()) @map("created_at")
   updatedAt       DateTime                     @updatedAt @map("updated_at")
   updateCount     Int                          @default(0) @map("update_count")
-  
-  agent           Agent                        @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  user            User                         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([agentId, userId])
   @@index([agentId, userId, createdAt(sort: Desc)])
@@ -149,13 +150,13 @@ model AgentMemory {
 }
 
 model UserApiCredential {
-  id          Int      @id @default(autoincrement())
-  userId      String   @map("user_id")
-  provider    String
-  encryptedKey String  @map("encrypted_key")
-  createdAt   DateTime @default(now()) @map("created_at")
-  lastUsedAt DateTime? @map("last_used_at")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           Int       @id @default(autoincrement())
+  userId       String    @map("user_id")
+  provider     String
+  encryptedKey String    @map("encrypted_key")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  lastUsedAt   DateTime? @map("last_used_at")
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, provider])
   @@index([userId])
@@ -174,13 +175,13 @@ model MessageTranslation {
 }
 
 model MessageWordTranslation {
-  id          Int      @id @default(autoincrement())
-  messageId   Int      @map("message_id")
-  originalWord String  @map("original_word") // The word/token as it appears in the message
-  translation  String  // The English translation of the word in context
-  sentenceContext String? @map("sentence_context") // The sentence the word appears in (populated from message)
-  createdAt   DateTime @default(now()) @map("created_at")
-  message     Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  id              Int      @id @default(autoincrement())
+  messageId       Int      @map("message_id")
+  originalWord    String   @map("original_word") // The word/token as it appears in the message
+  translation     String // The English translation of the word in context
+  sentenceContext String?  @map("sentence_context") // The sentence the word appears in (populated from message)
+  createdAt       DateTime @default(now()) @map("created_at")
+  message         Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
   @@index([messageId])
   @@map("message_word_translations")
@@ -198,19 +199,19 @@ model SystemConfig {
 }
 
 model SavedWord {
-  id            Int      @id @default(autoincrement())
-  userId        String   @map("user_id")
-  originalWord  String   @map("original_word")
-  translation   String
-  pinyin        String?
-  agentId       Int?     @map("agent_id")
-  sessionId     Int?     @map("session_id")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  agent         Agent?   @relation(fields: [agentId], references: [id], onDelete: SetNull)
-  session       ChatSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
-  sentences     SavedWordSentence[]
+  id           Int                 @id @default(autoincrement())
+  userId       String              @map("user_id")
+  originalWord String              @map("original_word")
+  translation  String
+  pinyin       String?
+  agentId      Int?                @map("agent_id")
+  sessionId    Int?                @map("session_id")
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent        Agent?              @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  session      ChatSession?        @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  sentences    SavedWordSentence[]
 
   @@index([userId])
   @@index([originalWord])
@@ -222,43 +223,63 @@ model SavedWord {
 }
 
 model SavedWordSentence {
-  id            Int       @id @default(autoincrement())
-  savedWordId   Int       @map("saved_word_id")
-  sentence      String
-  messageId     Int?      @map("message_id")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  savedWord     SavedWord @relation(fields: [savedWordId], references: [id], onDelete: Cascade)
-  message       Message?  @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  id          Int       @id @default(autoincrement())
+  savedWordId Int       @map("saved_word_id")
+  sentence    String
+  messageId   Int?      @map("message_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  savedWord   SavedWord @relation(fields: [savedWordId], references: [id], onDelete: Cascade)
+  message     Message?  @relation(fields: [messageId], references: [id], onDelete: SetNull)
 
   @@index([savedWordId])
   @@map("saved_word_sentences")
 }
 
 model AgentArchetype {
-  id          Int           @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   name        String
   description String?
-  avatarUrl   String?       @map("avatar_url")
-  agentType   AgentType?    @map("agent_type") @default(GENERAL)
-  language    String?       // Optional language code (e.g., 'zh', 'en', 'ja')
-  createdAt   DateTime      @default(now()) @map("created_at")
-  updatedAt   DateTime      @updatedAt @map("updated_at")
-  
+  avatarUrl   String?    @map("avatar_url")
+  agentType   AgentType? @default(GENERAL) @map("agent_type")
+  language    String? // Optional language code (e.g., 'zh', 'en', 'ja')
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
   // Config fields (same structure as Agent)
-  temperature      Float?      // 0-2
-  systemPrompt     String?     @map("system_prompt") @db.Text
-  behaviorRules    Json?       @map("behavior_rules")
-  model            String?
-  maxTokens        Int?        @map("max_tokens")
-  responseLength   String?     @map("response_length") // 'short' | 'standard' | 'long' | 'adapt'
-  age              Int?        // 0-100
-  gender           String?     // 'male' | 'female' | 'non-binary' | 'prefer-not-to-say'
-  personality      String?
-  sentiment        String?     // 'neutral' | 'engaged' | 'friendly' | 'attracted' | 'obsessed' | 'disinterested' | 'angry'
-  interests        Json?       // Array of strings
-  availability     String?     // 'available' | 'standard' | 'busy'
-  
+  temperature    Float? // 0-2
+  systemPrompt   String? @map("system_prompt") @db.Text
+  behaviorRules  Json?   @map("behavior_rules")
+  model          String?
+  maxTokens      Int?    @map("max_tokens")
+  responseLength String? @map("response_length") // 'short' | 'standard' | 'long' | 'adapt'
+  age            Int? // 0-100
+  gender         String? // 'male' | 'female' | 'non-binary' | 'prefer-not-to-say'
+  personality    String?
+  sentiment      String? // 'neutral' | 'engaged' | 'friendly' | 'attracted' | 'obsessed' | 'disinterested' | 'angry'
+  interests      Json? // Array of strings
+  availability   String? // 'available' | 'standard' | 'busy'
+
   @@index([agentType])
   @@index([language])
   @@map("agent_archetypes")
+}
+
+model AiRequestLog {
+  id               Int      @id @default(autoincrement())
+  userId           String?  @map("user_id") // Nullable for deleted users
+  requestJson      Json     @map("request_json") // Full OpenAI request
+  responseJson     Json     @map("response_json") // Full OpenAI response
+  model            String // Model name (e.g., 'gpt-4o-mini')
+  promptTokens     Int      @map("prompt_tokens")
+  completionTokens Int      @map("completion_tokens")
+  totalTokens      Int      @map("total_tokens")
+  estimatedPrice   Decimal  @map("estimated_price") @db.Decimal(10, 6) // Price in USD
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([model])
+  @@map("ai_request_logs")
 }

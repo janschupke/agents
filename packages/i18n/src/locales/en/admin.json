@@ -14,7 +14,8 @@
   "navigation": {
     "users": "Users",
     "systemRules": "System Rules",
-    "archetypes": "Agent Archetypes"
+    "archetypes": "Agent Archetypes",
+    "aiRequestLogs": "AI Request Logs"
   },
   "users": {
     "title": "All Users",
@@ -94,6 +95,33 @@
         "ageRange": "Age must be between 0 and 100",
         "maxTokensMin": "Max tokens must be at least 1"
       }
+    }
+  },
+  "aiRequestLogs": {
+    "title": "AI Request Logs",
+    "loading": "Loading request logs...",
+    "error": "Failed to load request logs",
+    "noLogs": "No request logs found",
+    "total": "Total: {{count}} logs",
+    "deletedUser": "Deleted User",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "request": "Request",
+    "response": "Response",
+    "table": {
+      "datetime": "Date/Time",
+      "user": "User",
+      "model": "Model",
+      "tokens": "Tokens",
+      "price": "Est. Price",
+      "response": "Response",
+      "actions": "Actions"
+    },
+    "pagination": {
+      "showing": "Showing {{start}} to {{end}} of {{total}}",
+      "page": "Page {{current}} of {{total}}",
+      "previous": "Previous",
+      "next": "Next"
     }
   }
 }

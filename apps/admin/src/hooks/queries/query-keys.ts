@@ -1,3 +1,5 @@
+import type { GetAiRequestLogsParams } from '../../types/ai-request-log.types';
+
 enum QueryKey {
   USER = 'user',
   USERS = 'users',
@@ -5,6 +7,7 @@ enum QueryKey {
   BEHAVIOR_RULES = 'behaviorRules',
   ME = 'me',
   ALL = 'all',
+  AI_REQUEST_LOGS = 'aiRequestLogs',
 }
 
 export const queryKeys = {
@@ -18,5 +21,11 @@ export const queryKeys = {
     all: [QueryKey.SYSTEM] as const,
     behaviorRules: () =>
       [...queryKeys.system.all, QueryKey.BEHAVIOR_RULES] as const,
+  },
+  aiRequestLogs: {
+    all: [QueryKey.AI_REQUEST_LOGS] as const,
+    lists: () => [...queryKeys.aiRequestLogs.all, QueryKey.ALL] as const,
+    list: (params?: GetAiRequestLogsParams) =>
+      [...queryKeys.aiRequestLogs.lists(), params] as const,
   },
 } as const;

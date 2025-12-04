@@ -79,4 +79,8 @@ export const API_ROUTES = {
     BASE: 'api/agent-archetypes',
     BY_ID: (id: number) => `api/agent-archetypes/${id}`,
   },
+
+  AI_REQUEST_LOGS: {
+    BASE: 'api/ai-request-logs',
+  },
 } as const;

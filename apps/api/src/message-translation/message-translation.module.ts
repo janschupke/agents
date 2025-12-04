@@ -8,12 +8,13 @@ import { MessageRepository } from '../message/message.repository';
 import { SessionRepository } from '../session/session.repository';
 import { OpenAIService } from '../openai/openai.service';
 import { ApiCredentialsModule } from '../api-credentials/api-credentials.module';
+import { AiRequestLogModule } from '../ai-request-log/ai-request-log.module';
 import { InitialTranslationStrategy } from './strategies/initial-translation.strategy';
 import { OnDemandTranslationStrategy } from './strategies/on-demand-translation.strategy';
 import { TranslationStrategyFactory } from './translation-strategy.factory';
 
 @Module({
-  imports: [ApiCredentialsModule],
+  imports: [ApiCredentialsModule, AiRequestLogModule],
   controllers: [MessageTranslationController],
   providers: [
     MessageTranslationService,

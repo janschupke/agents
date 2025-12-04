@@ -10,4 +10,5 @@ export const API_ENDPOINTS = {
     BASE: '/api/agent-archetypes',
     BY_ID: (id: number) => `/api/agent-archetypes/${id}`,
   },
+  AI_REQUEST_LOGS: '/api/ai-request-logs',
 } as const;

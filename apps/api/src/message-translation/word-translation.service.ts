@@ -8,13 +8,15 @@ import { MessageTranslationRepository } from './message-translation.repository';
 import { OPENAI_PROMPTS } from '../common/constants/openai-prompts.constants.js';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 import { OPENAI_MODELS } from '../common/constants/api.constants.js';
+import { AiRequestLogService } from '../ai-request-log/ai-request-log.service';
 
 @Injectable()
 export class WordTranslationService {
   constructor(
     private readonly wordTranslationRepository: MessageWordTranslationRepository,
     private readonly openaiService: OpenAIService,
-    private readonly translationRepository: MessageTranslationRepository
+    private readonly translationRepository: MessageTranslationRepository,
+    private readonly aiRequestLogService: AiRequestLogService
   ) {}
 
   /**
@@ -154,7 +156,8 @@ export class WordTranslationService {
   async translateWordsInMessage(
     messageId: number,
     messageContent: string,
-    apiKey: string
+    apiKey: string,
+    userId?: string
   ): Promise<void> {
     // Check if translations already exist with actual translations
     const existingWords =
@@ -174,7 +177,8 @@ export class WordTranslationService {
           existingWords.map((w) => w.originalWord),
           messageContent,
           sentences,
-          apiKey
+          apiKey,
+          userId
         );
 
       // Update existing words with translations
@@ -207,7 +211,7 @@ export class WordTranslationService {
     // No pre-parsed words exist, do full parse + translate
     const sentences = this.splitIntoSentences(messageContent);
     const { wordTranslations, fullTranslation } =
-      await this.translateWordsWithOpenAI(messageContent, sentences, apiKey);
+      await this.translateWordsWithOpenAI(messageContent, sentences, apiKey, userId);
 
     const wordToSentenceMap = this.createWordToSentenceMap(
       messageContent,
@@ -379,7 +383,8 @@ Return ONLY the JSON object, no additional text.`;
     words: string[],
     messageContent: string,
     _sentences: string[],
-    apiKey: string
+    apiKey: string,
+    userId?: string
   ): Promise<{
     wordTranslations: WordTranslation[];
     fullTranslation: string | null;
@@ -457,6 +462,27 @@ Return ONLY the JSON object, no additional text.`;
           translation: wt.translation!,
         }));
 
+      // Log the request/response
+      await this.aiRequestLogService.logRequest(
+        userId,
+        {
+          model: OPENAI_MODELS.TRANSLATION,
+          messages: [
+            {
+              role: 'system',
+              content: OPENAI_PROMPTS.WORD_TRANSLATION.SYSTEM,
+            },
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+          temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
+          response_format: { type: 'json_object' },
+        },
+        completion
+      );
+
       return {
         wordTranslations,
         fullTranslation: fullTranslation || null,
@@ -479,7 +505,8 @@ Return ONLY the JSON object, no additional text.`;
   private async translateWordsWithOpenAI(
     messageContent: string,
     _sentences: string[],
-    apiKey: string
+    apiKey: string,
+    userId?: string
   ): Promise<{
     wordTranslations: WordTranslation[];
     fullTranslation: string | null;
@@ -538,6 +565,27 @@ Return ONLY the JSON object, no additional text.`;
           originalWord: wt.originalWord!,
           translation: wt.translation!,
         }));
+
+      // Log the request/response
+      await this.aiRequestLogService.logRequest(
+        userId,
+        {
+          model: OPENAI_MODELS.TRANSLATION,
+          messages: [
+            {
+              role: 'system',
+              content: OPENAI_PROMPTS.WORD_TRANSLATION.SYSTEM,
+            },
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+          temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
+          response_format: { type: 'json_object' },
+        },
+        completion
+      );
 
       return {
         wordTranslations,

@@ -15,6 +15,7 @@ import { ApiCredentialsModule } from '../api-credentials/api-credentials.module'
 import { SystemConfigModule } from '../system-config/system-config.module';
 import { MessageTranslationModule } from '../message-translation/message-translation.module';
 import { SavedWordModule } from '../saved-word/saved-word.module';
+import { AiRequestLogModule } from '../ai-request-log/ai-request-log.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { SavedWordModule } from '../saved-word/saved-word.module';
     MessageTranslationModule,
     AgentMemoryModule,
     SavedWordModule,
+    AiRequestLogModule,
   ],
   controllers: [ChatController],
   providers: [

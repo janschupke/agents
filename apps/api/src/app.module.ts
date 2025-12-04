@@ -15,6 +15,7 @@ import { MessageTranslationModule } from './message-translation/message-translat
 import { AgentMemoryModule } from './memory/agent-memory.module';
 import { SessionModule } from './session/session.module';
 import { SavedWordModule } from './saved-word/saved-word.module';
+import { AiRequestLogModule } from './ai-request-log/ai-request-log.module';
 import { ClerkGuard } from './auth/clerk.guard';
 import appConfig from './config/app.config';
 
@@ -39,6 +40,7 @@ import appConfig from './config/app.config';
     AgentMemoryModule,
     SessionModule,
     SavedWordModule,
+    AiRequestLogModule,
   ],
   providers: [
     {

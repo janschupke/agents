@@ -12,6 +12,7 @@ import { OPENAI_PROMPTS } from '../common/constants/openai-prompts.constants.js'
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
 import { OPENAI_MODELS } from '../common/constants/api.constants.js';
+import { AiRequestLogService } from '../ai-request-log/ai-request-log.service';
 import {
   MessageNotFoundException,
   SessionNotFoundException,
@@ -29,7 +30,8 @@ export class MessageTranslationService {
     private readonly openaiService: OpenAIService,
     private readonly apiCredentialsService: ApiCredentialsService,
     private readonly wordTranslationService: WordTranslationService,
-    private readonly translationStrategyFactory: TranslationStrategyFactory
+    private readonly translationStrategyFactory: TranslationStrategyFactory,
+    private readonly aiRequestLogService: AiRequestLogService
   ) {}
 
   /**
@@ -88,7 +90,8 @@ export class MessageTranslationService {
     const translation = await this.translateWithOpenAI(
       message.content,
       contextMessages,
-      apiKey
+      apiKey,
+      userId
     );
 
     // Save translation
@@ -135,7 +138,8 @@ export class MessageTranslationService {
   private async translateWithOpenAI(
     message: string,
     context: Array<{ role: string; content: string }>,
-    apiKey: string
+    apiKey: string,
+    userId?: string
   ): Promise<string> {
     const openai = this.openaiService.getClient(apiKey);
 
@@ -169,6 +173,27 @@ export class MessageTranslationService {
       this.logger.error('No translation returned from OpenAI');
       throw new Error('Translation failed: No response from OpenAI');
     }
+
+    // Log the request/response
+    await this.aiRequestLogService.logRequest(
+      userId,
+      {
+        model: OPENAI_MODELS.TRANSLATION,
+        messages: [
+          {
+            role: 'system',
+            content: OPENAI_PROMPTS.TRANSLATION.SYSTEM,
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
+        max_tokens: NUMERIC_CONSTANTS.DEFAULT_MAX_TOKENS,
+      },
+      completion
+    );
 
     this.logger.debug('Translation completed');
     return translation;
