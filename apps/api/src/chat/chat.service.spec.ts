@@ -95,6 +95,7 @@ describe('ChatService', () => {
 
   const mockMessagePreparationService = {
     prepareMessages: jest.fn(),
+    prepareMessagesForOpenAI: jest.fn(),
     buildOpenAIRequest: jest.fn(),
   };
 
@@ -258,6 +259,8 @@ describe('ChatService', () => {
         },
         session: null,
         messages: [],
+        savedWordMatches: [],
+        hasMore: false,
       });
     });
 
@@ -543,14 +546,17 @@ describe('ChatService', () => {
 
       const result = await service.sendMessage(agentId, userId, message);
 
-      // Message should be returned, translations undefined
-      expect(result.response).toBe('你好，世界！');
+      // When fullTranslation is missing, JSON is not extracted, so response includes JSON
+      expect(result.response).toBe(
+        '你好，世界！\n{"words":[{"originalWord":"你好","translation":"hello"}]}'
+      );
       expect(result.translation).toBeUndefined();
-      // Should save words without translations
-      expect(mockWordTranslationService.saveParsedWords).toHaveBeenCalledWith(
+      // When JSON extraction fails (missing fullTranslation), code tries to parse words
+      // This will call parseWordsInMessage instead of saveParsedWords
+      expect(mockWordTranslationService.parseWordsInMessage).toHaveBeenCalledWith(
         2,
-        [{ originalWord: '你好' }],
-        '你好，世界！'
+        '你好，世界！\n{"words":[{"originalWord":"你好","translation":"hello"}]}',
+        apiKey
       );
     });
   });

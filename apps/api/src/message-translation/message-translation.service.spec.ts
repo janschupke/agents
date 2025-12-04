@@ -439,9 +439,12 @@ describe('MessageTranslationService', () => {
         []
       );
       apiCredentialsService.getApiKey.mockResolvedValue(apiKey);
-      messageRepository.findAllBySessionId.mockResolvedValue(
-        contextMessages as Message[]
-      );
+      // Include the target message in the list so getContextMessages can find it
+      const allMessages = [
+        ...contextMessages,
+        { id: messageId, role: MessageRole.ASSISTANT, content: 'Bonjour' },
+      ] as Message[];
+      messageRepository.findAllBySessionId.mockResolvedValue(allMessages);
       translationStrategyFactory.getStrategy.mockReturnValue(
         mockStrategy as any
       );

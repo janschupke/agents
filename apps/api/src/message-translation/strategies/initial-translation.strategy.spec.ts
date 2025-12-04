@@ -309,16 +309,23 @@ describe('InitialTranslationStrategy', () => {
         createdAt: new Date(),
       });
 
-      const result = await strategy.translateMessageWithWords(
-        messageId,
-        messageContent,
-        apiKey,
-        context
-      );
-
-      // Should still return word translations even if fullTranslation is missing
-      expect(result.wordTranslations).toEqual(mockWordTranslations);
-      expect(result.translation).toBe('');
+      // Should throw exception when fullTranslation is missing
+      await expect(
+        strategy.translateMessageWithWords(
+          messageId,
+          messageContent,
+          apiKey,
+          context
+        )
+      ).rejects.toThrow(HttpException);
+      await expect(
+        strategy.translateMessageWithWords(
+          messageId,
+          messageContent,
+          apiKey,
+          context
+        )
+      ).rejects.toThrow('Word translation failed: Missing fullTranslation');
     });
 
     it('should handle OpenAI API errors', async () => {

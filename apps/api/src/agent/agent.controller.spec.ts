@@ -144,6 +144,8 @@ describe('AgentController', () => {
         createDto.name,
         createDto.description,
         undefined, // avatarUrl
+        undefined, // agentType
+        undefined, // language
         expect.objectContaining({
           temperature: createDto.configs.temperature,
           system_prompt: createDto.configs.system_prompt,
@@ -168,6 +170,8 @@ describe('AgentController', () => {
         createDto.name,
         createDto.description,
         undefined, // avatarUrl
+        undefined, // agentType
+        undefined, // language
         undefined // configs
       );
     });
@@ -212,6 +216,8 @@ describe('AgentController', () => {
         updateDto.name,
         updateDto.description,
         undefined, // avatarUrl
+        undefined, // agentType
+        undefined, // language
         expect.objectContaining({
           temperature: updateDto.configs.temperature,
         })

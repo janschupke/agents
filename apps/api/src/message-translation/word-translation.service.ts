@@ -159,14 +159,14 @@ export class WordTranslationService {
     // Check if translations already exist with actual translations
     const existingWords =
       await this.wordTranslationRepository.findByMessageId(messageId);
-    const hasTranslations = existingWords.some((w) => w.translation.trim() !== '');
+    const hasTranslations = existingWords?.some((w) => w.translation.trim() !== '') ?? false;
 
     if (hasTranslations) {
       return; // Already translated
     }
 
     // If words exist but without translations, use them
-    if (existingWords.length > 0) {
+    if (existingWords && existingWords.length > 0) {
       // Translate only the pre-parsed words
       const sentences = this.splitIntoSentences(messageContent);
       const { wordTranslations, fullTranslation } =

@@ -59,7 +59,16 @@ describe('WordTranslationService', () => {
       const messageId = 1;
       const messageContent = 'Bonjour';
 
-      wordTranslationRepository.existsForMessage.mockResolvedValue(true);
+      wordTranslationRepository.findByMessageId.mockResolvedValue([
+        {
+          id: 1,
+          messageId,
+          originalWord: 'Bonjour',
+          translation: 'Hello',
+          sentenceContext: null,
+          createdAt: new Date(),
+        },
+      ]);
 
       await service.translateWordsInMessage(
         messageId,
@@ -67,7 +76,7 @@ describe('WordTranslationService', () => {
         'api-key'
       );
 
-      expect(wordTranslationRepository.existsForMessage).toHaveBeenCalledWith(
+      expect(wordTranslationRepository.findByMessageId).toHaveBeenCalledWith(
         messageId
       );
       expect(openaiService.getClient).not.toHaveBeenCalled();
@@ -103,7 +112,7 @@ describe('WordTranslationService', () => {
         },
       };
 
-      wordTranslationRepository.existsForMessage.mockResolvedValue(false);
+      wordTranslationRepository.findByMessageId.mockResolvedValue([]);
       openaiService.getClient.mockReturnValue(
         mockOpenAIClient as unknown as OpenAI
       );
@@ -196,7 +205,7 @@ describe('WordTranslationService', () => {
         },
       };
 
-      wordTranslationRepository.existsForMessage.mockResolvedValue(false);
+      wordTranslationRepository.findByMessageId.mockResolvedValue([]);
       openaiService.getClient.mockReturnValue(
         mockOpenAIClient as unknown as OpenAI
       );

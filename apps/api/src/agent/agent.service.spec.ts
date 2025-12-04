@@ -2,7 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { HttpException } from '@nestjs/common';
 import { AgentService } from './agent.service';
 import { AgentRepository } from './agent.repository';
-import { UserService } from '../user/user.service';
+import { SessionRepository } from '../session/session.repository';
+import { AgentArchetypeService } from '../agent-archetype/agent-archetype.service';
+import { AgentType } from '../common/enums/agent-type.enum';
 
 describe('AgentService', () => {
   let service: AgentService;
@@ -20,8 +22,16 @@ describe('AgentService', () => {
     mergeAgentConfig: jest.fn(),
   };
 
-  const mockUserService = {
+  const mockSessionRepository = {
+    findLatestByAgentId: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  };
+
+  const mockAgentArchetypeService = {
     findById: jest.fn(),
+    findAll: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -33,8 +43,12 @@ describe('AgentService', () => {
           useValue: mockAgentRepository,
         },
         {
-          provide: UserService,
-          useValue: mockUserService,
+          provide: SessionRepository,
+          useValue: mockSessionRepository,
+        },
+        {
+          provide: AgentArchetypeService,
+          useValue: mockAgentArchetypeService,
         },
       ],
     }).compile();
@@ -130,6 +144,15 @@ describe('AgentService', () => {
 
       mockAgentRepository.findByName.mockResolvedValue(null);
       mockAgentRepository.create.mockResolvedValue(mockAgent);
+      mockSessionRepository.create.mockResolvedValue({
+        id: 1,
+        userId,
+        agentId: mockAgent.id,
+        sessionName: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastMessageAt: null,
+      });
 
       const result = await service.create(
         userId,
@@ -147,7 +170,9 @@ describe('AgentService', () => {
         userId,
         name,
         description,
-        undefined
+        undefined, // avatarUrl
+        AgentType.GENERAL, // agentType (default)
+        undefined // language
       );
       expect(mockAgentRepository.updateConfigs).toHaveBeenCalledWith(
         mockAgent.id,
@@ -163,15 +188,41 @@ describe('AgentService', () => {
         name,
         description: null,
         userId,
+        avatarUrl: null,
+        agentType: AgentType.GENERAL,
+        language: null,
+        createdAt: new Date(),
       };
 
       mockAgentRepository.findByName.mockResolvedValue(null);
       mockAgentRepository.create.mockResolvedValue(mockAgent);
+      mockSessionRepository.create.mockResolvedValue({
+        id: 1,
+        userId,
+        agentId: mockAgent.id,
+        sessionName: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastMessageAt: null,
+      });
 
       const result = await service.create(userId, name);
 
-      expect(result).toEqual(mockAgent);
+      expect(result).toEqual({
+        id: mockAgent.id,
+        userId: mockAgent.userId,
+        name: mockAgent.name,
+        description: mockAgent.description,
+        avatarUrl: null,
+        agentType: AgentType.GENERAL,
+        language: null,
+        createdAt: expect.any(Date),
+      });
       expect(mockAgentRepository.updateConfigs).not.toHaveBeenCalled();
+      expect(mockSessionRepository.create).toHaveBeenCalledWith(
+        userId,
+        mockAgent.id
+      );
     });
 
     it('should throw HttpException if name is empty', async () => {
@@ -252,7 +303,9 @@ describe('AgentService', () => {
         userId,
         name,
         description,
-        undefined
+        undefined, // avatarUrl
+        undefined, // agentType
+        undefined // language
       );
       expect(mockAgentRepository.updateConfigs).toHaveBeenCalledWith(
         agentId,
