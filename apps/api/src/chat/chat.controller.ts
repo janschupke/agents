@@ -58,7 +58,7 @@ export class ChatController {
       ? parseInt(sessionId, MAGIC_STRINGS.PARSE_INT_BASE)
       : undefined;
     this.logger.debug(
-      `Getting chat history for agent ${agentId}, user ${user.id}, sessionId: ${parsedSessionId || 'latest'} (loading all messages)`
+      `Getting chat history for agent ${agentId}, user ${user.id}, sessionId: ${parsedSessionId || 'latest'} (loading 20 most recent messages)`
     );
     return await this.chatService.getChatHistory(
       agentId,

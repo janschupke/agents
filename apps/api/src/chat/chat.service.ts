@@ -61,7 +61,7 @@ export class ChatService {
     sessionId?: number
   ): Promise<ChatHistoryResponseDto> {
     this.logger.debug(
-      `Getting chat history for agent ${agentId}, user ${userId}, sessionId: ${sessionId || 'latest'} (loading all messages)`
+      `Getting chat history for agent ${agentId}, user ${userId}, sessionId: ${sessionId || 'latest'} (loading 20 most recent messages)`
     );
     // Load agent with config
     const agent = await this.agentRepository.findByIdWithConfig(
@@ -104,12 +104,13 @@ export class ChatService {
       }
     }
 
-    // Load all messages (no pagination) - use withRawData to get all fields
-    const messageRecords =
-      await this.messageRepository.findAllBySessionIdWithRawData(
-        session.id
-        // No limit - loads all messages (default limit is 1000, which should be enough)
-      );
+    // Load only the 20 most recent messages for initial chat load
+    const { messages: messageRecords, hasMore } =
+      await this.messageRepository.findRecentMessagesBySessionId(session.id, 20);
+
+    this.logger.debug(
+      `Loaded ${messageRecords.length} messages for session ${session.id}${hasMore ? ' (more available)' : ''}`
+    );
 
     // Get all message IDs
     const messageIds = messageRecords.map((m) => m.id);
@@ -209,7 +210,7 @@ export class ChatService {
       },
       messages,
       savedWordMatches,
-      hasMore: false, // No pagination, always false
+      hasMore, // Indicates if there are more messages to load
     };
   }
 

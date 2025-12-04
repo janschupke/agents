@@ -102,6 +102,45 @@ export class MessageRepository {
   }
 
   /**
+   * Get the most recent messages for initial chat load
+   * Returns messages in chronological order (oldest first) for consistency
+   * @param sessionId - Session ID
+   * @param limit - Number of messages to return (default: 20)
+   * @returns Object with messages and hasMore flag
+   */
+  async findRecentMessagesBySessionId(
+    sessionId: number,
+    limit: number = 20
+  ): Promise<{ messages: Message[]; hasMore: boolean }> {
+    // Get one extra message to check if there are more
+    const messages = await this.prisma.message.findMany({
+      where: { sessionId },
+      orderBy: { id: 'desc' }, // Newest first (highest ID first)
+      take: limit + 1, // Get one extra to check hasMore
+      // Select only needed fields to reduce data transfer
+      select: {
+        id: true,
+        sessionId: true,
+        role: true,
+        content: true,
+        metadata: true,
+        rawRequest: true,
+        rawResponse: true,
+        createdAt: true,
+      },
+    });
+
+    const hasMore = messages.length > limit;
+    const resultMessages = hasMore ? messages.slice(0, limit) : messages;
+
+    // Reverse to get chronological order (oldest first) for consistency
+    return {
+      messages: resultMessages.reverse(),
+      hasMore,
+    };
+  }
+
+  /**
    * Get messages with cursor-based pagination
    * Returns messages in chronological order (oldest first) for consistency
    * - Initial load (no cursor): Get newest 20 messages, reverse to oldest first

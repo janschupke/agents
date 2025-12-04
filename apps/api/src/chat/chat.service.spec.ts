@@ -44,6 +44,7 @@ describe('ChatService', () => {
   const mockMessageRepository = {
     findAllBySessionIdForOpenAI: jest.fn(),
     findAllBySessionIdWithRawData: jest.fn(),
+    findRecentMessagesBySessionId: jest.fn(),
     create: jest.fn(),
   };
 
@@ -236,9 +237,10 @@ describe('ChatService', () => {
       mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue(
         mockMessages
       );
-      mockMessageRepository.findAllBySessionIdWithRawData.mockResolvedValue(
-        mockMessages.map((m, i) => ({ ...m, id: i + 1 }))
-      );
+      mockMessageRepository.findRecentMessagesBySessionId.mockResolvedValue({
+        messages: mockMessages.map((m, i) => ({ ...m, id: i + 1 })),
+        hasMore: false,
+      });
 
       const result = await service.getChatHistory(agentId, userId);
 
@@ -320,9 +322,10 @@ describe('ChatService', () => {
 
       mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockAgent);
       mockSessionRepository.findLatestByAgentId.mockResolvedValue(mockSession);
-      mockMessageRepository.findAllBySessionIdWithRawData.mockResolvedValue(
-        mockMessages
-      );
+      mockMessageRepository.findRecentMessagesBySessionId.mockResolvedValue({
+        messages: mockMessages,
+        hasMore: false,
+      });
       mockLanguageAssistantService.isLanguageAssistant.mockReturnValue(false);
 
       const result = await service.getChatHistory(agentId, userId);
@@ -371,9 +374,10 @@ describe('ChatService', () => {
 
       mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockAgent);
       mockSessionRepository.findLatestByAgentId.mockResolvedValue(mockSession);
-      mockMessageRepository.findAllBySessionIdWithRawData.mockResolvedValue(
-        mockMessages
-      );
+      mockMessageRepository.findRecentMessagesBySessionId.mockResolvedValue({
+        messages: mockMessages,
+        hasMore: false,
+      });
       mockLanguageAssistantService.isLanguageAssistant.mockReturnValue(true);
       mockWordTranslationService.getWordTranslationsForMessages.mockResolvedValue(
         mockWordTranslations
@@ -393,6 +397,130 @@ describe('ChatService', () => {
       expect(result.messages[1].wordTranslations).toEqual([
         { originalWord: '你好', translation: 'hello', sentenceContext: undefined },
       ]);
+    });
+
+    it('should return only 20 most recent messages on initial load', async () => {
+      const agentId = 1;
+      const userId = 'user-123';
+      const mockAgent = {
+        id: agentId,
+        name: 'Test Agent',
+        description: 'Test Description',
+        config: {},
+      };
+      const mockSession = {
+        id: 1,
+        agentId,
+        sessionName: 'Session 1',
+      };
+      // Create 25 messages (more than 20)
+      const allMessages = Array.from({ length: 25 }, (_, i) => ({
+        id: i + 1,
+        role: i % 2 === 0 ? 'USER' : 'ASSISTANT',
+        content: `Message ${i + 1}`,
+      }));
+
+      mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockAgent);
+      mockSessionRepository.findLatestByAgentId.mockResolvedValue(mockSession);
+      // Return 20 messages with hasMore: true
+      mockMessageRepository.findRecentMessagesBySessionId.mockResolvedValue({
+        messages: allMessages.slice(0, 20), // First 20 (after reverse, these are the newest)
+        hasMore: true,
+      });
+      mockMessageTranslationService.getTranslationsForMessages.mockResolvedValue(
+        new Map()
+      );
+      mockLanguageAssistantService.isLanguageAssistant.mockReturnValue(false);
+
+      const result = await service.getChatHistory(agentId, userId);
+
+      expect(result.messages.length).toBe(20);
+      expect(result.hasMore).toBe(true);
+      expect(mockMessageRepository.findRecentMessagesBySessionId).toHaveBeenCalledWith(
+        1,
+        20
+      );
+    });
+
+    it('should return all messages and set hasMore to false when there are 20 or fewer messages', async () => {
+      const agentId = 1;
+      const userId = 'user-123';
+      const mockAgent = {
+        id: agentId,
+        name: 'Test Agent',
+        description: 'Test Description',
+        config: {},
+      };
+      const mockSession = {
+        id: 1,
+        agentId,
+        sessionName: 'Session 1',
+      };
+      // Create 15 messages (less than 20)
+      const allMessages = Array.from({ length: 15 }, (_, i) => ({
+        id: i + 1,
+        role: i % 2 === 0 ? 'USER' : 'ASSISTANT',
+        content: `Message ${i + 1}`,
+      }));
+
+      mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockAgent);
+      mockSessionRepository.findLatestByAgentId.mockResolvedValue(mockSession);
+      mockMessageRepository.findRecentMessagesBySessionId.mockResolvedValue({
+        messages: allMessages,
+        hasMore: false,
+      });
+      mockMessageTranslationService.getTranslationsForMessages.mockResolvedValue(
+        new Map()
+      );
+      mockLanguageAssistantService.isLanguageAssistant.mockReturnValue(false);
+
+      const result = await service.getChatHistory(agentId, userId);
+
+      expect(result.messages.length).toBe(15);
+      expect(result.hasMore).toBe(false);
+    });
+
+    it('should return messages in chronological order (oldest first)', async () => {
+      const agentId = 1;
+      const userId = 'user-123';
+      const mockAgent = {
+        id: agentId,
+        name: 'Test Agent',
+        description: 'Test Description',
+        config: {},
+      };
+      const mockSession = {
+        id: 1,
+        agentId,
+        sessionName: 'Session 1',
+      };
+      // Create 5 messages - repository returns them newest first (id DESC), then reverses
+      // So we pass them newest first (id 5, 4, 3, 2, 1), repository reverses to (1, 2, 3, 4, 5)
+      const messagesNewestFirst = Array.from({ length: 5 }, (_, i) => ({
+        id: 5 - i, // IDs: 5, 4, 3, 2, 1 (newest to oldest)
+        role: i % 2 === 0 ? 'USER' : 'ASSISTANT',
+        content: `Message ${5 - i}`,
+        createdAt: new Date(2025, 0, 1 + (5 - i)), // Different dates
+      }));
+
+      mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockAgent);
+      mockSessionRepository.findLatestByAgentId.mockResolvedValue(mockSession);
+      // Repository returns messages newest first, then reverses them internally
+      mockMessageRepository.findRecentMessagesBySessionId.mockResolvedValue({
+        messages: messagesNewestFirst.reverse(), // Repository already reversed, so we pass oldest first
+        hasMore: false,
+      });
+      mockMessageTranslationService.getTranslationsForMessages.mockResolvedValue(
+        new Map()
+      );
+      mockLanguageAssistantService.isLanguageAssistant.mockReturnValue(false);
+
+      const result = await service.getChatHistory(agentId, userId);
+
+      // Messages should be in chronological order (oldest first)
+      expect(result.messages.length).toBe(5);
+      expect(result.messages[0].id).toBe(1); // Oldest first
+      expect(result.messages[4].id).toBe(5); // Newest last
     });
   });
 
