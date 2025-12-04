@@ -12,9 +12,14 @@ export default function AgentArchetypesPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
   const queryClient = useQueryClient();
   const [isCreating, setIsCreating] = useState(false);
-  const [editingArchetype, setEditingArchetype] = useState<AgentArchetype | null>(null);
+  const [editingArchetype, setEditingArchetype] =
+    useState<AgentArchetype | null>(null);
 
-  const { data: archetypes = [], isLoading, error } = useQuery({
+  const {
+    data: archetypes = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['agent-archetypes'],
     queryFn: () => AgentArchetypeService.getAllArchetypes(),
   });

@@ -54,7 +54,9 @@ export default function AgentArchetypeList({
             className="w-12 h-12"
           />
           <div className="flex-1">
-            <h3 className="font-semibold text-text-primary">{archetype.name}</h3>
+            <h3 className="font-semibold text-text-primary">
+              {archetype.name}
+            </h3>
             {archetype.description && (
               <p className="text-sm text-text-secondary mt-1">
                 {archetype.description}

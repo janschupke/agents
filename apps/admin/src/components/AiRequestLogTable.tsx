@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import type { AiRequestLog } from '../types/ai-request-log.types';
-import { AiRequestLogOrderBy, OrderDirection } from '../types/ai-request-log.enums';
+import {
+  AiRequestLogOrderBy,
+  OrderDirection,
+} from '../types/ai-request-log.enums';
 
 interface AiRequestLogTableProps {
   logs: AiRequestLog[];
@@ -85,7 +88,8 @@ export default function AiRequestLogTable({
                 className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase cursor-pointer hover:bg-background-secondary"
                 onClick={() => handleSort(AiRequestLogOrderBy.CREATED_AT)}
               >
-                {t('aiRequestLogs.table.datetime')} {getSortIcon(AiRequestLogOrderBy.CREATED_AT)}
+                {t('aiRequestLogs.table.datetime')}{' '}
+                {getSortIcon(AiRequestLogOrderBy.CREATED_AT)}
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">
                 {t('aiRequestLogs.table.user')}
@@ -97,13 +101,15 @@ export default function AiRequestLogTable({
                 className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase cursor-pointer hover:bg-background-secondary"
                 onClick={() => handleSort(AiRequestLogOrderBy.TOTAL_TOKENS)}
               >
-                {t('aiRequestLogs.table.tokens')} {getSortIcon(AiRequestLogOrderBy.TOTAL_TOKENS)}
+                {t('aiRequestLogs.table.tokens')}{' '}
+                {getSortIcon(AiRequestLogOrderBy.TOTAL_TOKENS)}
               </th>
               <th
                 className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase cursor-pointer hover:bg-background-secondary"
                 onClick={() => handleSort(AiRequestLogOrderBy.ESTIMATED_PRICE)}
               >
-                {t('aiRequestLogs.table.price')} {getSortIcon(AiRequestLogOrderBy.ESTIMATED_PRICE)}
+                {t('aiRequestLogs.table.price')}{' '}
+                {getSortIcon(AiRequestLogOrderBy.ESTIMATED_PRICE)}
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">
                 {t('aiRequestLogs.table.response')}
@@ -116,15 +122,23 @@ export default function AiRequestLogTable({
           <tbody className="divide-y divide-border">
             {logs.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-text-tertiary">
+                <td
+                  colSpan={7}
+                  className="px-4 py-8 text-center text-text-tertiary"
+                >
                   {t('aiRequestLogs.noLogs')}
                 </td>
               </tr>
             ) : (
               logs.map((log) => {
                 const isExpanded = expandedRows.has(log.id);
-                const responseContent = (log.responseJson as { choices?: Array<{ message?: { content?: string } }> })?.choices?.[0]?.message?.content || '';
-                
+                const responseContent =
+                  (
+                    log.responseJson as {
+                      choices?: Array<{ message?: { content?: string } }>;
+                    }
+                  )?.choices?.[0]?.message?.content || '';
+
                 return (
                   <tr key={log.id} className="hover:bg-background-tertiary">
                     <td className="px-4 py-3 text-sm text-text-primary">
@@ -132,7 +146,9 @@ export default function AiRequestLogTable({
                     </td>
                     <td className="px-4 py-3 text-sm text-text-primary">
                       {log.user
-                        ? `${log.user.firstName || ''} ${log.user.lastName || ''}`.trim() || log.user.email || log.userId
+                        ? `${log.user.firstName || ''} ${log.user.lastName || ''}`.trim() ||
+                          log.user.email ||
+                          log.userId
                         : log.userId || t('aiRequestLogs.deletedUser')}
                     </td>
                     <td className="px-4 py-3 text-sm text-text-primary">
@@ -155,7 +171,9 @@ export default function AiRequestLogTable({
                         onClick={() => toggleRow(log.id)}
                         className="text-primary hover:text-primary-hover"
                       >
-                        {isExpanded ? t('aiRequestLogs.collapse') : t('aiRequestLogs.expand')}
+                        {isExpanded
+                          ? t('aiRequestLogs.collapse')
+                          : t('aiRequestLogs.expand')}
                       </button>
                     </td>
                   </tr>
@@ -169,7 +187,7 @@ export default function AiRequestLogTable({
       {/* Expanded row details */}
       {logs.map((log) => {
         if (!expandedRows.has(log.id)) return null;
-        
+
         return (
           <div
             key={`expanded-${log.id}`}
@@ -203,7 +221,10 @@ export default function AiRequestLogTable({
           <div className="text-sm text-text-tertiary">
             {t('aiRequestLogs.pagination.showing', {
               start: (pagination.page - 1) * pagination.pageSize + 1,
-              end: Math.min(pagination.page * pagination.pageSize, pagination.total),
+              end: Math.min(
+                pagination.page * pagination.pageSize,
+                pagination.total
+              ),
               total: pagination.total,
             })}
           </div>

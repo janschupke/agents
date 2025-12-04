@@ -99,8 +99,14 @@ function App() {
           <Route path="/" element={<Navigate to={ROUTES.USERS} replace />} />
           <Route path={ROUTES.USERS} element={<UsersPage />} />
           <Route path={ROUTES.SYSTEM_RULES} element={<SystemRulesPage />} />
-          <Route path={ROUTES.AGENT_ARCHETYPES} element={<AgentArchetypesPage />} />
-          <Route path={ROUTES.AI_REQUEST_LOGS} element={<AiRequestLogsPage />} />
+          <Route
+            path={ROUTES.AGENT_ARCHETYPES}
+            element={<AgentArchetypesPage />}
+          />
+          <Route
+            path={ROUTES.AI_REQUEST_LOGS}
+            element={<AiRequestLogsPage />}
+          />
         </Routes>
       </Layout>
     </BrowserRouter>

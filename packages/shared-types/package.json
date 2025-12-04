@@ -7,28 +7,8 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./personality-types": {
-      "import": "./dist/personality-types.js",
-      "types": "./dist/personality-types.d.ts"
-    },
-    "./interests": {
-      "import": "./dist/interests.js",
-      "types": "./dist/interests.d.ts"
-    },
-    "./numeric": {
-      "import": "./dist/numeric.js",
-      "types": "./dist/numeric.d.ts"
-    },
-    "./openai": {
-      "import": "./dist/openai.js",
-      "types": "./dist/openai.d.ts"
-    },
-    "./magic-strings": {
-      "import": "./dist/magic-strings.js",
-      "types": "./dist/magic-strings.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "scripts": {

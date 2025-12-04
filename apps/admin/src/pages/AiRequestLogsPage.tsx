@@ -2,14 +2,21 @@ import { useState } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useAiRequestLogs } from '../hooks/queries/use-ai-request-logs';
 import AiRequestLogTable from '../components/AiRequestLogTable';
-import { AiRequestLogOrderBy, OrderDirection } from '../types/ai-request-log.enums';
+import {
+  AiRequestLogOrderBy,
+  OrderDirection,
+} from '../types/ai-request-log.enums';
 
 export default function AiRequestLogsPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(50);
-  const [orderBy, setOrderBy] = useState<AiRequestLogOrderBy>(AiRequestLogOrderBy.CREATED_AT);
-  const [orderDirection, setOrderDirection] = useState<OrderDirection>(OrderDirection.DESC);
+  const [orderBy, setOrderBy] = useState<AiRequestLogOrderBy>(
+    AiRequestLogOrderBy.CREATED_AT
+  );
+  const [orderDirection, setOrderDirection] = useState<OrderDirection>(
+    OrderDirection.DESC
+  );
 
   const { data, isLoading, error } = useAiRequestLogs({
     page,
