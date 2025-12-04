@@ -114,7 +114,7 @@ describe('useMessageTranslation', () => {
     expect(TranslationService.translateMessage).toHaveBeenCalledWith(1);
   });
 
-  it('should translate assistant message with words on demand', async () => {
+  it('should translate assistant message with words on demand when translation is missing', async () => {
     const mockResponse = {
       translation: 'Hello, how are you?',
       wordTranslations: [
@@ -124,6 +124,13 @@ describe('useMessageTranslation', () => {
           sentenceContext: 'Hola, ¿cómo estás?',
         },
       ],
+    };
+
+    // Message without translation (initial extraction failed)
+    const messageWithoutTranslation = {
+      ...mockAssistantMessage,
+      translation: undefined,
+      wordTranslations: undefined,
     };
 
     vi.mocked(TranslationService.translateMessageWithWords).mockResolvedValue(
@@ -138,7 +145,7 @@ describe('useMessageTranslation', () => {
 
     const { result } = renderHook(() =>
       useMessageTranslation({
-        message: mockAssistantMessage,
+        message: messageWithoutTranslation,
         messageId: 2,
       })
     );
@@ -161,6 +168,58 @@ describe('useMessageTranslation', () => {
     expect(TranslationService.translateMessageWithWords).toHaveBeenCalledWith(
       2
     );
+  });
+
+  it('should toggle translation display for assistant message when translation already exists', async () => {
+    const messageWithTranslation = {
+      ...mockAssistantMessage,
+      translation: 'Hello, how are you?',
+      wordTranslations: [
+        {
+          originalWord: 'Hola',
+          translation: 'Hello',
+        },
+      ],
+    };
+
+    vi.mocked(WordTranslationService.getMessageTranslations).mockResolvedValue({
+      translation: 'Hello, how are you?',
+      wordTranslations: [
+        {
+          originalWord: 'Hola',
+          translation: 'Hello',
+        },
+      ],
+    });
+
+    const { result } = renderHook(() =>
+      useMessageTranslation({
+        message: messageWithTranslation,
+        messageId: 2,
+      })
+    );
+
+    // Wait for initial effect
+    await waitFor(() => {
+      expect(WordTranslationService.getMessageTranslations).toHaveBeenCalled();
+    });
+
+    expect(result.current.showTranslation).toBe(false);
+
+    // Click translate button - should just toggle, not make API call
+    await act(async () => {
+      await result.current.handleTranslate();
+    });
+
+    expect(result.current.showTranslation).toBe(true);
+    expect(TranslationService.translateMessageWithWords).not.toHaveBeenCalled();
+
+    // Click again - should toggle off
+    await act(async () => {
+      await result.current.handleTranslate();
+    });
+
+    expect(result.current.showTranslation).toBe(false);
   });
 
   it('should toggle translation display if already translated', async () => {

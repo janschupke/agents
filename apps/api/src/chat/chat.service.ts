@@ -337,32 +337,62 @@ export class ChatService {
       `Received response from OpenAI (length: ${response.length})`
     );
 
-    // Extract words from response if OpenAI included them in JSON format
-    let extractedWords: Array<{ originalWord: string }> = [];
+    // Extract words AND translations from response JSON (required in prompt)
+    let extractedWords: Array<{ originalWord: string; translation: string }> = [];
+    let extractedTranslation: string | undefined;
     let cleanedResponse = response;
+    let translationsExtracted = false;
+
     try {
-      // Check if response ends with a JSON structure containing words
+      // Extract JSON with translations from response
       const jsonMatch = response.match(/\n\s*\{[\s\S]*"words"[\s\S]*\}\s*$/);
       if (jsonMatch) {
         const jsonStr = jsonMatch[0].trim();
         const parsed = JSON.parse(jsonStr);
-        if (parsed.words && Array.isArray(parsed.words)) {
+
+        if (parsed.words && Array.isArray(parsed.words) && parsed.fullTranslation) {
           extractedWords = parsed.words
-            .filter((w: any) => w.originalWord && typeof w.originalWord === 'string')
-            .map((w: any) => ({ originalWord: w.originalWord }));
+            .filter(
+              (w: any) =>
+                w.originalWord &&
+                w.translation &&
+                typeof w.originalWord === 'string' &&
+                typeof w.translation === 'string'
+            )
+            .map((w: any) => ({
+              originalWord: w.originalWord,
+              translation: w.translation,
+            }));
+
+          extractedTranslation = parsed.fullTranslation;
+
           // Remove JSON from response
-          cleanedResponse = response.substring(0, response.length - jsonMatch[0].length).trim();
+          cleanedResponse = response.substring(
+            0,
+            response.length - jsonMatch[0].length
+          ).trim();
+
+          translationsExtracted = true;
+
           this.logger.debug(
-            `Extracted ${extractedWords.length} words from OpenAI response`
+            `Extracted ${extractedWords.length} words and translation from OpenAI response`
+          );
+        } else {
+          this.logger.warn(
+            'Response JSON missing required fields (words or fullTranslation)'
           );
         }
+      } else {
+        this.logger.warn('No JSON structure found in OpenAI response');
       }
     } catch (error) {
-      // If JSON parsing fails, continue with original response
-      this.logger.debug('No words found in response JSON, will parse separately');
+      this.logger.warn('Failed to extract translations from response JSON:', error);
+      // If extraction fails, we still have the chat response
+      // Message is returned without translations, user can request translation manually
+      translationsExtracted = false;
     }
 
-    // Save assistant message to database with cleaned response (without JSON if present)
+    // Save assistant message (always saved, even if translations failed)
     const assistantMessage = await this.messageRepository.create(
       session.id,
       MessageRole.ASSISTANT,
@@ -376,36 +406,57 @@ export class ChatService {
     );
     this.logger.debug(`Saved assistant message ${assistantMessage.id}`);
 
-    // Parse words immediately to enable highlighting (without translation)
-    // Use extracted words if available, otherwise parse from response
-    try {
-      if (extractedWords.length > 0) {
-        // Use words extracted from response
-        await this.wordTranslationService.saveParsedWords(
+    // Save extracted translations if available
+    if (translationsExtracted && extractedWords.length > 0 && extractedTranslation) {
+      try {
+        await this.wordTranslationService.saveExtractedTranslations(
           assistantMessage.id,
           extractedWords,
+          extractedTranslation,
           cleanedResponse
         );
         this.logger.debug(
-          `Saved ${extractedWords.length} words extracted from OpenAI response for message ${assistantMessage.id}`
+          `Saved translations for assistant message ${assistantMessage.id}`
         );
-      } else {
-        // Parse words using OpenAI
-        await this.wordTranslationService.parseWordsInMessage(
-          assistantMessage.id,
-          cleanedResponse,
-          apiKey
-        );
-        this.logger.debug(
-          `Parsed words for message ${assistantMessage.id}`
-        );
+      } catch (error) {
+        this.logger.error('Error saving extracted translations:', error);
+        // Continue without translations - message still works
       }
-    } catch (error) {
-      this.logger.error('Error parsing words:', error);
-      // Continue without word parsing - highlighting will still work if words exist
+    } else {
+      // Save words without translations (for highlighting, translation can be requested manually)
+      if (extractedWords.length > 0) {
+        try {
+          await this.wordTranslationService.saveParsedWords(
+            assistantMessage.id,
+            extractedWords.map((w) => ({ originalWord: w.originalWord })),
+            cleanedResponse
+          );
+          this.logger.debug(
+            `Saved words without translations for assistant message ${assistantMessage.id}`
+          );
+        } catch (error) {
+          this.logger.error('Error saving words:', error);
+          // Continue without words - highlighting won't work but message still works
+        }
+      } else {
+        // Try to parse words using OpenAI (fallback)
+        try {
+          await this.wordTranslationService.parseWordsInMessage(
+            assistantMessage.id,
+            cleanedResponse,
+            apiKey
+          );
+          this.logger.debug(
+            `Parsed words for message ${assistantMessage.id}`
+          );
+        } catch (error) {
+          this.logger.error('Error parsing words:', error);
+          // Continue without word parsing - highlighting will still work if words exist
+        }
+      }
     }
 
-    // Get parsed words (may have empty translations) for response
+    // Get word translations for response (with translations if extracted)
     let parsedWordTranslations: Array<{
       originalWord: string;
       translation: string;
@@ -417,12 +468,22 @@ export class ChatService {
       translation: string;
       pinyin: string | null;
     }> = [];
+
     try {
-      // Get parsed words (may have empty translations)
-      parsedWordTranslations =
-        await this.wordTranslationService.getWordTranslationsForMessage(
-          assistantMessage.id
-        );
+      if (translationsExtracted && extractedWords.length > 0) {
+        // Use extracted translations
+        parsedWordTranslations = extractedWords.map((w) => ({
+          originalWord: w.originalWord,
+          translation: w.translation,
+        }));
+      } else {
+        // Get parsed words (may have empty translations)
+        parsedWordTranslations =
+          await this.wordTranslationService.getWordTranslationsForMessage(
+            assistantMessage.id
+          );
+      }
+
       if (parsedWordTranslations.length > 0) {
         // Extract words from parsed word translations
         const words = parsedWordTranslations.map((wt) => wt.originalWord);
@@ -438,8 +499,6 @@ export class ChatService {
       this.logger.error('Error finding saved word matches:', error);
       // Continue without saved word matches
     }
-
-    // Translations are now on-demand only - no automatic background translation
 
     // Save memory periodically (every N messages, or on first message)
     const allMessages =
@@ -484,7 +543,7 @@ export class ChatService {
     }
 
     return {
-      response,
+      response: cleanedResponse,
       session: {
         id: session.id,
         session_name: session.sessionName,
@@ -493,8 +552,13 @@ export class ChatService {
       rawResponse: completion,
       userMessageId: userMessage.id,
       assistantMessageId: assistantMessage.id,
+      translation: translationsExtracted ? extractedTranslation : undefined,
       wordTranslations:
-        parsedWordTranslations.length > 0 ? parsedWordTranslations : undefined,
+        translationsExtracted && parsedWordTranslations.length > 0
+          ? parsedWordTranslations
+          : parsedWordTranslations.length > 0
+            ? parsedWordTranslations
+            : undefined,
       savedWordMatches: savedWordMatches.length > 0 ? savedWordMatches : undefined,
     };
   }

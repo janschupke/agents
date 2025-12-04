@@ -56,6 +56,53 @@ export class WordTranslationService {
   }
 
   /**
+   * Save extracted translations from OpenAI response JSON
+   * Includes both word translations and full translation
+   */
+  async saveExtractedTranslations(
+    messageId: number,
+    words: Array<{ originalWord: string; translation: string }>,
+    fullTranslation: string,
+    messageContent: string
+  ): Promise<void> {
+    // Split message into sentences for context
+    const sentences = this.splitIntoSentences(messageContent);
+
+    // Create a map of word -> sentence for populating sentenceContext
+    const wordToSentenceMap = new Map<string, string>();
+    words.forEach((w) => {
+      const sentence = sentences.find((s) => s.includes(w.originalWord));
+      if (sentence) {
+        wordToSentenceMap.set(w.originalWord, sentence.trim());
+      }
+    });
+
+    // Delete existing translations if any
+    await this.wordTranslationRepository.deleteByMessageId(messageId);
+
+    // Save word translations with translations
+    await this.wordTranslationRepository.createMany(
+      messageId,
+      words.map((w) => ({
+        originalWord: w.originalWord,
+        translation: w.translation,
+        sentenceContext: wordToSentenceMap.get(w.originalWord),
+      })),
+      wordToSentenceMap
+    );
+
+    // Save full translation
+    const existing =
+      await this.translationRepository.findByMessageId(messageId);
+    if (!existing) {
+      await this.translationRepository.create(messageId, fullTranslation);
+    } else {
+      // Update existing translation
+      await this.translationRepository.update(messageId, fullTranslation);
+    }
+  }
+
+  /**
    * Parse words from message content (without translation)
    * This is called immediately after receiving a response to enable highlighting
    * Uses OpenAI to parse words, especially for languages without spaces (e.g., Chinese)

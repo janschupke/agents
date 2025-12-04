@@ -226,18 +226,47 @@ export class MessagePreparationService {
   }
 
   /**
-   * Add instruction for assistant to parse words in response (optional)
-   * This is a hint to OpenAI - we'll parse words ourselves if not provided
+   * Add instruction for assistant to include translations in response (required)
+   * This ensures translations are included in the initial response, eliminating need for second API call
    */
   private addWordParsingInstruction(
     messagesForAPI: MessageForOpenAI[]
   ): void {
-    const wordParsingInstruction = `Note: If your response contains words in languages other than English (especially languages without spaces like Chinese, Japanese, etc.), you may optionally include a JSON structure at the end with parsed words. This is optional and will not affect your main response.
+    const wordParsingInstruction = `CRITICAL INSTRUCTION: You MUST translate YOUR OWN RESPONSE (the assistant's message), NOT the user's message.
 
-If you choose to include it, add it after your main response on a new line:
-{"words": [{"originalWord": "word1"}, {"originalWord": "word2"}]}
+After your main response, add a new line with a JSON structure containing:
+1. Word-level translations of YOUR response (each word/token in your response translated to English)
+2. A complete English translation of YOUR entire response
 
-This helps with word-level highlighting. If you don't include it, that's fine - we'll parse the words automatically.`;
+Format:
+{
+  "words": [
+    {"originalWord": "word_from_your_response", "translation": "english_translation"},
+    {"originalWord": "another_word_from_your_response", "translation": "english_translation"}
+  ],
+  "fullTranslation": "Complete English translation of your entire response"
+}
+
+Requirements:
+- Translate ONLY the words from YOUR response (the assistant's message), not the user's message
+- Parse all words/tokens in YOUR response (especially for languages without spaces like Chinese, Japanese)
+- Provide English translation for each word considering sentence context
+- Provide a complete, natural English translation of YOUR entire response
+- The JSON must be valid and parseable
+- The "originalWord" values must be words from YOUR response, not from the user's message
+
+Example:
+If your response is: "你好，世界！"
+Then your JSON should be:
+{
+  "words": [
+    {"originalWord": "你好", "translation": "hello"},
+    {"originalWord": "世界", "translation": "world"}
+  ],
+  "fullTranslation": "Hello, world!"
+}
+
+DO NOT translate the user's message. Only translate YOUR response.`;
 
     // Check if word parsing instruction is already present
     if (

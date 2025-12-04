@@ -5,6 +5,9 @@ import { SessionRepository } from '../session/session.repository';
 import { OpenAIService } from '../openai/openai.service';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
 import { WordTranslationService } from './word-translation.service';
+import { TranslationStrategyFactory } from './translation-strategy.factory';
+import { TranslationContext } from './translation-strategy.interface';
+import { MessageRole } from '../common/enums/message-role.enum';
 import { OPENAI_PROMPTS } from '../common/constants/openai-prompts.constants.js';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
@@ -25,7 +28,8 @@ export class MessageTranslationService {
     private readonly sessionRepository: SessionRepository,
     private readonly openaiService: OpenAIService,
     private readonly apiCredentialsService: ApiCredentialsService,
-    private readonly wordTranslationService: WordTranslationService
+    private readonly wordTranslationService: WordTranslationService,
+    private readonly translationStrategyFactory: TranslationStrategyFactory
   ) {}
 
   /**
@@ -254,45 +258,36 @@ export class MessageTranslationService {
       throw new ApiKeyRequiredException();
     }
 
-    // Translate words (this will also create full translation)
-    await this.wordTranslationService.translateWordsInMessage(
-      messageId,
-      message.content,
-      apiKey
+    // Get strategy based on message role
+    const strategy = this.translationStrategyFactory.getStrategy(
+      message.role as MessageRole
     );
 
-    // Get the created translations
-    const translation =
-      await this.translationRepository.findByMessageId(messageId);
-    const wordTranslations =
-      await this.wordTranslationService.getWordTranslationsForMessage(
+    // Build context (only for assistant messages)
+    let context: TranslationContext | undefined;
+    if (message.role === MessageRole.ASSISTANT) {
+      const contextMessages = await this.getContextMessages(
+        message.sessionId,
         messageId
       );
-
-    if (wordTranslations.length === 0) {
-      this.logger.error(`Translation failed for message ${messageId}`);
-      throw new Error('Translation failed');
+      context = {
+        conversationHistory: contextMessages,
+        messageRole: message.role as MessageRole,
+      };
+    } else {
+      context = {
+        messageRole: message.role as MessageRole,
+      };
     }
 
-    // Translation might not exist if only words were translated
-    // In that case, derive it from word translations
-    let finalTranslation = translation?.translation;
-    if (!finalTranslation && wordTranslations.length > 0) {
-      // Derive translation from words
-      finalTranslation = wordTranslations
-        .map((wt) => wt.translation)
-        .filter((t) => t && t.trim() !== '')
-        .join(' ');
-    }
+    // Translate using strategy
+    const result = await strategy.translateMessageWithWords(
+      messageId,
+      message.content,
+      apiKey,
+      context
+    );
 
-    if (!finalTranslation) {
-      this.logger.error(`Translation failed for message ${messageId}`);
-      throw new Error('Translation failed');
-    }
-
-    return {
-      translation: finalTranslation,
-      wordTranslations,
-    };
+    return result;
   }
 }

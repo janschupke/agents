@@ -31,4 +31,14 @@ export class MessageTranslationRepository {
       },
     });
   }
+
+  async update(
+    messageId: number,
+    translation: string
+  ): Promise<MessageTranslation> {
+    return this.prisma.messageTranslation.update({
+      where: { messageId },
+      data: { translation },
+    });
+  }
 }

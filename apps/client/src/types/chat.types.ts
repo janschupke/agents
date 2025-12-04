@@ -63,7 +63,8 @@ export interface SendMessageResponse {
   rawResponse?: unknown; // Raw OpenAI response JSON
   userMessageId?: number;
   assistantMessageId?: number;
-  wordTranslations?: WordTranslation[]; // Parsed words (may have empty translations for highlighting)
+  translation?: string; // Full translation (included in initial response for assistant messages)
+  wordTranslations?: WordTranslation[]; // Word translations with translations (for assistant messages)
   savedWordMatches?: Array<{
     originalWord: string;
     savedWordId: number;

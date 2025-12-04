@@ -1,8 +1,25 @@
 import { apiManager } from '../api/api-manager';
-import { WordTranslation } from '../../types/chat.types';
+import { WordTranslation, Message } from '../../types/chat.types';
 import { API_ENDPOINTS } from '../../constants/api.constants';
 
 export class TranslationService {
+  /**
+   * Check if translation is available for a message
+   */
+  static hasTranslation(message: Message): boolean {
+    return message.translation !== undefined;
+  }
+
+  /**
+   * Check if word translations are available for a message
+   */
+  static hasWordTranslations(message: Message): boolean {
+    return (
+      message.wordTranslations !== undefined &&
+      message.wordTranslations.length > 0
+    );
+  }
+
   /**
    * Translate a message to English
    */

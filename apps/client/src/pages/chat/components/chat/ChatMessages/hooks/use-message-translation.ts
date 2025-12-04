@@ -80,37 +80,36 @@ export function useMessageTranslation({
       e.stopPropagation();
     }
 
-    if (!messageId) return;
-
-    // If translation exists, just toggle display
+    // If translation exists (from initial response or previous request), just toggle
     if (translation !== undefined) {
       setShowTranslation(!showTranslation);
       return;
     }
 
-    // Request translation (on-demand)
+    // Request translation on-demand (for user messages or assistant messages without translations)
+    if (!messageId) {
+      return;
+    }
+
     setIsTranslating(true);
     try {
       if (message.role === MessageRole.ASSISTANT) {
         // For assistant messages, request word translations + full translation
+        // Uses conversation context for better quality
         const result =
           await TranslationService.translateMessageWithWords(messageId);
         setTranslation(result.translation);
-        setShowTranslation(true);
-
-        // Update message with translations
         setWordTranslations(result.wordTranslations);
         message.translation = result.translation;
         message.wordTranslations = result.wordTranslations;
+        setShowTranslation(true);
       } else {
-        // For user messages, request full translation only
+        // For user messages, request full translation only (no context)
         const translatedText =
           await TranslationService.translateMessage(messageId);
         setTranslation(translatedText);
-        setShowTranslation(true);
-
-        // Update message in parent
         message.translation = translatedText;
+        setShowTranslation(true);
       }
     } catch (error) {
       console.error('Translation failed:', error);

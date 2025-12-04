@@ -7,12 +7,14 @@ import { SessionRepository } from '../session/session.repository';
 import { OpenAIService } from '../openai/openai.service';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
 import { WordTranslationService } from './word-translation.service';
+import { TranslationStrategyFactory } from './translation-strategy.factory';
 import {
   ERROR_MESSAGES,
   MAGIC_STRINGS,
 } from '../common/constants/error-messages.constants.js';
 import OpenAI from 'openai';
 import { Message } from '@prisma/client';
+import { MessageRole } from '../common/enums/message-role.enum';
 
 describe('MessageTranslationService', () => {
   let service: MessageTranslationService;
@@ -22,6 +24,7 @@ describe('MessageTranslationService', () => {
   let openaiService: jest.Mocked<OpenAIService>;
   let apiCredentialsService: jest.Mocked<ApiCredentialsService>;
   let wordTranslationService: jest.Mocked<WordTranslationService>;
+  let translationStrategyFactory: jest.Mocked<TranslationStrategyFactory>;
 
   const mockTranslationRepository = {
     findByMessageId: jest.fn(),
@@ -52,6 +55,10 @@ describe('MessageTranslationService', () => {
     getWordTranslationsForMessages: jest.fn(),
   };
 
+  const mockTranslationStrategyFactory = {
+    getStrategy: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -80,6 +87,10 @@ describe('MessageTranslationService', () => {
           provide: WordTranslationService,
           useValue: mockWordTranslationService,
         },
+        {
+          provide: TranslationStrategyFactory,
+          useValue: mockTranslationStrategyFactory,
+        },
       ],
     }).compile();
 
@@ -90,6 +101,7 @@ describe('MessageTranslationService', () => {
     openaiService = module.get(OpenAIService);
     apiCredentialsService = module.get(ApiCredentialsService);
     wordTranslationService = module.get(WordTranslationService);
+    translationStrategyFactory = module.get(TranslationStrategyFactory);
 
     jest.clearAllMocks();
   });
@@ -377,7 +389,7 @@ describe('MessageTranslationService', () => {
       ).rejects.toThrow(`Message with ID ${messageId} not found`);
     });
 
-    it('should create translations if they do not exist', async () => {
+    it('should use strategy to create translations for assistant message', async () => {
       const messageId = 1;
       const userId = 'user-1';
       const apiKey = 'api-key';
@@ -399,22 +411,22 @@ describe('MessageTranslationService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      const newTranslation = {
-        id: 1,
-        messageId,
-        translation: 'Hello',
-        createdAt: new Date(),
-      };
-      const wordTranslations = [
-        {
-          id: 1,
-          messageId,
-          originalWord: 'Bonjour',
-          translation: 'Hello',
-          sentenceContext: 'Bonjour',
-          createdAt: new Date(),
-        },
+      const contextMessages = [
+        { role: 'user', content: 'Hello' },
+        { role: 'assistant', content: 'Hi!' },
       ];
+      const mockStrategy = {
+        translateMessageWithWords: jest.fn().mockResolvedValue({
+          translation: 'Hello',
+          wordTranslations: [
+            {
+              originalWord: 'Bonjour',
+              translation: 'Hello',
+              sentenceContext: 'Bonjour',
+            },
+          ],
+        }),
+      };
 
       messageRepository.findById.mockResolvedValue(message);
       sessionRepository.findByIdAndUserId.mockResolvedValue(session);
@@ -423,25 +435,110 @@ describe('MessageTranslationService', () => {
         []
       );
       apiCredentialsService.getApiKey.mockResolvedValue(apiKey);
-      wordTranslationService.translateWordsInMessage.mockResolvedValue(
-        undefined
+      messageRepository.findAllBySessionId.mockResolvedValue(
+        contextMessages as Message[]
       );
-      translationRepository.findByMessageId
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce(newTranslation);
-      wordTranslationService.getWordTranslationsForMessage.mockResolvedValue(
-        wordTranslations
+      translationStrategyFactory.getStrategy.mockReturnValue(
+        mockStrategy as any
       );
 
       const result = await service.translateMessageWithWords(messageId, userId);
 
       expect(result).toEqual({
         translation: 'Hello',
-        wordTranslations,
+        wordTranslations: [
+          {
+            originalWord: 'Bonjour',
+            translation: 'Hello',
+            sentenceContext: 'Bonjour',
+          },
+        ],
       });
+      expect(translationStrategyFactory.getStrategy).toHaveBeenCalledWith(
+        MessageRole.ASSISTANT
+      );
+      expect(mockStrategy.translateMessageWithWords).toHaveBeenCalledWith(
+        messageId,
+        'Bonjour',
+        apiKey,
+        expect.objectContaining({
+          conversationHistory: contextMessages,
+          messageRole: MessageRole.ASSISTANT,
+        })
+      );
+    });
+
+    it('should use strategy to create translations for user message', async () => {
+      const messageId = 1;
+      const userId = 'user-1';
+      const apiKey = 'api-key';
+      const message = {
+        id: messageId,
+        sessionId: 1,
+        role: 'user',
+        content: 'Bonjour',
+        metadata: null,
+        rawRequest: null,
+        rawResponse: null,
+        createdAt: new Date(),
+      };
+      const session = {
+        id: 1,
+        userId,
+        agentId: 1,
+        sessionName: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const mockStrategy = {
+        translateMessageWithWords: jest.fn().mockResolvedValue({
+          translation: 'Hello',
+          wordTranslations: [
+            {
+              originalWord: 'Bonjour',
+              translation: 'Hello',
+            },
+          ],
+        }),
+      };
+
+      messageRepository.findById.mockResolvedValue(message);
+      sessionRepository.findByIdAndUserId.mockResolvedValue(session);
+      translationRepository.findByMessageId.mockResolvedValue(null);
+      wordTranslationService.getWordTranslationsForMessage.mockResolvedValue(
+        []
+      );
+      apiCredentialsService.getApiKey.mockResolvedValue(apiKey);
+      translationStrategyFactory.getStrategy.mockReturnValue(
+        mockStrategy as any
+      );
+
+      const result = await service.translateMessageWithWords(messageId, userId);
+
+      expect(result).toEqual({
+        translation: 'Hello',
+        wordTranslations: [
+          {
+            originalWord: 'Bonjour',
+            translation: 'Hello',
+          },
+        ],
+      });
+      expect(translationStrategyFactory.getStrategy).toHaveBeenCalledWith(
+        MessageRole.USER
+      );
+      expect(mockStrategy.translateMessageWithWords).toHaveBeenCalledWith(
+        messageId,
+        'Bonjour',
+        apiKey,
+        expect.objectContaining({
+          messageRole: MessageRole.USER,
+        })
+      );
+      // User messages should not have conversation history
       expect(
-        wordTranslationService.translateWordsInMessage
-      ).toHaveBeenCalledWith(messageId, 'Bonjour', apiKey);
+        mockStrategy.translateMessageWithWords.mock.calls[0][3]
+      ).not.toHaveProperty('conversationHistory');
     });
   });
 });
