@@ -58,7 +58,7 @@ export function useAgentConfigOperations({
         (typeof values.description === 'string'
           ? values.description.trim()
           : '') || undefined,
-      behavior_rules: validRules.length > 0 ? validRules : undefined,
+      behavior_rules: validRules.length > 0 ? validRules : [],
     };
 
     try {

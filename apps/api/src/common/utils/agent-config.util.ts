@@ -11,19 +11,48 @@ export function mapAgentConfigs(
     return undefined;
   }
 
-  return {
-    temperature: configs.temperature,
-    system_prompt: configs.system_prompt,
-    behavior_rules: configs.behavior_rules,
-    model: configs.model,
-    max_tokens: configs.max_tokens,
-    // New fields
-    response_length: configs.response_length,
-    age: configs.age,
-    gender: configs.gender,
-    personality: configs.personality,
-    sentiment: configs.sentiment,
-    interests: configs.interests,
-    availability: configs.availability,
-  };
+  const mapped: Record<string, unknown> = {};
+
+  // Always include behavior_rules if it exists in the DTO (even if undefined)
+  // This allows us to clear it when user deletes all rules
+  if ('behavior_rules' in configs) {
+    mapped.behavior_rules = configs.behavior_rules;
+  }
+
+  // Include other fields only if they're defined
+  if (configs.temperature !== undefined) {
+    mapped.temperature = configs.temperature;
+  }
+  if (configs.system_prompt !== undefined) {
+    mapped.system_prompt = configs.system_prompt;
+  }
+  if (configs.model !== undefined) {
+    mapped.model = configs.model;
+  }
+  if (configs.max_tokens !== undefined) {
+    mapped.max_tokens = configs.max_tokens;
+  }
+  if (configs.response_length !== undefined) {
+    mapped.response_length = configs.response_length;
+  }
+  if (configs.age !== undefined) {
+    mapped.age = configs.age;
+  }
+  if (configs.gender !== undefined) {
+    mapped.gender = configs.gender;
+  }
+  if (configs.personality !== undefined) {
+    mapped.personality = configs.personality;
+  }
+  if (configs.sentiment !== undefined) {
+    mapped.sentiment = configs.sentiment;
+  }
+  if (configs.interests !== undefined) {
+    mapped.interests = configs.interests;
+  }
+  if (configs.availability !== undefined) {
+    mapped.availability = configs.availability;
+  }
+
+  return mapped;
 }

@@ -107,6 +107,8 @@ export class AgentService {
 
     // Set configs if provided
     if (configs) {
+      // Store only user-provided behavior rules (don't merge with auto-generated rules)
+      // Auto-generated rules will be added during message preparation, not stored in DB
       await this.agentRepository.updateConfigs(agent.id, configs);
       this.logger.debug(`Updated configs for agent ${agent.id}`);
     }
@@ -172,6 +174,8 @@ export class AgentService {
 
     // Update configs if provided
     if (configs) {
+      // Store only user-provided behavior rules (don't merge with auto-generated rules)
+      // Auto-generated rules will be added during message preparation, not stored in DB
       await this.agentRepository.updateConfigs(id, configs);
       this.logger.debug(`Updated configs for agent ${id}`);
     }

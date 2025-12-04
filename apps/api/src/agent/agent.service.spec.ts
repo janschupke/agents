@@ -225,6 +225,97 @@ describe('AgentService', () => {
       );
     });
 
+    it('should pass empty behavior_rules array to repository without merging on create', async () => {
+      const userId = 'user-123';
+      const name = 'New Agent';
+      const mockAgent = {
+        id: 1,
+        name,
+        description: null,
+        userId,
+        avatarUrl: null,
+        agentType: AgentType.GENERAL,
+        language: null,
+        createdAt: new Date(),
+      };
+      const configs = {
+        behavior_rules: [], // Empty array - should be passed through as-is
+        temperature: 0.7,
+      };
+
+      mockAgentRepository.findByName.mockResolvedValue(null);
+      mockAgentRepository.create.mockResolvedValue(mockAgent);
+      mockSessionRepository.create.mockResolvedValue({
+        id: 1,
+        userId,
+        agentId: mockAgent.id,
+        sessionName: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastMessageAt: null,
+      });
+
+      await service.create(userId, name, undefined, undefined, undefined, undefined, configs);
+
+      // Verify that empty array is passed through without merging
+      expect(mockAgentRepository.updateConfigs).toHaveBeenCalledWith(
+        mockAgent.id,
+        expect.objectContaining({
+          behavior_rules: [],
+        })
+      );
+    });
+
+    it('should pass user-provided behavior_rules without merging on create', async () => {
+      const userId = 'user-123';
+      const name = 'New Agent';
+      const mockAgent = {
+        id: 1,
+        name,
+        description: null,
+        userId,
+        avatarUrl: null,
+        agentType: AgentType.GENERAL,
+        language: null,
+        createdAt: new Date(),
+      };
+      const configs = {
+        behavior_rules: ['User rule 1'],
+        temperature: 0.7,
+        // Config values that would generate rules
+        age: 25,
+        gender: 'male',
+      };
+
+      mockAgentRepository.findByName.mockResolvedValue(null);
+      mockAgentRepository.create.mockResolvedValue(mockAgent);
+      mockSessionRepository.create.mockResolvedValue({
+        id: 1,
+        userId,
+        agentId: mockAgent.id,
+        sessionName: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastMessageAt: null,
+      });
+
+      await service.create(userId, name, undefined, undefined, undefined, undefined, configs);
+
+      // Verify that only user-provided rules are passed, not merged
+      expect(mockAgentRepository.updateConfigs).toHaveBeenCalledWith(
+        mockAgent.id,
+        expect.objectContaining({
+          behavior_rules: ['User rule 1'],
+        })
+      );
+      // Verify that the rules array does NOT contain auto-generated rules
+      const updateCall = mockAgentRepository.updateConfigs.mock.calls[0];
+      const passedConfigs = updateCall[1] as Record<string, unknown>;
+      expect(passedConfigs.behavior_rules).toEqual(['User rule 1']);
+      expect(Array.isArray(passedConfigs.behavior_rules)).toBe(true);
+      expect((passedConfigs.behavior_rules as string[]).length).toBe(1);
+    });
+
     it('should throw HttpException if name is empty', async () => {
       const userId = 'user-123';
       const name = '';
@@ -360,6 +451,144 @@ describe('AgentService', () => {
       await expect(service.update(agentId, userId, name)).rejects.toThrow(
         'Agent with this name already exists'
       );
+    });
+
+    it('should pass empty behavior_rules array to repository without merging', async () => {
+      const agentId = 1;
+      const userId = 'user-123';
+      const name = 'Updated Agent';
+      const existingAgent = {
+        id: agentId,
+        name: 'Old Agent',
+        description: 'Old Description',
+        userId,
+      };
+      const updatedAgent = {
+        ...existingAgent,
+        name,
+      };
+      const configs = {
+        behavior_rules: [], // Empty array - should be passed through as-is
+        temperature: 0.8,
+      };
+
+      mockAgentRepository.findByIdAndUserId.mockResolvedValue(existingAgent);
+      mockAgentRepository.findByName.mockResolvedValue(null);
+      mockAgentRepository.update.mockResolvedValue(updatedAgent);
+
+      await service.update(
+        agentId,
+        userId,
+        name,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        configs
+      );
+
+      // Verify that empty array is passed through without merging
+      expect(mockAgentRepository.updateConfigs).toHaveBeenCalledWith(
+        agentId,
+        expect.objectContaining({
+          behavior_rules: [],
+        })
+      );
+    });
+
+    it('should pass undefined behavior_rules to repository without merging', async () => {
+      const agentId = 1;
+      const userId = 'user-123';
+      const name = 'Updated Agent';
+      const existingAgent = {
+        id: agentId,
+        name: 'Old Agent',
+        description: 'Old Description',
+        userId,
+      };
+      const updatedAgent = {
+        ...existingAgent,
+        name,
+      };
+      const configs = {
+        behavior_rules: undefined, // Undefined - should be passed through as-is
+        temperature: 0.8,
+      };
+
+      mockAgentRepository.findByIdAndUserId.mockResolvedValue(existingAgent);
+      mockAgentRepository.findByName.mockResolvedValue(null);
+      mockAgentRepository.update.mockResolvedValue(updatedAgent);
+
+      await service.update(
+        agentId,
+        userId,
+        name,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        configs
+      );
+
+      // Verify that undefined is passed through without merging
+      expect(mockAgentRepository.updateConfigs).toHaveBeenCalledWith(
+        agentId,
+        expect.objectContaining({
+          behavior_rules: undefined,
+        })
+      );
+    });
+
+    it('should pass user-provided behavior_rules without merging with auto-generated rules', async () => {
+      const agentId = 1;
+      const userId = 'user-123';
+      const name = 'Updated Agent';
+      const existingAgent = {
+        id: agentId,
+        name: 'Old Agent',
+        description: 'Old Description',
+        userId,
+      };
+      const updatedAgent = {
+        ...existingAgent,
+        name,
+      };
+      const configs = {
+        behavior_rules: ['User rule 1', 'User rule 2'],
+        temperature: 0.8,
+        // Config values that would generate rules
+        age: 25,
+        gender: 'male',
+      };
+
+      mockAgentRepository.findByIdAndUserId.mockResolvedValue(existingAgent);
+      mockAgentRepository.findByName.mockResolvedValue(null);
+      mockAgentRepository.update.mockResolvedValue(updatedAgent);
+
+      await service.update(
+        agentId,
+        userId,
+        name,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        configs
+      );
+
+      // Verify that only user-provided rules are passed, not merged with auto-generated
+      expect(mockAgentRepository.updateConfigs).toHaveBeenCalledWith(
+        agentId,
+        expect.objectContaining({
+          behavior_rules: ['User rule 1', 'User rule 2'],
+        })
+      );
+      // Verify that the rules array does NOT contain auto-generated rules
+      const updateCall = mockAgentRepository.updateConfigs.mock.calls[0];
+      const passedConfigs = updateCall[1] as Record<string, unknown>;
+      expect(passedConfigs.behavior_rules).toEqual(['User rule 1', 'User rule 2']);
+      expect(Array.isArray(passedConfigs.behavior_rules)).toBe(true);
+      expect((passedConfigs.behavior_rules as string[]).length).toBe(2);
     });
   });
 

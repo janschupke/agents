@@ -47,7 +47,10 @@ export function useAgentSave({
           configs: {
             temperature: values.temperature,
             system_prompt: values.description,
-            behavior_rules: values.behaviorRules,
+            behavior_rules:
+              values.behaviorRules.filter((r) => r.trim()).length > 0
+                ? values.behaviorRules.filter((r) => r.trim())
+                : [],
           },
         });
 
@@ -58,13 +61,13 @@ export function useAgentSave({
           avatarUrl: values.avatarUrl || undefined,
           agentType: values.agentType,
           language: values.language || undefined,
-          configs: {
-            temperature: values.temperature,
-            system_prompt: values.description.trim() || undefined,
-            behavior_rules:
-              values.behaviorRules.filter((r) => r.trim()).length > 0
-                ? values.behaviorRules.filter((r) => r.trim())
-                : undefined,
+            configs: {
+              temperature: values.temperature,
+              system_prompt: values.description.trim() || undefined,
+              behavior_rules:
+                values.behaviorRules.filter((r) => r.trim()).length > 0
+                  ? values.behaviorRules.filter((r) => r.trim())
+                  : [],
             // New fields
             response_length: values.responseLength || undefined,
             age: values.age ?? undefined,
@@ -94,7 +97,7 @@ export function useAgentSave({
               behavior_rules:
                 values.behaviorRules.filter((r) => r.trim()).length > 0
                   ? values.behaviorRules.filter((r) => r.trim())
-                  : undefined,
+                  : [],
               // New fields
               response_length: values.responseLength || undefined,
               age: values.age ?? undefined,
