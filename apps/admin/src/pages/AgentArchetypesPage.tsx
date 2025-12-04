@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AgentArchetypeService } from '../services/agent-archetype.service';
 import { AgentArchetype } from '../types/agent-archetype.types';
 import AgentArchetypeList from '../components/AgentArchetypeList';
+import AgentArchetypeForm from '../components/AgentArchetypeForm';
 import { IconPlus } from '../components/ui/Icons';
 
 export default function AgentArchetypesPage() {
@@ -72,25 +73,11 @@ export default function AgentArchetypesPage() {
         )}
       </div>
       {isCreating || editingArchetype ? (
-        <div className="bg-background-secondary rounded-lg p-6 border border-border">
-          <p className="text-text-secondary mb-4">
-            {t('archetypes.formPlaceholder')}
-          </p>
-          <div className="flex gap-2">
-            <button
-              onClick={handleSave}
-              className="px-4 py-2 bg-primary text-text-inverse rounded-md text-sm font-medium hover:bg-primary-hover transition-colors"
-            >
-              {t('archetypes.save')}
-            </button>
-            <button
-              onClick={handleCancel}
-              className="px-4 py-2 bg-background text-text-primary border border-border rounded-md text-sm font-medium hover:bg-background-secondary transition-colors"
-            >
-              {t('archetypes.cancel')}
-            </button>
-          </div>
-        </div>
+        <AgentArchetypeForm
+          archetype={editingArchetype}
+          onSave={handleSave}
+          onCancel={handleCancel}
+        />
       ) : (
         <AgentArchetypeList
           archetypes={archetypes}

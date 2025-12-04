@@ -55,7 +55,45 @@
     "empty": "No archetypes found. Create one to get started.",
     "error": "Failed to load archetypes",
     "save": "Save",
+    "saving": "Saving...",
     "cancel": "Cancel",
-    "formPlaceholder": "Archetype form will be implemented here. For now, use the API directly to create archetypes."
+    "formPlaceholder": "Archetype form will be implemented here. For now, use the API directly to create archetypes.",
+    "form": {
+      "basicInfo": "Basic Information",
+      "configuration": "Configuration",
+      "personality": "Personality & Behavior",
+      "name": "Name",
+      "description": "Description",
+      "avatarUrl": "Avatar URL",
+      "agentType": "Agent Type",
+      "language": "Language",
+      "temperature": "Temperature",
+      "systemPrompt": "System Prompt",
+      "model": "Model",
+      "maxTokens": "Max Tokens",
+      "behaviorRules": "Behavior Rules",
+      "responseLength": "Response Length",
+      "age": "Age",
+      "gender": "Gender",
+      "personality": "Personality",
+      "sentiment": "Sentiment",
+      "interests": "Interests",
+      "availability": "Availability",
+      "addRule": "Add a behavior rule",
+      "add": "Add",
+      "remove": "Remove",
+      "selectAgentType": "Select agent type",
+      "selectResponseLength": "Select response length",
+      "selectGender": "Select gender",
+      "selectPersonality": "Select personality",
+      "selectSentiment": "Select sentiment",
+      "selectAvailability": "Select availability",
+      "errors": {
+        "nameRequired": "Name is required",
+        "temperatureRange": "Temperature must be between 0 and 2",
+        "ageRange": "Age must be between 0 and 100",
+        "maxTokensMin": "Max tokens must be at least 1"
+      }
+    }
   }
 }

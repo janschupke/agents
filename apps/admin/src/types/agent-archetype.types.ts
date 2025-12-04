@@ -1,7 +1,4 @@
-export enum AgentType {
-  GENERAL = 'GENERAL',
-  LANGUAGE_ASSISTANT = 'LANGUAGE_ASSISTANT',
-}
+import { AgentType } from './agent.types';
 
 export interface AgentArchetype {
   id: number;
