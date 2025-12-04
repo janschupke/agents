@@ -9,6 +9,9 @@
     "browser": true,
     "es2020": true
   },
+  "rules": {
+    "storybook/no-renderer-packages": "off"
+  },
   "ignorePatterns": [
     "dist",
     "node_modules"
