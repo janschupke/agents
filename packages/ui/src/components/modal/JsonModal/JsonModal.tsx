@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import ModalBackdrop from '../components/ModalBackdrop';
 import ModalContainer from '../components/ModalContainer';
 import ModalHeader from '../components/ModalHeader';
@@ -21,6 +22,23 @@ export default function JsonModal({
   title,
   data,
 }: JsonModalProps) {
+  // Handle keyboard shortcuts: Esc and Enter to close
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' || event.key === 'Enter') {
+        event.preventDefault();
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const jsonString = JSON.stringify(data, null, 2);

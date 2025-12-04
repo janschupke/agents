@@ -47,8 +47,15 @@ export default function AiRequestLogTable({
     return new Date(dateString).toLocaleString();
   };
 
-  const formatPrice = (price: number) => {
-    return `$${price.toFixed(6)}`;
+  const formatPrice = (price: number | string | null | undefined) => {
+    if (price === null || price === undefined) {
+      return '$0.000000';
+    }
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    if (isNaN(numPrice)) {
+      return '$0.000000';
+    }
+    return `$${numPrice.toFixed(6)}`;
   };
 
   const truncateText = (text: string, maxLength: number = 100) => {

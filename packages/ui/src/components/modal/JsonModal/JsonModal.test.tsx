@@ -53,4 +53,75 @@ describe('JsonModal', () => {
     expect(screen.getByText(/"name": "Test"/)).toBeInTheDocument();
     expect(screen.getByText(/"count": 42/)).toBeInTheDocument();
   });
+
+  it('should call onClose when Escape key is pressed', async () => {
+    const user = userEvent.setup();
+    const handleClose = vi.fn();
+
+    render(
+      <JsonModal
+        isOpen
+        onClose={handleClose}
+        title="Test"
+        data={{ test: 'data' }}
+      />
+    );
+
+    await user.keyboard('{Escape}');
+    expect(handleClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('should call onClose when Enter key is pressed', async () => {
+    const user = userEvent.setup();
+    const handleClose = vi.fn();
+
+    render(
+      <JsonModal
+        isOpen
+        onClose={handleClose}
+        title="Test"
+        data={{ test: 'data' }}
+      />
+    );
+
+    await user.keyboard('{Enter}');
+    expect(handleClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not call onClose when other keys are pressed', async () => {
+    const user = userEvent.setup();
+    const handleClose = vi.fn();
+
+    render(
+      <JsonModal
+        isOpen
+        onClose={handleClose}
+        title="Test"
+        data={{ test: 'data' }}
+      />
+    );
+
+    await user.keyboard('a');
+    expect(handleClose).not.toHaveBeenCalled();
+  });
+
+  it('should not attach keyboard listeners when modal is closed', () => {
+    const handleClose = vi.fn();
+
+    render(
+      <JsonModal
+        isOpen={false}
+        onClose={handleClose}
+        title="Test"
+        data={{ test: 'data' }}
+      />
+    );
+
+    // Simulate key press
+    const event = new KeyboardEvent('keydown', { key: 'Escape' });
+    window.dispatchEvent(event);
+
+    // Should not be called because modal is closed
+    expect(handleClose).not.toHaveBeenCalled();
+  });
 });
