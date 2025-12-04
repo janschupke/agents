@@ -1,4 +1,4 @@
-export interface LanguageFormattingConfig {
+interface LanguageFormattingConfig {
   showPinyin: boolean;
   showFurigana?: boolean; // For Japanese (future)
   showRomanization?: boolean; // For Korean (future)

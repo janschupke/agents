@@ -4,7 +4,7 @@
 export { AgentNotFoundException } from './agent-not-found.exception';
 export { SessionNotFoundException } from './session-not-found.exception';
 export {
-  ApiKeyNotFoundException,
+  
   ApiKeyRequiredException,
 } from './api-key-not-found.exception';
 export { MessageNotFoundException } from './message-not-found.exception';

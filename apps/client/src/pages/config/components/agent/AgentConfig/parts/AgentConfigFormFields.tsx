@@ -7,7 +7,7 @@ interface DescriptionFieldProps {
   onChange: (value: string) => void;
 }
 
-export function DescriptionField({ value, onChange }: DescriptionFieldProps) {
+function DescriptionField({ value, onChange }: DescriptionFieldProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return (
@@ -70,7 +70,7 @@ interface SystemPromptFieldProps {
   onChange: (value: string) => void;
 }
 
-export function SystemPromptField({ value, onChange }: SystemPromptFieldProps) {
+function SystemPromptField({ value, onChange }: SystemPromptFieldProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return (

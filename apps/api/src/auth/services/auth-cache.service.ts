@@ -10,7 +10,7 @@ export interface CachedUser {
   cachedAt: number;
 }
 
-export interface CachedToken {
+interface CachedToken {
   userId: string;
   verifiedAt: number;
 }

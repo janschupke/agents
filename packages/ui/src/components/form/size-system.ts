@@ -5,7 +5,7 @@
 
 export type ComponentSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
-export interface SizeClasses {
+interface SizeClasses {
   height: string;
   paddingX: string;
   textSize: string;

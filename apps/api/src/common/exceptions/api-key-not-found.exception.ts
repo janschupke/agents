@@ -4,7 +4,7 @@ import { ERROR_MESSAGES } from '../constants/error-messages.constants';
 /**
  * Exception thrown when an API key is not found
  */
-export class ApiKeyNotFoundException extends NotFoundException {
+class ApiKeyNotFoundException extends NotFoundException {
   constructor(provider?: string) {
     super(
       provider

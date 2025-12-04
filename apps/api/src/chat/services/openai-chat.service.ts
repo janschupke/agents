@@ -7,18 +7,18 @@ import { ERROR_MESSAGES } from '../../common/constants/error-messages.constants'
 import { AiRequestLogService } from '../../ai-request-log/ai-request-log.service';
 import type OpenAI from 'openai';
 
-export interface MessageForOpenAI {
+interface MessageForOpenAI {
   role: MessageRole;
   content: string;
 }
 
-export interface AgentConfig {
+interface AgentConfig {
   model?: string;
   temperature?: number;
   max_tokens?: number;
 }
 
-export interface OpenAIRequest {
+interface OpenAIRequest {
   model: string;
   messages: Array<{ role: string; content: string }>;
   temperature: number;

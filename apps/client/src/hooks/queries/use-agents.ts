@@ -38,7 +38,7 @@ export function useAgent(agentId: number | null) {
   });
 }
 
-export function useAgentSessions(agentId: number | null) {
+function useAgentSessions(agentId: number | null) {
   const { isSignedIn, isLoaded } = useAuth();
   const tokenReady = useTokenReady();
 

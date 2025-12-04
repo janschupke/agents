@@ -5,7 +5,7 @@ import { ResponseLength } from '../../common/enums/response-length.enum';
 import { Gender } from '../../common/enums/gender.enum';
 import { Sentiment } from '../../common/enums/sentiment.enum';
 
-export interface ConfigurationRule {
+interface ConfigurationRule {
   content: string;
   order: number; // Lower numbers come first
 }

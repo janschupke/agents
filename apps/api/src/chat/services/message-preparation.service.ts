@@ -8,7 +8,7 @@ import { AgentWithConfig } from '../../common/interfaces/agent.interface';
 import { AgentType } from '../../common/enums/agent-type.enum';
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants';
 
-export interface MessageForOpenAI {
+interface MessageForOpenAI {
   role: MessageRole;
   content: string;
 }

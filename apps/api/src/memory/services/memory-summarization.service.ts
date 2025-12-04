@@ -7,7 +7,7 @@ import {
 import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants.js';
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants.js';
 
-export interface MemoryForSummarization {
+interface MemoryForSummarization {
   id: number;
   keyPoint: string;
   vectorEmbedding: number[] | null;
@@ -15,7 +15,7 @@ export interface MemoryForSummarization {
   createdAt: Date;
 }
 
-export interface MemoryGroup {
+interface MemoryGroup {
   id: number;
   keyPoint: string;
   context: unknown;

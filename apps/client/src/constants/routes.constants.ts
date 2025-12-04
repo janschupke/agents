@@ -16,5 +16,5 @@ export const ROUTES = {
 } as const;
 
 // Helper to check if route matches pattern
-export const isChatRoute = (path: string) => path.startsWith('/chat');
-export const isConfigRoute = (path: string) => path.startsWith('/config');
+const isChatRoute = (path: string) => path.startsWith('/chat');
+const isConfigRoute = (path: string) => path.startsWith('/config');
