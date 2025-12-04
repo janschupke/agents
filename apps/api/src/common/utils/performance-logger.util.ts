@@ -18,22 +18,16 @@ export class PerformanceLogger {
     durationMs: number,
     metadata?: Record<string, unknown>
   ): void {
-    const metadataStr = metadata
-      ? ` ${JSON.stringify(metadata)}`
-      : '';
-    
+    const metadataStr = metadata ? ` ${JSON.stringify(metadata)}` : '';
+
     if (durationMs > 1000) {
       logger.warn(
         `[PERF] ${operation} took ${durationMs}ms (slow)${metadataStr}`
       );
     } else if (durationMs > 500) {
-      logger.debug(
-        `[PERF] ${operation} took ${durationMs}ms${metadataStr}`
-      );
+      logger.debug(`[PERF] ${operation} took ${durationMs}ms${metadataStr}`);
     } else {
-      logger.debug(
-        `[PERF] ${operation} took ${durationMs}ms${metadataStr}`
-      );
+      logger.debug(`[PERF] ${operation} took ${durationMs}ms${metadataStr}`);
     }
   }
 

@@ -49,11 +49,12 @@ export class OpenAIService {
       const response = await PerformanceLogger.measureAsync(
         this.logger,
         'OpenAI embedding generation',
-        async () => openai.embeddings.create({
-          model: embeddingModel,
-          input: text,
-          dimensions: NUMERIC_CONSTANTS.EMBEDDING_DIMENSIONS,
-        }),
+        async () =>
+          openai.embeddings.create({
+            model: embeddingModel,
+            input: text,
+            dimensions: NUMERIC_CONSTANTS.EMBEDDING_DIMENSIONS,
+          }),
         { model: embeddingModel, textLength: text.length }
       );
 
@@ -174,15 +175,16 @@ export class OpenAIService {
       const completion = await PerformanceLogger.measureAsync(
         this.logger,
         'OpenAI chat completion',
-        async () => openai.chat.completions.create({
-          model: options.model,
-          messages: messages as Parameters<
-            typeof openai.chat.completions.create
-          >[0]['messages'],
-          temperature:
-            options.temperature ?? NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE,
-          max_tokens: options.maxTokens,
-        }),
+        async () =>
+          openai.chat.completions.create({
+            model: options.model,
+            messages: messages as Parameters<
+              typeof openai.chat.completions.create
+            >[0]['messages'],
+            temperature:
+              options.temperature ?? NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE,
+            max_tokens: options.maxTokens,
+          }),
         {
           model: options.model,
           messagesCount: messages.length,

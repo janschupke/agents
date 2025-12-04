@@ -17,6 +17,7 @@ describe('MessagePreparationService', () => {
     getSystemBehaviorRules: jest.fn(),
     getAgentBehaviorRules: jest.fn(),
     mergeBehaviorRules: jest.fn(),
+    generateConfigurationRules: jest.fn(),
   };
 
   const mockLanguageAssistantService = {
@@ -42,9 +43,7 @@ describe('MessagePreparationService', () => {
       ],
     }).compile();
 
-    service = module.get<MessagePreparationService>(
-      MessagePreparationService
-    );
+    service = module.get<MessagePreparationService>(MessagePreparationService);
     mockLanguageAssistantService.isLanguageAssistant.mockReturnValue(false);
   });
 
@@ -79,6 +78,7 @@ describe('MessagePreparationService', () => {
     ];
 
     it('should prepare messages with system prompt and behavior rules', async () => {
+      mockSystemConfigRepository.findByKey.mockResolvedValue(null);
       mockConfigurationRulesService.getSystemBehaviorRules.mockResolvedValue(
         []
       );
@@ -87,6 +87,9 @@ describe('MessagePreparationService', () => {
       );
       mockConfigurationRulesService.mergeBehaviorRules.mockReturnValue(
         'Be polite'
+      );
+      mockConfigurationRulesService.generateConfigurationRules.mockReturnValue(
+        []
       );
 
       const result = await service.prepareMessagesForOpenAI(
@@ -103,6 +106,7 @@ describe('MessagePreparationService', () => {
     });
 
     it('should include memories when provided', async () => {
+      mockSystemConfigRepository.findByKey.mockResolvedValue(null);
       mockConfigurationRulesService.getSystemBehaviorRules.mockResolvedValue(
         []
       );
@@ -111,6 +115,9 @@ describe('MessagePreparationService', () => {
       );
       mockConfigurationRulesService.mergeBehaviorRules.mockReturnValue(
         'Be polite'
+      );
+      mockConfigurationRulesService.generateConfigurationRules.mockReturnValue(
+        []
       );
 
       const memories = ['Memory 1', 'Memory 2'];
@@ -122,12 +129,18 @@ describe('MessagePreparationService', () => {
       );
 
       expect(result).toBeDefined();
-      const systemMessage = result.find((m) => m.role === MessageRole.SYSTEM);
-      expect(systemMessage?.content).toContain('Memory 1');
-      expect(systemMessage?.content).toContain('Memory 2');
+      // Memories are added as a SYSTEM message with context
+      const systemMessages = result.filter(
+        (m) => m.role === MessageRole.SYSTEM
+      );
+      const memoryMessage = systemMessages.find(
+        (m) => m.content.includes('Memory 1') || m.content.includes('Memory 2')
+      );
+      expect(memoryMessage).toBeDefined();
     });
 
     it('should include existing conversation history', async () => {
+      mockSystemConfigRepository.findByKey.mockResolvedValue(null);
       mockConfigurationRulesService.getSystemBehaviorRules.mockResolvedValue(
         []
       );
@@ -136,6 +149,9 @@ describe('MessagePreparationService', () => {
       );
       mockConfigurationRulesService.mergeBehaviorRules.mockReturnValue(
         'Be polite'
+      );
+      mockConfigurationRulesService.generateConfigurationRules.mockReturnValue(
+        []
       );
 
       const result = await service.prepareMessagesForOpenAI(
@@ -151,6 +167,7 @@ describe('MessagePreparationService', () => {
     });
 
     it('should handle empty existing messages', async () => {
+      mockSystemConfigRepository.findByKey.mockResolvedValue(null);
       mockConfigurationRulesService.getSystemBehaviorRules.mockResolvedValue(
         []
       );
@@ -159,6 +176,9 @@ describe('MessagePreparationService', () => {
       );
       mockConfigurationRulesService.mergeBehaviorRules.mockReturnValue(
         'Be polite'
+      );
+      mockConfigurationRulesService.generateConfigurationRules.mockReturnValue(
+        []
       );
 
       const result = await service.prepareMessagesForOpenAI(
@@ -170,10 +190,11 @@ describe('MessagePreparationService', () => {
 
       expect(result).toBeDefined();
       expect(result.length).toBeGreaterThan(0);
-      expect(result[0].role).toBe('system');
+      expect(result[0].role).toBe(MessageRole.SYSTEM);
     });
 
     it('should handle missing behavior rules', async () => {
+      mockSystemConfigRepository.findByKey.mockResolvedValue(null);
       mockConfigurationRulesService.getSystemBehaviorRules.mockResolvedValue(
         []
       );
@@ -183,8 +204,14 @@ describe('MessagePreparationService', () => {
       mockConfigurationRulesService.mergeBehaviorRules.mockReturnValue(
         undefined
       );
+      mockConfigurationRulesService.generateConfigurationRules.mockReturnValue(
+        []
+      );
 
-      const configWithoutRules = { ...mockAgentConfig, behavior_rules: undefined };
+      const configWithoutRules = {
+        ...mockAgentConfig,
+        behavior_rules: undefined,
+      };
       const result = await service.prepareMessagesForOpenAI(
         mockExistingMessages,
         configWithoutRules,

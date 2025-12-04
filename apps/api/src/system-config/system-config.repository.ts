@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import type { SystemConfig as PrismaSystemConfig, Prisma } from '@prisma/client';
+import type {
+  SystemConfig as PrismaSystemConfig,
+  Prisma,
+} from '@prisma/client';
 import { SystemConfig } from '../common/types/config.types';
 
 @Injectable()

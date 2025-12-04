@@ -32,7 +32,8 @@ export class WordTranslationService {
     }
 
     // Split message into sentences for context
-    const sentences = this.wordParsingService.splitIntoSentences(messageContent);
+    const sentences =
+      this.wordParsingService.splitIntoSentences(messageContent);
 
     // Create a map of word -> sentence for populating sentenceContext
     const wordToSentenceMap = new Map<string, string>();
@@ -64,7 +65,8 @@ export class WordTranslationService {
     messageContent: string
   ): Promise<void> {
     // Split message into sentences for context
-    const sentences = this.wordParsingService.splitIntoSentences(messageContent);
+    const sentences =
+      this.wordParsingService.splitIntoSentences(messageContent);
 
     // Create a map of word -> sentence for populating sentenceContext
     const wordToSentenceMap = new Map<string, string>();
@@ -102,7 +104,8 @@ export class WordTranslationService {
     }
 
     // Split message into sentences for context
-    const sentences = this.wordParsingService.splitIntoSentences(messageContent);
+    const sentences =
+      this.wordParsingService.splitIntoSentences(messageContent);
 
     // Use OpenAI to parse words (without translation)
     const wordTranslations = await this.wordParsingService.parseWordsWithOpenAI(
@@ -151,7 +154,8 @@ export class WordTranslationService {
     }
 
     // Split message into sentences for context
-    const sentences = this.wordParsingService.splitIntoSentences(messageContent);
+    const sentences =
+      this.wordParsingService.splitIntoSentences(messageContent);
 
     // If words exist but without translations, use them
     if (existingWords && existingWords.length > 0) {
@@ -221,7 +225,6 @@ export class WordTranslationService {
       );
     }
   }
-
 
   /**
    * Get word translations for a message

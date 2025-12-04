@@ -55,7 +55,11 @@ export class MemorySummarizationService {
       ];
       processed.add(memories[i].id);
 
-      if (!memories[i].vectorEmbedding) continue;
+      if (!memories[i].vectorEmbedding) {
+        // No embedding, add as single-item group and continue
+        groups.push(group);
+        continue;
+      }
 
       // Find similar memories
       for (let j = i + 1; j < memories.length; j++) {

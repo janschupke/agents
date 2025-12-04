@@ -53,7 +53,6 @@ export class ChatService {
     return this.sessionService.createSession(agentId, userId);
   }
 
-
   async getChatHistory(
     agentId: number,
     userId: string,

@@ -38,9 +38,7 @@ export class SystemConfigService {
 
   async updateConfigs(configs: UpdateSystemConfigDto): Promise<void> {
     this.logger.log('Updating system configs');
-    await this.systemConfigRepository.updateConfigs(
-      configs as SystemConfig
-    );
+    await this.systemConfigRepository.updateConfigs(configs as SystemConfig);
     this.logger.log('System configs updated successfully');
   }
 

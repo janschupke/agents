@@ -79,15 +79,16 @@ export class OpenAIChatService {
       const completion = await PerformanceLogger.measureAsync(
         this.logger,
         'OpenAI API call',
-        async () => openai.chat.completions.create({
-        model: request.model,
-        messages: request.messages as Array<{
-          role: 'system' | 'user' | 'assistant';
-          content: string;
-        }>,
-        temperature: request.temperature,
-        max_tokens: request.max_tokens,
-        }),
+        async () =>
+          openai.chat.completions.create({
+            model: request.model,
+            messages: request.messages as Array<{
+              role: 'system' | 'user' | 'assistant';
+              content: string;
+            }>,
+            temperature: request.temperature,
+            max_tokens: request.max_tokens,
+          }),
         {
           model: request.model,
           messagesCount: request.messages.length,

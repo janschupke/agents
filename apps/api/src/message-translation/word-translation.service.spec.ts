@@ -1,35 +1,34 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WordTranslationService } from './word-translation.service';
-import { MessageWordTranslationRepository } from './message-word-translation.repository';
-import { OpenAIService } from '../openai/openai.service';
-import { MessageTranslationRepository } from './message-translation.repository';
-import { AiRequestLogService } from '../ai-request-log/ai-request-log.service';
-import OpenAI from 'openai';
+import { WordParsingService } from './services/word-parsing.service';
+import { WordTranslationOpenAIService } from './services/word-translation-openai.service';
+import { WordTranslationStorageService } from './services/word-translation-storage.service';
 
 describe('WordTranslationService', () => {
   let service: WordTranslationService;
-  let wordTranslationRepository: jest.Mocked<MessageWordTranslationRepository>;
-  let openaiService: jest.Mocked<OpenAIService>;
-  let translationRepository: jest.Mocked<MessageTranslationRepository>;
+  let wordParsingService: jest.Mocked<WordParsingService>;
+  let wordTranslationOpenAIService: jest.Mocked<WordTranslationOpenAIService>;
+  let wordTranslationStorageService: jest.Mocked<WordTranslationStorageService>;
 
-  const mockWordTranslationRepository = {
+  const mockWordParsingService = {
+    splitIntoSentences: jest.fn(),
+    createWordToSentenceMap: jest.fn(),
+    parseWordsWithOpenAI: jest.fn(),
+  };
+
+  const mockWordTranslationOpenAIService = {
+    translatePreParsedWordsWithOpenAI: jest.fn(),
+    translateWordsWithOpenAI: jest.fn(),
+  };
+
+  const mockWordTranslationStorageService = {
+    saveParsedWords: jest.fn(),
+    saveExtractedTranslations: jest.fn(),
+    createFullTranslationFromWords: jest.fn(),
+    getWordTranslationsForMessage: jest.fn(),
+    getWordTranslationsForMessages: jest.fn(),
     existsForMessage: jest.fn(),
-    createMany: jest.fn(),
-    findByMessageId: jest.fn(),
-    findByMessageIds: jest.fn(),
-  };
-
-  const mockOpenAIService = {
-    getClient: jest.fn(),
-  };
-
-  const mockTranslationRepository = {
-    findByMessageId: jest.fn(),
-    create: jest.fn(),
-  };
-
-  const mockAiRequestLogService = {
-    logRequest: jest.fn(),
+    updateWordsWithTranslations: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -37,28 +36,24 @@ describe('WordTranslationService', () => {
       providers: [
         WordTranslationService,
         {
-          provide: MessageWordTranslationRepository,
-          useValue: mockWordTranslationRepository,
+          provide: WordParsingService,
+          useValue: mockWordParsingService,
         },
         {
-          provide: OpenAIService,
-          useValue: mockOpenAIService,
+          provide: WordTranslationOpenAIService,
+          useValue: mockWordTranslationOpenAIService,
         },
         {
-          provide: MessageTranslationRepository,
-          useValue: mockTranslationRepository,
-        },
-        {
-          provide: AiRequestLogService,
-          useValue: mockAiRequestLogService,
+          provide: WordTranslationStorageService,
+          useValue: mockWordTranslationStorageService,
         },
       ],
     }).compile();
 
     service = module.get<WordTranslationService>(WordTranslationService);
-    wordTranslationRepository = module.get(MessageWordTranslationRepository);
-    openaiService = module.get(OpenAIService);
-    translationRepository = module.get(MessageTranslationRepository);
+    wordParsingService = module.get(WordParsingService);
+    wordTranslationOpenAIService = module.get(WordTranslationOpenAIService);
+    wordTranslationStorageService = module.get(WordTranslationStorageService);
 
     jest.clearAllMocks();
   });
@@ -68,16 +63,15 @@ describe('WordTranslationService', () => {
       const messageId = 1;
       const messageContent = 'Bonjour';
 
-      wordTranslationRepository.findByMessageId.mockResolvedValue([
-        {
-          id: 1,
-          messageId,
-          originalWord: 'Bonjour',
-          translation: 'Hello',
-          sentenceContext: null,
-          createdAt: new Date(),
-        },
-      ]);
+      wordTranslationStorageService.getWordTranslationsForMessage.mockResolvedValue(
+        [
+          {
+            originalWord: 'Bonjour',
+            translation: 'Hello',
+            sentenceContext: undefined,
+          },
+        ]
+      );
 
       await service.translateWordsInMessage(
         messageId,
@@ -85,16 +79,19 @@ describe('WordTranslationService', () => {
         'api-key'
       );
 
-      expect(wordTranslationRepository.findByMessageId).toHaveBeenCalledWith(
-        messageId
-      );
-      expect(openaiService.getClient).not.toHaveBeenCalled();
+      expect(
+        wordTranslationStorageService.getWordTranslationsForMessage
+      ).toHaveBeenCalledWith(messageId);
+      expect(
+        wordTranslationOpenAIService.translateWordsWithOpenAI
+      ).not.toHaveBeenCalled();
     });
 
     it('should translate words and save them', async () => {
       const messageId = 1;
       const messageContent = 'Bonjour, comment allez-vous?';
       const apiKey = 'api-key';
+      const sentences = ['Bonjour, comment allez-vous?'];
       const mockWordTranslations = [
         { originalWord: 'Bonjour', translation: 'Hello' },
         { originalWord: 'comment', translation: 'how' },
@@ -102,43 +99,31 @@ describe('WordTranslationService', () => {
       ];
       const fullTranslation = 'Hello, how are you?';
 
-      const mockOpenAIClient = {
-        chat: {
-          completions: {
-            create: jest.fn().mockResolvedValue({
-              choices: [
-                {
-                  message: {
-                    content: JSON.stringify({
-                      wordTranslations: mockWordTranslations,
-                      fullTranslation,
-                    }),
-                  },
-                },
-              ],
-            }),
-          },
-        },
-      };
-
-      wordTranslationRepository.findByMessageId.mockResolvedValue([]);
-      openaiService.getClient.mockReturnValue(
-        mockOpenAIClient as unknown as OpenAI
+      wordTranslationStorageService.getWordTranslationsForMessage.mockResolvedValue(
+        []
       );
-      wordTranslationRepository.createMany.mockResolvedValue({ count: 3 });
-      translationRepository.findByMessageId.mockResolvedValue(null);
-      translationRepository.create.mockResolvedValue({
-        id: 1,
-        messageId,
-        translation: fullTranslation,
-        createdAt: new Date(),
+      wordParsingService.splitIntoSentences.mockReturnValue(sentences);
+      wordTranslationOpenAIService.translateWordsWithOpenAI.mockResolvedValue({
+        wordTranslations: mockWordTranslations,
+        fullTranslation,
       });
+      wordParsingService.createWordToSentenceMap.mockReturnValue(new Map());
+      wordTranslationStorageService.saveExtractedTranslations.mockResolvedValue(
+        undefined
+      );
 
       await service.translateWordsInMessage(messageId, messageContent, apiKey);
 
-      expect(wordTranslationRepository.createMany).toHaveBeenCalled();
-      expect(translationRepository.create).toHaveBeenCalledWith(
+      expect(
+        wordTranslationOpenAIService.translateWordsWithOpenAI
+      ).toHaveBeenCalledWith(messageContent, sentences, apiKey, undefined);
+      // updateWordsWithTranslations is called instead of saveExtractedTranslations
+      expect(
+        wordTranslationStorageService.updateWordsWithTranslations
+      ).toHaveBeenCalledWith(
         messageId,
+        mockWordTranslations,
+        expect.any(Map),
         fullTranslation
       );
     });
@@ -147,108 +132,65 @@ describe('WordTranslationService', () => {
       const messageId = 1;
       const messageContent = 'Bonjour';
       const apiKey = 'api-key';
-      const existingTranslation = {
-        id: 1,
-        messageId,
-        translation: 'Hello',
-        createdAt: new Date(),
-      };
 
-      const mockOpenAIClient = {
-        chat: {
-          completions: {
-            create: jest.fn().mockResolvedValue({
-              choices: [
-                {
-                  message: {
-                    content: JSON.stringify({
-                      wordTranslations: [],
-                      fullTranslation: 'Hello',
-                    }),
-                  },
-                },
-              ],
-            }),
+      // Mock existing words with translations (so hasTranslations returns true)
+      wordTranslationStorageService.getWordTranslationsForMessage.mockResolvedValue(
+        [
+          {
+            originalWord: 'Bonjour',
+            translation: 'Hello',
+            sentenceContext: undefined,
           },
-        },
-      };
-
-      wordTranslationRepository.existsForMessage.mockResolvedValue(false);
-      openaiService.getClient.mockReturnValue(
-        mockOpenAIClient as unknown as OpenAI
-      );
-      wordTranslationRepository.createMany.mockResolvedValue({ count: 3 });
-      translationRepository.findByMessageId.mockResolvedValue(
-        existingTranslation
+        ]
       );
 
       await service.translateWordsInMessage(messageId, messageContent, apiKey);
 
-      expect(translationRepository.create).not.toHaveBeenCalled();
+      // Should return early without calling OpenAI or storage
+      expect(
+        wordTranslationOpenAIService.translateWordsWithOpenAI
+      ).not.toHaveBeenCalled();
+      expect(
+        wordTranslationStorageService.updateWordsWithTranslations
+      ).not.toHaveBeenCalled();
     });
 
     it('should create full translation from words if OpenAI does not provide it', async () => {
       const messageId = 1;
       const messageContent = 'Bonjour';
       const apiKey = 'api-key';
+      const sentences = ['Bonjour'];
       const mockWordTranslations = [
         { originalWord: 'Bonjour', translation: 'Hello' },
       ];
 
-      const mockOpenAIClient = {
-        chat: {
-          completions: {
-            create: jest.fn().mockResolvedValue({
-              choices: [
-                {
-                  message: {
-                    content: JSON.stringify({
-                      words: mockWordTranslations,
-                      fullTranslation: null,
-                    }),
-                  },
-                },
-              ],
-            }),
-          },
-        },
-      };
-
-      wordTranslationRepository.findByMessageId.mockResolvedValue([]);
-      openaiService.getClient.mockReturnValue(
-        mockOpenAIClient as unknown as OpenAI
+      wordTranslationStorageService.getWordTranslationsForMessage.mockResolvedValue(
+        []
       );
-      wordTranslationRepository.createMany.mockResolvedValue({ count: 1 });
-      translationRepository.findByMessageId.mockResolvedValue(null);
-      translationRepository.create.mockResolvedValue({
-        id: 1,
-        messageId,
-        translation: 'Hello',
-        createdAt: new Date(),
+      wordParsingService.splitIntoSentences.mockReturnValue(sentences);
+      wordTranslationOpenAIService.translateWordsWithOpenAI.mockResolvedValue({
+        wordTranslations: mockWordTranslations,
+        fullTranslation: null,
       });
+      wordParsingService.createWordToSentenceMap.mockReturnValue(new Map());
+      wordTranslationStorageService.saveExtractedTranslations.mockResolvedValue(
+        undefined
+      );
+      wordTranslationStorageService.createFullTranslationFromWords.mockResolvedValue(
+        undefined
+      );
 
       await service.translateWordsInMessage(messageId, messageContent, apiKey);
 
-      expect(translationRepository.create).toHaveBeenCalledWith(
-        messageId,
-        'Hello'
-      );
+      expect(
+        wordTranslationStorageService.createFullTranslationFromWords
+      ).toHaveBeenCalledWith(messageId, mockWordTranslations);
     });
   });
 
   describe('getWordTranslationsForMessage', () => {
     it('should return word translations for a message', async () => {
       const messageId = 1;
-      const dbWordTranslations = [
-        {
-          id: 1,
-          messageId,
-          originalWord: 'Bonjour',
-          translation: 'Hello',
-          sentenceContext: 'Bonjour',
-          createdAt: new Date(),
-        },
-      ];
       const expectedResult = [
         {
           originalWord: 'Bonjour',
@@ -257,55 +199,61 @@ describe('WordTranslationService', () => {
         },
       ];
 
-      wordTranslationRepository.findByMessageId.mockResolvedValue(
-        dbWordTranslations
+      wordTranslationStorageService.getWordTranslationsForMessage.mockResolvedValue(
+        expectedResult
       );
 
       const result = await service.getWordTranslationsForMessage(messageId);
 
       expect(result).toEqual(expectedResult);
-      expect(wordTranslationRepository.findByMessageId).toHaveBeenCalledWith(
-        messageId
-      );
+      expect(
+        wordTranslationStorageService.getWordTranslationsForMessage
+      ).toHaveBeenCalledWith(messageId);
     });
   });
 
   describe('getWordTranslationsForMessages', () => {
     it('should return empty array for empty message IDs', async () => {
-      wordTranslationRepository.findByMessageIds.mockResolvedValue([]);
+      wordTranslationStorageService.getWordTranslationsForMessages.mockResolvedValue(
+        new Map()
+      );
 
       const result = await service.getWordTranslationsForMessages([]);
 
       expect(result).toBeInstanceOf(Map);
       expect(result.size).toBe(0);
-      expect(wordTranslationRepository.findByMessageIds).toHaveBeenCalledWith(
-        []
-      );
+      expect(
+        wordTranslationStorageService.getWordTranslationsForMessages
+      ).toHaveBeenCalledWith([]);
     });
 
     it('should return word translations map for multiple messages', async () => {
       const messageIds = [1, 2];
-      const wordTranslations = [
-        {
-          id: 1,
-          messageId: 1,
-          originalWord: 'Bonjour',
-          translation: 'Hello',
-          sentenceContext: 'Bonjour',
-          createdAt: new Date(),
-        },
-        {
-          id: 2,
-          messageId: 2,
-          originalWord: 'Au revoir',
-          translation: 'Goodbye',
-          sentenceContext: 'Au revoir',
-          createdAt: new Date(),
-        },
-      ];
+      const expectedMap = new Map([
+        [
+          1,
+          [
+            {
+              originalWord: 'Bonjour',
+              translation: 'Hello',
+              sentenceContext: 'Bonjour',
+            },
+          ],
+        ],
+        [
+          2,
+          [
+            {
+              originalWord: 'Au revoir',
+              translation: 'Goodbye',
+              sentenceContext: 'Au revoir',
+            },
+          ],
+        ],
+      ]);
 
-      wordTranslationRepository.findByMessageIds.mockResolvedValue(
-        wordTranslations
+      wordTranslationStorageService.getWordTranslationsForMessages.mockResolvedValue(
+        expectedMap
       );
 
       const result = await service.getWordTranslationsForMessages(messageIds);
@@ -313,9 +261,9 @@ describe('WordTranslationService', () => {
       expect(result.size).toBe(2);
       expect(result.get(1)).toHaveLength(1);
       expect(result.get(2)).toHaveLength(1);
-      expect(wordTranslationRepository.findByMessageIds).toHaveBeenCalledWith(
-        messageIds
-      );
+      expect(
+        wordTranslationStorageService.getWordTranslationsForMessages
+      ).toHaveBeenCalledWith(messageIds);
     });
   });
 });

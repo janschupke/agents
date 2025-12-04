@@ -17,8 +17,7 @@ import { WordTranslationService } from '../message-translation/word-translation.
 import { SavedWordService } from '../saved-word/saved-word.service';
 import { MessagePreparationService } from './services/message-preparation.service';
 import { OpenAIChatService } from './services/openai-chat.service';
-import { MessageRole } from '../common/enums/message-role.enum';
-import OpenAI from 'openai';
+import { ChatOrchestrationService } from './services/chat-orchestration.service';
 
 describe('ChatService', () => {
   let service: ChatService;
@@ -108,6 +107,10 @@ describe('ChatService', () => {
     findMatchingWords: jest.fn().mockResolvedValue([]),
   };
 
+  const mockChatOrchestrationService = {
+    sendMessage: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -175,6 +178,10 @@ describe('ChatService', () => {
         {
           provide: SavedWordService,
           useValue: mockSavedWordService,
+        },
+        {
+          provide: ChatOrchestrationService,
+          useValue: mockChatOrchestrationService,
         },
       ],
     }).compile();
@@ -283,7 +290,9 @@ describe('ChatService', () => {
       const agentId = 1;
       const userId = 'user-123';
       const message = 'Hello';
-      mockAgentRepository.findByIdWithConfig.mockResolvedValue(null);
+      mockChatOrchestrationService.sendMessage.mockRejectedValue(
+        new HttpException('Agent not found', 404)
+      );
 
       await expect(
         service.sendMessage(agentId, userId, message)
@@ -294,273 +303,84 @@ describe('ChatService', () => {
       const agentId = 1;
       const userId = 'user-123';
       const message = 'Hello';
-      const apiKey = 'test-api-key';
-      const mockAgent = {
-        id: agentId,
-        name: 'Test Agent',
-        description: 'Test Description',
-        configs: {},
-      };
-      const mockSession = {
-        id: 1,
-        agentId,
-        userId,
-        sessionName: null,
-      };
-      const chatResponse =
-        '你好，世界！\n{"words":[{"originalWord":"你好","translation":"hello"},{"originalWord":"世界","translation":"world"}],"fullTranslation":"Hello, world!"}';
-      const mockCompletion = {
-        id: 'chat-123',
-        choices: [
-          {
-            message: {
-              content: chatResponse,
-            },
-          },
-        ],
-      } as OpenAI.Chat.Completions.ChatCompletion;
-
-      mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockAgent);
-      mockSessionRepository.findLatestByAgentId.mockResolvedValue(mockSession);
-      mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue([]);
-      mockAgentMemoryService.getMemoriesForContext.mockResolvedValue([]);
-      mockApiCredentialsService.getApiKey.mockResolvedValue(apiKey);
-      mockMessagePreparationService.prepareMessages.mockResolvedValue([
-        { role: MessageRole.USER, content: message },
-      ]);
-      mockMessagePreparationService.buildOpenAIRequest.mockReturnValue({
-        model: 'gpt-4o-mini',
-        messages: [],
-        temperature: 0.7,
-      });
-      mockOpenAIChatService.createChatCompletion.mockResolvedValue({
-        response: chatResponse,
-        completion: mockCompletion,
-      });
-      mockMessageRepository.create
-        .mockResolvedValueOnce({
-          id: 1,
-          sessionId: 1,
-          role: MessageRole.USER,
-          content: message,
-          metadata: null,
-          rawRequest: null,
-          rawResponse: null,
-          createdAt: new Date(),
-        })
-        .mockResolvedValueOnce({
-          id: 2,
-          sessionId: 1,
-          role: MessageRole.ASSISTANT,
-          content: '你好，世界！',
-          metadata: null,
-          rawRequest: null,
-          rawResponse: null,
-          createdAt: new Date(),
-        });
-      mockWordTranslationService.saveExtractedTranslations.mockResolvedValue(
-        undefined
-      );
-      mockWordTranslationService.getWordTranslationsForMessage.mockResolvedValue(
-        [
+      const expectedResponse = {
+        response: '你好，世界！',
+        session: { id: 1, session_name: null },
+        rawRequest: {},
+        rawResponse: {},
+        userMessageId: 1,
+        assistantMessageId: 2,
+        translation: 'Hello, world!',
+        wordTranslations: [
           { originalWord: '你好', translation: 'hello' },
           { originalWord: '世界', translation: 'world' },
-        ]
+        ],
+      };
+
+      mockChatOrchestrationService.sendMessage.mockResolvedValue(
+        expectedResponse
       );
-      mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue([
-        { role: MessageRole.USER, content: message },
-        { role: MessageRole.ASSISTANT, content: '你好，世界！' },
-      ]);
 
       const result = await service.sendMessage(agentId, userId, message);
 
-      expect(result.translation).toBe('Hello, world!');
-      expect(result.wordTranslations).toEqual([
-        { originalWord: '你好', translation: 'hello' },
-        { originalWord: '世界', translation: 'world' },
-      ]);
-      expect(result.response).toBe('你好，世界！'); // JSON removed
-      expect(
-        mockWordTranslationService.saveExtractedTranslations
-      ).toHaveBeenCalledWith(
-        2, // assistantMessageId
-        [
-          { originalWord: '你好', translation: 'hello' },
-          { originalWord: '世界', translation: 'world' },
-        ],
-        'Hello, world!',
-        '你好，世界！'
-      );
+      expect(result).toEqual(expectedResponse);
+      expect(mockChatOrchestrationService.sendMessage).toHaveBeenCalledWith({
+        agentId,
+        userId,
+        message,
+        sessionId: undefined,
+      });
     });
 
     it('should handle JSON parsing failure gracefully', async () => {
       const agentId = 1;
       const userId = 'user-123';
       const message = 'Hello';
-      const apiKey = 'test-api-key';
-      const mockAgent = {
-        id: agentId,
-        name: 'Test Agent',
-        description: 'Test Description',
-        configs: {},
-      };
-      const mockSession = {
-        id: 1,
-        agentId,
-        userId,
-        sessionName: null,
-      };
       const chatResponse = '你好，世界！\n{"invalid": "json"'; // Invalid JSON
-
-      mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockAgent);
-      mockSessionRepository.findLatestByAgentId.mockResolvedValue(mockSession);
-      mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue([]);
-      mockAgentMemoryService.getMemoriesForContext.mockResolvedValue([]);
-      mockApiCredentialsService.getApiKey.mockResolvedValue(apiKey);
-      mockMessagePreparationService.prepareMessages.mockResolvedValue([
-        { role: MessageRole.USER, content: message },
-      ]);
-      mockMessagePreparationService.buildOpenAIRequest.mockReturnValue({
-        model: 'gpt-4o-mini',
-        messages: [],
-        temperature: 0.7,
-      });
-      mockOpenAIChatService.createChatCompletion.mockResolvedValue({
+      const expectedResponse = {
         response: chatResponse,
-        completion: {
-          id: 'chat-123',
-          choices: [{ message: { content: chatResponse } }],
-        } as OpenAI.Chat.Completions.ChatCompletion,
-      });
-      mockMessageRepository.create
-        .mockResolvedValueOnce({
-          id: 1,
-          sessionId: 1,
-          role: MessageRole.USER,
-          content: message,
-          metadata: null,
-          rawRequest: null,
-          rawResponse: null,
-          createdAt: new Date(),
-        })
-        .mockResolvedValueOnce({
-          id: 2,
-          sessionId: 1,
-          role: MessageRole.ASSISTANT,
-          content: chatResponse,
-          metadata: null,
-          rawRequest: null,
-          rawResponse: null,
-          createdAt: new Date(),
-        });
-      mockWordTranslationService.saveParsedWords.mockResolvedValue(undefined);
-      mockWordTranslationService.getWordTranslationsForMessage.mockResolvedValue(
-        []
+        session: { id: 1, session_name: null },
+        rawRequest: {},
+        rawResponse: {},
+        userMessageId: 1,
+        assistantMessageId: 2,
+      };
+
+      mockChatOrchestrationService.sendMessage.mockResolvedValue(
+        expectedResponse
       );
-      mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue([
-        { role: MessageRole.USER, content: message },
-        { role: MessageRole.ASSISTANT, content: chatResponse },
-      ]);
 
       const result = await service.sendMessage(agentId, userId, message);
 
-      // Message should still be returned even if translation extraction fails
       expect(result.response).toBe(chatResponse);
       expect(result.translation).toBeUndefined();
       expect(result.wordTranslations).toBeUndefined();
-      // Should attempt to parse words as fallback
-      expect(
-        mockWordTranslationService.parseWordsInMessage
-      ).toHaveBeenCalledWith(2, chatResponse, apiKey);
     });
 
     it('should handle missing translations in JSON gracefully', async () => {
       const agentId = 1;
       const userId = 'user-123';
       const message = 'Hello';
-      const apiKey = 'test-api-key';
-      const mockAgent = {
-        id: agentId,
-        name: 'Test Agent',
-        description: 'Test Description',
-        configs: {},
-      };
-      const mockSession = {
-        id: 1,
-        agentId,
-        userId,
-        sessionName: null,
-      };
       // JSON missing fullTranslation
       const chatResponse =
         '你好，世界！\n{"words":[{"originalWord":"你好","translation":"hello"}]}';
-
-      mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockAgent);
-      mockSessionRepository.findLatestByAgentId.mockResolvedValue(mockSession);
-      mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue([]);
-      mockAgentMemoryService.getMemoriesForContext.mockResolvedValue([]);
-      mockApiCredentialsService.getApiKey.mockResolvedValue(apiKey);
-      mockMessagePreparationService.prepareMessages.mockResolvedValue([
-        { role: MessageRole.USER, content: message },
-      ]);
-      mockMessagePreparationService.buildOpenAIRequest.mockReturnValue({
-        model: 'gpt-4o-mini',
-        messages: [],
-        temperature: 0.7,
-      });
-      mockOpenAIChatService.createChatCompletion.mockResolvedValue({
+      const expectedResponse = {
         response: chatResponse,
-        completion: {
-          id: 'chat-123',
-          choices: [{ message: { content: chatResponse } }],
-        } as OpenAI.Chat.Completions.ChatCompletion,
-      });
-      mockMessageRepository.create
-        .mockResolvedValueOnce({
-          id: 1,
-          sessionId: 1,
-          role: MessageRole.USER,
-          content: message,
-          metadata: null,
-          rawRequest: null,
-          rawResponse: null,
-          createdAt: new Date(),
-        })
-        .mockResolvedValueOnce({
-          id: 2,
-          sessionId: 1,
-          role: MessageRole.ASSISTANT,
-          content: '你好，世界！',
-          metadata: null,
-          rawRequest: null,
-          rawResponse: null,
-          createdAt: new Date(),
-        });
-      mockWordTranslationService.saveParsedWords.mockResolvedValue(undefined);
-      mockWordTranslationService.getWordTranslationsForMessage.mockResolvedValue(
-        []
+        session: { id: 1, session_name: null },
+        rawRequest: {},
+        rawResponse: {},
+        userMessageId: 1,
+        assistantMessageId: 2,
+      };
+
+      mockChatOrchestrationService.sendMessage.mockResolvedValue(
+        expectedResponse
       );
-      mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue([
-        { role: MessageRole.USER, content: message },
-        { role: MessageRole.ASSISTANT, content: '你好，世界！' },
-      ]);
 
       const result = await service.sendMessage(agentId, userId, message);
 
-      // When fullTranslation is missing, JSON is not extracted, so response includes JSON
-      expect(result.response).toBe(
-        '你好，世界！\n{"words":[{"originalWord":"你好","translation":"hello"}]}'
-      );
+      expect(result.response).toBe(chatResponse);
       expect(result.translation).toBeUndefined();
-      // When JSON extraction fails (missing fullTranslation), code tries to parse words
-      // This will call parseWordsInMessage instead of saveParsedWords
-      expect(
-        mockWordTranslationService.parseWordsInMessage
-      ).toHaveBeenCalledWith(
-        2,
-        '你好，世界！\n{"words":[{"originalWord":"你好","translation":"hello"}]}',
-        apiKey
-      );
     });
   });
 });

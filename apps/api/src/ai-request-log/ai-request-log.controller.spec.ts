@@ -11,7 +11,6 @@ describe('AiRequestLogController', () => {
     getAllLogs: jest.fn(),
   };
 
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AiRequestLogController],

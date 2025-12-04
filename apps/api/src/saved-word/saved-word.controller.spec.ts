@@ -5,6 +5,9 @@ import {
   CreateSavedWordDto,
   UpdateSavedWordDto,
   AddSentenceDto,
+  SavedWordResponseDto,
+  SavedWordSentenceResponseDto,
+  SavedWordMatchDto,
 } from './dto/saved-word.dto';
 
 describe('SavedWordController', () => {
@@ -59,18 +62,23 @@ describe('SavedWordController', () => {
       const createDto: CreateSavedWordDto = {
         originalWord: '你好',
         translation: 'Hello',
-        pinyin: 'nǐ hǎo',
       };
 
-      const mockCreated = {
+      const mockCreated: SavedWordResponseDto = {
         id: 1,
-        ...createDto,
-        userId: mockUser.id,
+        originalWord: createDto.originalWord,
+        translation: createDto.translation,
+        pinyin: null,
+        agentId: createDto.agentId ?? null,
+        sessionId: createDto.sessionId ?? null,
+        agentName: null,
+        sessionName: null,
+        sentences: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      service.createSavedWord.mockResolvedValue(mockCreated as any);
+      service.createSavedWord.mockResolvedValue(mockCreated);
 
       const result = await controller.createSavedWord(createDto, mockUser);
 
@@ -84,16 +92,23 @@ describe('SavedWordController', () => {
 
   describe('getSavedWords', () => {
     it('should return saved words for user', async () => {
-      const mockWords = [
+      const mockWords: SavedWordResponseDto[] = [
         {
           id: 1,
           originalWord: '你好',
           translation: 'Hello',
-          userId: mockUser.id,
+          pinyin: null,
+          agentId: null,
+          sessionId: null,
+          agentName: null,
+          sessionName: null,
+          sentences: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
       ];
 
-      service.getSavedWordsByLanguage.mockResolvedValue(mockWords as any);
+      service.getSavedWordsByLanguage.mockResolvedValue(mockWords);
 
       const result = await controller.getSavedWords(mockUser);
 
@@ -105,7 +120,7 @@ describe('SavedWordController', () => {
     });
 
     it('should filter by language when provided', async () => {
-      const mockWords = [];
+      const mockWords: SavedWordResponseDto[] = [];
       service.getSavedWordsByLanguage.mockResolvedValue(mockWords);
 
       const result = await controller.getSavedWords(mockUser, 'zh');
@@ -123,17 +138,24 @@ describe('SavedWordController', () => {
       const mockMatches = [
         { savedWordId: 1, originalWord: '你好', translation: 'Hello' },
       ];
-      const mockFullWords = [
-        {
-          id: 1,
-          originalWord: '你好',
-          translation: 'Hello',
-          userId: mockUser.id,
-        },
-      ];
 
-      service.findMatchingWords.mockResolvedValue(mockMatches as any);
-      service.getSavedWord.mockResolvedValue(mockFullWords[0] as any);
+      service.findMatchingWords.mockResolvedValue(
+        mockMatches as SavedWordMatchDto[]
+      );
+      const mockFullWord: SavedWordResponseDto = {
+        id: 1,
+        originalWord: '你好',
+        translation: 'Hello',
+        pinyin: null,
+        agentId: null,
+        sessionId: null,
+        agentName: null,
+        sessionName: null,
+        sentences: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      service.getSavedWord.mockResolvedValue(mockFullWord);
 
       const result = await controller.findMatchingWords('你好,世界', mockUser);
 
@@ -156,14 +178,21 @@ describe('SavedWordController', () => {
 
   describe('getSavedWord', () => {
     it('should return a single saved word', async () => {
-      const mockWord = {
+      const mockWord: SavedWordResponseDto = {
         id: 1,
         originalWord: '你好',
         translation: 'Hello',
-        userId: mockUser.id,
+        pinyin: null,
+        agentId: null,
+        sessionId: null,
+        agentName: null,
+        sessionName: null,
+        sentences: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      service.getSavedWord.mockResolvedValue(mockWord as any);
+      service.getSavedWord.mockResolvedValue(mockWord);
 
       const result = await controller.getSavedWord(1, mockUser);
 
@@ -178,14 +207,21 @@ describe('SavedWordController', () => {
         translation: 'Updated translation',
       };
 
-      const mockUpdated = {
+      const mockUpdated: SavedWordResponseDto = {
         id: 1,
         originalWord: '你好',
-        ...updateDto,
-        userId: mockUser.id,
+        translation: updateDto.translation ?? 'Hello',
+        pinyin: updateDto.pinyin ?? null,
+        agentId: null,
+        sessionId: null,
+        agentName: null,
+        sessionName: null,
+        sentences: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      service.updateSavedWord.mockResolvedValue(mockUpdated as any);
+      service.updateSavedWord.mockResolvedValue(mockUpdated);
 
       const result = await controller.updateSavedWord(1, updateDto, mockUser);
 
@@ -222,7 +258,9 @@ describe('SavedWordController', () => {
         createdAt: new Date(),
       };
 
-      service.addSentence.mockResolvedValue(mockSentence as any);
+      service.addSentence.mockResolvedValue(
+        mockSentence as SavedWordSentenceResponseDto
+      );
 
       const result = await controller.addSentence(1, addSentenceDto, mockUser);
 

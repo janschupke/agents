@@ -320,12 +320,13 @@ export class ChatOrchestrationService {
     apiKey: string
   ): Promise<string[]> {
     try {
-      const relevantMemories = await this.agentMemoryService.getMemoriesForContext(
-        agentId,
-        userId,
-        message,
-        apiKey
-      );
+      const relevantMemories =
+        await this.agentMemoryService.getMemoriesForContext(
+          agentId,
+          userId,
+          message,
+          apiKey
+        );
       if (relevantMemories.length > 0) {
         this.logger.log(
           `Found ${relevantMemories.length} relevant memories for agent ${agentId}`

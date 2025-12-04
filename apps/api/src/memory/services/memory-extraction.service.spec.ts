@@ -63,7 +63,8 @@ describe('MemoryExtractionService', () => {
         choices: [
           {
             message: {
-              content: 'User enjoys programming\nUser is interested in technology',
+              content:
+                'User enjoys programming\nUser is interested in technology',
             },
           },
         ],
@@ -84,9 +85,7 @@ describe('MemoryExtractionService', () => {
     });
 
     it('should handle OpenAI API errors gracefully', async () => {
-      const messages = [
-        { role: 'user', content: 'Test message' },
-      ];
+      const messages = [{ role: 'user', content: 'Test message' }];
 
       mockOpenAIClient.chat.completions.create.mockRejectedValue(
         new Error('API error')
@@ -98,9 +97,7 @@ describe('MemoryExtractionService', () => {
     });
 
     it('should filter and clean insights', async () => {
-      const messages = [
-        { role: 'user', content: 'Test' },
-      ];
+      const messages = [{ role: 'user', content: 'Test' }];
 
       const mockCompletion = {
         choices: [
@@ -123,11 +120,12 @@ describe('MemoryExtractionService', () => {
     });
 
     it('should limit insights to MAX_KEY_INSIGHTS_PER_UPDATE', async () => {
-      const messages = [
-        { role: 'user', content: 'Test' },
-      ];
+      const messages = [{ role: 'user', content: 'Test' }];
 
-      const manyInsights = Array.from({ length: 10 }, (_, i) => `Insight ${i}`).join('\n');
+      const manyInsights = Array.from(
+        { length: 10 },
+        (_, i) => `Insight ${i}`
+      ).join('\n');
       const mockCompletion = {
         choices: [
           {

@@ -14,11 +14,12 @@ export class OpenAIErrorHandler {
    * @param context - Optional context for logging (e.g., operation name)
    * @returns HttpException with appropriate status code and message
    */
-  static handleError(
-    error: unknown,
-    context?: string
-  ): HttpException {
-    const errorObj = error as { message?: string; status?: number; code?: string };
+  static handleError(error: unknown, context?: string): HttpException {
+    const errorObj = error as {
+      message?: string;
+      status?: number;
+      code?: string;
+    };
     const contextMsg = context ? ` (${context})` : '';
 
     // Log the error for debugging
@@ -36,7 +37,8 @@ export class OpenAIErrorHandler {
       errorObj.code === 'invalid_api_key'
     ) {
       return new HttpException(
-        ERROR_MESSAGES.INVALID_API_KEY || 'Invalid API key. Please check your API credentials.',
+        ERROR_MESSAGES.INVALID_API_KEY ||
+          'Invalid API key. Please check your API credentials.',
         HttpStatus.UNAUTHORIZED
       );
     }
@@ -66,7 +68,11 @@ export class OpenAIErrorHandler {
     }
 
     // Handle server errors from OpenAI
-    if (errorObj.status === 500 || errorObj.status === 502 || errorObj.status === 503) {
+    if (
+      errorObj.status === 500 ||
+      errorObj.status === 502 ||
+      errorObj.status === 503
+    ) {
       return new HttpException(
         'OpenAI service is temporarily unavailable. Please try again later.',
         HttpStatus.SERVICE_UNAVAILABLE
@@ -80,7 +86,9 @@ export class OpenAIErrorHandler {
 
     // Default to internal server error
     return new HttpException(
-      errorObj.message || ERROR_MESSAGES.UNKNOWN_ERROR || 'An unexpected error occurred',
+      errorObj.message ||
+        ERROR_MESSAGES.UNKNOWN_ERROR ||
+        'An unexpected error occurred',
       HttpStatus.INTERNAL_SERVER_ERROR
     );
   }
@@ -89,7 +97,11 @@ export class OpenAIErrorHandler {
    * Check if error is an API key error
    */
   static isApiKeyError(error: unknown): boolean {
-    const errorObj = error as { message?: string; status?: number; code?: string };
+    const errorObj = error as {
+      message?: string;
+      status?: number;
+      code?: string;
+    };
     return (
       errorObj.message?.includes('API key') ||
       errorObj.message?.includes('Invalid API key') ||
@@ -102,7 +114,11 @@ export class OpenAIErrorHandler {
    * Check if error is a rate limit error
    */
   static isRateLimitError(error: unknown): boolean {
-    const errorObj = error as { message?: string; status?: number; code?: string };
+    const errorObj = error as {
+      message?: string;
+      status?: number;
+      code?: string;
+    };
     return (
       errorObj.message?.includes('rate limit') ||
       errorObj.status === 429 ||

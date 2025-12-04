@@ -1,7 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AgentArchetypeController } from './agent-archetype.controller';
 import { AgentArchetypeService } from './agent-archetype.service';
-import { CreateAgentArchetypeDto, UpdateAgentArchetypeDto } from '../common/dto/agent-archetype.dto';
+import {
+  CreateAgentArchetypeDto,
+  UpdateAgentArchetypeDto,
+  AgentArchetypeResponse,
+} from '../common/dto/agent-archetype.dto';
 import { AgentType } from '../common/enums/agent-type.enum';
 
 describe('AgentArchetypeController', () => {
@@ -16,7 +20,6 @@ describe('AgentArchetypeController', () => {
     delete: jest.fn(),
   };
 
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AgentArchetypeController],
@@ -28,9 +31,7 @@ describe('AgentArchetypeController', () => {
       ],
     }).compile();
 
-    controller = module.get<AgentArchetypeController>(
-      AgentArchetypeController
-    );
+    controller = module.get<AgentArchetypeController>(AgentArchetypeController);
     service = module.get(AgentArchetypeService);
   });
 
@@ -54,7 +55,9 @@ describe('AgentArchetypeController', () => {
         },
       ];
 
-      service.findAll.mockResolvedValue(mockArchetypes as any);
+      service.findAll.mockResolvedValue(
+        mockArchetypes as AgentArchetypeResponse[]
+      );
 
       const result = await controller.getAllArchetypes();
 
@@ -73,7 +76,9 @@ describe('AgentArchetypeController', () => {
         updatedAt: new Date(),
       };
 
-      service.findById.mockResolvedValue(mockArchetype as any);
+      service.findById.mockResolvedValue(
+        mockArchetype as AgentArchetypeResponse
+      );
 
       const result = await controller.getArchetype(1);
 
@@ -97,7 +102,7 @@ describe('AgentArchetypeController', () => {
         updatedAt: new Date(),
       };
 
-      service.create.mockResolvedValue(mockCreated as any);
+      service.create.mockResolvedValue(mockCreated as AgentArchetypeResponse);
 
       const result = await controller.createArchetype(createDto);
 
@@ -120,7 +125,7 @@ describe('AgentArchetypeController', () => {
         updatedAt: new Date(),
       };
 
-      service.update.mockResolvedValue(mockUpdated as any);
+      service.update.mockResolvedValue(mockUpdated as AgentArchetypeResponse);
 
       const result = await controller.updateArchetype(1, updateDto);
 

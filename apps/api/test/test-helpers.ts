@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { APP_GUARD } from '@nestjs/core';
-import request from 'supertest';
+import request, { type Test as SuperTest } from 'supertest';
 import { AppModule } from '../src/app.module';
 import { OpenAIService } from '../src/openai/openai.service';
 import { TestGuard } from './test-guard';
@@ -164,7 +164,7 @@ export function authenticatedRequest(
   // Create a wrapper object that proxies HTTP methods
   type HttpMethod = 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head' | 'options';
   type RequestWrapper = {
-    [K in HttpMethod]: (url: string, ...args: unknown[]) => ReturnType<typeof baseRequest[HttpMethod]>;
+    [K in HttpMethod]: (url: string, ...args: unknown[]) => SuperTest;
   };
   
   const wrapper = {} as RequestWrapper;
@@ -172,7 +172,7 @@ export function authenticatedRequest(
   // Proxy all HTTP methods
   (['get', 'post', 'put', 'delete', 'patch', 'head', 'options'] as HttpMethod[]).forEach(method => {
     wrapper[method] = function(url: string, ...args: unknown[]) {
-      const test = (baseRequest[method] as (url: string, ...args: unknown[]) => ReturnType<typeof baseRequest[HttpMethod]>)(url, ...args);
+      const test = (baseRequest[method] as (url: string, ...args: unknown[]) => SuperTest)(url, ...args);
       return test.set('Authorization', authHeader);
     };
   });
