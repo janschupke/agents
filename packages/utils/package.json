@@ -2,30 +2,34 @@
   "name": "@openai/utils",
   "version": "1.0.0",
   "description": "Shared utilities for OpenAI monorepo",
-  "type": "module",
   "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
     },
     "./validation": {
-      "import": "./dist/validation.js",
-      "types": "./dist/validation.d.ts"
+      "types": "./dist/validation.d.ts",
+      "require": "./dist/validation.js",
+      "import": "./dist/validation.mjs"
     },
     "./datetime": {
-      "import": "./dist/datetime.js",
-      "types": "./dist/datetime.d.ts"
+      "types": "./dist/datetime.d.ts",
+      "require": "./dist/datetime.js",
+      "import": "./dist/datetime.mjs"
     },
     "./hooks": {
-      "import": "./dist/hooks.js",
-      "types": "./dist/hooks.d.ts"
+      "types": "./dist/hooks.d.ts",
+      "require": "./dist/hooks.js",
+      "import": "./dist/hooks.mjs"
     }
   },
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "lint": "eslint . --ext .ts,.tsx --max-warnings 0 --fix",
     "lint:check": "eslint . --ext .ts,.tsx --max-warnings 0",
     "format": "prettier --write \"src/**/*.{ts,tsx,json}\"",
@@ -52,6 +56,7 @@
     "eslint": "^8.54.0",
     "jsdom": "^23.0.1",
     "prettier": "^3.6.2",
+    "tsup": "^8.5.1",
     "typescript": "^5.3.2",
     "vite": "^5.0.8",
     "vitest": "^1.1.0"

@@ -2,18 +2,19 @@
   "name": "@openai/shared-types",
   "version": "1.0.0",
   "description": "Shared types, constants, and enums for OpenAI monorepo",
-  "type": "module",
   "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
     }
   },
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "lint": "eslint . --ext .ts,.tsx --max-warnings 0 --fix",
     "lint:check": "eslint . --ext .ts,.tsx --max-warnings 0",
     "format": "prettier --write \"src/**/*.{ts,tsx,json}\"",
@@ -33,6 +34,7 @@
     "@vitest/ui": "^1.1.0",
     "eslint": "^8.54.0",
     "prettier": "^3.6.2",
+    "tsup": "^8.5.1",
     "typescript": "^5.3.2",
     "vite": "^5.0.8",
     "vitest": "^1.1.0"
