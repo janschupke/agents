@@ -10,6 +10,8 @@ describe('useNewAgentForm', () => {
       name: '',
       description: null,
       avatarUrl: null,
+      agentType: null,
+      language: null,
       configs: {
         temperature: 1,
         system_prompt: '',

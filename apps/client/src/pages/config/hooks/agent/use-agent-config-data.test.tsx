@@ -3,6 +3,7 @@ import { renderHook } from '@testing-library/react';
 import { useAgentConfigData } from './use-agent-config-data';
 import { Agent } from '../../../../types/chat.types';
 import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
+import { createMockAgent } from '../../../../test/utils/mock-factories';
 
 // Mock useAgent
 const mockUseAgent = vi.fn();
@@ -100,13 +101,11 @@ describe('useAgentConfigData', () => {
   });
 
   it('should return agent data when available', () => {
-    const mockAgent: Agent = {
+    const mockAgent: Agent = createMockAgent({
       id: 1,
       name: 'Test Agent',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     mockUseAgent.mockReturnValue({
       data: mockAgent,

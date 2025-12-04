@@ -4,6 +4,7 @@ import { useNewAgentNavigation } from './use-new-agent-navigation';
 import { ROUTES } from '../../../../constants/routes.constants';
 import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
 import { Agent } from '../../../../types/chat.types';
+import { createMockAgent } from '../../../../test/utils/mock-factories';
 
 // Mock dependencies
 const mockNavigate = vi.fn();
@@ -57,13 +58,12 @@ describe('useNewAgentNavigation', () => {
   });
 
   it('should create agent and navigate on save', async () => {
-    const savedAgent: Agent = {
+    const savedAgent: Agent = createMockAgent({
       id: 1,
       name: 'New Agent',
       description: 'New Description',
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     mockCreateAgent.mockResolvedValue(savedAgent);
 

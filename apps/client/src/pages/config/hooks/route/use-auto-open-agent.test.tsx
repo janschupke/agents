@@ -2,16 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useAutoOpenAgent } from './use-auto-open-agent';
 import { Agent } from '../../../../types/chat.types';
+import { createMockAgent } from '../../../../test/utils/mock-factories';
 
 describe('useAutoOpenAgent', () => {
   const mockAgents: Agent[] = [
-    {
+    createMockAgent({
       id: 1,
       name: 'Agent 1',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    },
+    }),
   ];
 
   const mockSetCurrentAgentId = vi.fn();

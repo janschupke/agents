@@ -14,6 +14,7 @@ import {
 import { queryKeys } from '../../../../../hooks/queries/query-keys';
 import { Agent } from '../../../../../types/chat.types';
 import { ROUTES } from '../../../../../constants/routes.constants';
+import { createMockAgent } from '../../../../../test/utils/mock-factories';
 
 // Mock Clerk
 vi.mock('@clerk/clerk-react', () => ({
@@ -145,20 +146,18 @@ const TestWrapper = ({
 describe('AgentConfig', () => {
 
   const mockAgents: Agent[] = [
-    {
+    createMockAgent({
       id: 1,
       name: 'Existing Agent 1',
       description: 'First agent',
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00Z',
-    },
-    {
+    }),
+    createMockAgent({
       id: 2,
       name: 'Existing Agent 2',
       description: 'Second agent',
-      avatarUrl: null,
       createdAt: '2024-01-02T00:00:00Z',
-    },
+    }),
   ];
 
   beforeEach(() => {

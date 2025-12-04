@@ -4,6 +4,7 @@ import { useAgentSave } from './use-agent-save';
 import { Agent } from '../../../../types/chat.types';
 import { AgentFormValues } from './use-agent-form';
 import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
+import { createMockAgent, createMockAgentFormValues } from '../../../../test/utils/mock-factories';
 
 // Mock dependencies
 const mockNavigate = vi.fn();
@@ -50,35 +51,31 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe('useAgentSave', () => {
-  const mockFormValues: AgentFormValues = {
+  const mockFormValues: AgentFormValues = createMockAgentFormValues({
     name: 'Test Agent',
     description: 'Test Description',
-    avatarUrl: null,
     temperature: 0.7,
     systemPrompt: 'You are helpful',
     behaviorRules: ['Rule 1', 'Rule 2'],
-  };
+  });
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('should create new agent when isNewAgent is true', async () => {
-    const newAgent: Agent = {
+    const newAgent: Agent = createMockAgent({
       id: -1,
       name: '',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
-    const savedAgent: Agent = {
+    const savedAgent: Agent = createMockAgent({
       id: 1,
       name: 'Test Agent',
       description: 'Test Description',
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     mockCreateAgent.mockResolvedValue(savedAgent);
     mockHandleSaveNavigation.mockResolvedValue(undefined);
@@ -96,6 +93,8 @@ describe('useAgentSave', () => {
       name: 'Test Agent',
       description: 'Test Description',
       avatarUrl: null,
+      agentType: mockFormValues.agentType,
+      language: mockFormValues.language || null,
       configs: {
         temperature: 0.7,
         system_prompt: 'You are helpful',
@@ -107,6 +106,8 @@ describe('useAgentSave', () => {
       name: 'Test Agent',
       description: 'Test Description',
       avatarUrl: undefined,
+      agentType: mockFormValues.agentType,
+      language: mockFormValues.language || undefined,
       configs: {
         temperature: 0.7,
         system_prompt: 'You are helpful',
@@ -118,13 +119,11 @@ describe('useAgentSave', () => {
   });
 
   it('should update existing agent when isNewAgent is false', async () => {
-    const existingAgent: Agent = {
+    const existingAgent: Agent = createMockAgent({
       id: 1,
       name: 'Old Name',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     mockUpdateAgent.mockResolvedValue(undefined);
     mockHandleSaveNavigation.mockResolvedValue(undefined);
@@ -144,6 +143,8 @@ describe('useAgentSave', () => {
         name: 'Test Agent',
         description: 'Test Description',
         avatarUrl: undefined,
+        agentType: mockFormValues.agentType,
+        language: mockFormValues.language || undefined,
         configs: {
           temperature: 0.7,
           system_prompt: 'You are helpful',
@@ -156,13 +157,11 @@ describe('useAgentSave', () => {
   });
 
   it('should filter out empty behavior rules', async () => {
-    const newAgent: Agent = {
+    const newAgent: Agent = createMockAgent({
       id: -1,
       name: '',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     const formValuesWithEmptyRules: AgentFormValues = {
       ...mockFormValues,
@@ -191,13 +190,11 @@ describe('useAgentSave', () => {
   });
 
   it('should handle empty behavior rules array', async () => {
-    const newAgent: Agent = {
+    const newAgent: Agent = createMockAgent({
       id: -1,
       name: '',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     const formValuesWithEmptyRules: AgentFormValues = {
       ...mockFormValues,
@@ -254,13 +251,11 @@ describe('useAgentSave', () => {
   });
 
   it('should handle save errors', async () => {
-    const newAgent: Agent = {
+    const newAgent: Agent = createMockAgent({
       id: -1,
       name: '',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     mockCreateAgent.mockRejectedValue(new Error('Save failed'));

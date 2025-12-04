@@ -4,6 +4,7 @@ import { useAgentDelete } from './use-agent-delete';
 import { Agent } from '../../../../types/chat.types';
 import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
 import { ToastProvider } from '../../../../contexts/ToastContext';
+import { createMockAgent } from '../../../../test/utils/mock-factories';
 
 // Mock dependencies - use hoisted to ensure stable references
 const { mockConfirm, mockDeleteAgent, deleteAgentMutation } = vi.hoisted(() => {
@@ -39,20 +40,16 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 
 describe('useAgentDelete', () => {
   const mockAgents: Agent[] = [
-    {
+    createMockAgent({
       id: 1,
       name: 'Agent 1',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    },
-    {
+    }),
+    createMockAgent({
       id: 2,
       name: 'Agent 2',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-02T00:00:00.000Z',
-    },
+    }),
   ];
 
   beforeEach(() => {

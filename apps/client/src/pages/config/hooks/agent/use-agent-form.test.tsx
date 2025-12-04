@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useAgentForm } from './use-agent-form';
 import { Agent } from '../../../../types/chat.types';
+import { createMockAgent } from '../../../../test/utils/mock-factories';
 
 // Mock useFormValidation
 const mockSetValue = vi.fn();
@@ -54,13 +55,13 @@ describe('useAgentForm', () => {
   });
 
   it('should initialize with agent values when agent and agentData provided', async () => {
-    const mockAgent: Agent = {
+    const mockAgent: Agent = createMockAgent({
       id: 1,
       name: 'Test Agent',
       description: 'Test Description',
       avatarUrl: 'https://example.com/avatar.png',
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     const mockAgentData: Agent = {
       ...mockAgent,
@@ -114,13 +115,12 @@ describe('useAgentForm', () => {
   });
 
   it('should initialize with new agent values when agent.id < 0', async () => {
-    const mockNewAgent: Agent = {
+    const mockNewAgent: Agent = createMockAgent({
       id: -1,
       name: 'New Agent',
       description: 'New Description',
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     // Start with null, then update to trigger useEffect
     const { rerender } = renderHook<
@@ -152,13 +152,11 @@ describe('useAgentForm', () => {
   });
 
   it('should use default temperature when not provided in configs', async () => {
-    const mockAgent: Agent = {
+    const mockAgent: Agent = createMockAgent({
       id: 1,
       name: 'Test Agent',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     const mockAgentData: Agent = {
       ...mockAgent,
@@ -190,13 +188,11 @@ describe('useAgentForm', () => {
   });
 
   it('should handle empty description', async () => {
-    const mockAgent: Agent = {
+    const mockAgent: Agent = createMockAgent({
       id: 1,
       name: 'Test Agent',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     const mockAgentData: Agent = {
       ...mockAgent,
@@ -228,13 +224,11 @@ describe('useAgentForm', () => {
   });
 
   it('should update form when agent ID changes', () => {
-    const mockAgent1: Agent = {
+    const mockAgent1: Agent = createMockAgent({
       id: 1,
       name: 'Agent 1',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     const mockAgentData1: Agent = {
       ...mockAgent1,
@@ -257,13 +251,11 @@ describe('useAgentForm', () => {
       }
     );
 
-    const mockAgent2: Agent = {
+    const mockAgent2: Agent = createMockAgent({
       id: 2,
       name: 'Agent 2',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-02T00:00:00.000Z',
-    };
+    });
 
     const mockAgentData2: Agent = {
       ...mockAgent2,
@@ -282,13 +274,11 @@ describe('useAgentForm', () => {
   });
 
   it('should reset form when agent becomes null', () => {
-    const mockAgent: Agent = {
+    const mockAgent: Agent = createMockAgent({
       id: 1,
       name: 'Test Agent',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     const { rerender } = renderHook<
       ReturnType<typeof useAgentForm>,

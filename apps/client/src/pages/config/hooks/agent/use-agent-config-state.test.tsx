@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useAgentConfigState } from './use-agent-config-state';
 import { Agent } from '../../../../types/chat.types';
+import { createMockAgent } from '../../../../test/utils/mock-factories';
 
 // Mock useNewAgentForm
 const mockFormData: Partial<Agent> = {
@@ -37,6 +38,8 @@ describe('useAgentConfigState', () => {
       name: 'New Agent',
       description: 'New Description',
       avatarUrl: null,
+      agentType: null,
+      language: null,
       createdAt: expect.any(String),
       configs: {
         temperature: 0.8,
@@ -47,13 +50,11 @@ describe('useAgentConfigState', () => {
   });
 
   it('should return existing agent when isNewAgent is false', () => {
-    const existingAgent: Agent = {
+    const existingAgent: Agent = createMockAgent({
       id: 1,
       name: 'Existing Agent',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     const { result } = renderHook(() =>
       useAgentConfigState({

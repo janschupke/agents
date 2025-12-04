@@ -5,6 +5,7 @@ import { AuthProvider } from '../../../contexts/AuthContext';
 import { useChatRoute } from './use-chat-route';
 import { AgentService } from '../../../services/agent/agent.service';
 import { Agent } from '../../../types/chat.types';
+import { createMockAgent } from '../../../test/utils/mock-factories';
 
 // Mock Clerk
 vi.mock('@clerk/clerk-react', () => ({
@@ -53,20 +54,18 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 
 describe('useChatRoute', () => {
   const mockAgents: Agent[] = [
-    {
+    createMockAgent({
       id: 1,
       name: 'Agent 1',
       description: 'Description 1',
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    },
-    {
+    }),
+    createMockAgent({
       id: 2,
       name: 'Agent 2',
       description: 'Description 2',
-      avatarUrl: null,
       createdAt: '2024-01-02T00:00:00.000Z',
-    },
+    }),
   ];
 
   beforeEach(() => {

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useAgentSelection } from './use-agent-selection';
 import { Agent } from '../../../../types/chat.types';
+import { createMockAgent } from '../../../../test/utils/mock-factories';
 
 // Mock localStorage
 const mockGetSelectedAgentIdConfig = vi.fn();
@@ -17,20 +18,16 @@ vi.mock('../../../../utils/localStorage', () => ({
 
 describe('useAgentSelection', () => {
   const mockContextAgents: Agent[] = [
-    {
+    createMockAgent({
       id: 1,
       name: 'Agent 1',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    },
-    {
+    }),
+    createMockAgent({
       id: 2,
       name: 'Agent 2',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-02T00:00:00.000Z',
-    },
+    }),
   ];
 
   beforeEach(() => {
@@ -88,13 +85,11 @@ describe('useAgentSelection', () => {
 
   it('should merge local agents with context agents', () => {
     const localAgents: Agent[] = [
-      {
+      createMockAgent({
         id: -1,
         name: 'New Agent',
-        description: null,
-        avatarUrl: null,
         createdAt: '2024-01-03T00:00:00.000Z',
-      },
+      }),
     ];
 
     const { result } = renderHook(() =>

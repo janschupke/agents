@@ -10,6 +10,7 @@ import {
 import { AgentService } from '../../services/agent/agent.service';
 import { SessionService } from '../../services/chat/session/session.service';
 import { MemoryService } from '../../services/memory/memory.service';
+import { createMockAgent } from '../../test/utils/mock-factories';
 
 // Mock AuthContext
 const mockAuth = {
@@ -42,22 +43,18 @@ describe('use-agents', () => {
   describe('useAgents', () => {
     it('should fetch all agents when signed in and loaded', async () => {
       const mockAgents = [
-        {
+        createMockAgent({
           id: 1,
           name: 'Agent 1',
           description: 'Description 1',
-        avatarUrl: null,
-        agentType: null,
-        language: null,
-        createdAt: '2024-01-01T00:00:00.000Z',
-      },
-        {
+          createdAt: '2024-01-01T00:00:00.000Z',
+        }),
+        createMockAgent({
           id: 2,
           name: 'Agent 2',
           description: 'Description 2',
-          avatarUrl: null,
           createdAt: '2024-01-02T00:00:00.000Z',
-        },
+        }),
       ];
 
       vi.mocked(AgentService.getAllAgents).mockResolvedValue(mockAgents);
@@ -97,13 +94,12 @@ describe('use-agents', () => {
       mockAuth.isSignedIn = true;
       mockAuth.isLoaded = true;
 
-      const mockAgent = {
+      const mockAgent = createMockAgent({
         id: 1,
         name: 'Agent 1',
         description: 'Description 1',
-        avatarUrl: null,
         createdAt: '2024-01-01T00:00:00.000Z',
-      };
+      });
 
       vi.mocked(AgentService.getAgent).mockResolvedValue(mockAgent);
 

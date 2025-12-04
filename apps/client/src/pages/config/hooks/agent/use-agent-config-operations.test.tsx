@@ -5,6 +5,7 @@ import { ToastProvider } from '../../../../contexts/ToastContext';
 import { useAgentConfigOperations } from './use-agent-config-operations';
 import { Agent } from '../../../../types/chat.types';
 import { AgentFormValues } from './use-agent-form';
+import { createMockAgent, createMockAgentFormValues } from '../../../../test/utils/mock-factories';
 
 // Mock dependencies - use hoisted to ensure stable references
 const { mockConfirm, mockCreateAgent, mockUpdateAgent, mockDeleteAgent, createAgentMutation, updateAgentMutation, deleteAgentMutation } = vi.hoisted(() => {
@@ -78,20 +79,18 @@ describe('useAgentConfigOperations', () => {
   });
 
   const mockContextAgents: Agent[] = [
-    {
+    createMockAgent({
       id: 1,
       name: 'Agent 1',
       description: 'Description 1',
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    },
-    {
+    }),
+    createMockAgent({
       id: 2,
       name: 'Agent 2',
       description: 'Description 2',
-      avatarUrl: null,
       createdAt: '2024-01-02T00:00:00.000Z',
-    },
+    }),
   ];
 
   const mockLocalAgents: Agent[] = [];
@@ -99,31 +98,27 @@ describe('useAgentConfigOperations', () => {
   const mockSetLocalAgents = vi.fn();
   const mockSetCurrentAgentId = vi.fn();
 
-  const mockFormValues: AgentFormValues = {
+  const mockFormValues: AgentFormValues = createMockAgentFormValues({
     name: 'Test Agent',
     description: 'Test Description',
-    avatarUrl: null,
     temperature: 0.7,
     systemPrompt: 'You are helpful',
     behaviorRules: ['Rule 1', 'Rule 2'],
-  };
+  });
 
   it('should create new agent when agent.id < 0', async () => {
-    const newAgent: Agent = {
+    const newAgent: Agent = createMockAgent({
       id: -1,
       name: '',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
-    const createdAgent: Agent = {
+    const createdAgent: Agent = createMockAgent({
       id: 3,
       name: 'Test Agent',
       description: 'Test Description',
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     mockCreateAgent.mockResolvedValue(createdAgent);
 
@@ -211,13 +206,11 @@ describe('useAgentConfigOperations', () => {
   });
 
   it('should filter out empty behavior rules', async () => {
-    const newAgent: Agent = {
+    const newAgent: Agent = createMockAgent({
       id: -1,
       name: '',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     const formValuesWithEmptyRules: AgentFormValues = {
       ...mockFormValues,
@@ -429,13 +422,11 @@ describe('useAgentConfigOperations', () => {
     mockConfirm.mockResolvedValue(false);
     mockCreateAgent.mockRejectedValue(new Error('Save failed'));
     
-    const newAgent: Agent = {
+    const newAgent: Agent = createMockAgent({
       id: -1,
       name: '',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 

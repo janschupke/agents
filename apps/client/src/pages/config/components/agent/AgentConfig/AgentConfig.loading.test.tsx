@@ -7,6 +7,7 @@ import { TestQueryProvider } from '../../../../../test/utils/test-query-provider
 import { AuthProvider } from '../../../../../contexts/AuthContext';
 import { ToastProvider } from '../../../../../contexts/ToastContext';
 import { Agent } from '../../../../../types/chat.types';
+import { createMockAgent } from '../../../../../test/utils/mock-factories';
 
 // Mock Clerk
 vi.mock('@clerk/clerk-react', () => ({
@@ -171,24 +172,22 @@ describe('AgentConfig Loading States', () => {
       });
 
       mockUseAgentConfigState.mockReturnValue({
-        currentAgent: {
+        currentAgent: createMockAgent({
           id: 1,
           name: 'Agent 1',
           description: 'Desc',
-          avatarUrl: null,
           createdAt: '2024-01-01T00:00:00.000Z',
-        },
+        }),
       });
 
       // Mock useAgent for AgentConfigForm
       mockUseAgent.mockReturnValue({
-        data: {
+        data: createMockAgent({
           id: 1,
           name: 'Agent 1',
           description: 'Desc',
-          avatarUrl: null,
           createdAt: '2024-01-01T00:00:00.000Z',
-        },
+        }),
         isLoading: false,
         isError: false,
       });
@@ -259,13 +258,12 @@ describe('AgentConfig Loading States', () => {
       });
 
       mockUseAgentConfigState.mockReturnValue({
-        currentAgent: {
+        currentAgent: createMockAgent({
           id: 1,
           name: 'Agent 1',
           description: 'Desc',
-          avatarUrl: null,
           createdAt: '2024-01-01T00:00:00.000Z',
-        },
+        }),
       });
 
       // Cache is set by useAgents hook returning data
@@ -346,24 +344,22 @@ describe('AgentConfig Loading States', () => {
       });
 
       mockUseAgentConfigState.mockReturnValue({
-        currentAgent: {
+        currentAgent: createMockAgent({
           id: 1,
           name: 'Agent 1',
           description: 'Desc',
-          avatarUrl: null,
           createdAt: '2024-01-01T00:00:00.000Z',
-        },
+        }),
       });
 
       // Mock useAgent for AgentConfigForm
       mockUseAgent.mockReturnValue({
-        data: {
+        data: createMockAgent({
           id: 1,
           name: 'Agent 1',
           description: 'Desc',
-          avatarUrl: null,
           createdAt: '2024-01-01T00:00:00.000Z',
-        },
+        }),
         isLoading: false,
         isError: false,
       });

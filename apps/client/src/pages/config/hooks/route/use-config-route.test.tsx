@@ -3,6 +3,7 @@ import { renderHook } from '@testing-library/react';
 import { useConfigRoute } from './use-config-route';
 import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
 import { Agent } from '../../../../types/chat.types';
+import { createMockAgent } from '../../../../test/utils/mock-factories';
 
 // Mock dependencies
 const mockUseAgent = vi.fn();
@@ -29,13 +30,11 @@ describe('useConfigRoute', () => {
   });
 
   it('should parse valid agentId from string', () => {
-    const mockAgent: Agent = {
+    const mockAgent: Agent = createMockAgent({
       id: 1,
       name: 'Test Agent',
-      description: null,
-      avatarUrl: null,
       createdAt: '2024-01-01T00:00:00.000Z',
-    };
+    });
 
     mockUseAgent.mockReturnValue({
       data: mockAgent,

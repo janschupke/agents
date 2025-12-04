@@ -1,30 +1,23 @@
 import { http, HttpResponse } from 'msw';
+import { createMockAgent } from '../utils/mock-factories';
 
 // Use full URL for MSW - it matches against the complete request URL
 const API_BASE = 'http://localhost:3001';
 
 // Mock data
-export const mockAgents: Array<{
-  id: number;
-  name: string;
-  description: string | null;
-  avatarUrl: string | null;
-  createdAt: string;
-}> = [
-  {
+export const mockAgents = [
+  createMockAgent({
     id: 1,
     name: 'Test Agent 1',
     description: 'Test Description 1',
-    avatarUrl: null,
     createdAt: '2024-01-01T00:00:00.000Z',
-  },
-  {
+  }),
+  createMockAgent({
     id: 2,
     name: 'Test Agent 2',
     description: 'Test Description 2',
-    avatarUrl: null,
     createdAt: '2024-01-02T00:00:00.000Z',
-  },
+  }),
 ];
 
 export const mockUser = {
