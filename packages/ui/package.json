@@ -8,14 +8,14 @@
   "exports": {
     ".": {
       "development": "./src/index.ts",
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./styles": "./src/styles/base.css"
   },
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "lint": "eslint . --ext .ts,.tsx --max-warnings 0 --fix",
     "lint:check": "eslint . --ext .ts,.tsx --max-warnings 0",
     "format": "prettier --write \"src/**/*.{ts,tsx,json}\"",
@@ -59,6 +59,7 @@
     "prettier": "^3.6.2",
     "storybook": "^10.1.4",
     "tailwindcss": "^3.4.0",
+    "tsup": "^8.5.1",
     "typescript": "^5.3.2",
     "vite": "^5.0.8",
     "vitest": "^1.1.0"

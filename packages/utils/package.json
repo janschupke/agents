@@ -10,21 +10,6 @@
       "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
       "import": "./dist/index.mjs"
-    },
-    "./validation": {
-      "types": "./dist/validation.d.ts",
-      "require": "./dist/validation.js",
-      "import": "./dist/validation.mjs"
-    },
-    "./datetime": {
-      "types": "./dist/datetime.d.ts",
-      "require": "./dist/datetime.js",
-      "import": "./dist/datetime.mjs"
-    },
-    "./hooks": {
-      "types": "./dist/hooks.d.ts",
-      "require": "./dist/hooks.js",
-      "import": "./dist/hooks.mjs"
     }
   },
   "scripts": {
