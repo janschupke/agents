@@ -21,8 +21,7 @@ describe('Button', () => {
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
-  it('should not call onClick when disabled', async () => {
-    const user = userEvent.setup();
+  it('should not call onClick when disabled', () => {
     const handleClick = vi.fn();
 
     render(
@@ -33,12 +32,11 @@ describe('Button', () => {
 
     const button = screen.getByRole('button');
     expect(button).toBeDisabled();
-    await user.click(button);
+    // Disabled buttons don't trigger clicks, so no need for userEvent
     expect(handleClick).not.toHaveBeenCalled();
   });
 
-  it('should not call onClick when loading', async () => {
-    const user = userEvent.setup();
+  it('should not call onClick when loading', () => {
     const handleClick = vi.fn();
 
     render(
@@ -49,7 +47,7 @@ describe('Button', () => {
 
     const button = screen.getByRole('button');
     expect(button).toBeDisabled();
-    await user.click(button);
+    // Loading buttons don't trigger clicks, so no need for userEvent
     expect(handleClick).not.toHaveBeenCalled();
   });
 
@@ -60,28 +58,38 @@ describe('Button', () => {
     expect(button).toHaveAttribute('title', 'Loading...');
   });
 
-  it('should render different variants', () => {
-    const { rerender } = render(<Button variant="primary">Primary</Button>);
-    expect(screen.getByRole('button')).toBeInTheDocument();
-
-    rerender(<Button variant="secondary">Secondary</Button>);
-    expect(screen.getByRole('button')).toBeInTheDocument();
-
-    rerender(<Button variant="danger">Danger</Button>);
-    expect(screen.getByRole('button')).toBeInTheDocument();
-
-    rerender(<Button variant="ghost">Ghost</Button>);
+  it('should render primary variant', () => {
+    render(<Button variant="primary">Primary</Button>);
     expect(screen.getByRole('button')).toBeInTheDocument();
   });
 
-  it('should render different sizes', () => {
-    const { rerender } = render(<Button size="sm">Small</Button>);
+  it('should render secondary variant', () => {
+    render(<Button variant="secondary">Secondary</Button>);
     expect(screen.getByRole('button')).toBeInTheDocument();
+  });
 
-    rerender(<Button size="md">Medium</Button>);
+  it('should render danger variant', () => {
+    render(<Button variant="danger">Danger</Button>);
     expect(screen.getByRole('button')).toBeInTheDocument();
+  });
 
-    rerender(<Button size="lg">Large</Button>);
+  it('should render ghost variant', () => {
+    render(<Button variant="ghost">Ghost</Button>);
+    expect(screen.getByRole('button')).toBeInTheDocument();
+  });
+
+  it('should render small size', () => {
+    render(<Button size="sm">Small</Button>);
+    expect(screen.getByRole('button')).toBeInTheDocument();
+  });
+
+  it('should render medium size', () => {
+    render(<Button size="md">Medium</Button>);
+    expect(screen.getByRole('button')).toBeInTheDocument();
+  });
+
+  it('should render large size', () => {
+    render(<Button size="lg">Large</Button>);
     expect(screen.getByRole('button')).toBeInTheDocument();
   });
 

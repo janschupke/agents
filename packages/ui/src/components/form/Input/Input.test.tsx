@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent } from '@testing-library/react';
 import Input from './Input';
 
 describe('Input', () => {
@@ -14,14 +13,14 @@ describe('Input', () => {
     expect(screen.getByDisplayValue('test')).toBeInTheDocument();
   });
 
-  it('should handle onChange', async () => {
-    const user = userEvent.setup();
+  it('should handle onChange', () => {
     const handleChange = vi.fn();
 
     render(<Input onChange={handleChange} />);
     const input = screen.getByRole('textbox');
 
-    await user.type(input, 'hello');
+    // Use fireEvent for faster testing - we just need to verify onChange is called
+    fireEvent.change(input, { target: { value: 'hello' } });
     expect(handleChange).toHaveBeenCalled();
   });
 
@@ -30,14 +29,18 @@ describe('Input', () => {
     expect(screen.getByRole('textbox')).toBeDisabled();
   });
 
-  it('should render different sizes', () => {
-    const { rerender } = render(<Input size="sm" />);
+  it('should render small size', () => {
+    render(<Input size="sm" />);
     expect(screen.getByRole('textbox')).toBeInTheDocument();
+  });
 
-    rerender(<Input size="md" />);
+  it('should render medium size', () => {
+    render(<Input size="md" />);
     expect(screen.getByRole('textbox')).toBeInTheDocument();
+  });
 
-    rerender(<Input size="lg" />);
+  it('should render large size', () => {
+    render(<Input size="lg" />);
     expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 

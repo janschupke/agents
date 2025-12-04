@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent } from '@testing-library/react';
 import Textarea from './Textarea';
 
 describe('Textarea', () => {
@@ -14,14 +13,14 @@ describe('Textarea', () => {
     expect(screen.getByDisplayValue('test content')).toBeInTheDocument();
   });
 
-  it('should handle onChange', async () => {
-    const user = userEvent.setup();
+  it('should handle onChange', () => {
     const handleChange = vi.fn();
 
     render(<Textarea onChange={handleChange} />);
     const textarea = screen.getByRole('textbox');
 
-    await user.type(textarea, 'hello');
+    // Use fireEvent for faster testing - we just need to verify onChange is called
+    fireEvent.change(textarea, { target: { value: 'hello' } });
     expect(handleChange).toHaveBeenCalled();
   });
 

@@ -19,17 +19,27 @@ describe('Toast', () => {
     expect(screen.getByText('Test message')).toBeInTheDocument();
   });
 
-  it('should render different types', () => {
+  it('should render success type', () => {
     const handleClose = vi.fn();
-    const { rerender } = render(
+    render(
       <Toast message="Test" type="success" onClose={handleClose} />
     );
     expect(screen.getByText('Test')).toBeInTheDocument();
+  });
 
-    rerender(<Toast message="Test" type="error" onClose={handleClose} />);
+  it('should render error type', () => {
+    const handleClose = vi.fn();
+    render(
+      <Toast message="Test" type="error" onClose={handleClose} />
+    );
     expect(screen.getByText('Test')).toBeInTheDocument();
+  });
 
-    rerender(<Toast message="Test" type="info" onClose={handleClose} />);
+  it('should render info type', () => {
+    const handleClose = vi.fn();
+    render(
+      <Toast message="Test" type="info" onClose={handleClose} />
+    );
     expect(screen.getByText('Test')).toBeInTheDocument();
   });
 

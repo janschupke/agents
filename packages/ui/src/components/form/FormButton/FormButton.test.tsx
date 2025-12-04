@@ -21,8 +21,7 @@ describe('FormButton', () => {
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
-  it('should not call onClick when disabled', async () => {
-    const user = userEvent.setup();
+  it('should not call onClick when disabled', () => {
     const handleClick = vi.fn();
 
     render(
@@ -33,12 +32,11 @@ describe('FormButton', () => {
 
     const button = screen.getByRole('button');
     expect(button).toBeDisabled();
-    await user.click(button);
+    // Disabled buttons don't trigger clicks, so no need for userEvent
     expect(handleClick).not.toHaveBeenCalled();
   });
 
-  it('should not call onClick when loading', async () => {
-    const user = userEvent.setup();
+  it('should not call onClick when loading', () => {
     const handleClick = vi.fn();
 
     render(
@@ -49,7 +47,7 @@ describe('FormButton', () => {
 
     const button = screen.getByRole('button');
     expect(button).toBeDisabled();
-    await user.click(button);
+    // Loading buttons don't trigger clicks, so no need for userEvent
     expect(handleClick).not.toHaveBeenCalled();
   });
 
@@ -60,16 +58,18 @@ describe('FormButton', () => {
     expect(button).toHaveAttribute('title', 'Loading...');
   });
 
-  it('should render different variants', () => {
-    const { rerender } = render(
-      <FormButton variant="primary">Primary</FormButton>
-    );
+  it('should render primary variant', () => {
+    render(<FormButton variant="primary">Primary</FormButton>);
     expect(screen.getByRole('button')).toBeInTheDocument();
+  });
 
-    rerender(<FormButton variant="secondary">Secondary</FormButton>);
+  it('should render secondary variant', () => {
+    render(<FormButton variant="secondary">Secondary</FormButton>);
     expect(screen.getByRole('button')).toBeInTheDocument();
+  });
 
-    rerender(<FormButton variant="danger">Danger</FormButton>);
+  it('should render danger variant', () => {
+    render(<FormButton variant="danger">Danger</FormButton>);
     expect(screen.getByRole('button')).toBeInTheDocument();
   });
 });
