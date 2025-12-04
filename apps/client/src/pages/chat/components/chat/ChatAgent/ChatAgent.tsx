@@ -71,6 +71,7 @@ function ChatAgentContent({
     messages,
     sessionId: sessionId ?? null,
     showTypingIndicator: isSendingMessage,
+    messagesContainerRef,
   });
 
   // Modal management
