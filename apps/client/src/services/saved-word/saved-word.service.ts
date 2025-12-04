@@ -16,10 +16,7 @@ export class SavedWordService {
   static async createSavedWord(
     data: CreateSavedWordRequest
   ): Promise<SavedWord> {
-    return apiManager.post<SavedWord>(
-      API_ENDPOINTS.SAVED_WORDS.BASE,
-      data
-    );
+    return apiManager.post<SavedWord>(API_ENDPOINTS.SAVED_WORDS.BASE, data);
   }
 
   /**
@@ -27,7 +24,9 @@ export class SavedWordService {
    */
   static async getSavedWords(language?: string | null): Promise<SavedWord[]> {
     if (language) {
-      return apiManager.get<SavedWord[]>(API_ENDPOINTS.SAVED_WORDS.BY_LANGUAGE(language));
+      return apiManager.get<SavedWord[]>(
+        API_ENDPOINTS.SAVED_WORDS.BY_LANGUAGE(language)
+      );
     }
     return apiManager.get<SavedWord[]>(API_ENDPOINTS.SAVED_WORDS.BASE);
   }

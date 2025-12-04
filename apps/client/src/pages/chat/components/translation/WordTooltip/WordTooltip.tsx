@@ -36,7 +36,9 @@ export default function WordTooltip({
   }, [showTooltip]);
 
   // Only show pinyin if language formatting config says so
-  const shouldShowPinyin = LanguageFormattingService.shouldShowPinyin(language ?? null);
+  const shouldShowPinyin = LanguageFormattingService.shouldShowPinyin(
+    language ?? null
+  );
   const displayPinyin = shouldShowPinyin ? pinyin : null;
 
   const hasContent = translation || displayPinyin;
@@ -48,30 +50,31 @@ export default function WordTooltip({
   }
 
   // Render tooltip in a portal to avoid DOM nesting issues (div inside p)
-  const tooltipElement = showTooltip && hasContent ? (
-    <div
-      className="fixed z-50 px-3 py-2 text-xs bg-gray-900 text-white rounded shadow-lg pointer-events-none min-w-[120px]"
-      style={{
-        left: `${tooltipPosition.x}px`,
-        top: `${tooltipPosition.y}px`,
-        transform: 'translate(-50%, -100%)',
-      }}
-    >
-      <div className="font-semibold mb-1">{originalWord}</div>
-      {displayPinyin && (
-        <div className="text-gray-300 mb-1 text-[10px]">{displayPinyin}</div>
-      )}
-      {translation && <div className="text-gray-100">{translation}</div>}
+  const tooltipElement =
+    showTooltip && hasContent ? (
       <div
-        className="absolute top-full left-1/2 transform -translate-x-1/2"
+        className="fixed z-50 px-3 py-2 text-xs bg-gray-900 text-white rounded shadow-lg pointer-events-none min-w-[120px]"
         style={{
-          borderLeft: '4px solid transparent',
-          borderRight: '4px solid transparent',
-          borderTop: '4px solid rgb(17, 24, 39)',
+          left: `${tooltipPosition.x}px`,
+          top: `${tooltipPosition.y}px`,
+          transform: 'translate(-50%, -100%)',
         }}
-      />
-    </div>
-  ) : null;
+      >
+        <div className="font-semibold mb-1">{originalWord}</div>
+        {displayPinyin && (
+          <div className="text-gray-300 mb-1 text-[10px]">{displayPinyin}</div>
+        )}
+        {translation && <div className="text-gray-100">{translation}</div>}
+        <div
+          className="absolute top-full left-1/2 transform -translate-x-1/2"
+          style={{
+            borderLeft: '4px solid transparent',
+            borderRight: '4px solid transparent',
+            borderTop: '4px solid rgb(17, 24, 39)',
+          }}
+        />
+      </div>
+    ) : null;
 
   return (
     <>

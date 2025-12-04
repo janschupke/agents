@@ -30,7 +30,13 @@ vi.mock('../../../../../hooks/utils/use-token-ready', () => ({
 }));
 
 // Mock AgentService
-const { mockGetAllAgents, mockGetAgent, mockCreateAgent, mockUpdateAgent, mockDeleteAgent } = vi.hoisted(() => {
+const {
+  mockGetAllAgents,
+  mockGetAgent,
+  mockCreateAgent,
+  mockUpdateAgent,
+  mockDeleteAgent,
+} = vi.hoisted(() => {
   const mockGetAllAgents = vi.fn();
   const mockGetAgent = vi.fn(() =>
     Promise.resolve({
@@ -48,7 +54,13 @@ const { mockGetAllAgents, mockGetAgent, mockCreateAgent, mockUpdateAgent, mockDe
   const mockCreateAgent = vi.fn();
   const mockUpdateAgent = vi.fn();
   const mockDeleteAgent = vi.fn();
-  return { mockGetAllAgents, mockGetAgent, mockCreateAgent, mockUpdateAgent, mockDeleteAgent };
+  return {
+    mockGetAllAgents,
+    mockGetAgent,
+    mockCreateAgent,
+    mockUpdateAgent,
+    mockDeleteAgent,
+  };
 });
 
 vi.mock('../../../../../services/agent/agent.service', () => ({
@@ -144,7 +156,6 @@ const TestWrapper = ({
 );
 
 describe('AgentConfig', () => {
-
   const mockAgents: Agent[] = [
     createMockAgent({
       id: 1,

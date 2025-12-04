@@ -15,7 +15,10 @@ import {
   useAddSentence,
   useRemoveSentence,
 } from '../../../../hooks/mutations/use-saved-word-mutations';
-import { SavedWord, SavedWordSentence } from '../../../../types/saved-word.types';
+import {
+  SavedWord,
+  SavedWordSentence,
+} from '../../../../types/saved-word.types';
 
 interface EditSavedWordModalProps {
   isOpen: boolean;
@@ -35,7 +38,9 @@ export default function EditSavedWordModal({
   const removeSentenceMutation = useRemoveSentence();
 
   const [translation, setTranslation] = useState(word.translation);
-  const [sentences, setSentences] = useState<SavedWordSentence[]>(word.sentences || []);
+  const [sentences, setSentences] = useState<SavedWordSentence[]>(
+    word.sentences || []
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -110,13 +115,13 @@ export default function EditSavedWordModal({
           padding="none"
           className="w-full max-w-2xl m-4 max-h-[90vh] overflow-y-auto"
         >
-          <ModalHeader
-            title={t('savedWords.editWord')}
-            onClose={onClose}
-          />
+          <ModalHeader title={t('savedWords.editWord')} onClose={onClose} />
           <div className="px-6 py-4 space-y-4">
             {/* Original Word (read-only) */}
-            <FormField label={t('savedWords.originalWord')} labelFor="original-word">
+            <FormField
+              label={t('savedWords.originalWord')}
+              labelFor="original-word"
+            >
               <Input
                 id="original-word"
                 type="text"

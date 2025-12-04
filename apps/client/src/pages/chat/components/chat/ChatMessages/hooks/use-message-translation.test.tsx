@@ -199,10 +199,12 @@ describe('useMessageTranslation', () => {
       })
     );
 
-    // Wait for initial effect
-    await waitFor(() => {
-      expect(WordTranslationService.getMessageTranslations).toHaveBeenCalled();
-    });
+    // Since message already has wordTranslations, getMessageTranslations won't be called
+    // The effect only runs if !wordTranslations (see line 54 of use-message-translation.ts)
+    // So we don't wait for it - it should not be called
+    expect(
+      WordTranslationService.getMessageTranslations
+    ).not.toHaveBeenCalled();
 
     expect(result.current.showTranslation).toBe(false);
 

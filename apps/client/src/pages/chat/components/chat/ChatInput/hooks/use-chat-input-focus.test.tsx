@@ -26,8 +26,10 @@ describe('useChatInputFocus', () => {
   });
 
   it('should focus on initial mount when conditions are met', () => {
-    const chatInputRef = { current: { focus: mockFocus } } as React.RefObject<ChatInputRef>;
-    
+    const chatInputRef = {
+      current: { focus: mockFocus },
+    } as React.RefObject<ChatInputRef>;
+
     renderHook(() =>
       useChatInputFocus({
         chatInputRef,
@@ -52,8 +54,10 @@ describe('useChatInputFocus', () => {
   });
 
   it('should not focus on initial mount when session is null', () => {
-    const chatInputRef = { current: { focus: mockFocus } } as React.RefObject<ChatInputRef>;
-    
+    const chatInputRef = {
+      current: { focus: mockFocus },
+    } as React.RefObject<ChatInputRef>;
+
     renderHook(() =>
       useChatInputFocus({
         chatInputRef,
@@ -74,8 +78,10 @@ describe('useChatInputFocus', () => {
   });
 
   it('should not focus on initial mount when messages are loading', () => {
-    const chatInputRef = { current: { focus: mockFocus } } as React.RefObject<ChatInputRef>;
-    
+    const chatInputRef = {
+      current: { focus: mockFocus },
+    } as React.RefObject<ChatInputRef>;
+
     renderHook(() =>
       useChatInputFocus({
         chatInputRef,
@@ -96,8 +102,10 @@ describe('useChatInputFocus', () => {
   });
 
   it('should not focus on initial mount when placeholder is showing', () => {
-    const chatInputRef = { current: { focus: mockFocus } } as React.RefObject<ChatInputRef>;
-    
+    const chatInputRef = {
+      current: { focus: mockFocus },
+    } as React.RefObject<ChatInputRef>;
+
     renderHook(() =>
       useChatInputFocus({
         chatInputRef,
@@ -118,8 +126,10 @@ describe('useChatInputFocus', () => {
   });
 
   it('should not focus on initial mount when input is disabled', () => {
-    const chatInputRef = { current: { focus: mockFocus } } as React.RefObject<ChatInputRef>;
-    
+    const chatInputRef = {
+      current: { focus: mockFocus },
+    } as React.RefObject<ChatInputRef>;
+
     renderHook(() =>
       useChatInputFocus({
         chatInputRef,
@@ -141,8 +151,10 @@ describe('useChatInputFocus', () => {
 
   it('should focus when session changes', () => {
     // Create a stable ref that persists across renders
-    const stableRef = { current: { focus: mockFocus } } as React.RefObject<ChatInputRef>;
-    
+    const stableRef = {
+      current: { focus: mockFocus },
+    } as React.RefObject<ChatInputRef>;
+
     const { rerender } = renderHook<
       ReturnType<typeof useChatInputFocus>,
       { currentSessionId: number | null }
@@ -189,8 +201,10 @@ describe('useChatInputFocus', () => {
   });
 
   it('should focus when typing indicator goes from true to false', () => {
-    const chatInputRef = { current: { focus: mockFocus } } as React.RefObject<ChatInputRef>;
-    
+    const chatInputRef = {
+      current: { focus: mockFocus },
+    } as React.RefObject<ChatInputRef>;
+
     const { rerender } = renderHook<
       ReturnType<typeof useChatInputFocus>,
       { showTypingIndicator: boolean; isInputDisabled: boolean }
@@ -227,8 +241,10 @@ describe('useChatInputFocus', () => {
   });
 
   it('should focus when input goes from disabled to enabled', () => {
-    const chatInputRef = { current: { focus: mockFocus } } as React.RefObject<ChatInputRef>;
-    
+    const chatInputRef = {
+      current: { focus: mockFocus },
+    } as React.RefObject<ChatInputRef>;
+
     const { rerender } = renderHook<
       ReturnType<typeof useChatInputFocus>,
       { isInputDisabled: boolean }
@@ -265,8 +281,10 @@ describe('useChatInputFocus', () => {
   });
 
   it('should not focus when typing indicator goes from false to true', () => {
-    const chatInputRef = { current: { focus: mockFocus } } as React.RefObject<ChatInputRef>;
-    
+    const chatInputRef = {
+      current: { focus: mockFocus },
+    } as React.RefObject<ChatInputRef>;
+
     const { rerender } = renderHook<
       ReturnType<typeof useChatInputFocus>,
       { showTypingIndicator: boolean; isInputDisabled: boolean }
@@ -303,8 +321,10 @@ describe('useChatInputFocus', () => {
 
   it('should not focus when session changes but conditions are not met', () => {
     // Create a stable ref that persists across renders
-    const stableRef = { current: { focus: mockFocus } } as React.RefObject<ChatInputRef>;
-    
+    const stableRef = {
+      current: { focus: mockFocus },
+    } as React.RefObject<ChatInputRef>;
+
     const { rerender } = renderHook<
       ReturnType<typeof useChatInputFocus>,
       { currentSessionId: number | null; messagesLoading: boolean }
@@ -356,19 +376,20 @@ describe('useChatInputFocus', () => {
   });
 
   it('should not focus multiple times on initial mount', () => {
-    const chatInputRef = { current: { focus: mockFocus } } as React.RefObject<ChatInputRef>;
-    
-    const { rerender } = renderHook(
-      () =>
-        useChatInputFocus({
-          chatInputRef,
-          currentSessionId: 1,
-          messagesLoading: false,
-          showChatPlaceholder: false,
-          showTypingIndicator: false,
-          isInputDisabled: false,
-          agentId: 1,
-        })
+    const chatInputRef = {
+      current: { focus: mockFocus },
+    } as React.RefObject<ChatInputRef>;
+
+    const { rerender } = renderHook(() =>
+      useChatInputFocus({
+        chatInputRef,
+        currentSessionId: 1,
+        messagesLoading: false,
+        showChatPlaceholder: false,
+        showTypingIndicator: false,
+        isInputDisabled: false,
+        agentId: 1,
+      })
     );
 
     act(() => {

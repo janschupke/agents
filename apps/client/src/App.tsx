@@ -39,10 +39,14 @@ const Profile = lazy(() =>
   )
 );
 const SavedWords = lazy(
-  () => import(/* webpackChunkName: "saved-words" */ './pages/saved-words/SavedWords')
+  () =>
+    import(
+      /* webpackChunkName: "saved-words" */ './pages/saved-words/SavedWords'
+    )
 );
 const Flashcards = lazy(
-  () => import(/* webpackChunkName: "flashcards" */ './pages/flashcards/Flashcards')
+  () =>
+    import(/* webpackChunkName: "flashcards" */ './pages/flashcards/Flashcards')
 );
 
 // Memoized Footer component to prevent re-renders
@@ -168,10 +172,7 @@ function AppContent() {
             <Route path={ROUTES.CHAT_AGENT_PATTERN} element={<Chat />} />
             <Route path={ROUTES.CONFIG} element={<Config />} />
             <Route path={ROUTES.CONFIG_NEW} element={<Config />} />
-            <Route
-              path={ROUTES.CONFIG_AGENT_PATTERN}
-              element={<Config />}
-            />
+            <Route path={ROUTES.CONFIG_AGENT_PATTERN} element={<Config />} />
             <Route path={ROUTES.PROFILE} element={<Profile />} />
             <Route path={ROUTES.SAVED_WORDS} element={<SavedWords />} />
             <Route path={ROUTES.FLASHCARDS} element={<Flashcards />} />

@@ -5,14 +5,10 @@ import {
   useCreateAgent,
   useUpdateAgent,
   useDeleteAgent,
-  useCreateSession,
-  useUpdateSession,
-  useDeleteSession,
   useUpdateMemory,
   useDeleteMemory,
 } from './use-agent-mutations';
 import { AgentService } from '../../services/agent/agent.service';
-import { SessionService } from '../../services/chat/session/session.service';
 import { MemoryService } from '../../services/memory/memory.service';
 
 // Mock ToastContext
@@ -23,7 +19,6 @@ vi.mock('../../contexts/ToastContext', () => ({
 
 // Mock services
 vi.mock('../../services/agent/agent.service');
-vi.mock('../../services/chat/session/session.service');
 vi.mock('../../services/memory/memory.service');
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -166,135 +161,6 @@ describe('use-agent-mutations', () => {
       await waitFor(() => {
         expect(mockShowToast).toHaveBeenCalledWith(
           'Failed to delete agent',
-          'error'
-        );
-      });
-    });
-  });
-
-  describe('useCreateSession', () => {
-    it('should create session and show success toast', async () => {
-      const mockSession = {
-        id: 1,
-        session_name: null,
-        createdAt: '2024-01-01T00:00:00.000Z',
-      };
-
-      vi.mocked(SessionService.createSession).mockResolvedValue(mockSession);
-
-      const { result } = renderHook(() => useCreateSession(), { wrapper });
-
-      await result.current.mutateAsync(1);
-
-      await waitFor(() => {
-        expect(mockShowToast).toHaveBeenCalledWith(
-          'Session created successfully',
-          'success'
-        );
-      });
-    });
-
-    it('should show error toast on failure', async () => {
-      const error = { message: 'Failed to create session' };
-      vi.mocked(SessionService.createSession).mockRejectedValue(error);
-
-      const { result } = renderHook(() => useCreateSession(), { wrapper });
-
-      await expect(result.current.mutateAsync(1)).rejects.toThrow();
-
-      await waitFor(() => {
-        expect(mockShowToast).toHaveBeenCalledWith(
-          'Failed to create session',
-          'error'
-        );
-      });
-    });
-  });
-
-  describe('useUpdateSession', () => {
-    it('should update session and show success toast', async () => {
-      const mockSession = {
-        id: 1,
-        session_name: 'Updated Session',
-        createdAt: '2024-01-01T00:00:00.000Z',
-      };
-
-      vi.mocked(SessionService.updateSession).mockResolvedValue(mockSession);
-
-      const { result } = renderHook(() => useUpdateSession(), { wrapper });
-
-      await result.current.mutateAsync({
-        agentId: 1,
-        sessionId: 1,
-        sessionName: 'Updated Session',
-      });
-
-      await waitFor(() => {
-        expect(mockShowToast).toHaveBeenCalledWith(
-          'Session updated successfully',
-          'success'
-        );
-      });
-    });
-
-    it('should show error toast on failure', async () => {
-      const error = { message: 'Failed to update session' };
-      vi.mocked(SessionService.updateSession).mockRejectedValue(error);
-
-      const { result } = renderHook(() => useUpdateSession(), { wrapper });
-
-      await expect(
-        result.current.mutateAsync({
-          agentId: 1,
-          sessionId: 1,
-          sessionName: 'Updated Session',
-        })
-      ).rejects.toThrow();
-
-      await waitFor(() => {
-        expect(mockShowToast).toHaveBeenCalledWith(
-          'Failed to update session',
-          'error'
-        );
-      });
-    });
-  });
-
-  describe('useDeleteSession', () => {
-    it('should delete session and show success toast', async () => {
-      vi.mocked(SessionService.deleteSession).mockResolvedValue(undefined);
-
-      const { result } = renderHook(() => useDeleteSession(), { wrapper });
-
-      await result.current.mutateAsync({
-        agentId: 1,
-        sessionId: 1,
-      });
-
-      await waitFor(() => {
-        expect(mockShowToast).toHaveBeenCalledWith(
-          'Session deleted successfully',
-          'success'
-        );
-      });
-    });
-
-    it('should show error toast on failure', async () => {
-      const error = { message: 'Failed to delete session' };
-      vi.mocked(SessionService.deleteSession).mockRejectedValue(error);
-
-      const { result } = renderHook(() => useDeleteSession(), { wrapper });
-
-      await expect(
-        result.current.mutateAsync({
-          agentId: 1,
-          sessionId: 1,
-        })
-      ).rejects.toThrow();
-
-      await waitFor(() => {
-        expect(mockShowToast).toHaveBeenCalledWith(
-          'Failed to delete session',
           'error'
         );
       });

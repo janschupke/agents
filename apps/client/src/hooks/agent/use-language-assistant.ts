@@ -13,8 +13,10 @@ export function useLanguageAssistant(agent: Agent | null | undefined) {
       };
     }
 
-    const isLanguageAssistant = agent.agentType === AgentType.LANGUAGE_ASSISTANT;
-    const isGeneralAgent = !agent.agentType || agent.agentType === AgentType.GENERAL;
+    const isLanguageAssistant =
+      agent.agentType === AgentType.LANGUAGE_ASSISTANT;
+    const isGeneralAgent =
+      !agent.agentType || agent.agentType === AgentType.GENERAL;
     const language = agent.language || null;
     const hasLanguage = !!agent.language;
 

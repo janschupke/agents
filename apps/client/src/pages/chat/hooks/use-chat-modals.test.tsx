@@ -29,7 +29,6 @@ describe('useChatModals', () => {
     expect(result.current.jsonModal.data).toBeNull();
   });
 
-
   it('should handle multiple modal operations', () => {
     const { result } = renderHook(() => useChatModals());
 

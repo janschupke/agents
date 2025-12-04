@@ -1,6 +1,13 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, PageHeader, PageContent, Input, Button, Card } from '@openai/ui';
+import {
+  Container,
+  PageHeader,
+  PageContent,
+  Input,
+  Button,
+  Card,
+} from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useSavedWords } from '../../hooks/queries/use-saved-words';
 import { useDeleteSavedWord } from '../../hooks/mutations/use-saved-word-mutations';
@@ -94,7 +101,10 @@ export default function SavedWords() {
     }
   };
 
-  const handleNavigateToSession = (agentId: number | null, sessionId: number | null) => {
+  const handleNavigateToSession = (
+    agentId: number | null,
+    sessionId: number | null
+  ) => {
     if (agentId && sessionId) {
       navigate(ROUTES.CHAT_AGENT(agentId));
     }
@@ -179,14 +189,19 @@ export default function SavedWords() {
                         current: currentPage,
                         total: totalPages,
                         start: (currentPage - 1) * pageSize + 1,
-                        end: Math.min(currentPage * pageSize, sortedWords.length),
+                        end: Math.min(
+                          currentPage * pageSize,
+                          sortedWords.length
+                        ),
                       })}
                     </div>
                     <div className="flex gap-2">
                       <Button
                         variant="secondary"
                         size="sm"
-                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        onClick={() =>
+                          setCurrentPage((p) => Math.max(1, p - 1))
+                        }
                         disabled={currentPage === 1}
                       >
                         {t('common.previous')}

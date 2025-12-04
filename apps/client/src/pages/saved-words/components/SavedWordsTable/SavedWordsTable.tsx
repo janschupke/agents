@@ -10,7 +10,10 @@ interface SavedWordsTableProps {
   onSort: (field: keyof SavedWord) => void;
   onEdit: (word: SavedWord) => void;
   onDelete: (id: number) => void;
-  onNavigateToSession: (agentId: number | null, sessionId: number | null) => void;
+  onNavigateToSession: (
+    agentId: number | null,
+    sessionId: number | null
+  ) => void;
 }
 
 export default function SavedWordsTable({
@@ -54,7 +57,9 @@ export default function SavedWordsTable({
             <SortableHeader field="originalWord">
               {t('savedWords.originalWord')}
             </SortableHeader>
-            <SortableHeader field="pinyin">{t('savedWords.pinyin')}</SortableHeader>
+            <SortableHeader field="pinyin">
+              {t('savedWords.pinyin')}
+            </SortableHeader>
             <SortableHeader field="translation">
               {t('savedWords.translation')}
             </SortableHeader>

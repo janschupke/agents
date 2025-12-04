@@ -54,8 +54,6 @@ export class AgentArchetypeService {
    * Delete an archetype (admin only)
    */
   static async deleteArchetype(archetypeId: number): Promise<void> {
-    return apiManager.delete(
-      API_ENDPOINTS.AGENT_ARCHETYPES.BY_ID(archetypeId)
-    );
+    return apiManager.delete(API_ENDPOINTS.AGENT_ARCHETYPES.BY_ID(archetypeId));
   }
 }

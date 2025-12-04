@@ -95,19 +95,18 @@ describe('useAgentForm', () => {
       expect(mockSetValue).toHaveBeenCalledWith('name', 'Test Agent');
     });
 
+    expect(mockSetValue).toHaveBeenCalledWith('name', 'Test Agent');
     expect(mockSetValue).toHaveBeenCalledWith(
       'description',
-      'Test Description'
+      'You are helpful' // description field is populated from config.system_prompt
     );
     expect(mockSetValue).toHaveBeenCalledWith(
       'avatarUrl',
       'https://example.com/avatar.png'
     );
+    expect(mockSetValue).toHaveBeenCalledWith('agentType', expect.any(String));
+    expect(mockSetValue).toHaveBeenCalledWith('language', null);
     expect(mockSetValue).toHaveBeenCalledWith('temperature', 0.8);
-    expect(mockSetValue).toHaveBeenCalledWith(
-      'systemPrompt',
-      'You are helpful'
-    );
     expect(mockSetValue).toHaveBeenCalledWith('behaviorRules', [
       'Rule 1',
       'Rule 2',
@@ -145,9 +144,12 @@ describe('useAgentForm', () => {
       expect(mockSetValue).toHaveBeenCalledWith('name', 'New Agent');
     });
 
-    expect(mockSetValue).toHaveBeenCalledWith('description', 'New Description');
+    expect(mockSetValue).toHaveBeenCalledWith('name', 'New Agent');
+    expect(mockSetValue).toHaveBeenCalledWith('description', ''); // New agent has empty description
+    expect(mockSetValue).toHaveBeenCalledWith('avatarUrl', null);
+    expect(mockSetValue).toHaveBeenCalledWith('agentType', expect.any(String));
+    expect(mockSetValue).toHaveBeenCalledWith('language', null);
     expect(mockSetValue).toHaveBeenCalledWith('temperature', 0.7);
-    expect(mockSetValue).toHaveBeenCalledWith('systemPrompt', '');
     expect(mockSetValue).toHaveBeenCalledWith('behaviorRules', []);
   });
 

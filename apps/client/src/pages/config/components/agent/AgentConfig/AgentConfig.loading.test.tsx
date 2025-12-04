@@ -384,10 +384,8 @@ describe('AgentConfig Loading States', () => {
       expect(
         screen.queryByTestId('agent-config-form-skeleton')
       ).not.toBeInTheDocument();
-      // Form should be rendered (check for the agent name input by id)
-      expect(
-        screen.getByPlaceholderText('config.enterAgentName')
-      ).toBeInTheDocument();
+      // Form should be rendered (check for the description textarea by id)
+      expect(screen.getByLabelText(/description/i)).toBeInTheDocument();
     });
   });
 });

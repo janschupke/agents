@@ -14,9 +14,7 @@ vi.mock('../../hooks/queries/use-agents', () => ({
 // Mock ChatAgent
 vi.mock('./components/chat/ChatAgent/ChatAgent', () => ({
   default: ({ agentId }: { agentId?: number | null }) => (
-    <div data-testid="chat-agent">
-      ChatAgent - agentId: {agentId ?? 'null'}
-    </div>
+    <div data-testid="chat-agent">ChatAgent - agentId: {agentId ?? 'null'}</div>
   ),
 }));
 

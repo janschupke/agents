@@ -37,7 +37,7 @@ vi.mock('../../hooks/use-chat-messages', () => ({
 const mockScrollIntoView = vi.fn();
 vi.mock('../../hooks/use-chat-scroll', () => ({
   useChatScroll: vi.fn(() => ({
-    messagesEndRef: { 
+    messagesEndRef: {
       current: {
         scrollIntoView: mockScrollIntoView,
       } as unknown as HTMLDivElement,

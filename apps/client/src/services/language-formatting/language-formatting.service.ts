@@ -9,7 +9,9 @@ export class LanguageFormattingService {
   /**
    * Get formatting configuration for a language
    */
-  static getFormattingConfig(language: string | null): LanguageFormattingConfig {
+  static getFormattingConfig(
+    language: string | null
+  ): LanguageFormattingConfig {
     if (!language) {
       return { showPinyin: false };
     }

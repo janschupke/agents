@@ -47,7 +47,9 @@ describe('use-chat', () => {
         hasMore: false,
       };
 
-      vi.mocked(MessageService.getChatHistory).mockResolvedValue(mockChatHistory);
+      vi.mocked(MessageService.getChatHistory).mockResolvedValue(
+        mockChatHistory
+      );
 
       const { result } = renderHook(() => useChatHistory(1, 1), { wrapper });
 
@@ -72,7 +74,9 @@ describe('use-chat', () => {
         hasMore: false,
       };
 
-      vi.mocked(MessageService.getChatHistory).mockResolvedValue(mockChatHistory);
+      vi.mocked(MessageService.getChatHistory).mockResolvedValue(
+        mockChatHistory
+      );
 
       const { result } = renderHook(() => useChatHistory(1, null), { wrapper });
 

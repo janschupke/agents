@@ -1,12 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { SavedWordService } from '../../services/saved-word/saved-word.service';
 import { queryKeys } from './query-keys';
-import { SESSIONS_STALE_TIME, CHAT_HISTORY_STALE_TIME } from '../../constants/cache.constants';
+import {
+  SESSIONS_STALE_TIME,
+  CHAT_HISTORY_STALE_TIME,
+} from '../../constants/cache.constants';
 import { SavedWord, SavedWordMatch } from '../../types/saved-word.types';
 
 export function useSavedWords(language?: string | null) {
   return useQuery<SavedWord[]>({
-    queryKey: language 
+    queryKey: language
       ? queryKeys.savedWords.byLanguage(language)
       : queryKeys.savedWords.all(),
     queryFn: () => SavedWordService.getSavedWords(language),

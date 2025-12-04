@@ -1,6 +1,12 @@
 import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import {
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+  act,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BehaviorRulesField } from './BehaviorRulesField';
 import { TestQueryProvider } from '../../../../../../test/utils/test-query-provider';
@@ -54,6 +60,23 @@ const TestWrapper = ({
 describe('BehaviorRulesField', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Suppress act warnings from useEffect state updates
+    // These are expected when switching views as the component's useEffect
+    // updates state asynchronously after view mode changes
+    const originalError = console.error;
+    vi.spyOn(console, 'error').mockImplementation((...args) => {
+      if (
+        typeof args[0] === 'string' &&
+        args[0].includes('not wrapped in act')
+      ) {
+        return;
+      }
+      originalError(...args);
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   describe('Form View', () => {
@@ -173,8 +196,10 @@ describe('BehaviorRulesField', () => {
 
       const textarea = screen.getByRole('textbox');
       await user.clear(textarea);
-      fireEvent.change(textarea, {
-        target: { value: '["New Rule 1", "New Rule 2"]' },
+      await act(async () => {
+        fireEvent.change(textarea, {
+          target: { value: '["New Rule 1", "New Rule 2"]' },
+        });
       });
 
       // Switch back to form view to verify rules were updated
@@ -201,7 +226,9 @@ describe('BehaviorRulesField', () => {
 
       const textarea = screen.getByRole('textbox');
       await user.clear(textarea);
-      fireEvent.change(textarea, { target: { value: 'invalid json{' } });
+      await act(async () => {
+        fireEvent.change(textarea, { target: { value: 'invalid json{' } });
+      });
 
       await waitFor(() => {
         // Find the error message in the FormField error paragraph
@@ -227,7 +254,9 @@ describe('BehaviorRulesField', () => {
       });
 
       const textarea = screen.getByRole('textbox');
-      fireEvent.change(textarea, { target: { value: 'invalid json{' } });
+      await act(async () => {
+        fireEvent.change(textarea, { target: { value: 'invalid json{' } });
+      });
 
       await waitFor(() => {
         // Error message is the actual JSON parse error
@@ -237,7 +266,9 @@ describe('BehaviorRulesField', () => {
       });
 
       await user.clear(textarea);
-      fireEvent.change(textarea, { target: { value: '["Valid Rule"]' } });
+      await act(async () => {
+        fireEvent.change(textarea, { target: { value: '["Valid Rule"]' } });
+      });
 
       await waitFor(() => {
         // Error should be cleared - no error paragraphs
@@ -285,9 +316,10 @@ describe('BehaviorRulesField', () => {
 
       const textarea = screen.getByRole('textbox');
       await user.clear(textarea);
-      await user.clear(textarea);
-      fireEvent.change(textarea, {
-        target: { value: '{"rules": ["Rule 1", "Rule 2"]}' },
+      await act(async () => {
+        fireEvent.change(textarea, {
+          target: { value: '{"rules": ["Rule 1", "Rule 2"]}' },
+        });
       });
 
       // Switch back to form view
@@ -335,8 +367,10 @@ describe('BehaviorRulesField', () => {
 
       const textarea = screen.getByRole('textbox');
       await user.clear(textarea);
-      fireEvent.change(textarea, {
-        target: { value: '["JSON Rule 1", "JSON Rule 2"]' },
+      await act(async () => {
+        fireEvent.change(textarea, {
+          target: { value: '["JSON Rule 1", "JSON Rule 2"]' },
+        });
       });
 
       // Switch back to form view
@@ -387,12 +421,14 @@ describe('BehaviorRulesField', () => {
       });
 
       // Update rules prop externally
-      rerender(
-        <TestWrapper
-          rules={['Rule 1', 'Rule 2', 'Rule 3']}
-          onChange={mockOnChange}
-        />
-      );
+      await act(async () => {
+        rerender(
+          <TestWrapper
+            rules={['Rule 1', 'Rule 2', 'Rule 3']}
+            onChange={mockOnChange}
+          />
+        );
+      });
 
       await waitFor(() => {
         const textarea = screen.getByRole('textbox');
@@ -446,7 +482,9 @@ describe('BehaviorRulesField', () => {
       });
 
       const textarea = screen.getByRole('textbox');
-      fireEvent.change(textarea, { target: { value: '{' } });
+      await act(async () => {
+        fireEvent.change(textarea, { target: { value: '{' } });
+      });
 
       await waitFor(() => {
         // Error message is the actual JSON parse error (could be various messages)
@@ -460,7 +498,11 @@ describe('BehaviorRulesField', () => {
         expect(errorParagraphs[0].textContent).toBeTruthy();
       });
 
-      fireEvent.change(textarea, { target: { value: '{"rules": ["Valid"]}' } });
+      await act(async () => {
+        fireEvent.change(textarea, {
+          target: { value: '{"rules": ["Valid"]}' },
+        });
+      });
 
       await waitFor(() => {
         // Error should be cleared - no error paragraphs
@@ -482,10 +524,14 @@ describe('BehaviorRulesField', () => {
 
       const textarea = screen.getByRole('textbox');
       await user.clear(textarea);
-      fireEvent.change(textarea, { target: { value: 'invalid json{' } });
+      await act(async () => {
+        fireEvent.change(textarea, { target: { value: 'invalid json{' } });
+      });
 
-      // Wait a bit to ensure onChange wasn't called with invalid data
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Wait for any async state updates to complete
+      await waitFor(() => {
+        expect(screen.getByText(/not valid JSON/i)).toBeInTheDocument();
+      });
 
       // Verify onChange was not called with the invalid JSON
       // It should only be called with valid JSON or empty array

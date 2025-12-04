@@ -8,7 +8,10 @@ import {
   FormButton,
 } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { useCreateSavedWord, useUpdateSavedWord } from '../../../../../hooks/mutations/use-saved-word-mutations';
+import {
+  useCreateSavedWord,
+  useUpdateSavedWord,
+} from '../../../../../hooks/mutations/use-saved-word-mutations';
 import { useSavedWord } from '../../../../../hooks/queries/use-saved-words';
 import { SavedWordSentence } from '../../../../../types/saved-word.types';
 
@@ -43,7 +46,9 @@ export default function SavedWordModal({
   const { data: existingWord } = useSavedWord(savedWordId || null);
 
   const [translation, setTranslation] = useState(initialTranslation);
-  const [existingSentences, setExistingSentences] = useState<SavedWordSentence[]>([]);
+  const [existingSentences, setExistingSentences] = useState<
+    SavedWordSentence[]
+  >([]);
 
   useEffect(() => {
     if (isOpen) {
@@ -118,14 +123,23 @@ export default function SavedWordModal({
       onClick={onClose}
     >
       <div onClick={(e) => e.stopPropagation()}>
-        <Card variant="elevated" padding="none" className="w-full max-w-lg m-4 max-h-[90vh] overflow-y-auto">
+        <Card
+          variant="elevated"
+          padding="none"
+          className="w-full max-w-lg m-4 max-h-[90vh] overflow-y-auto"
+        >
           <ModalHeader
-            title={isEditing ? t('savedWords.editWord') : t('savedWords.saveWord')}
+            title={
+              isEditing ? t('savedWords.editWord') : t('savedWords.saveWord')
+            }
             onClose={onClose}
           />
           <div className="px-6 py-4 space-y-4">
             {/* Original Word (read-only) */}
-            <FormField label={t('savedWords.originalWord')} labelFor="original-word">
+            <FormField
+              label={t('savedWords.originalWord')}
+              labelFor="original-word"
+            >
               <Input
                 id="original-word"
                 type="text"
@@ -169,7 +183,10 @@ export default function SavedWordModal({
 
             {/* Current Sentence Context */}
             {sentence && (
-              <FormField label={t('savedWords.sentenceContext')} labelFor="sentence">
+              <FormField
+                label={t('savedWords.sentenceContext')}
+                labelFor="sentence"
+              >
                 <div className="p-3 bg-background-secondary rounded text-sm text-text-secondary">
                   {sentence}
                 </div>
@@ -178,7 +195,10 @@ export default function SavedWordModal({
 
             {/* Existing Sentences (if editing) */}
             {isEditing && existingSentences.length > 0 && (
-              <FormField label={t('savedWords.existingSentences')} labelFor="sentences">
+              <FormField
+                label={t('savedWords.existingSentences')}
+                labelFor="sentences"
+              >
                 <div className="space-y-2">
                   {existingSentences.map((sent) => (
                     <div

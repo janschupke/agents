@@ -5,32 +5,51 @@ import { ToastProvider } from '../../../../contexts/ToastContext';
 import { useAgentConfigOperations } from './use-agent-config-operations';
 import { Agent } from '../../../../types/chat.types';
 import { AgentFormValues } from './use-agent-form';
-import { createMockAgent, createMockAgentFormValues } from '../../../../test/utils/mock-factories';
+import {
+  createMockAgent,
+  createMockAgentFormValues,
+} from '../../../../test/utils/mock-factories';
 
 // Mock dependencies - use hoisted to ensure stable references
-const { mockConfirm, mockCreateAgent, mockUpdateAgent, mockDeleteAgent, createAgentMutation, updateAgentMutation, deleteAgentMutation } = vi.hoisted(() => {
+const {
+  mockConfirm,
+  mockCreateAgent,
+  mockUpdateAgent,
+  mockDeleteAgent,
+  createAgentMutation,
+  updateAgentMutation,
+  deleteAgentMutation,
+} = vi.hoisted(() => {
   const mockConfirm = vi.fn();
   const mockCreateAgent = vi.fn();
   const mockUpdateAgent = vi.fn();
   const mockDeleteAgent = vi.fn();
-  
+
   // Create mutable mutation objects with proper function binding
   const createAgentMutation = {
     mutateAsync: mockCreateAgent,
     isPending: false,
   };
-  
+
   const updateAgentMutation = {
     mutateAsync: mockUpdateAgent,
     isPending: false,
   };
-  
+
   const deleteAgentMutation = {
     mutateAsync: mockDeleteAgent,
     isPending: false,
   };
-  
-  return { mockConfirm, mockCreateAgent, mockUpdateAgent, mockDeleteAgent, createAgentMutation, updateAgentMutation, deleteAgentMutation };
+
+  return {
+    mockConfirm,
+    mockCreateAgent,
+    mockUpdateAgent,
+    mockDeleteAgent,
+    createAgentMutation,
+    updateAgentMutation,
+    deleteAgentMutation,
+  };
 });
 
 vi.mock('../../../../../hooks/ui/useConfirm', () => {
@@ -100,9 +119,8 @@ describe('useAgentConfigOperations', () => {
 
   const mockFormValues: AgentFormValues = createMockAgentFormValues({
     name: 'Test Agent',
-    description: 'Test Description',
+    description: 'You are helpful', // description is the system prompt field
     temperature: 0.7,
-    systemPrompt: 'You are helpful',
     behaviorRules: ['Rule 1', 'Rule 2'],
   });
 
@@ -144,7 +162,7 @@ describe('useAgentConfigOperations', () => {
 
     expect(mockCreateAgent).toHaveBeenCalledWith({
       name: 'Test Agent',
-      description: 'Test Description',
+      description: 'You are helpful',
       avatarUrl: undefined,
       configs: {
         temperature: 0.7,
@@ -196,7 +214,7 @@ describe('useAgentConfigOperations', () => {
         avatarUrl: undefined,
         configs: {
           temperature: 0.7,
-          system_prompt: 'You are helpful',
+          system_prompt: 'Updated Description',
           behavior_rules: ['Rule 1', 'Rule 2'],
         },
       },
@@ -413,7 +431,7 @@ describe('useAgentConfigOperations', () => {
     // Hook should render immediately
     expect(result.current).toBeDefined();
     expect(result.current.saving).toBe(true);
-    
+
     // Restore original values
     createAgentMutation.isPending = false;
   });
@@ -421,7 +439,7 @@ describe('useAgentConfigOperations', () => {
   it.skip('should handle save errors gracefully', async () => {
     mockConfirm.mockResolvedValue(false);
     mockCreateAgent.mockRejectedValue(new Error('Save failed'));
-    
+
     const newAgent: Agent = createMockAgent({
       id: -1,
       name: '',

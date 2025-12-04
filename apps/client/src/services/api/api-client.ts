@@ -112,12 +112,12 @@ class ApiClient {
     // Format: { message: { message: ["error1", "error2"], error: "Bad Request", statusCode: 400 } }
     if ('message' in data) {
       const message = data.message;
-      
+
       // If message is an array, join the messages
       if (Array.isArray(message)) {
         return message.join(', ');
       }
-      
+
       // If message is an object, check for nested message array
       if (typeof message === 'object' && message !== null) {
         if ('message' in message && Array.isArray(message.message)) {
@@ -128,7 +128,7 @@ class ApiClient {
           return message.error;
         }
       }
-      
+
       // If message is a string, use it
       if (typeof message === 'string') {
         return message;

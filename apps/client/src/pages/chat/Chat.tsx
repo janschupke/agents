@@ -9,7 +9,9 @@ export default function Chat() {
   const { isLoading: loadingAgents } = useAgents();
 
   const parsedAgentId = urlAgentId
-    ? isNaN(parseInt(urlAgentId, 10)) ? null : parseInt(urlAgentId, 10)
+    ? isNaN(parseInt(urlAgentId, 10))
+      ? null
+      : parseInt(urlAgentId, 10)
     : null;
 
   // Handle /chat route (no agentId) - show empty state, do not redirect
@@ -27,5 +29,5 @@ export default function Chat() {
   }
 
   // Handle /chat/:agentId route
-      return <ChatAgent agentId={parsedAgentId} />;
+  return <ChatAgent agentId={parsedAgentId} />;
 }

@@ -1,14 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { TestQueryProvider } from '../../test/utils/test-query-provider';
-import {
-  useAgents,
-  useAgent,
-  useAgentSessions,
-  useAgentMemories,
-} from './use-agents';
+import { useAgents, useAgent, useAgentMemories } from './use-agents';
 import { AgentService } from '../../services/agent/agent.service';
-import { SessionService } from '../../services/chat/session/session.service';
 import { MemoryService } from '../../services/memory/memory.service';
 import { createMockAgent } from '../../test/utils/mock-factories';
 
@@ -28,7 +22,6 @@ vi.mock('../use-token-ready', () => ({
 
 // Mock services
 vi.mock('../../services/agent/agent.service');
-vi.mock('../../services/chat/session/session.service');
 vi.mock('../../services/memory/memory.service');
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -117,43 +110,6 @@ describe('use-agents', () => {
 
       expect(result.current.isFetching).toBe(false);
       expect(AgentService.getAgent).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('useAgentSessions', () => {
-    it('should fetch agent sessions when signed in and loaded', async () => {
-      mockAuth.isSignedIn = true;
-      mockAuth.isLoaded = true;
-
-      const mockSessions = [
-        {
-          id: 1,
-          session_name: 'Session 1',
-          createdAt: '2024-01-01T00:00:00.000Z',
-        },
-        {
-          id: 2,
-          session_name: 'Session 2',
-          createdAt: '2024-01-02T00:00:00.000Z',
-        },
-      ];
-
-      vi.mocked(SessionService.getSessions).mockResolvedValue(mockSessions);
-
-      const { result } = renderHook(() => useAgentSessions(1), { wrapper });
-
-      await waitFor(() => {
-        expect(result.current.isSuccess).toBe(true);
-      });
-
-      expect(result.current.data).toEqual(mockSessions);
-    });
-
-    it('should not fetch when agentId is null', () => {
-      const { result } = renderHook(() => useAgentSessions(null), { wrapper });
-
-      expect(result.current.isFetching).toBe(false);
-      expect(SessionService.getSessions).not.toHaveBeenCalled();
     });
   });
 

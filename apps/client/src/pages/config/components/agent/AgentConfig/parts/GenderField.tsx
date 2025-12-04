@@ -14,7 +14,10 @@ export default function GenderField({ value, onChange }: GenderFieldProps) {
     <FormField label={t('config.gender')} labelFor="agent-gender">
       <div className="flex gap-4">
         {Object.values(Gender).map((gender) => (
-          <label key={gender} className="flex items-center gap-2 cursor-pointer">
+          <label
+            key={gender}
+            className="flex items-center gap-2 cursor-pointer"
+          >
             <input
               type="radio"
               name="gender"

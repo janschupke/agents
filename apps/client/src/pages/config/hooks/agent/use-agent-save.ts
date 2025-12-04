@@ -71,7 +71,8 @@ export function useAgentSave({
             gender: values.gender || undefined,
             personality: values.personality || undefined,
             sentiment: values.sentiment || undefined,
-            interests: values.interests.length > 0 ? values.interests : undefined,
+            interests:
+              values.interests.length > 0 ? values.interests : undefined,
             availability: values.availability || undefined,
           },
         };
@@ -100,7 +101,8 @@ export function useAgentSave({
               gender: values.gender || undefined,
               personality: values.personality || undefined,
               sentiment: values.sentiment || undefined,
-              interests: values.interests.length > 0 ? values.interests : undefined,
+              interests:
+                values.interests.length > 0 ? values.interests : undefined,
               availability: values.availability || undefined,
             },
           },

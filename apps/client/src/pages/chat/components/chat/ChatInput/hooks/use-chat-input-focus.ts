@@ -9,11 +9,7 @@ function shouldInputBeFocusable(
   messagesLoading: boolean,
   showChatPlaceholder: boolean
 ): boolean {
-  return !!(
-    currentSessionId &&
-    !messagesLoading &&
-    !showChatPlaceholder
-  );
+  return !!(currentSessionId && !messagesLoading && !showChatPlaceholder);
 }
 
 interface UseChatInputFocusOptions {
@@ -29,7 +25,7 @@ interface UseChatInputFocusOptions {
 
 /**
  * Unified hook to manage chat input focus behavior
- * 
+ *
  * Uses callback ref pattern to detect when component mounts and focus immediately
  * when conditions are met.
  */
@@ -49,14 +45,14 @@ export function useChatInputFocus({
   const prevTypingIndicatorRef = useRef(showTypingIndicator);
   const prevDisabledRef = useRef(isInputDisabled);
   const prevIsFocusableRef = useRef(false);
-  
+
   // Track if we should focus when ref becomes available
   const shouldFocusOnMountRef = useRef(false);
   const shouldFocusOnSessionChangeRef = useRef(false);
   const shouldFocusOnAgentChangeRef = useRef(false);
   const shouldFocusOnTypingIndicatorRef = useRef(false);
   const shouldFocusOnBecameFocusableRef = useRef(false);
-  
+
   // Track if we've already focused from an effect (to prevent double-focus in onRefReady)
   const hasFocusedFromEffectRef = useRef(false);
 
@@ -76,15 +72,24 @@ export function useChatInputFocus({
 
   // Track if we've scheduled a focus to prevent double-focus
   const focusScheduledRef = useRef(false);
-  
+
   // Focus function - called when ref is ready
   const attemptFocus = useCallback(() => {
-    if (chatInputRef.current && !isInputDisabledRef.current && isFocusableRef.current && !focusScheduledRef.current) {
+    if (
+      chatInputRef.current &&
+      !isInputDisabledRef.current &&
+      isFocusableRef.current &&
+      !focusScheduledRef.current
+    ) {
       focusScheduledRef.current = true;
       // Use requestAnimationFrame to ensure DOM is ready
       requestAnimationFrame(() => {
         focusScheduledRef.current = false;
-        if (chatInputRef.current && !isInputDisabledRef.current && isFocusableRef.current) {
+        if (
+          chatInputRef.current &&
+          !isInputDisabledRef.current &&
+          isFocusableRef.current
+        ) {
           chatInputRef.current.focus();
         }
       });
@@ -94,37 +99,45 @@ export function useChatInputFocus({
   }, [chatInputRef]);
 
   // Callback that gets called when ChatInput mounts and ref is ready
-  const handleRefReady = useCallback((ref: ChatInputRef) => {
-    // Update the ref
-    (chatInputRef as React.MutableRefObject<ChatInputRef | null>).current = ref;
-    
-    // Call external callback if provided
-    onRefReady?.(ref);
-    
-    // Check if we have any pending focus requests
-    const hasPendingFocus = 
-      shouldFocusOnMountRef.current ||
-      shouldFocusOnSessionChangeRef.current ||
-      shouldFocusOnAgentChangeRef.current ||
-      shouldFocusOnTypingIndicatorRef.current ||
-      shouldFocusOnBecameFocusableRef.current;
-    
-    // Only focus if we have pending requests AND haven't already focused from an effect
-    // OR if conditions are currently met and we haven't focused yet (component mounted after conditions became valid)
-    const shouldFocus = (hasPendingFocus && !hasFocusedFromEffectRef.current) ||
-      (!hasPendingFocus && !hasFocusedFromEffectRef.current && isFocusableRef.current && !isInputDisabledRef.current);
-    
-    if (shouldFocus) {
-      attemptFocus();
-      // Reset flags after focusing
-      shouldFocusOnMountRef.current = false;
-      shouldFocusOnSessionChangeRef.current = false;
-      shouldFocusOnAgentChangeRef.current = false;
-      shouldFocusOnTypingIndicatorRef.current = false;
-      shouldFocusOnBecameFocusableRef.current = false;
-      hasFocusedFromEffectRef.current = true;
-    }
-  }, [chatInputRef, onRefReady, attemptFocus]);
+  const handleRefReady = useCallback(
+    (ref: ChatInputRef) => {
+      // Update the ref
+      (chatInputRef as React.MutableRefObject<ChatInputRef | null>).current =
+        ref;
+
+      // Call external callback if provided
+      onRefReady?.(ref);
+
+      // Check if we have any pending focus requests
+      const hasPendingFocus =
+        shouldFocusOnMountRef.current ||
+        shouldFocusOnSessionChangeRef.current ||
+        shouldFocusOnAgentChangeRef.current ||
+        shouldFocusOnTypingIndicatorRef.current ||
+        shouldFocusOnBecameFocusableRef.current;
+
+      // Only focus if we have pending requests AND haven't already focused from an effect
+      // OR if conditions are currently met and we haven't focused yet (component mounted after conditions became valid)
+      const shouldFocus =
+        (hasPendingFocus && !hasFocusedFromEffectRef.current) ||
+        (!hasPendingFocus &&
+          !hasFocusedFromEffectRef.current &&
+          isFocusableRef.current &&
+          !isInputDisabledRef.current);
+
+      if (shouldFocus) {
+        attemptFocus();
+        // Reset flags after focusing
+        shouldFocusOnMountRef.current = false;
+        shouldFocusOnSessionChangeRef.current = false;
+        shouldFocusOnAgentChangeRef.current = false;
+        shouldFocusOnTypingIndicatorRef.current = false;
+        shouldFocusOnBecameFocusableRef.current = false;
+        hasFocusedFromEffectRef.current = true;
+      }
+    },
+    [chatInputRef, onRefReady, attemptFocus]
+  );
 
   // Effect 1: Initial mount - mark that we should focus
   useEffect(() => {

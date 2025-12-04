@@ -5,23 +5,37 @@ import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
 import { ToastProvider } from '../../../../contexts/ToastContext';
 
 // Mock dependencies - use hoisted to ensure stable references
-const { mockConfirm, mockUpdateMemory, mockDeleteMemory, mockInvalidateQueries, updateMemoryMutation, deleteMemoryMutation } = vi.hoisted(() => {
+const {
+  mockConfirm,
+  mockUpdateMemory,
+  mockDeleteMemory,
+  mockInvalidateQueries,
+  updateMemoryMutation,
+  deleteMemoryMutation,
+} = vi.hoisted(() => {
   const mockConfirm = vi.fn();
   const mockUpdateMemory = vi.fn();
   const mockDeleteMemory = vi.fn();
   const mockInvalidateQueries = vi.fn();
-  
+
   const updateMemoryMutation = {
     mutateAsync: mockUpdateMemory,
     isPending: false,
   };
-  
+
   const deleteMemoryMutation = {
     mutateAsync: mockDeleteMemory,
     isPending: false,
   };
-  
-  return { mockConfirm, mockUpdateMemory, mockDeleteMemory, mockInvalidateQueries, updateMemoryMutation, deleteMemoryMutation };
+
+  return {
+    mockConfirm,
+    mockUpdateMemory,
+    mockDeleteMemory,
+    mockInvalidateQueries,
+    updateMemoryMutation,
+    deleteMemoryMutation,
+  };
 });
 
 vi.mock('../../../../../hooks/ui/useConfirm', () => {

@@ -51,7 +51,11 @@ export function useChatScroll({
 
   // Scroll to bottom when typing indicator appears
   useEffect(() => {
-    if (showTypingIndicator && !previousTypingIndicatorRef.current && messagesEndRef.current) {
+    if (
+      showTypingIndicator &&
+      !previousTypingIndicatorRef.current &&
+      messagesEndRef.current
+    ) {
       // Typing indicator just appeared, scroll to show it
       requestAnimationFrame(() => {
         setTimeout(() => {

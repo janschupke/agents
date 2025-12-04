@@ -5,10 +5,7 @@ import { useAgentForm } from '../../../../hooks/agent/use-agent-form';
 import { useAgentMemories as useAgentMemoryOperations } from '../../../../hooks/agent/use-agent-memories';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { FormContainer } from '@openai/ui';
-import {
-  TemperatureField,
-  BehaviorRulesField,
-} from './AgentConfigFormFields';
+import { TemperatureField, BehaviorRulesField } from './AgentConfigFormFields';
 import AgentConfigFormSkeleton from './AgentConfigFormSkeleton';
 import AgentNameAndAvatar from './AgentNameAndAvatar';
 import MemoriesSection from './MemoriesSection';
@@ -22,7 +19,13 @@ import SentimentField from './SentimentField';
 import AvailabilityField from './AvailabilityField';
 import InterestsDashboard from './InterestsDashboard';
 import ArchetypeSelector from './ArchetypeSelector';
-import { forwardRef, useImperativeHandle, useEffect, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useImperativeHandle,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { AgentArchetype } from '../../../../../../types/agent-archetype.types';
 import {
   ResponseLength,
@@ -58,12 +61,20 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
       useAgentMemoriesQuery(agent?.id || null);
 
     // Form management hook
-    const { values, errors, touched: _touched, setValue, setTouched, validateAll } =
-      useAgentForm({ agent, agentData: agentData || null });
+    const {
+      values,
+      errors,
+      touched: _touched,
+      setValue,
+      setTouched,
+      validateAll,
+    } = useAgentForm({ agent, agentData: agentData || null });
 
     // State for selected archetype (only for new agents)
     const isNewAgent = agent && agent.id < 0;
-    const [selectedArchetypeId, setSelectedArchetypeId] = useState<number | null>(null);
+    const [selectedArchetypeId, setSelectedArchetypeId] = useState<
+      number | null
+    >(null);
 
     // Handler to pre-fill form from archetype
     const handleArchetypeSelect = (archetype: AgentArchetype) => {
@@ -71,30 +82,39 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
 
       // Pre-fill form with archetype data
       if (archetype.name) setValue('name', archetype.name);
-      if (archetype.description) setValue('description', archetype.description || '');
+      if (archetype.description)
+        setValue('description', archetype.description || '');
       if (archetype.avatarUrl) setValue('avatarUrl', archetype.avatarUrl);
       if (archetype.agentType) setValue('agentType', archetype.agentType);
       if (archetype.language) setValue('language', archetype.language);
 
       // Pre-fill configs
       const configs = archetype.configs || {};
-      if (configs.temperature !== undefined) setValue('temperature', configs.temperature as number);
-      if (configs.system_prompt) setValue('description', configs.system_prompt as string);
+      if (configs.temperature !== undefined)
+        setValue('temperature', configs.temperature as number);
+      if (configs.system_prompt)
+        setValue('description', configs.system_prompt as string);
       if (configs.behavior_rules) {
         const rules = Array.isArray(configs.behavior_rules)
           ? configs.behavior_rules
-          : typeof configs.behavior_rules === 'object' && 'rules' in configs.behavior_rules
+          : typeof configs.behavior_rules === 'object' &&
+              'rules' in configs.behavior_rules
             ? (configs.behavior_rules as { rules: string[] }).rules
             : [];
         setValue('behaviorRules', rules);
       }
-      if (configs.response_length) setValue('responseLength', configs.response_length as ResponseLength);
+      if (configs.response_length)
+        setValue('responseLength', configs.response_length as ResponseLength);
       if (configs.age !== undefined) setValue('age', configs.age as number);
       if (configs.gender) setValue('gender', configs.gender as Gender);
-      if (configs.personality) setValue('personality', configs.personality as PersonalityType);
-      if (configs.sentiment) setValue('sentiment', configs.sentiment as Sentiment);
-      if (configs.interests) setValue('interests', configs.interests as string[]);
-      if (configs.availability) setValue('availability', configs.availability as Availability);
+      if (configs.personality)
+        setValue('personality', configs.personality as PersonalityType);
+      if (configs.sentiment)
+        setValue('sentiment', configs.sentiment as Sentiment);
+      if (configs.interests)
+        setValue('interests', configs.interests as string[]);
+      if (configs.availability)
+        setValue('availability', configs.availability as Availability);
     };
 
     // Memory operations hook
@@ -241,7 +261,9 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
               />
               <PersonalityField
                 value={values.personality}
-                onChange={(val) => setValue('personality', val as typeof values.personality)}
+                onChange={(val) =>
+                  setValue('personality', val as typeof values.personality)
+                }
               />
               <SentimentField
                 value={values.sentiment}

@@ -74,11 +74,7 @@ function ChatAgentContent({
   });
 
   // Modal management
-  const {
-    jsonModal,
-    openJsonModal,
-    closeJsonModal,
-  } = useChatModals();
+  const { jsonModal, openJsonModal, closeJsonModal } = useChatModals();
 
   // Saved word modal state
   const [savedWordModal, setSavedWordModal] = useState<{
@@ -153,12 +149,12 @@ function ChatAgentContent({
   const { input, setInput, chatInputRef, handleSubmit, onRefReady } =
     useChatInput({
       currentSessionId: sessionId,
-    messagesLoading: false, // Don't disable input based on loading
-    showChatPlaceholder,
-    showTypingIndicator,
-    agentId,
-    sendMessage,
-  });
+      messagesLoading: false, // Don't disable input based on loading
+      showChatPlaceholder,
+      showTypingIndicator,
+      agentId,
+      sendMessage,
+    });
 
   // Full page loading (only on initial load)
   if (isInitialLoad || propLoading) {
@@ -188,10 +184,7 @@ function ChatAgentContent({
         <Container>
           <PageHeader
             actions={
-              <Button
-                variant="icon"
-                disabled={true}
-              >
+              <Button variant="icon" disabled={true}>
                 <IconSettings size="md" />
               </Button>
             }
@@ -308,7 +301,5 @@ export default function ChatAgent({
   loading,
   error,
 }: ChatAgentContentProps) {
-  return (
-    <ChatAgentContent agentId={agentId} loading={loading} error={error} />
-  );
+  return <ChatAgentContent agentId={agentId} loading={loading} error={error} />;
 }

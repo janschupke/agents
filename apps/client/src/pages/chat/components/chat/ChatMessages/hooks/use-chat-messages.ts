@@ -76,31 +76,34 @@ export function useChatMessages({
     if (!message.trim() || !agentId) return;
 
     const queryKey = queryKeys.chat.history(agentId, sessionId || undefined);
-    
+
     // Optimistically add user message to cache immediately
     const optimisticUserMessage: Message = {
       role: MessageRole.USER,
       content: message.trim(),
       rawRequest: undefined,
     };
-    
-    queryClient.setQueryData(queryKey, (oldData: ChatHistoryResponse | undefined) => {
-      if (!oldData) {
-        // If no data yet, create minimal structure
+
+    queryClient.setQueryData(
+      queryKey,
+      (oldData: ChatHistoryResponse | undefined) => {
+        if (!oldData) {
+          // If no data yet, create minimal structure
+          return {
+            agent: { id: agentId, name: '', description: null },
+            session: sessionId ? { id: sessionId, session_name: null } : null,
+            messages: [optimisticUserMessage],
+            savedWordMatches: [],
+            hasMore: false,
+          };
+        }
+
         return {
-          agent: { id: agentId, name: '', description: null },
-          session: sessionId ? { id: sessionId, session_name: null } : null,
-          messages: [optimisticUserMessage],
-          savedWordMatches: [],
-          hasMore: false,
+          ...oldData,
+          messages: [...oldData.messages, optimisticUserMessage],
         };
       }
-      
-      return {
-        ...oldData,
-        messages: [...oldData.messages, optimisticUserMessage],
-      };
-    });
+    );
 
     try {
       const result = await sendMessageMutation.mutateAsync({
@@ -115,26 +118,29 @@ export function useChatMessages({
       // Update saved word matches if new matches were returned
       if (result.savedWordMatches && result.savedWordMatches.length > 0) {
         // Update the chat history query cache with new saved word matches
-        queryClient.setQueryData(queryKey, (oldData: ChatHistoryResponse | undefined) => {
-          if (!oldData) return oldData;
+        queryClient.setQueryData(
+          queryKey,
+          (oldData: ChatHistoryResponse | undefined) => {
+            if (!oldData) return oldData;
 
-          const existingMatches = oldData.savedWordMatches || [];
-          const newMatches = result.savedWordMatches || [];
-          
-          // Merge matches, avoiding duplicates
-          const matchMap = new Map<string, SavedWordMatch>();
-          [...existingMatches, ...newMatches].forEach((match) => {
-            const key = match.originalWord.toLowerCase();
-            if (!matchMap.has(key)) {
-              matchMap.set(key, match);
-            }
-          });
-          
-          return {
-            ...oldData,
-            savedWordMatches: Array.from(matchMap.values()),
-          };
-        });
+            const existingMatches = oldData.savedWordMatches || [];
+            const newMatches = result.savedWordMatches || [];
+
+            // Merge matches, avoiding duplicates
+            const matchMap = new Map<string, SavedWordMatch>();
+            [...existingMatches, ...newMatches].forEach((match) => {
+              const key = match.originalWord.toLowerCase();
+              if (!matchMap.has(key)) {
+                matchMap.set(key, match);
+              }
+            });
+
+            return {
+              ...oldData,
+              savedWordMatches: Array.from(matchMap.values()),
+            };
+          }
+        );
       }
 
       return result;

@@ -146,10 +146,7 @@ export default function AgentConfig({
                   />
                 ) : null
               }
-              title={currentAgent ? undefined : (
-                  t('config.title')
-                )
-              }
+              title={currentAgent ? undefined : t('config.title')}
               actions={
                 currentAgent ? (
                   <FormButton

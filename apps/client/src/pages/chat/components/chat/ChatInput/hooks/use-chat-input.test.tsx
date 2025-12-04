@@ -57,7 +57,7 @@ describe('useChatInput', () => {
 
   it('should pass correct props to useChatInputFocus', async () => {
     const { useChatInputFocus } = await import('./use-chat-input-focus');
-    
+
     const { rerender } = renderHook<
       ReturnType<typeof useChatInput>,
       { currentSessionId: number | null; messagesLoading: boolean }
@@ -80,8 +80,11 @@ describe('useChatInput', () => {
 
     // Verify useChatInputFocus was called with correct props
     expect(useChatInputFocus).toHaveBeenCalled();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const lastCall = (useChatInputFocus as any).mock.calls[(useChatInputFocus as any).mock.calls.length - 1][0];
+    const mockedUseChatInputFocus = vi.mocked(useChatInputFocus);
+    const lastCall =
+      mockedUseChatInputFocus.mock.calls[
+        mockedUseChatInputFocus.mock.calls.length - 1
+      ][0];
     expect(lastCall.currentSessionId).toBe(null);
     expect(lastCall.messagesLoading).toBe(true);
 
@@ -92,8 +95,10 @@ describe('useChatInput', () => {
     });
 
     // Verify useChatInputFocus was called again with updated props
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updatedCall = (useChatInputFocus as any).mock.calls[(useChatInputFocus as any).mock.calls.length - 1][0];
+    const updatedCall =
+      mockedUseChatInputFocus.mock.calls[
+        mockedUseChatInputFocus.mock.calls.length - 1
+      ][0];
     expect(updatedCall.currentSessionId).toBe(1);
     expect(updatedCall.messagesLoading).toBe(false);
   });
@@ -241,7 +246,7 @@ describe('useChatInput', () => {
   // This test just verifies that useChatInput correctly passes showTypingIndicator to useChatInputFocus
   it('should pass showTypingIndicator to useChatInputFocus', async () => {
     const { useChatInputFocus } = await import('./use-chat-input-focus');
-    
+
     const { rerender } = renderHook<
       ReturnType<typeof useChatInput>,
       { showTypingIndicator: boolean }
@@ -262,16 +267,21 @@ describe('useChatInput', () => {
 
     // Verify useChatInputFocus was called with showTypingIndicator
     expect(useChatInputFocus).toHaveBeenCalled();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const lastCall = (useChatInputFocus as any).mock.calls[(useChatInputFocus as any).mock.calls.length - 1][0];
+    const mockedUseChatInputFocus = vi.mocked(useChatInputFocus);
+    const lastCall =
+      mockedUseChatInputFocus.mock.calls[
+        mockedUseChatInputFocus.mock.calls.length - 1
+      ][0];
     expect(lastCall.showTypingIndicator).toBe(false);
 
     // Update showTypingIndicator
     rerender({ showTypingIndicator: true });
 
     // Verify useChatInputFocus was called again with updated showTypingIndicator
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updatedCall = (useChatInputFocus as any).mock.calls[(useChatInputFocus as any).mock.calls.length - 1][0];
+    const updatedCall =
+      mockedUseChatInputFocus.mock.calls[
+        mockedUseChatInputFocus.mock.calls.length - 1
+      ][0];
     expect(updatedCall.showTypingIndicator).toBe(true);
   });
 });

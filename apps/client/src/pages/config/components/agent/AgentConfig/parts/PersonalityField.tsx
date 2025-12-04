@@ -14,10 +14,7 @@ export default function PersonalityField({
   const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return (
-    <FormField
-      label={t('config.personality')}
-      labelFor="agent-personality"
-    >
+    <FormField label={t('config.personality')} labelFor="agent-personality">
       <select
         id="agent-personality"
         value={value || ''}

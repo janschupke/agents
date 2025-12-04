@@ -4,7 +4,10 @@ import { useAgentSave } from './use-agent-save';
 import { Agent } from '../../../../types/chat.types';
 import { AgentFormValues } from './use-agent-form';
 import { TestQueryProvider } from '../../../../test/utils/test-query-provider';
-import { createMockAgent, createMockAgentFormValues } from '../../../../test/utils/mock-factories';
+import {
+  createMockAgent,
+  createMockAgentFormValues,
+} from '../../../../test/utils/mock-factories';
 import { AgentType } from '../../../../types/agent.types';
 
 // Mock dependencies
@@ -54,9 +57,8 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 describe('useAgentSave', () => {
   const mockFormValues: AgentFormValues = createMockAgentFormValues({
     name: 'Test Agent',
-    description: 'Test Description',
+    description: 'You are helpful', // description is the system prompt field
     temperature: 0.7,
-    systemPrompt: 'You are helpful',
     behaviorRules: ['Rule 1', 'Rule 2'],
   });
 
@@ -92,7 +94,7 @@ describe('useAgentSave', () => {
 
     expect(mockSetFormData).toHaveBeenCalledWith({
       name: 'Test Agent',
-      description: 'Test Description',
+      description: 'You are helpful',
       avatarUrl: null,
       agentType: AgentType.GENERAL,
       language: null,
@@ -105,7 +107,7 @@ describe('useAgentSave', () => {
 
     expect(mockCreateAgent).toHaveBeenCalledWith({
       name: 'Test Agent',
-      description: 'Test Description',
+      description: 'You are helpful',
       avatarUrl: undefined,
       agentType: AgentType.GENERAL,
       language: undefined,
@@ -142,7 +144,7 @@ describe('useAgentSave', () => {
       agentId: 1,
       data: {
         name: 'Test Agent',
-        description: 'Test Description',
+        description: 'You are helpful',
         avatarUrl: undefined,
         agentType: AgentType.GENERAL,
         language: undefined,

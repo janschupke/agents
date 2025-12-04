@@ -191,7 +191,10 @@ export const handlers = [
     const sessionId = Number(params.sessionId);
     const session = mockSessions.find((s) => s.id === sessionId);
     if (!session) {
-      return HttpResponse.json({ message: 'Session not found' }, { status: 404 });
+      return HttpResponse.json(
+        { message: 'Session not found' },
+        { status: 404 }
+      );
     }
     return HttpResponse.json({
       session: {

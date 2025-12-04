@@ -30,7 +30,10 @@ export function useCreateSavedWord() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.chat.all,
       });
-      showToast(t('savedWords.saveSuccess') || 'Word saved successfully', 'success');
+      showToast(
+        t('savedWords.saveSuccess') || 'Word saved successfully',
+        'success'
+      );
     },
     onError: (error: { message?: string }) => {
       showToast(
@@ -47,13 +50,8 @@ export function useUpdateSavedWord() {
   const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: number;
-      data: UpdateSavedWordRequest;
-    }) => SavedWordService.updateSavedWord(id, data),
+    mutationFn: ({ id, data }: { id: number; data: UpdateSavedWordRequest }) =>
+      SavedWordService.updateSavedWord(id, data),
     onSuccess: (_, variables) => {
       // Invalidate specific word and list
       queryClient.invalidateQueries({
@@ -70,7 +68,10 @@ export function useUpdateSavedWord() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.chat.all,
       });
-      showToast(t('savedWords.updateSuccess') || 'Word updated successfully', 'success');
+      showToast(
+        t('savedWords.updateSuccess') || 'Word updated successfully',
+        'success'
+      );
     },
     onError: (error: { message?: string }) => {
       showToast(
@@ -101,7 +102,10 @@ export function useDeleteSavedWord() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.chat.all,
       });
-      showToast(t('savedWords.deleteSuccess') || 'Word deleted successfully', 'success');
+      showToast(
+        t('savedWords.deleteSuccess') || 'Word deleted successfully',
+        'success'
+      );
     },
     onError: (error: { message?: string }) => {
       showToast(

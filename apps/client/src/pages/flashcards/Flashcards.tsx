@@ -1,5 +1,12 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Container, PageHeader, PageContent, Card, CardFlip, FormField } from '@openai/ui';
+import {
+  Container,
+  PageHeader,
+  PageContent,
+  Card,
+  CardFlip,
+  FormField,
+} from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useSavedWords } from '../../hooks/queries/use-saved-words';
 import { LanguageFormattingService } from '../../services/language-formatting/language-formatting.service';
@@ -26,7 +33,9 @@ export default function Flashcards() {
 
   // Filter words that have valid content
   const validWords = useMemo(() => {
-    return savedWords.filter((word) => word.originalWord && word.originalWord.trim().length > 0);
+    return savedWords.filter(
+      (word) => word.originalWord && word.originalWord.trim().length > 0
+    );
   }, [savedWords]);
 
   // Get front word (shown when card is not flipped)
@@ -81,7 +90,13 @@ export default function Flashcards() {
         transitionTimeoutRef.current = null;
       }, FLIP_ANIMATION_DURATION_MS);
     }
-  }, [isFlipped, isTransitioning, currentIndex, frontWordIndex, validWords.length]);
+  }, [
+    isFlipped,
+    isTransitioning,
+    currentIndex,
+    frontWordIndex,
+    validWords.length,
+  ]);
 
   const handleCardClick = useCallback(() => {
     handleCardAction();
@@ -177,7 +192,11 @@ export default function Flashcards() {
               <CardFlip
                 isFlipped={isFlipped}
                 front={
-                  <Card variant="outlined" padding="lg" className="h-64 flex items-center justify-center">
+                  <Card
+                    variant="outlined"
+                    padding="lg"
+                    className="h-64 flex items-center justify-center"
+                  >
                     <div className="text-center">
                       <div className="text-6xl font-bold text-text-primary mb-4">
                         {frontWord?.originalWord}
@@ -189,7 +208,11 @@ export default function Flashcards() {
                   </Card>
                 }
                 back={
-                  <Card variant="outlined" padding="lg" className="h-64 flex items-center justify-center">
+                  <Card
+                    variant="outlined"
+                    padding="lg"
+                    className="h-64 flex items-center justify-center"
+                  >
                     <div className="text-center space-y-4">
                       <div className="text-4xl font-bold text-text-primary mb-2">
                         {backWord?.originalWord}

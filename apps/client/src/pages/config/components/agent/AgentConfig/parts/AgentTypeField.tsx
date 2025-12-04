@@ -31,8 +31,12 @@ export default function AgentTypeField({
         onChange={(e) => onChange(e.target.value as AgentType)}
         className="w-full px-3 py-2 border border-border-input rounded-md text-text-primary bg-background focus:outline-none focus:border-border-focus disabled:bg-disabled-bg disabled:cursor-not-allowed"
       >
-        <option value={AgentType.GENERAL}>{t('config.agentType.general')}</option>
-        <option value={AgentType.LANGUAGE_ASSISTANT}>{t('config.agentType.languageAssistant')}</option>
+        <option value={AgentType.GENERAL}>
+          {t('config.agentType.general')}
+        </option>
+        <option value={AgentType.LANGUAGE_ASSISTANT}>
+          {t('config.agentType.languageAssistant')}
+        </option>
       </select>
     </FormField>
   );
