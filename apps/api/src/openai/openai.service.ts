@@ -99,10 +99,13 @@ export class OpenAIService {
    * Helper method for common OpenAI chat completion pattern
    * Centralizes the pattern used across multiple services
    *
-   * This method automatically limits conversation history to the last 6 messages
-   * (3 user messages and 3 assistant responses) to provide context while managing
+   * This method automatically limits conversation history to the last N messages
+   * (NUMERIC_CONSTANTS.OPENAI_HELPER_CONTEXT_MESSAGES) to provide context while managing
    * token usage. Only user and assistant messages from the history are included;
    * system messages are excluded from the history limit.
+   *
+   * Used for helper operations like memory extraction, word parsing, etc. that need
+   * smaller context windows than the main chat completion.
    *
    * @param apiKey - OpenAI API key
    * @param options - Chat completion options
@@ -110,7 +113,7 @@ export class OpenAIService {
    * @param options.systemMessage - System message/prompt (always included)
    * @param options.userMessage - Current user message (always included)
    * @param options.conversationHistory - Optional array of previous messages (role, content).
-   *                                      Only the last 6 messages (3 user + 3 assistant) will be used as context.
+   *                                      Only the last N messages will be used as context.
    * @param options.temperature - Optional temperature setting
    * @param options.maxTokens - Optional max tokens setting
    */
@@ -158,8 +161,10 @@ export class OpenAIService {
             content: msg.content,
           }));
 
-        // Take only the last 6 messages (3 user-assistant pairs)
-        const limitedHistory = userAndAssistantMessages.slice(-6);
+        // Take only the last N messages (defined by OPENAI_HELPER_CONTEXT_MESSAGES)
+        const limitedHistory = userAndAssistantMessages.slice(
+          -NUMERIC_CONSTANTS.OPENAI_HELPER_CONTEXT_MESSAGES
+        );
 
         if (limitedHistory.length > 0) {
           messages.push(...limitedHistory);

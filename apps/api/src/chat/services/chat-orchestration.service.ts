@@ -357,6 +357,9 @@ export class ChatOrchestrationService {
     apiKey: string
   ): Promise<string[]> {
     try {
+      this.logger.debug(
+        `Retrieving memories for agent ${agentId}, user ${userId}, query: ${message.substring(0, 50)}...`
+      );
       const relevantMemories =
         await this.agentMemoryService.getMemoriesForContext(
           agentId,
@@ -367,6 +370,13 @@ export class ChatOrchestrationService {
       if (relevantMemories.length > 0) {
         this.logger.log(
           `Found ${relevantMemories.length} relevant memories for agent ${agentId}`
+        );
+        this.logger.debug(
+          `Memory contexts: ${relevantMemories.map((m) => m.substring(0, 50)).join('; ')}`
+        );
+      } else {
+        this.logger.debug(
+          `No relevant memories found for agent ${agentId}, user ${userId}`
         );
       }
       return relevantMemories;

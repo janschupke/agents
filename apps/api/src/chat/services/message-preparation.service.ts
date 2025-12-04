@@ -133,8 +133,12 @@ export class MessagePreparationService {
 
     // Add memory context if found (as system message after rules)
     if (relevantMemories.length > 0) {
-      this.logger.debug(`Adding ${relevantMemories.length} memory contexts`);
+      this.logger.debug(
+        `Adding ${relevantMemories.length} memory contexts to messages`
+      );
       this.addMemoryContext(messagesForAPI, relevantMemories);
+    } else {
+      this.logger.debug('No memory contexts to add (relevantMemories is empty)');
     }
 
     // 6. Conversation history (user/assistant messages)
