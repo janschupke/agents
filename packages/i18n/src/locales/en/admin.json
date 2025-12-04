@@ -13,7 +13,8 @@
   },
   "navigation": {
     "users": "Users",
-    "systemRules": "System Rules"
+    "systemRules": "System Rules",
+    "archetypes": "Agent Archetypes"
   },
   "users": {
     "title": "All Users",
@@ -45,5 +46,16 @@
     "save": "Save Rules",
     "saved": "Behavior rules saved successfully!",
     "error": "Failed to save behavior rules"
+  },
+  "archetypes": {
+    "title": "Agent Archetypes",
+    "create": "Create Archetype",
+    "edit": "Edit",
+    "delete": "Delete",
+    "empty": "No archetypes found. Create one to get started.",
+    "error": "Failed to load archetypes",
+    "save": "Save",
+    "cancel": "Cancel",
+    "formPlaceholder": "Archetype form will be implemented here. For now, use the API directly to create archetypes."
   }
 }

@@ -3,6 +3,7 @@ import {
   Logger,
   BadRequestException,
   ConflictException,
+  NotFoundException,
 } from '@nestjs/common';
 import { AgentRepository } from './agent.repository';
 import { AgentResponse } from '../common/interfaces/agent.interface';
@@ -10,6 +11,7 @@ import { AgentNotFoundException } from '../common/exceptions';
 import { ERROR_MESSAGES } from '../common/constants/error-messages.constants.js';
 import { AgentType } from '../common/enums/agent-type.enum';
 import { SessionRepository } from '../session/session.repository';
+import { AgentArchetypeService } from '../agent-archetype/agent-archetype.service';
 
 @Injectable()
 export class AgentService {
@@ -17,7 +19,8 @@ export class AgentService {
 
   constructor(
     private readonly agentRepository: AgentRepository,
-    private readonly sessionRepository: SessionRepository
+    private readonly sessionRepository: SessionRepository,
+    private readonly archetypeService: AgentArchetypeService
   ) {}
 
   async findAll(userId: string): Promise<AgentResponse[]> {
@@ -203,5 +206,37 @@ export class AgentService {
     // Delete the agent - Prisma will cascade delete all related data (sessions, messages, configs, memories)
     await this.agentRepository.delete(id, userId);
     this.logger.log(`Successfully deleted agent ${id}`);
+  }
+
+  async createFromArchetype(
+    userId: string,
+    archetypeId: number,
+    name?: string
+  ): Promise<AgentResponse> {
+    this.logger.log(
+      `Creating agent from archetype ${archetypeId} for user ${userId}`
+    );
+
+    // Fetch archetype
+    const archetype = await this.archetypeService.findById(archetypeId);
+    if (!archetype) {
+      this.logger.warn(`Archetype ${archetypeId} not found`);
+      throw new NotFoundException(`Archetype with ID ${archetypeId} not found`);
+    }
+
+    // Use archetype name if no name provided
+    const agentName = name || archetype.name;
+
+    // Create agent with archetype config
+    const configs = archetype.configs || {};
+    return await this.create(
+      userId,
+      agentName,
+      archetype.description,
+      archetype.avatarUrl,
+      archetype.agentType,
+      archetype.language,
+      configs
+    );
   }
 }

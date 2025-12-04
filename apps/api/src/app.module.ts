@@ -5,6 +5,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { HealthcheckModule } from './healthcheck/healthcheck.module';
 import { ChatModule } from './chat/chat.module';
 import { AgentModule } from './agent/agent.module';
+import { AgentArchetypeModule } from './agent-archetype/agent-archetype.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { WebhookModule } from './webhook/webhook.module';
@@ -28,6 +29,7 @@ import appConfig from './config/app.config';
     HealthcheckModule,
     ChatModule,
     AgentModule,
+    AgentArchetypeModule,
     AuthModule,
     UserModule,
     WebhookModule,

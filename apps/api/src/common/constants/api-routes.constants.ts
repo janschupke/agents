@@ -74,4 +74,9 @@ export const API_ROUTES = {
     SENTENCE: (id: number, sentenceId: number) =>
       `api/saved-words/${id}/sentences/${sentenceId}`,
   },
+
+  AGENT_ARCHETYPES: {
+    BASE: 'api/agent-archetypes',
+    BY_ID: (id: number) => `api/agent-archetypes/${id}`,
+  },
 } as const;

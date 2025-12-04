@@ -233,3 +233,32 @@ model SavedWordSentence {
   @@index([savedWordId])
   @@map("saved_word_sentences")
 }
+
+model AgentArchetype {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String?
+  avatarUrl   String?       @map("avatar_url")
+  agentType   AgentType?    @map("agent_type") @default(GENERAL)
+  language    String?       // Optional language code (e.g., 'zh', 'en', 'ja')
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  
+  // Config fields (same structure as Agent)
+  temperature      Float?      // 0-2
+  systemPrompt     String?     @map("system_prompt") @db.Text
+  behaviorRules    Json?       @map("behavior_rules")
+  model            String?
+  maxTokens        Int?        @map("max_tokens")
+  responseLength   String?     @map("response_length") // 'short' | 'standard' | 'long' | 'adapt'
+  age              Int?        // 0-100
+  gender           String?     // 'male' | 'female' | 'non-binary' | 'prefer-not-to-say'
+  personality      String?
+  sentiment        String?     // 'neutral' | 'engaged' | 'friendly' | 'attracted' | 'obsessed' | 'disinterested' | 'angry'
+  interests        Json?       // Array of strings
+  availability     String?     // 'available' | 'standard' | 'busy'
+  
+  @@index([agentType])
+  @@index([language])
+  @@map("agent_archetypes")
+}

@@ -5,6 +5,7 @@ import { useCurrentUser } from './hooks/queries/use-user';
 import Layout from './components/Layout';
 import UsersPage from './pages/UsersPage';
 import SystemRulesPage from './pages/SystemRulesPage';
+import AgentArchetypesPage from './pages/AgentArchetypesPage';
 
 function App() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
@@ -96,6 +97,7 @@ function App() {
           <Route path="/" element={<Navigate to="/users" replace />} />
           <Route path="/users" element={<UsersPage />} />
           <Route path="/system-rules" element={<SystemRulesPage />} />
+          <Route path="/agent-archetypes" element={<AgentArchetypesPage />} />
         </Routes>
       </Layout>
     </BrowserRouter>

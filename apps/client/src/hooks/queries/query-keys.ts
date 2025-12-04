@@ -1,5 +1,6 @@
 enum QueryKey {
   AGENTS = 'agents',
+  ARCHETYPES = 'archetypes',
   CHAT = 'chat',
   USER = 'user',
   CONFIG = 'config',
@@ -66,5 +67,12 @@ export const queryKeys = {
       ] as const,
     matchingPrefix: () =>
       [...queryKeys.savedWords.all(), QueryKey.MATCHING] as const,
+  },
+  archetypes: {
+    all: [QueryKey.ARCHETYPES] as const,
+    lists: () => [...queryKeys.archetypes.all, QueryKey.LIST] as const,
+    list: () => [...queryKeys.archetypes.lists()] as const,
+    details: () => [...queryKeys.archetypes.all, QueryKey.DETAIL] as const,
+    detail: (id: number) => [...queryKeys.archetypes.details(), id] as const,
   },
 } as const;

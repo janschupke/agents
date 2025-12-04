@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useUser, SignOutButton } from '@clerk/clerk-react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useCurrentUser } from '../hooks/queries/use-user';
-import { IconUsers, IconSettings } from './ui/Icons';
+import { IconUsers, IconSettings, IconPlus } from './ui/Icons';
 
 interface LayoutProps {
   children: ReactNode;
@@ -73,6 +73,17 @@ export default function Layout({ children }: LayoutProps) {
           >
             <IconSettings className="w-4 h-4" />
             {t('navigation.systemRules')}
+          </Link>
+          <Link
+            to="/agent-archetypes"
+            className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 ${
+              isActive('/agent-archetypes')
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-text-tertiary hover:text-text-secondary'
+            }`}
+          >
+            <IconPlus className="w-4 h-4" />
+            {t('navigation.archetypes')}
           </Link>
         </div>
       </nav>

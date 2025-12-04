@@ -6,4 +6,8 @@ export const API_ENDPOINTS = {
   USER_ALL: '/api/user/all',
   HEALTHCHECK: '/api/healthcheck',
   SYSTEM_CONFIG_BEHAVIOR_RULES: '/api/system-config/behavior-rules',
+  AGENT_ARCHETYPES: {
+    BASE: '/api/agent-archetypes',
+    BY_ID: (id: number) => `/api/agent-archetypes/${id}`,
+  },
 } as const;

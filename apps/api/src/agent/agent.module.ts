@@ -7,9 +7,10 @@ import { LanguageAssistantService } from './services/language-assistant.service'
 import { PrismaModule } from '../prisma/prisma.module';
 import { UserModule } from '../user/user.module';
 import { SessionRepository } from '../session/session.repository';
+import { AgentArchetypeModule } from '../agent-archetype/agent-archetype.module';
 
 @Module({
-  imports: [PrismaModule, UserModule],
+  imports: [PrismaModule, UserModule, AgentArchetypeModule],
   controllers: [AgentController],
   providers: [
     AgentService,

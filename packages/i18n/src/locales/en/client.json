@@ -98,6 +98,10 @@
       "none": "None (Default)",
       "description": "Optional language setting. If set, the agent will always respond in this language."
     },
+    "archetypes": {
+      "title": "Start from a template",
+      "selectArchetype": "Select an archetype to pre-fill the form"
+    },
     "behaviorRules": "Behavior Rules",
     "addRule": "Add Rule",
     "removeRule": "Remove rule",
