@@ -39,7 +39,9 @@ describe('SectionHeader', () => {
   });
 
   it('should accept custom className', () => {
-    const { container } = render(<SectionHeader title="Test" className="custom-class" />);
+    const { container } = render(
+      <SectionHeader title="Test" className="custom-class" />
+    );
     expect(container.firstChild).toHaveClass('custom-class');
   });
 });

@@ -37,7 +37,9 @@ describe('SidebarContent', () => {
   });
 
   it('should accept custom className', () => {
-    const { container } = render(<SidebarContent className="custom-class">Content</SidebarContent>);
+    const { container } = render(
+      <SidebarContent className="custom-class">Content</SidebarContent>
+    );
     expect(container.firstChild).toHaveClass('custom-class');
   });
 });

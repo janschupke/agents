@@ -39,11 +39,7 @@ export default function JsonModal({
           </pre>
         </ModalContent>
         <ModalFooter>
-          <FormButton
-            type="button"
-            onClick={onClose}
-            variant="primary"
-          >
+          <FormButton type="button" onClick={onClose} variant="primary">
             Close
           </FormButton>
         </ModalFooter>

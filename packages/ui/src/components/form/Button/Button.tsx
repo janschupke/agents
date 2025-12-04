@@ -23,10 +23,10 @@ function getVariantStyles(variant: ButtonVariant = 'primary'): string {
       'bg-primary text-text-inverse hover:bg-primary-hover disabled:hover:bg-primary',
     secondary:
       'bg-background text-text-primary border border-border hover:bg-background-tertiary hover:border-border-focus disabled:hover:bg-background disabled:hover:border-border',
-    danger:
-      'bg-red-600 text-white hover:bg-red-700 disabled:hover:bg-red-600',
+    danger: 'bg-red-600 text-white hover:bg-red-700 disabled:hover:bg-red-600',
     icon: 'bg-transparent text-text-tertiary hover:text-text-primary hover:bg-background-tertiary border-none disabled:hover:bg-transparent disabled:hover:text-text-tertiary',
-    ghost: 'bg-transparent text-text-primary hover:bg-background-tertiary border-none disabled:hover:bg-transparent',
+    ghost:
+      'bg-transparent text-text-primary hover:bg-background-tertiary border-none disabled:hover:bg-transparent',
     'ghost-inverse':
       'bg-transparent text-text-inverse hover:bg-white/10 border-none disabled:hover:bg-transparent',
     'icon-compact':

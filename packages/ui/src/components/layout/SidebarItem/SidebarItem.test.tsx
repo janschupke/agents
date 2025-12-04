@@ -23,11 +23,7 @@ describe('SidebarItem', () => {
     const handleClick = vi.fn();
 
     render(
-      <SidebarItem
-        isSelected={false}
-        onClick={handleClick}
-        title="Item"
-      />
+      <SidebarItem isSelected={false} onClick={handleClick} title="Item" />
     );
 
     await user.click(screen.getByText('Item'));

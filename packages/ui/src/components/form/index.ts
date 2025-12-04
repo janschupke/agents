@@ -9,4 +9,9 @@ export { default as InfoField } from './InfoField';
 export type { ButtonType, ButtonVariant } from './form-types';
 export { VALID_BUTTON_VARIANTS, isValidButtonVariant } from './form-types';
 export type { ComponentSize } from './size-system';
-export { SIZE_CLASSES, getSizeClasses, getButtonSizeClasses, getInputSizeClasses } from './size-system';
+export {
+  SIZE_CLASSES,
+  getSizeClasses,
+  getButtonSizeClasses,
+  getInputSizeClasses,
+} from './size-system';

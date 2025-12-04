@@ -9,7 +9,9 @@ describe('PageContainer', () => {
   });
 
   it('should accept custom className', () => {
-    const { container } = render(<PageContainer className="custom-class">Content</PageContainer>);
+    const { container } = render(
+      <PageContainer className="custom-class">Content</PageContainer>
+    );
     expect(container.firstChild).toHaveClass('custom-class');
   });
 });

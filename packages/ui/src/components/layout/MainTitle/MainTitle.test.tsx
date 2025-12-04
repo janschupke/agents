@@ -9,7 +9,9 @@ describe('MainTitle', () => {
   });
 
   it('should accept custom className', () => {
-    const { container } = render(<MainTitle className="custom-class">Title</MainTitle>);
+    const { container } = render(
+      <MainTitle className="custom-class">Title</MainTitle>
+    );
     expect(container.firstChild).toHaveClass('custom-class');
   });
 });

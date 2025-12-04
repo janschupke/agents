@@ -12,12 +12,14 @@ interface ContainerProps {
  * Route transitions handled by RouteTransitionWrapper in App.tsx
  * Uses self-stretch to fill available height in flex row layout.
  */
-export default function Container({ 
-  children, 
+export default function Container({
+  children,
   className = '',
 }: ContainerProps) {
   return (
-    <div className={`flex flex-col flex-1 self-stretch overflow-hidden ${className}`}>
+    <div
+      className={`flex flex-col flex-1 self-stretch overflow-hidden ${className}`}
+    >
       {children}
     </div>
   );

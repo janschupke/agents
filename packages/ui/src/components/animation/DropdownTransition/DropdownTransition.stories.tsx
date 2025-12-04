@@ -17,7 +17,7 @@ type Story = StoryObj<typeof meta>;
 
 const DropdownWrapper = () => {
   const [show, setShow] = useState(false);
-  
+
   return (
     <div className="relative">
       <Button onClick={() => setShow(!show)}>Toggle Dropdown</Button>

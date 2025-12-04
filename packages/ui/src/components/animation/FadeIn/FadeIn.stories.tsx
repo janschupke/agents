@@ -15,13 +15,17 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    children: <div className="p-4 bg-primary text-white rounded">Fade In Content</div>,
+    children: (
+      <div className="p-4 bg-primary text-white rounded">Fade In Content</div>
+    ),
   },
 };
 
 export const WithDelay: Story = {
   args: {
-    children: <div className="p-4 bg-primary text-white rounded">Delayed Fade In</div>,
+    children: (
+      <div className="p-4 bg-primary text-white rounded">Delayed Fade In</div>
+    ),
     delay: 500,
   },
 };

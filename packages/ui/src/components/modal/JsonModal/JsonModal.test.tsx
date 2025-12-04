@@ -49,14 +49,7 @@ describe('JsonModal', () => {
 
   it('should format JSON data correctly', () => {
     const data = { name: 'Test', count: 42 };
-    render(
-      <JsonModal
-        isOpen
-        onClose={vi.fn()}
-        title="Test"
-        data={data}
-      />
-    );
+    render(<JsonModal isOpen onClose={vi.fn()} title="Test" data={data} />);
     expect(screen.getByText(/"name": "Test"/)).toBeInTheDocument();
     expect(screen.getByText(/"count": 42/)).toBeInTheDocument();
   });

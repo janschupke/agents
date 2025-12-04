@@ -6,7 +6,9 @@ import FormButton from './FormButton';
 describe('FormButton', () => {
   it('should render button with children', () => {
     render(<FormButton>Click me</FormButton>);
-    expect(screen.getByRole('button', { name: 'Click me' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Click me' })
+    ).toBeInTheDocument();
   });
 
   it('should call onClick when clicked', async () => {
@@ -59,7 +61,9 @@ describe('FormButton', () => {
   });
 
   it('should render different variants', () => {
-    const { rerender } = render(<FormButton variant="primary">Primary</FormButton>);
+    const { rerender } = render(
+      <FormButton variant="primary">Primary</FormButton>
+    );
     expect(screen.getByRole('button')).toBeInTheDocument();
 
     rerender(<FormButton variant="secondary">Secondary</FormButton>);

@@ -14,18 +14,29 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const ToastWrapper = ({ type, message }: { type: 'success' | 'error' | 'info'; message: string }) => {
+const ToastWrapper = ({
+  type,
+  message,
+}: {
+  type: 'success' | 'error' | 'info';
+  message: string;
+}) => {
   const [isOpen, setIsOpen] = useState(true);
-  
+
   if (!isOpen) {
     return (
-      <button onClick={() => setIsOpen(true)} className="px-4 py-2 bg-primary text-white rounded">
+      <button
+        onClick={() => setIsOpen(true)}
+        className="px-4 py-2 bg-primary text-white rounded"
+      >
         Show Toast
       </button>
     );
   }
-  
-  return <Toast message={message} type={type} onClose={() => setIsOpen(false)} />;
+
+  return (
+    <Toast message={message} type={type} onClose={() => setIsOpen(false)} />
+  );
 };
 
 export const Success: Story = {
@@ -34,7 +45,9 @@ export const Success: Story = {
     type: 'success',
     onClose: () => {},
   },
-  render: () => <ToastWrapper type="success" message="Operation completed successfully!" />,
+  render: () => (
+    <ToastWrapper type="success" message="Operation completed successfully!" />
+  ),
 };
 
 export const Error: Story = {
@@ -43,7 +56,9 @@ export const Error: Story = {
     type: 'error',
     onClose: () => {},
   },
-  render: () => <ToastWrapper type="error" message="An error occurred. Please try again." />,
+  render: () => (
+    <ToastWrapper type="error" message="An error occurred. Please try again." />
+  ),
 };
 
 export const Info: Story = {
@@ -52,7 +67,9 @@ export const Info: Story = {
     type: 'info',
     onClose: () => {},
   },
-  render: () => <ToastWrapper type="info" message="Here's some helpful information." />,
+  render: () => (
+    <ToastWrapper type="info" message="Here's some helpful information." />
+  ),
 };
 
 export const LongMessage: Story = {
@@ -62,9 +79,9 @@ export const LongMessage: Story = {
     onClose: () => {},
   },
   render: () => (
-    <ToastWrapper 
-      type="info" 
-      message="This is a longer message that demonstrates how the toast handles extended text content that might wrap to multiple lines." 
+    <ToastWrapper
+      type="info"
+      message="This is a longer message that demonstrates how the toast handles extended text content that might wrap to multiple lines."
     />
   ),
 };

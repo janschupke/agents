@@ -9,7 +9,9 @@ describe('FadeIn', () => {
   });
 
   it('should accept custom className', () => {
-    const { container } = render(<FadeIn className="custom-class">Content</FadeIn>);
+    const { container } = render(
+      <FadeIn className="custom-class">Content</FadeIn>
+    );
     expect(container.firstChild).toHaveClass('custom-class');
   });
 

@@ -76,7 +76,8 @@ export const WithContent: Story = {
       <div>
         <h3 className="text-lg font-semibold mb-2">Card Title</h3>
         <p className="text-sm text-text-secondary">
-          This is a card with more complex content including a title and description.
+          This is a card with more complex content including a title and
+          description.
         </p>
       </div>
     ),

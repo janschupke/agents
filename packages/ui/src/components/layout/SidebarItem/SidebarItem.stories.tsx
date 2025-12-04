@@ -14,7 +14,6 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-
 export const Default: Story = {
   args: {
     isSelected: false,
@@ -75,7 +74,8 @@ export const LongText: Story = {
   args: {
     isSelected: false,
     title: 'Very Long Item Title That Might Wrap to Multiple Lines',
-    description: 'This is a very long description that demonstrates how the component handles extended text content',
+    description:
+      'This is a very long description that demonstrates how the component handles extended text content',
     onClick: () => {},
   },
 };

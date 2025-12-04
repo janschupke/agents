@@ -9,12 +9,16 @@ describe('PageContent', () => {
   });
 
   it('should accept custom className', () => {
-    const { container } = render(<PageContent className="custom-class">Content</PageContent>);
+    const { container } = render(
+      <PageContent className="custom-class">Content</PageContent>
+    );
     expect(container.firstChild).toHaveClass('custom-class');
   });
 
   it('should disable scroll when disableScroll is true', () => {
-    const { container } = render(<PageContent disableScroll>Content</PageContent>);
+    const { container } = render(
+      <PageContent disableScroll>Content</PageContent>
+    );
     expect(container.firstChild).toHaveClass('overflow-hidden');
   });
 });

@@ -27,6 +27,8 @@ export const VALID_BUTTON_VARIANTS: ButtonVariant[] = [
 /**
  * Validates if a string is a valid button variant
  */
-export function isValidButtonVariant(variant: string): variant is ButtonVariant {
+export function isValidButtonVariant(
+  variant: string
+): variant is ButtonVariant {
   return VALID_BUTTON_VARIANTS.includes(variant as ButtonVariant);
 }

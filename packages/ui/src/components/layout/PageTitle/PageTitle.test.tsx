@@ -9,7 +9,9 @@ describe('PageTitle', () => {
   });
 
   it('should accept custom className', () => {
-    const { container } = render(<PageTitle className="custom-class">Title</PageTitle>);
+    const { container } = render(
+      <PageTitle className="custom-class">Title</PageTitle>
+    );
     expect(container.firstChild).toHaveClass('custom-class');
   });
 });

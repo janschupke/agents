@@ -17,7 +17,7 @@ type Story = StoryObj<typeof meta>;
 
 const SidebarExample = () => {
   const [selected, setSelected] = useState(1);
-  
+
   return (
     <div className="flex h-screen">
       <Sidebar width="md">

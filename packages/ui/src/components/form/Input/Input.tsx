@@ -1,7 +1,8 @@
 import { forwardRef } from 'react';
 import { ComponentSize, getInputSizeClasses } from '../size-system';
 
-interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
+interface InputProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   className?: string;
   size?: ComponentSize;
 }

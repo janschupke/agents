@@ -31,7 +31,11 @@ export const WithIcon: Story = {
 
 export const WithCustomMessage: Story = {
   args: {
-    icon: <div className="w-16 h-16 bg-background-tertiary rounded-full flex items-center justify-center">📭</div>,
+    icon: (
+      <div className="w-16 h-16 bg-background-tertiary rounded-full flex items-center justify-center">
+        📭
+      </div>
+    ),
     title: 'Inbox Empty',
     message: (
       <div>

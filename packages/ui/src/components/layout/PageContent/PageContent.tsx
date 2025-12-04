@@ -14,8 +14,8 @@ interface PageContentProps {
  * Supports optional fade-in animation when animateOnChange value changes.
  * When disableScroll is true, children manage their own scrolling (e.g., ChatContent).
  */
-export default function PageContent({ 
-  children, 
+export default function PageContent({
+  children,
   className = '',
   animateOnChange,
   enableAnimation = false,
@@ -27,14 +27,14 @@ export default function PageContent({
   useEffect(() => {
     if (enableAnimation && animateOnChange !== previousValueRef.current) {
       if (animateOnChange !== null && animateOnChange !== undefined) {
-        setAnimationKey(prev => prev + 1);
+        setAnimationKey((prev) => prev + 1);
       }
       previousValueRef.current = animateOnChange;
     }
   }, [animateOnChange, enableAnimation]);
 
-  const scrollClasses = disableScroll 
-    ? 'flex flex-col flex-1 overflow-hidden' 
+  const scrollClasses = disableScroll
+    ? 'flex flex-col flex-1 overflow-hidden'
     : 'flex-1 overflow-y-auto p-8';
 
   return (

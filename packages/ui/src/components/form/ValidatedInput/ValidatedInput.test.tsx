@@ -39,9 +39,7 @@ describe('ValidatedInput', () => {
   });
 
   it('should not show error when showError is false', () => {
-    render(
-      <ValidatedInput error="Error message" touched showError={false} />
-    );
+    render(<ValidatedInput error="Error message" touched showError={false} />);
     expect(screen.queryByText('Error message')).not.toBeInTheDocument();
   });
 });

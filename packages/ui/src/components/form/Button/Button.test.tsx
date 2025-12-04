@@ -6,7 +6,9 @@ import Button from './Button';
 describe('Button', () => {
   it('should render button with children', () => {
     render(<Button>Click me</Button>);
-    expect(screen.getByRole('button', { name: 'Click me' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Click me' })
+    ).toBeInTheDocument();
   });
 
   it('should call onClick when clicked', async () => {
@@ -85,7 +87,10 @@ describe('Button', () => {
 
   it('should render with custom tooltip', () => {
     render(<Button tooltip="Custom tooltip">Button</Button>);
-    expect(screen.getByRole('button')).toHaveAttribute('title', 'Custom tooltip');
+    expect(screen.getByRole('button')).toHaveAttribute(
+      'title',
+      'Custom tooltip'
+    );
   });
 
   it('should render as submit button', () => {

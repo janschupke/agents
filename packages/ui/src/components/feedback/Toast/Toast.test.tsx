@@ -21,7 +21,9 @@ describe('Toast', () => {
 
   it('should render different types', () => {
     const handleClose = vi.fn();
-    const { rerender } = render(<Toast message="Test" type="success" onClose={handleClose} />);
+    const { rerender } = render(
+      <Toast message="Test" type="success" onClose={handleClose} />
+    );
     expect(screen.getByText('Test')).toBeInTheDocument();
 
     rerender(<Toast message="Test" type="error" onClose={handleClose} />);
@@ -33,7 +35,9 @@ describe('Toast', () => {
 
   it('should call onClose after duration', () => {
     const handleClose = vi.fn();
-    render(<Toast message="Test" type="info" onClose={handleClose} duration={1000} />);
+    render(
+      <Toast message="Test" type="info" onClose={handleClose} duration={1000} />
+    );
 
     vi.advanceTimersByTime(1000);
     expect(handleClose).toHaveBeenCalledTimes(1);

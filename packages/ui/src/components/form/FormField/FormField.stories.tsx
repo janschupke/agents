@@ -35,7 +35,9 @@ export const WithHint: Story = {
     label: 'Password',
     labelFor: 'password',
     hint: 'Must be at least 8 characters',
-    children: <Input id="password" type="password" placeholder="Enter password" />,
+    children: (
+      <Input id="password" type="password" placeholder="Enter password" />
+    ),
   },
 };
 

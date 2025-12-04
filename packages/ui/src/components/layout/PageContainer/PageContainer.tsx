@@ -15,7 +15,9 @@ export default function PageContainer({
   className = '',
 }: PageContainerProps) {
   return (
-    <div className={`w-full h-screen flex flex-col bg-background overflow-hidden ${className}`}>
+    <div
+      className={`w-full h-screen flex flex-col bg-background overflow-hidden ${className}`}
+    >
       {children}
     </div>
   );

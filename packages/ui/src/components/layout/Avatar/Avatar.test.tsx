@@ -30,7 +30,9 @@ describe('Avatar', () => {
   });
 
   it('should accept custom className', () => {
-    const { container } = render(<Avatar name="Test" className="custom-class" />);
+    const { container } = render(
+      <Avatar name="Test" className="custom-class" />
+    );
     expect(container.firstChild).toHaveClass('custom-class');
   });
 });

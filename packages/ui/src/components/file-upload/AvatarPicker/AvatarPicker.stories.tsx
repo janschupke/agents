@@ -14,13 +14,17 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const AvatarPickerWrapper = (props: { value?: string | null; accept?: string; maxSizeMB?: number }) => {
+const AvatarPickerWrapper = (props: {
+  value?: string | null;
+  accept?: string;
+  maxSizeMB?: number;
+}) => {
   const [value, setValue] = useState<string | null>(props.value || null);
-  
+
   return (
     <div className="space-y-4">
-      <AvatarPicker 
-        value={value} 
+      <AvatarPicker
+        value={value}
         onChange={setValue}
         accept={props.accept}
         maxSizeMB={props.maxSizeMB}
@@ -47,9 +51,7 @@ export const WithInitialValue: Story = {
     value: 'https://i.pravatar.cc/150?img=1',
     onChange: () => {},
   },
-  render: () => (
-    <AvatarPickerWrapper value="https://i.pravatar.cc/150?img=1" />
-  ),
+  render: () => <AvatarPickerWrapper value="https://i.pravatar.cc/150?img=1" />,
 };
 
 export const CustomAccept: Story = {

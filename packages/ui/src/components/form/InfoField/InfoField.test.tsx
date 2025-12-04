@@ -10,9 +10,7 @@ describe('InfoField', () => {
   });
 
   it('should render label and ReactNode value', () => {
-    render(
-      <InfoField label="Status" value={<span>Active</span>} />
-    );
+    render(<InfoField label="Status" value={<span>Active</span>} />);
     expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByText('Active')).toBeInTheDocument();
   });

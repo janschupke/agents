@@ -40,7 +40,12 @@ export const WithError: Story = {
     error: 'Please fix the errors below',
     children: (
       <>
-        <FormField label="Name" labelFor="name-error" error="Name is required" touched>
+        <FormField
+          label="Name"
+          labelFor="name-error"
+          error="Name is required"
+          touched
+        >
           <Input id="name-error" placeholder="Enter name" />
         </FormField>
         <FormButton>Submit</FormButton>

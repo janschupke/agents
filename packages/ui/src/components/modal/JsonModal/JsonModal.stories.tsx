@@ -16,20 +16,16 @@ type Story = StoryObj<typeof meta>;
 
 const JsonModalWrapper = (props: { title: string; data: unknown }) => {
   const [isOpen, setIsOpen] = useState(true);
-  
+
   return (
     <>
-      <button 
-        onClick={() => setIsOpen(true)} 
+      <button
+        onClick={() => setIsOpen(true)}
         className="px-4 py-2 bg-primary text-white rounded m-4"
       >
         Open JSON Modal
       </button>
-      <JsonModal
-        {...props}
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-      />
+      <JsonModal {...props} isOpen={isOpen} onClose={() => setIsOpen(false)} />
     </>
   );
 };

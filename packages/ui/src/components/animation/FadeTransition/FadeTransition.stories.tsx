@@ -17,7 +17,7 @@ type Story = StoryObj<typeof meta>;
 
 const FadeTransitionWrapper = () => {
   const [show, setShow] = useState(true);
-  
+
   return (
     <div className="space-y-4">
       <Button onClick={() => setShow(!show)}>
@@ -66,6 +66,8 @@ export const Fast: Story = {
 export const AlwaysVisible: Story = {
   args: {
     show: true,
-    children: <div className="p-4 bg-primary text-white rounded">Always visible</div>,
+    children: (
+      <div className="p-4 bg-primary text-white rounded">Always visible</div>
+    ),
   },
 };
