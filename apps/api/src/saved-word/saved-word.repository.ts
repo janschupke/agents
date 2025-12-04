@@ -181,15 +181,13 @@ export class SavedWordRepository {
     // Case-insensitive matching using Prisma's mode: 'insensitive'
     // Note: Prisma doesn't support case-insensitive IN queries directly,
     // so we use OR conditions with mode: 'insensitive'
-    const whereConditions: Prisma.SavedWordWhereInput[] = words.map(
-      (word) => ({
-        userId,
-        originalWord: {
-          equals: word,
-          mode: 'insensitive',
-        },
-      })
-    );
+    const whereConditions: Prisma.SavedWordWhereInput[] = words.map((word) => ({
+      userId,
+      originalWord: {
+        equals: word,
+        mode: 'insensitive',
+      },
+    }));
 
     return this.prisma.savedWord.findMany({
       where: {
@@ -272,10 +270,7 @@ export class SavedWordRepository {
     });
   }
 
-  async removeSentence(
-    sentenceId: number,
-    savedWordId: number
-  ): Promise<void> {
+  async removeSentence(sentenceId: number, savedWordId: number): Promise<void> {
     await this.prisma.savedWordSentence.delete({
       where: {
         id: sentenceId,

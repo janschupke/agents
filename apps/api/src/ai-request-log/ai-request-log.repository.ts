@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
-import { AiRequestLogOrderBy, OrderDirection } from './constants/ai-request-log.constants';
+import {
+  AiRequestLogOrderBy,
+  OrderDirection,
+} from './constants/ai-request-log.constants';
 
 @Injectable()
 export class AiRequestLogRepository {
@@ -36,7 +39,7 @@ export class AiRequestLogRepository {
     orderDirection?: OrderDirection;
   }) {
     const where: Prisma.AiRequestLogWhereInput = {};
-    
+
     if (options?.userId) {
       where.userId = options.userId;
     }
@@ -85,7 +88,7 @@ export class AiRequestLogRepository {
     endDate?: Date;
   }) {
     const where: Prisma.AiRequestLogWhereInput = {};
-    
+
     if (options?.userId) {
       where.userId = options.userId;
     }

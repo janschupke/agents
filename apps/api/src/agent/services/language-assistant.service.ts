@@ -4,18 +4,21 @@ import { AgentType } from '../../common/enums/agent-type.enum';
 
 @Injectable()
 export class LanguageAssistantService {
-
   /**
    * Check if agent is a language assistant
    */
-  isLanguageAssistant(agent: AgentWithConfig | { agentType?: AgentType | string | null }): boolean {
+  isLanguageAssistant(
+    agent: AgentWithConfig | { agentType?: AgentType | string | null }
+  ): boolean {
     return agent.agentType === AgentType.LANGUAGE_ASSISTANT;
   }
 
   /**
    * Check if agent is a general agent
    */
-  isGeneralAgent(agent: AgentWithConfig | { agentType?: AgentType | string | null }): boolean {
+  isGeneralAgent(
+    agent: AgentWithConfig | { agentType?: AgentType | string | null }
+  ): boolean {
     const agentType = agent.agentType;
     return !agentType || agentType === AgentType.GENERAL;
   }
@@ -23,7 +26,9 @@ export class LanguageAssistantService {
   /**
    * Get agent language if set
    */
-  getAgentLanguage(agent: AgentWithConfig | { language?: string | null }): string | null {
+  getAgentLanguage(
+    agent: AgentWithConfig | { language?: string | null }
+  ): string | null {
     return agent.language || null;
   }
 

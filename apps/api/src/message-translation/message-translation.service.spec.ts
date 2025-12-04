@@ -8,6 +8,8 @@ import { OpenAIService } from '../openai/openai.service';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
 import { WordTranslationService } from './word-translation.service';
 import { TranslationStrategyFactory } from './translation-strategy.factory';
+import { TranslationStrategy } from './translation-strategy.interface';
+import { AiRequestLogService } from '../ai-request-log/ai-request-log.service';
 import {
   ERROR_MESSAGES,
   MAGIC_STRINGS,
@@ -59,6 +61,10 @@ describe('MessageTranslationService', () => {
     getStrategy: jest.fn(),
   };
 
+  const mockAiRequestLogService = {
+    logRequest: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -90,6 +96,10 @@ describe('MessageTranslationService', () => {
         {
           provide: TranslationStrategyFactory,
           useValue: mockTranslationStrategyFactory,
+        },
+        {
+          provide: AiRequestLogService,
+          useValue: mockAiRequestLogService,
         },
       ],
     }).compile();
@@ -446,7 +456,7 @@ describe('MessageTranslationService', () => {
       ] as Message[];
       messageRepository.findAllBySessionId.mockResolvedValue(allMessages);
       translationStrategyFactory.getStrategy.mockReturnValue(
-        mockStrategy as any
+        mockStrategy as TranslationStrategy
       );
 
       const result = await service.translateMessageWithWords(messageId, userId);
@@ -518,7 +528,7 @@ describe('MessageTranslationService', () => {
       );
       apiCredentialsService.getApiKey.mockResolvedValue(apiKey);
       translationStrategyFactory.getStrategy.mockReturnValue(
-        mockStrategy as any
+        mockStrategy as TranslationStrategy
       );
 
       const result = await service.translateMessageWithWords(messageId, userId);

@@ -100,10 +100,7 @@ export class AgentService {
     this.logger.log(`Created agent ${agent.id} "${name}"`);
 
     // Auto-create initial session for the agent
-    const session = await this.sessionRepository.create(
-      userId,
-      agent.id
-    );
+    const session = await this.sessionRepository.create(userId, agent.id);
     this.logger.log(
       `Created initial session ${session.id} for agent ${agent.id}`
     );

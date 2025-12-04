@@ -4,6 +4,7 @@ import { InitialTranslationStrategy } from './initial-translation.strategy';
 import { OpenAIService } from '../../openai/openai.service';
 import { MessageWordTranslationRepository } from '../message-word-translation.repository';
 import { MessageTranslationRepository } from '../message-translation.repository';
+import { AiRequestLogService } from '../../ai-request-log/ai-request-log.service';
 import { TranslationContext } from '../translation-strategy.interface';
 import { MessageRole } from '../../common/enums/message-role.enum';
 import OpenAI from 'openai';
@@ -27,6 +28,10 @@ describe('InitialTranslationStrategy', () => {
     create: jest.fn(),
   };
 
+  const mockAiRequestLogService = {
+    logRequest: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -42,6 +47,10 @@ describe('InitialTranslationStrategy', () => {
         {
           provide: MessageTranslationRepository,
           useValue: mockTranslationRepository,
+        },
+        {
+          provide: AiRequestLogService,
+          useValue: mockAiRequestLogService,
         },
       ],
     }).compile();

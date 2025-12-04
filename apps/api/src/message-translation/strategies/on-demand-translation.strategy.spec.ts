@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { OnDemandTranslationStrategy } from './on-demand-translation.strategy';
 import { WordTranslationService } from '../word-translation.service';
 import { MessageTranslationRepository } from '../message-translation.repository';
+import { AiRequestLogService } from '../../ai-request-log/ai-request-log.service';
 import { TranslationContext } from '../translation-strategy.interface';
 import { MessageRole } from '../../common/enums/message-role.enum';
 
@@ -19,6 +20,10 @@ describe('OnDemandTranslationStrategy', () => {
     findByMessageId: jest.fn(),
   };
 
+  const mockAiRequestLogService = {
+    logRequest: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -30,6 +35,10 @@ describe('OnDemandTranslationStrategy', () => {
         {
           provide: MessageTranslationRepository,
           useValue: mockTranslationRepository,
+        },
+        {
+          provide: AiRequestLogService,
+          useValue: mockAiRequestLogService,
         },
       ],
     }).compile();
@@ -72,9 +81,7 @@ describe('OnDemandTranslationStrategy', () => {
       wordTranslationService.getWordTranslationsForMessage.mockResolvedValue(
         wordTranslations
       );
-      translationRepository.findByMessageId.mockResolvedValue(
-        fullTranslation
-      );
+      translationRepository.findByMessageId.mockResolvedValue(fullTranslation);
 
       const result = await strategy.translateMessageWithWords(
         messageId,
@@ -90,7 +97,7 @@ describe('OnDemandTranslationStrategy', () => {
 
       expect(
         wordTranslationService.translateWordsInMessage
-      ).toHaveBeenCalledWith(messageId, messageContent, apiKey);
+      ).toHaveBeenCalledWith(messageId, messageContent, apiKey, undefined);
       expect(
         wordTranslationService.getWordTranslationsForMessage
       ).toHaveBeenCalledWith(messageId);

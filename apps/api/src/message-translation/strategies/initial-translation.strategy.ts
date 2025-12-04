@@ -51,7 +51,7 @@ export class InitialTranslationStrategy implements TranslationStrategy {
     );
 
     // Extract userId from context if available
-    const userId = (context as any)?.userId;
+    const userId = context?.userId;
     // Call to OpenAI for translation with context
     const result = await this.translateWithContext(prompt, apiKey, userId);
 

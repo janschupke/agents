@@ -24,9 +24,7 @@ import { API_ROUTES } from '../common/constants/api-routes.constants';
 export class AgentArchetypeController {
   private readonly logger = new Logger(AgentArchetypeController.name);
 
-  constructor(
-    private readonly archetypeService: AgentArchetypeService
-  ) {}
+  constructor(private readonly archetypeService: AgentArchetypeService) {}
 
   @Get()
   async getAllArchetypes(): Promise<AgentArchetypeResponse[]> {
@@ -66,9 +64,7 @@ export class AgentArchetypeController {
   @Delete(':id')
   @Roles('admin')
   @UseGuards(RolesGuard)
-  async deleteArchetype(
-    @Param('id', ParseIntPipe) id: number
-  ): Promise<void> {
+  async deleteArchetype(@Param('id', ParseIntPipe) id: number): Promise<void> {
     this.logger.log(`Deleting agent archetype ${id}`);
     await this.archetypeService.delete(id);
   }

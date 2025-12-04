@@ -138,7 +138,9 @@ export class OpenAIService {
         // Convert MessageRole enum to OpenAI API format (lowercase strings)
         const userAndAssistantMessages = options.conversationHistory
           .filter(
-            (msg) => msg.role === MessageRole.USER || msg.role === MessageRole.ASSISTANT
+            (msg) =>
+              msg.role === MessageRole.USER ||
+              msg.role === MessageRole.ASSISTANT
           )
           .map((msg) => ({
             role: msg.role.toLowerCase() as 'user' | 'assistant',

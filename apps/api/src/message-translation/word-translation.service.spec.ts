@@ -3,6 +3,7 @@ import { WordTranslationService } from './word-translation.service';
 import { MessageWordTranslationRepository } from './message-word-translation.repository';
 import { OpenAIService } from '../openai/openai.service';
 import { MessageTranslationRepository } from './message-translation.repository';
+import { AiRequestLogService } from '../ai-request-log/ai-request-log.service';
 import OpenAI from 'openai';
 
 describe('WordTranslationService', () => {
@@ -27,6 +28,10 @@ describe('WordTranslationService', () => {
     create: jest.fn(),
   };
 
+  const mockAiRequestLogService = {
+    logRequest: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -42,6 +47,10 @@ describe('WordTranslationService', () => {
         {
           provide: MessageTranslationRepository,
           useValue: mockTranslationRepository,
+        },
+        {
+          provide: AiRequestLogService,
+          useValue: mockAiRequestLogService,
         },
       ],
     }).compile();

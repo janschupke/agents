@@ -23,7 +23,10 @@ import {
   ChatHistoryResponseDto,
   SendMessageResponseDto,
 } from '../common/dto/chat.dto';
-import { MessagePreparationService, AgentConfig } from './services/message-preparation.service';
+import {
+  MessagePreparationService,
+  AgentConfig,
+} from './services/message-preparation.service';
 import { OpenAIChatService } from './services/openai-chat.service';
 
 @Injectable()
@@ -141,10 +144,11 @@ export class ChatService {
     }
 
     // Load all messages (no pagination) - use withRawData to get all fields
-    const messageRecords = await this.messageRepository.findAllBySessionIdWithRawData(
-      session.id
-      // No limit - loads all messages (default limit is 1000, which should be enough)
-    );
+    const messageRecords =
+      await this.messageRepository.findAllBySessionIdWithRawData(
+        session.id
+        // No limit - loads all messages (default limit is 1000, which should be enough)
+      );
 
     // Get all message IDs
     const messageIds = messageRecords.map((m) => m.id);
@@ -264,7 +268,9 @@ export class ChatService {
 
     // Load agent with config
     const agent = await this.validateAgentAccess(agentId, userId);
-    const mergedConfig = this.agentConfigService.mergeAgentConfig(agent.configs);
+    const mergedConfig = this.agentConfigService.mergeAgentConfig(
+      agent.configs
+    );
     const agentConfig: AgentConfig = {
       system_prompt: mergedConfig.system_prompt as string | undefined,
       behavior_rules: mergedConfig.behavior_rules as string | undefined,
@@ -348,13 +354,18 @@ export class ChatService {
 
     // Call OpenAI API using OpenAIChatService
     const { response, completion } =
-      await this.openaiChatService.createChatCompletion(apiKey, openaiRequest, userId);
+      await this.openaiChatService.createChatCompletion(
+        apiKey,
+        openaiRequest,
+        userId
+      );
     this.logger.log(
       `Received response from OpenAI (length: ${response.length})`
     );
 
     // Extract words AND translations from response JSON (required in prompt)
-    let extractedWords: Array<{ originalWord: string; translation: string }> = [];
+    let extractedWords: Array<{ originalWord: string; translation: string }> =
+      [];
     let extractedTranslation: string | undefined;
     let cleanedResponse = response;
     let translationsExtracted = false;
@@ -366,16 +377,20 @@ export class ChatService {
         const jsonStr = jsonMatch[0].trim();
         const parsed = JSON.parse(jsonStr);
 
-        if (parsed.words && Array.isArray(parsed.words) && parsed.fullTranslation) {
+        if (
+          parsed.words &&
+          Array.isArray(parsed.words) &&
+          parsed.fullTranslation
+        ) {
           extractedWords = parsed.words
             .filter(
-              (w: any) =>
+              (w: { originalWord?: unknown; translation?: unknown }) =>
                 w.originalWord &&
                 w.translation &&
                 typeof w.originalWord === 'string' &&
                 typeof w.translation === 'string'
             )
-            .map((w: any) => ({
+            .map((w: { originalWord: string; translation: string }) => ({
               originalWord: w.originalWord,
               translation: w.translation,
             }));
@@ -383,10 +398,9 @@ export class ChatService {
           extractedTranslation = parsed.fullTranslation;
 
           // Remove JSON from response
-          cleanedResponse = response.substring(
-            0,
-            response.length - jsonMatch[0].length
-          ).trim();
+          cleanedResponse = response
+            .substring(0, response.length - jsonMatch[0].length)
+            .trim();
 
           translationsExtracted = true;
 
@@ -402,7 +416,10 @@ export class ChatService {
         this.logger.warn('No JSON structure found in OpenAI response');
       }
     } catch (error) {
-      this.logger.warn('Failed to extract translations from response JSON:', error);
+      this.logger.warn(
+        'Failed to extract translations from response JSON:',
+        error
+      );
       // If extraction fails, we still have the chat response
       // Message is returned without translations, user can request translation manually
       translationsExtracted = false;
@@ -423,7 +440,11 @@ export class ChatService {
     this.logger.debug(`Saved assistant message ${assistantMessage.id}`);
 
     // Save extracted translations if available
-    if (translationsExtracted && extractedWords.length > 0 && extractedTranslation) {
+    if (
+      translationsExtracted &&
+      extractedWords.length > 0 &&
+      extractedTranslation
+    ) {
       try {
         await this.wordTranslationService.saveExtractedTranslations(
           assistantMessage.id,
@@ -462,9 +483,7 @@ export class ChatService {
             cleanedResponse,
             apiKey
           );
-          this.logger.debug(
-            `Parsed words for message ${assistantMessage.id}`
-          );
+          this.logger.debug(`Parsed words for message ${assistantMessage.id}`);
         } catch (error) {
           this.logger.error('Error parsing words:', error);
           // Continue without word parsing - highlighting will still work if words exist
@@ -592,7 +611,8 @@ export class ChatService {
           : parsedWordTranslations.length > 0
             ? parsedWordTranslations
             : undefined,
-      savedWordMatches: savedWordMatches.length > 0 ? savedWordMatches : undefined,
+      savedWordMatches:
+        savedWordMatches.length > 0 ? savedWordMatches : undefined,
     };
   }
 

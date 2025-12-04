@@ -9,6 +9,7 @@ export interface WordTranslation {
 export interface TranslationContext {
   conversationHistory?: Array<{ role: string; content: string }>;
   messageRole: MessageRole;
+  userId?: string;
 }
 
 export interface TranslationStrategy {

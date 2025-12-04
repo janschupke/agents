@@ -36,7 +36,7 @@ export class OnDemandTranslationStrategy implements TranslationStrategy {
     // Use existing translateWordsInMessage which handles pre-parsed words
     // This is the current implementation for user messages
     // Extract userId from context if available (passed through from service)
-    const userId = (_context as any)?.userId;
+    const userId = _context?.userId;
     await this.wordTranslationService.translateWordsInMessage(
       messageId,
       messageContent,
@@ -51,9 +51,8 @@ export class OnDemandTranslationStrategy implements TranslationStrategy {
       );
 
     // Get full translation
-    const translation = await this.translationRepository.findByMessageId(
-      messageId
-    );
+    const translation =
+      await this.translationRepository.findByMessageId(messageId);
 
     if (!translation) {
       // Derive from word translations if full translation not available

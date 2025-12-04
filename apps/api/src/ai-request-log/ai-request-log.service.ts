@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AiRequestLogRepository } from './ai-request-log.repository';
 import { OPENAI_MODEL_PRICING } from '../common/constants/api.constants';
-import { AiRequestLogOrderBy, OrderDirection } from './constants/ai-request-log.constants';
+import {
+  AiRequestLogOrderBy,
+  OrderDirection,
+} from './constants/ai-request-log.constants';
 import { Prisma } from '@prisma/client';
 import OpenAI from 'openai';
 
@@ -21,8 +24,9 @@ export class AiRequestLogService {
     promptTokens: number,
     completionTokens: number
   ): number {
-    const pricing = OPENAI_MODEL_PRICING[model as keyof typeof OPENAI_MODEL_PRICING];
-    
+    const pricing =
+      OPENAI_MODEL_PRICING[model as keyof typeof OPENAI_MODEL_PRICING];
+
     if (!pricing) {
       this.logger.warn(`No pricing found for model: ${model}, using default`);
       // Default to gpt-4o-mini pricing if model not found

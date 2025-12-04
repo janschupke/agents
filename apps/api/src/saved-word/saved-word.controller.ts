@@ -42,7 +42,9 @@ export class SavedWordController {
     @User() user: AuthenticatedUser,
     @Query('language') language?: string
   ): Promise<SavedWordResponseDto[]> {
-    this.logger.debug(`Getting saved words for user ${user.id}, language: ${language || 'all'}`);
+    this.logger.debug(
+      `Getting saved words for user ${user.id}, language: ${language || 'all'}`
+    );
     return this.savedWordService.getSavedWordsByLanguage(user.id, language);
   }
 
@@ -55,7 +57,10 @@ export class SavedWordController {
       `Finding matching saved words for user ${user.id}, words: ${words}`
     );
     const wordArray = words
-      ? words.split(',').map((w) => w.trim()).filter((w) => w.length > 0)
+      ? words
+          .split(',')
+          .map((w) => w.trim())
+          .filter((w) => w.length > 0)
       : [];
     const matches = await this.savedWordService.findMatchingWords(
       user.id,
@@ -104,9 +109,7 @@ export class SavedWordController {
     @Body() dto: AddSentenceDto,
     @User() user: AuthenticatedUser
   ): Promise<SavedWordSentenceResponseDto> {
-    this.logger.log(
-      `Adding sentence to saved word ${id} for user ${user.id}`
-    );
+    this.logger.log(`Adding sentence to saved word ${id} for user ${user.id}`);
     return this.savedWordService.addSentence(
       id,
       user.id,

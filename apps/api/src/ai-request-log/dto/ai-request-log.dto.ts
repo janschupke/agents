@@ -1,6 +1,16 @@
-import { IsOptional, IsString, IsDateString, IsInt, Min, IsEnum } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsDateString,
+  IsInt,
+  Min,
+  IsEnum,
+} from 'class-validator';
 import { Type } from 'class-transformer';
-import { AiRequestLogOrderBy, OrderDirection } from '../constants/ai-request-log.constants';
+import {
+  AiRequestLogOrderBy,
+  OrderDirection,
+} from '../constants/ai-request-log.constants';
 
 export class GetAiRequestLogsQueryDto {
   @IsOptional()

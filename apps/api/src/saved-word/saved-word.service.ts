@@ -7,6 +7,7 @@ import {
   SavedWordMatchDto,
 } from './dto/saved-word.dto';
 import { CreateSavedWordDto, UpdateSavedWordDto } from './dto/saved-word.dto';
+import type { SavedWord } from '@prisma/client';
 
 @Injectable()
 export class SavedWordService {
@@ -125,10 +126,15 @@ export class SavedWordService {
 
     // If translation is being updated and word contains Chinese, regenerate pinyin
     let pinyin = data.pinyin;
-    if (data.translation && this.pinyinService.containsChinese(existingWord.originalWord)) {
+    if (
+      data.translation &&
+      this.pinyinService.containsChinese(existingWord.originalWord)
+    ) {
       // Pinyin is based on original word, not translation, so keep existing or regenerate
       if (!pinyin) {
-        const generatedPinyin = this.pinyinService.toPinyin(existingWord.originalWord);
+        const generatedPinyin = this.pinyinService.toPinyin(
+          existingWord.originalWord
+        );
         pinyin = generatedPinyin ?? undefined;
       }
     }
@@ -210,7 +216,18 @@ export class SavedWordService {
     await this.savedWordRepository.removeSentence(sentenceId, savedWordId);
   }
 
-  private mapToResponseDto(word: any): SavedWordResponseDto {
+  private mapToResponseDto(
+    word: SavedWord & {
+      agent?: { name: string } | null;
+      session?: { sessionName: string | null } | null;
+      sentences?: Array<{
+        id: number;
+        sentence: string;
+        messageId: number | null;
+        createdAt: Date;
+      }>;
+    }
+  ): SavedWordResponseDto {
     return {
       id: word.id,
       originalWord: word.originalWord,
@@ -220,12 +237,19 @@ export class SavedWordService {
       sessionId: word.sessionId,
       agentName: word.agent?.name || null,
       sessionName: word.session?.sessionName || null,
-      sentences: word.sentences.map((s: any) => ({
-        id: s.id,
-        sentence: s.sentence,
-        messageId: s.messageId,
-        createdAt: s.createdAt,
-      })),
+      sentences: (word.sentences || []).map(
+        (s: {
+          id: number;
+          sentence: string;
+          messageId: number | null;
+          createdAt: Date;
+        }) => ({
+          id: s.id,
+          sentence: s.sentence,
+          messageId: s.messageId,
+          createdAt: s.createdAt,
+        })
+      ),
       createdAt: word.createdAt,
       updatedAt: word.updatedAt,
     };

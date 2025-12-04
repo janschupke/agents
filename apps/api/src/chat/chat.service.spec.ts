@@ -307,7 +307,8 @@ describe('ChatService', () => {
         userId,
         sessionName: null,
       };
-      const chatResponse = '你好，世界！\n{"words":[{"originalWord":"你好","translation":"hello"},{"originalWord":"世界","translation":"world"}],"fullTranslation":"Hello, world!"}';
+      const chatResponse =
+        '你好，世界！\n{"words":[{"originalWord":"你好","translation":"hello"},{"originalWord":"世界","translation":"world"}],"fullTranslation":"Hello, world!"}';
       const mockCompletion = {
         id: 'chat-123',
         choices: [
@@ -553,7 +554,9 @@ describe('ChatService', () => {
       expect(result.translation).toBeUndefined();
       // When JSON extraction fails (missing fullTranslation), code tries to parse words
       // This will call parseWordsInMessage instead of saveParsedWords
-      expect(mockWordTranslationService.parseWordsInMessage).toHaveBeenCalledWith(
+      expect(
+        mockWordTranslationService.parseWordsInMessage
+      ).toHaveBeenCalledWith(
         2,
         '你好，世界！\n{"words":[{"originalWord":"你好","translation":"hello"}]}',
         apiKey

@@ -120,9 +120,9 @@ export class AgentMemoryRepository {
        FROM agent_memories
        WHERE agent_id = $1 AND user_id = $2
        ORDER BY created_at DESC`;
-    
+
     const params: unknown[] = [agentId, userId];
-    
+
     if (limit && limit > 0) {
       query += ` LIMIT $3`;
       params.push(limit);

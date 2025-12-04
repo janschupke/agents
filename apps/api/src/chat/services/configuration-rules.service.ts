@@ -12,7 +12,6 @@ export interface ConfigurationRule {
 
 @Injectable()
 export class ConfigurationRulesService {
-
   constructor(
     private readonly languageAssistantService: LanguageAssistantService
   ) {}
@@ -20,7 +19,7 @@ export class ConfigurationRulesService {
   /**
    * Generate configuration rules for an agent
    * These rules come after admin-defined system rules but before user-defined behavior rules
-   * 
+   *
    * Order:
    * 1. Admin-defined system rules (handled in MessagePreparationService)
    * 2. Configuration rules (datetime, language) - THIS SERVICE
@@ -52,7 +51,8 @@ export class ConfigurationRulesService {
     // Rule 3: Response length (if set)
     const responseLength = this.getResponseLength(agent);
     if (responseLength) {
-      const responseLengthRule = this.generateResponseLengthRule(responseLength);
+      const responseLengthRule =
+        this.generateResponseLengthRule(responseLength);
       rules.push({
         content: responseLengthRule,
         order: 3,
@@ -199,7 +199,7 @@ export class ConfigurationRulesService {
 
   private generateResponseLengthRule(responseLength: ResponseLength): string {
     if (responseLength === ResponseLength.ADAPT) {
-      return 'Adapt your response length to the user\'s message and context';
+      return "Adapt your response length to the user's message and context";
     }
     return `Respond with messages of ${responseLength} length`;
   }

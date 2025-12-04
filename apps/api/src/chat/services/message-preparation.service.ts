@@ -36,7 +36,7 @@ export class MessagePreparationService {
   /**
    * Prepare messages array for OpenAI API call
    * Handles: system prompts, behavior rules, memory context, and user messages
-   * 
+   *
    * Rule Order:
    * 1. System prompt
    * 2. Admin-defined system behavior rules
@@ -58,7 +58,8 @@ export class MessagePreparationService {
     // Limit conversation history to most recent messages (user/assistant only)
     // System messages will be added separately, so we only limit conversation history
     const conversationMessages = existingMessages.filter(
-      (msg) => msg.role === MessageRole.USER || msg.role === MessageRole.ASSISTANT
+      (msg) =>
+        msg.role === MessageRole.USER || msg.role === MessageRole.ASSISTANT
     );
     const limitedConversationMessages = conversationMessages.slice(
       -NUMERIC_CONSTANTS.OPENAI_CHAT_CONTEXT_MESSAGES
@@ -95,11 +96,14 @@ export class MessagePreparationService {
     }
 
     // Add word parsing instruction ONLY for language assistants
-    const isLanguageAssistant = this.languageAssistantService.isLanguageAssistant({
-      agentType: agentConfig.agentType,
-    });
+    const isLanguageAssistant =
+      this.languageAssistantService.isLanguageAssistant({
+        agentType: agentConfig.agentType,
+      });
     if (isLanguageAssistant) {
-      this.logger.debug('Adding word parsing instruction for language assistant');
+      this.logger.debug(
+        'Adding word parsing instruction for language assistant'
+      );
       this.addWordParsingInstruction(messagesForAPI);
     }
 
@@ -284,17 +288,20 @@ export class MessagePreparationService {
       configs: {},
     };
 
-    const configurationRules = this.configurationRulesService.generateConfigurationRules(
-      agent,
-      currentDateTime
-    );
+    const configurationRules =
+      this.configurationRulesService.generateConfigurationRules(
+        agent,
+        currentDateTime
+      );
 
     if (configurationRules.length === 0) {
       return;
     }
 
     const configurationRulesMessage =
-      this.configurationRulesService.formatConfigurationRules(configurationRules);
+      this.configurationRulesService.formatConfigurationRules(
+        configurationRules
+      );
 
     if (configurationRulesMessage.length > 0) {
       // Check if configuration rules are already present
@@ -333,9 +340,7 @@ export class MessagePreparationService {
    * Add instruction for assistant to include translations in response (required)
    * ONLY called for language assistants
    */
-  private addWordParsingInstruction(
-    messagesForAPI: MessageForOpenAI[]
-  ): void {
+  private addWordParsingInstruction(messagesForAPI: MessageForOpenAI[]): void {
     const wordParsingInstruction = `CRITICAL INSTRUCTION: You MUST translate YOUR OWN RESPONSE (the assistant's message), NOT the user's message.
 
 After your main response, add a new line with a JSON structure containing:

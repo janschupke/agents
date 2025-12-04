@@ -162,7 +162,8 @@ export class WordTranslationService {
     // Check if translations already exist with actual translations
     const existingWords =
       await this.wordTranslationRepository.findByMessageId(messageId);
-    const hasTranslations = existingWords?.some((w) => w.translation.trim() !== '') ?? false;
+    const hasTranslations =
+      existingWords?.some((w) => w.translation.trim() !== '') ?? false;
 
     if (hasTranslations) {
       return; // Already translated
@@ -211,7 +212,12 @@ export class WordTranslationService {
     // No pre-parsed words exist, do full parse + translate
     const sentences = this.splitIntoSentences(messageContent);
     const { wordTranslations, fullTranslation } =
-      await this.translateWordsWithOpenAI(messageContent, sentences, apiKey, userId);
+      await this.translateWordsWithOpenAI(
+        messageContent,
+        sentences,
+        apiKey,
+        userId
+      );
 
     const wordToSentenceMap = this.createWordToSentenceMap(
       messageContent,
@@ -337,7 +343,8 @@ Return ONLY the JSON object, no additional text.`;
         messages: [
           {
             role: 'system',
-            content: 'You are a word parsing assistant. Return only valid JSON objects.',
+            content:
+              'You are a word parsing assistant. Return only valid JSON objects.',
           },
           {
             role: 'user',

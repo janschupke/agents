@@ -11,9 +11,7 @@ import { AgentType } from '../common/enums/agent-type.enum';
 export class AgentArchetypeService {
   private readonly logger = new Logger(AgentArchetypeService.name);
 
-  constructor(
-    private readonly archetypeRepository: AgentArchetypeRepository
-  ) {}
+  constructor(private readonly archetypeRepository: AgentArchetypeRepository) {}
 
   async findAll(): Promise<AgentArchetypeResponse[]> {
     this.logger.log('Fetching all agent archetypes');
@@ -31,9 +29,7 @@ export class AgentArchetypeService {
     return this.mapToResponse(archetype);
   }
 
-  async create(
-    data: CreateAgentArchetypeDto
-  ): Promise<AgentArchetypeResponse> {
+  async create(data: CreateAgentArchetypeDto): Promise<AgentArchetypeResponse> {
     this.logger.log(`Creating agent archetype "${data.name}"`);
     const archetype = await this.archetypeRepository.create(data);
     this.logger.log(`Created agent archetype ${archetype.id} "${data.name}"`);
@@ -93,7 +89,9 @@ export class AgentArchetypeService {
       name: archetype.name,
       description: archetype.description || undefined,
       avatarUrl: archetype.avatarUrl || undefined,
-      agentType: archetype.agentType ? (archetype.agentType as AgentType) : undefined,
+      agentType: archetype.agentType
+        ? (archetype.agentType as AgentType)
+        : undefined,
       language: archetype.language || undefined,
       createdAt: archetype.createdAt,
       updatedAt: archetype.updatedAt,
