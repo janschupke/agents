@@ -122,6 +122,13 @@ export interface CreateAgentRequest {
     temperature?: number;
     system_prompt?: string;
     behavior_rules?: string | unknown;
+    response_length?: string;
+    age?: number;
+    gender?: string;
+    personality?: string;
+    sentiment?: string;
+    interests?: string[];
+    availability?: string;
   };
 }
 
@@ -135,6 +142,13 @@ export interface UpdateAgentRequest {
     temperature?: number;
     system_prompt?: string;
     behavior_rules?: string | unknown;
+    response_length?: string;
+    age?: number;
+    gender?: string;
+    personality?: string;
+    sentiment?: string;
+    interests?: string[];
+    availability?: string;
   };
 }
 

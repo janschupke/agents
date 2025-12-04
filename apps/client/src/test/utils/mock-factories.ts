@@ -33,8 +33,14 @@ export function createMockAgentFormValues(
     agentType: AgentType.GENERAL,
     language: null,
     temperature: 0.7,
-    systemPrompt: 'You are a helpful assistant.',
     behaviorRules: [],
+    responseLength: null,
+    age: null,
+    gender: null,
+    personality: null,
+    sentiment: null,
+    interests: [],
+    availability: null,
     ...overrides,
   };
 }

@@ -34,33 +34,7 @@ describe('LocalStorageManager', () => {
     vi.restoreAllMocks();
   });
 
-  describe('getSelectedAgentIdChat and setSelectedAgentIdChat', () => {
-    it('should get and set selected agent ID for chat', () => {
-      expect(LocalStorageManager.getSelectedAgentIdChat()).toBeNull();
-
-      LocalStorageManager.setSelectedAgentIdChat(1);
-      expect(LocalStorageManager.getSelectedAgentIdChat()).toBe(1);
-
-      LocalStorageManager.setSelectedAgentIdChat(42);
-      expect(LocalStorageManager.getSelectedAgentIdChat()).toBe(42);
-    });
-
-    it('should return null when agent ID is cleared', () => {
-      LocalStorageManager.setSelectedAgentIdChat(1);
-      expect(LocalStorageManager.getSelectedAgentIdChat()).toBe(1);
-
-      LocalStorageManager.setSelectedAgentIdChat(null);
-      expect(LocalStorageManager.getSelectedAgentIdChat()).toBeNull();
-    });
-
-    it('should return null for invalid stored values', () => {
-      localStorage.setItem('selectedAgentId_chat', 'invalid');
-      expect(LocalStorageManager.getSelectedAgentIdChat()).toBeNull();
-
-      localStorage.setItem('selectedAgentId_chat', 'not-a-number');
-      expect(LocalStorageManager.getSelectedAgentIdChat()).toBeNull();
-    });
-  });
+  // getSelectedAgentIdChat and setSelectedAgentIdChat removed - chat agent ID now comes from URL
 
   describe('getSelectedAgentIdConfig and setSelectedAgentIdConfig', () => {
     it('should get and set selected agent ID for config', () => {
@@ -91,15 +65,12 @@ describe('LocalStorageManager', () => {
 
   describe('clearAll', () => {
     it('should clear all stored values', () => {
-      LocalStorageManager.setSelectedAgentIdChat(1);
       LocalStorageManager.setSelectedAgentIdConfig(2);
 
-      expect(LocalStorageManager.getSelectedAgentIdChat()).toBe(1);
       expect(LocalStorageManager.getSelectedAgentIdConfig()).toBe(2);
 
       LocalStorageManager.clearAll();
 
-      expect(LocalStorageManager.getSelectedAgentIdChat()).toBeNull();
       expect(LocalStorageManager.getSelectedAgentIdConfig()).toBeNull();
     });
   });
@@ -113,7 +84,7 @@ describe('LocalStorageManager', () => {
       });
 
       const consoleErrorSpy = vi.spyOn(console, 'error');
-      const result = LocalStorageManager.getSelectedAgentIdChat();
+      const result = LocalStorageManager.getSelectedAgentIdConfig();
 
       expect(result).toBeNull();
       expect(consoleErrorSpy).toHaveBeenCalled();
@@ -130,7 +101,7 @@ describe('LocalStorageManager', () => {
       });
 
       const consoleErrorSpy = vi.spyOn(console, 'error');
-      LocalStorageManager.setSelectedAgentIdChat(1);
+      LocalStorageManager.setSelectedAgentIdConfig(1);
 
       expect(consoleErrorSpy).toHaveBeenCalled();
 

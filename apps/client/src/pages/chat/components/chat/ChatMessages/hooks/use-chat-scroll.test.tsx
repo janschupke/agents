@@ -196,17 +196,13 @@ describe('useChatScroll', () => {
       configurable: true,
     });
 
-    const messagesContainerRef = { current: container };
-
     const { rerender } = renderHook(
-      ({ messages: msgs, isLoadingOlderMessages }) =>
+      ({ messages: msgs }) =>
         useChatScroll({
           messages: msgs,
           sessionId: 1,
-          messagesContainerRef,
-          isLoadingOlderMessages,
         }),
-      { initialProps: { messages, isLoadingOlderMessages: false } }
+      { initialProps: { messages } }
     );
 
     // Wait for initial load
@@ -216,15 +212,15 @@ describe('useChatScroll', () => {
 
     mockScrollTo.mockClear();
 
-    // Add messages while loading older messages
-    const newMessages = [{ id: 0 }, ...messages]; // Older message added at start
-    rerender({ messages: newMessages, isLoadingOlderMessages: true });
+    // Add new messages
+    const newMessages = [...messages, { id: 2 }]; // New message added at end
+    rerender({ messages: newMessages });
 
-    // Wait a bit
+    // Wait a bit for scroll to happen
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // Should not scroll when loading older messages
-    expect(mockScrollTo).not.toHaveBeenCalled();
+    // Should scroll to bottom for new messages
+    expect(mockScrollTo).toHaveBeenCalled();
   });
 
   it('should reset when sessionId changes', async () => {
@@ -244,14 +240,11 @@ describe('useChatScroll', () => {
       configurable: true,
     });
 
-    const messagesContainerRef = { current: container };
-
     const { rerender } = renderHook(
       ({ sessionId, messages: msgs }) =>
         useChatScroll({
           messages: msgs,
           sessionId,
-          messagesContainerRef,
         }),
       {
         initialProps: { sessionId: 1, messages },

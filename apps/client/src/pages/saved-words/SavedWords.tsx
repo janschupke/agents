@@ -96,7 +96,7 @@ export default function SavedWords() {
 
   const handleNavigateToSession = (agentId: number | null, sessionId: number | null) => {
     if (agentId && sessionId) {
-      navigate(ROUTES.CHAT_SESSION(agentId, sessionId));
+      navigate(ROUTES.CHAT_AGENT(agentId));
     }
   };
 
