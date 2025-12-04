@@ -20,6 +20,10 @@ import {
   MessagePreparationService,
   AgentConfig,
 } from './message-preparation.service';
+import { ResponseLength } from '../../common/enums/response-length.enum';
+import { Gender } from '../../common/enums/gender.enum';
+import { Sentiment } from '../../common/enums/sentiment.enum';
+import { PersonalityType } from '@openai/shared-types';
 import { OpenAIChatService } from './openai-chat.service';
 import { TranslationExtractionService } from './translation-extraction.service';
 import { AgentWithConfig } from '../../common/interfaces/agent.interface';
@@ -145,6 +149,14 @@ export class ChatOrchestrationService {
       max_tokens: mergedConfig.max_tokens as number | undefined,
       agentType: agent.agentType,
       language: agent.language,
+      response_length: mergedConfig.response_length as
+        | ResponseLength
+        | undefined,
+      age: mergedConfig.age as number | undefined,
+      gender: mergedConfig.gender as Gender | undefined,
+      personality: mergedConfig.personality as PersonalityType | undefined,
+      sentiment: mergedConfig.sentiment as Sentiment | undefined,
+      interests: mergedConfig.interests as string[] | undefined,
     };
     this.logger.debug(`Loaded agent ${context.agentId} with config`);
 

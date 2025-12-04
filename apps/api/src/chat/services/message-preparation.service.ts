@@ -4,9 +4,14 @@ import { BehaviorRulesUtil } from '../../common/utils/behavior-rules.util';
 import { SystemConfigRepository } from '../../system-config/system-config.repository';
 import { ConfigurationRulesService } from './configuration-rules.service';
 import { LanguageAssistantService } from '../../agent/services/language-assistant.service';
+import { AgentConfigService } from '../../agent/services/agent-config.service';
 import { AgentWithConfig } from '../../common/interfaces/agent.interface';
 import { AgentType } from '../../common/enums/agent-type.enum';
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants';
+import { ResponseLength } from '../../common/enums/response-length.enum';
+import { Gender } from '../../common/enums/gender.enum';
+import { Sentiment } from '../../common/enums/sentiment.enum';
+import { PersonalityType } from '@openai/shared-types';
 
 interface MessageForOpenAI {
   role: MessageRole;
@@ -21,6 +26,12 @@ export interface AgentConfig {
   max_tokens?: number;
   agentType?: AgentType | null;
   language?: string | null;
+  response_length?: ResponseLength;
+  age?: number;
+  gender?: Gender;
+  personality?: PersonalityType;
+  sentiment?: Sentiment;
+  interests?: string[];
 }
 
 @Injectable()
@@ -30,7 +41,8 @@ export class MessagePreparationService {
   constructor(
     private readonly systemConfigRepository: SystemConfigRepository,
     private readonly configurationRulesService: ConfigurationRulesService,
-    private readonly languageAssistantService: LanguageAssistantService
+    private readonly languageAssistantService: LanguageAssistantService,
+    private readonly agentConfigService: AgentConfigService
   ) {}
 
   /**
@@ -92,6 +104,9 @@ export class MessagePreparationService {
       this.logger.debug('Adding client behavior rules as user message');
       this.addClientBehaviorRules(messagesForAPI, agentConfig);
     }
+
+    // 4b. Config-based behavior rules (from form fields) - USER role (separate messages)
+    this.addConfigBasedBehaviorRules(messagesForAPI, agentConfig);
 
     // 5. Word parsing instruction (only for language assistants) - SYSTEM role
     const isLanguageAssistant =
@@ -193,6 +208,54 @@ export class MessagePreparationService {
         messagesForAPI.push({
           role: MessageRole.USER,
           content: behaviorRulesMessage,
+        });
+      }
+    }
+  }
+
+  /**
+   * Add config-based behavior rules from form fields (response_length, age, gender, personality, sentiment, interests)
+   * Each rule is added as a separate USER role message
+   */
+  private addConfigBasedBehaviorRules(
+    messagesForAPI: MessageForOpenAI[],
+    agentConfig: AgentConfig
+  ): void {
+    // Build configs object from agentConfig
+    const configs: Record<string, unknown> = {};
+    if (agentConfig.response_length !== undefined) {
+      configs.response_length = agentConfig.response_length;
+    }
+    if (agentConfig.age !== undefined) {
+      configs.age = agentConfig.age;
+    }
+    if (agentConfig.gender !== undefined) {
+      configs.gender = agentConfig.gender;
+    }
+    if (agentConfig.personality !== undefined) {
+      configs.personality = agentConfig.personality;
+    }
+    if (agentConfig.sentiment !== undefined) {
+      configs.sentiment = agentConfig.sentiment;
+    }
+    if (agentConfig.interests !== undefined) {
+      configs.interests = agentConfig.interests;
+    }
+
+    // Generate rules from config values
+    const generatedRules =
+      this.agentConfigService.generateBehaviorRulesFromConfig(configs);
+
+    if (generatedRules.length > 0) {
+      this.logger.debug(
+        `Adding ${generatedRules.length} config-based behavior rules as separate user messages`
+      );
+
+      // Add each rule as a separate USER message
+      for (const rule of generatedRules) {
+        messagesForAPI.push({
+          role: MessageRole.USER,
+          content: rule,
         });
       }
     }
