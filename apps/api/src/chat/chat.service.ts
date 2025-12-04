@@ -12,6 +12,7 @@ import {
 } from '../common/dto/chat.dto';
 import { ChatOrchestrationService } from './services/chat-orchestration.service';
 import { AgentRepository } from '../agent/agent.repository';
+import { LanguageAssistantService } from '../agent/services/language-assistant.service';
 import { SessionRepository } from '../session/session.repository';
 import {
   AgentNotFoundException,
@@ -34,6 +35,7 @@ export class ChatService {
     private readonly wordTranslationService: WordTranslationService,
     private readonly savedWordService: SavedWordService,
     private readonly agentRepository: AgentRepository,
+    private readonly languageAssistantService: LanguageAssistantService,
     private readonly sessionRepository: SessionRepository
   ) {}
 
@@ -118,44 +120,52 @@ export class ChatService {
         messageIds
       );
 
-    // Get word translations for assistant messages
+    // Get word translations for assistant messages (only for language assistants)
     const assistantMessageIds = messageRecords
       .filter((m) => m.role === MessageRole.ASSISTANT)
       .map((m) => m.id);
 
-    const wordTranslations =
-      await this.wordTranslationService.getWordTranslationsForMessages(
-        assistantMessageIds
-      );
-
-    // Find saved word matches for all words in assistant messages
+    let wordTranslations = new Map<number, Array<{
+      originalWord: string;
+      translation: string;
+      sentenceContext?: string;
+    }>>();
     let savedWordMatches: Array<{
       originalWord: string;
       savedWordId: number;
       translation: string;
       pinyin: string | null;
     }> = [];
-    try {
-      // Extract all unique words from word translations
-      const allWords = new Set<string>();
-      wordTranslations.forEach((wts) => {
-        wts.forEach((wt) => {
-          allWords.add(wt.originalWord);
-        });
-      });
 
-      if (allWords.size > 0) {
-        savedWordMatches = await this.savedWordService.findMatchingWords(
-          userId,
-          Array.from(allWords)
+    if (this.languageAssistantService.isLanguageAssistant(agent)) {
+      wordTranslations =
+        await this.wordTranslationService.getWordTranslationsForMessages(
+          assistantMessageIds
         );
-        this.logger.debug(
-          `Found ${savedWordMatches.length} saved word matches for session ${session.id}`
-        );
+
+      // Find saved word matches for all words in assistant messages
+      try {
+        // Extract all unique words from word translations
+        const allWords = new Set<string>();
+        wordTranslations.forEach((wts) => {
+          wts.forEach((wt) => {
+            allWords.add(wt.originalWord);
+          });
+        });
+
+        if (allWords.size > 0) {
+          savedWordMatches = await this.savedWordService.findMatchingWords(
+            userId,
+            Array.from(allWords)
+          );
+          this.logger.debug(
+            `Found ${savedWordMatches.length} saved word matches for session ${session.id}`
+          );
+        }
+      } catch (error) {
+        this.logger.error('Error finding saved word matches:', error);
+        // Continue without saved word matches
       }
-    } catch (error) {
-      this.logger.error('Error finding saved word matches:', error);
-      // Continue without saved word matches
     }
 
     const messages = messageRecords.map(

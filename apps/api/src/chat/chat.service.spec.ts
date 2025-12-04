@@ -18,6 +18,8 @@ import { SavedWordService } from '../saved-word/saved-word.service';
 import { MessagePreparationService } from './services/message-preparation.service';
 import { OpenAIChatService } from './services/openai-chat.service';
 import { ChatOrchestrationService } from './services/chat-orchestration.service';
+import { LanguageAssistantService } from '../agent/services/language-assistant.service';
+import { AgentType } from '../common/enums/agent-type.enum';
 
 describe('ChatService', () => {
   let service: ChatService;
@@ -111,6 +113,14 @@ describe('ChatService', () => {
     sendMessage: jest.fn(),
   };
 
+  const mockLanguageAssistantService = {
+    isLanguageAssistant: jest.fn(),
+    isGeneralAgent: jest.fn(),
+    getAgentLanguage: jest.fn(),
+    hasLanguage: jest.fn(),
+    isValidLanguageCode: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -183,6 +193,10 @@ describe('ChatService', () => {
           provide: ChatOrchestrationService,
           useValue: mockChatOrchestrationService,
         },
+        {
+          provide: LanguageAssistantService,
+          useValue: mockLanguageAssistantService,
+        },
       ],
     }).compile();
 
@@ -213,8 +227,8 @@ describe('ChatService', () => {
         sessionName: 'Session 1',
       };
       const mockMessages = [
-        { role: 'user', content: 'Hello' },
-        { role: 'assistant', content: 'Hi there!' },
+        { role: 'USER', content: 'Hello' },
+        { role: 'ASSISTANT', content: 'Hi there!' },
       ];
 
       mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockAgent);
@@ -282,6 +296,103 @@ describe('ChatService', () => {
       await expect(service.getChatHistory(agentId, userId)).rejects.toThrow(
         `Agent with ID ${agentId} not found`
       );
+    });
+
+    it('should not retrieve word translations or saved words for general agents', async () => {
+      const agentId = 1;
+      const userId = 'user-123';
+      const mockAgent = {
+        id: agentId,
+        name: 'General Agent',
+        description: 'Test Description',
+        agentType: AgentType.GENERAL,
+        config: {},
+      };
+      const mockSession = {
+        id: 1,
+        agentId,
+        sessionName: 'Session 1',
+      };
+      const mockMessages = [
+        { id: 1, role: 'user', content: 'Hello' },
+        { id: 2, role: 'assistant', content: 'Hi there!' },
+      ];
+
+      mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockAgent);
+      mockSessionRepository.findLatestByAgentId.mockResolvedValue(mockSession);
+      mockMessageRepository.findAllBySessionIdWithRawData.mockResolvedValue(
+        mockMessages
+      );
+      mockLanguageAssistantService.isLanguageAssistant.mockReturnValue(false);
+
+      const result = await service.getChatHistory(agentId, userId);
+
+      expect(mockWordTranslationService.getWordTranslationsForMessages).not.toHaveBeenCalled();
+      expect(mockSavedWordService.findMatchingWords).not.toHaveBeenCalled();
+      expect(result.savedWordMatches).toEqual([]);
+      expect(result.messages[1].wordTranslations).toBeUndefined();
+    });
+
+    it('should retrieve word translations and saved words for language assistant agents', async () => {
+      const agentId = 1;
+      const userId = 'user-123';
+      const mockAgent = {
+        id: agentId,
+        name: 'Language Assistant',
+        description: 'Test Description',
+        agentType: AgentType.LANGUAGE_ASSISTANT,
+        config: {},
+      };
+      const mockSession = {
+        id: 1,
+        agentId,
+        sessionName: 'Session 1',
+      };
+      const mockMessages = [
+        { id: 1, role: 'USER', content: 'Hello' },
+        { id: 2, role: 'ASSISTANT', content: '你好' },
+      ];
+      const mockWordTranslations = new Map([
+        [
+          2,
+          [
+            { originalWord: '你好', translation: 'hello', sentenceContext: undefined },
+          ],
+        ],
+      ]);
+      const mockSavedWordMatches = [
+        {
+          originalWord: '你好',
+          savedWordId: 1,
+          translation: 'hello',
+          pinyin: 'ni3hao3',
+        },
+      ];
+
+      mockAgentRepository.findByIdWithConfig.mockResolvedValue(mockAgent);
+      mockSessionRepository.findLatestByAgentId.mockResolvedValue(mockSession);
+      mockMessageRepository.findAllBySessionIdWithRawData.mockResolvedValue(
+        mockMessages
+      );
+      mockLanguageAssistantService.isLanguageAssistant.mockReturnValue(true);
+      mockWordTranslationService.getWordTranslationsForMessages.mockResolvedValue(
+        mockWordTranslations
+      );
+      mockSavedWordService.findMatchingWords.mockResolvedValue(
+        mockSavedWordMatches
+      );
+
+      const result = await service.getChatHistory(agentId, userId);
+
+      expect(mockWordTranslationService.getWordTranslationsForMessages).toHaveBeenCalledWith([2]);
+      expect(mockSavedWordService.findMatchingWords).toHaveBeenCalledWith(
+        userId,
+        ['你好']
+      );
+      expect(result.savedWordMatches).toEqual(mockSavedWordMatches);
+      expect(result.messages[1].wordTranslations).toEqual([
+        { originalWord: '你好', translation: 'hello', sentenceContext: undefined },
+      ]);
     });
   });
 

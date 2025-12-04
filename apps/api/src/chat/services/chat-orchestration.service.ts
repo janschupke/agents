@@ -6,6 +6,7 @@ import {
 } from '../../common/exceptions';
 import { AgentRepository } from '../../agent/agent.repository';
 import { AgentConfigService } from '../../agent/services/agent-config.service';
+import { LanguageAssistantService } from '../../agent/services/language-assistant.service';
 import { SessionRepository } from '../../session/session.repository';
 import { MessageRepository } from '../../message/message.repository';
 import { AgentMemoryService } from '../../memory/agent-memory.service';
@@ -63,6 +64,7 @@ export class ChatOrchestrationService {
   constructor(
     private readonly agentRepository: AgentRepository,
     private readonly agentConfigService: AgentConfigService,
+    private readonly languageAssistantService: LanguageAssistantService,
     private readonly sessionRepository: SessionRepository,
     private readonly messageRepository: MessageRepository,
     private readonly agentMemoryService: AgentMemoryService,
@@ -227,24 +229,41 @@ export class ChatOrchestrationService {
     );
     this.logger.debug(`Saved assistant message ${assistantMessage.id}`);
 
-    // Save extracted translations if available
-    await this.saveTranslations(
-      assistantMessage.id,
-      cleanedResponse,
-      extractedWords,
-      extractedTranslation,
-      translationsExtracted,
-      apiKey
-    );
+    // Save extracted translations if available (only for language assistants)
+    if (this.languageAssistantService.isLanguageAssistant(agent)) {
+      await this.saveTranslations(
+        assistantMessage.id,
+        cleanedResponse,
+        extractedWords,
+        extractedTranslation,
+        translationsExtracted,
+        apiKey
+      );
+    }
 
-    // Get word translations and saved word matches for response
-    const { wordTranslations, savedWordMatches } =
-      await this.getWordTranslationsAndMatches(
+    // Get word translations and saved word matches for response (only for language assistants)
+    let wordTranslations: Array<{
+      originalWord: string;
+      translation: string;
+      sentenceContext?: string;
+    }> = [];
+    let savedWordMatches: Array<{
+      originalWord: string;
+      savedWordId: number;
+      translation: string;
+      pinyin: string | null;
+    }> = [];
+
+    if (this.languageAssistantService.isLanguageAssistant(agent)) {
+      const result = await this.getWordTranslationsAndMatches(
         assistantMessage.id,
         context.userId,
         extractedWords,
         translationsExtracted
       );
+      wordTranslations = result.wordTranslations;
+      savedWordMatches = result.savedWordMatches;
+    }
 
     // Save memory periodically
     await this.saveMemoryIfNeeded(
@@ -265,15 +284,21 @@ export class ChatOrchestrationService {
       rawResponse: completion,
       userMessageId: userMessage.id,
       assistantMessageId: assistantMessage.id,
-      translation: translationsExtracted ? extractedTranslation : undefined,
+      translation:
+        this.languageAssistantService.isLanguageAssistant(agent) &&
+        translationsExtracted
+          ? extractedTranslation
+          : undefined,
       wordTranslations:
-        translationsExtracted && wordTranslations.length > 0
+        this.languageAssistantService.isLanguageAssistant(agent) &&
+        wordTranslations.length > 0
           ? wordTranslations
-          : wordTranslations.length > 0
-            ? wordTranslations
-            : undefined,
+          : undefined,
       savedWordMatches:
-        savedWordMatches.length > 0 ? savedWordMatches : undefined,
+        this.languageAssistantService.isLanguageAssistant(agent) &&
+        savedWordMatches.length > 0
+          ? savedWordMatches
+          : undefined,
     };
   }
 

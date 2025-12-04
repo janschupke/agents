@@ -67,8 +67,8 @@ export class AgentMemoryRepository {
           update_count: number;
         }>
       >(
-        `INSERT INTO agent_memories (agent_id, user_id, key_point, context, vector_embedding, update_count)
-         VALUES ($1, $2, $3, $4::jsonb, $5::vector(${this.VECTOR_DIMENSION}), $6)
+        `INSERT INTO agent_memories (agent_id, user_id, key_point, context, vector_embedding, update_count, updated_at)
+         VALUES ($1, $2, $3, $4::jsonb, $5::vector(${this.VECTOR_DIMENSION}), $6, CURRENT_TIMESTAMP)
          RETURNING id, agent_id, user_id, key_point, context, vector_embedding, created_at, updated_at, update_count`,
         agentId,
         userId,
@@ -116,7 +116,8 @@ export class AgentMemoryRepository {
     );
 
     // Build query with proper parameterization for LIMIT
-    let query = `SELECT id, agent_id, user_id, key_point, context, vector_embedding, created_at, updated_at, update_count
+    // Cast vector_embedding to text so Prisma can deserialize it
+    let query = `SELECT id, agent_id, user_id, key_point, context, vector_embedding::text as vector_embedding, created_at, updated_at, update_count
        FROM agent_memories
        WHERE agent_id = $1 AND user_id = $2
        ORDER BY created_at DESC`;
