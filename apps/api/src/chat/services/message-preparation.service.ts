@@ -52,11 +52,14 @@ export class MessagePreparationService {
    * Message Order:
    * 1. Code-defined rules (datetime, language, etc.) - SYSTEM role
    * 2. Admin-defined system behavior rules - SYSTEM role
-   * 3. Client config system prompt - USER role
-   * 4. Client behavior rules - USER role
-   * 5. Word parsing instruction (only for language assistants) - SYSTEM role
-   * 6. Conversation history (user/assistant messages)
-   * 7. Current user message
+   * 3. Config-based behavior rules (from form fields with defined values) - SYSTEM role
+   *    - These use preset prompts and only accept legal enum values (response_length, age, gender, personality, sentiment, interests)
+   * 4. Client config system prompt - USER role
+   * 5. Client behavior rules (user-provided, freely set in UI) - USER role
+   * 6. Word parsing instruction (only for language assistants) - SYSTEM role
+   * 7. Memory context (if any) - SYSTEM role
+   * 8. Conversation history (user/assistant messages)
+   * 9. Current user message
    */
   async prepareMessagesForOpenAI(
     existingMessages: MessageForOpenAI[],
@@ -90,7 +93,11 @@ export class MessagePreparationService {
     // 2. Admin-defined system behavior rules - SYSTEM role
     await this.addSystemBehaviorRules(messagesForAPI);
 
-    // 3. Client config system prompt - USER role
+    // 3. Config-based behavior rules (from form fields with defined values) - SYSTEM role
+    // These use preset prompts and only accept legal enum values
+    this.addConfigBasedBehaviorRules(messagesForAPI, agentConfig);
+
+    // 4. Client config system prompt - USER role
     if (agentConfig.system_prompt) {
       this.logger.debug('Adding client system prompt as user message');
       messagesForAPI.push({
@@ -99,16 +106,13 @@ export class MessagePreparationService {
       });
     }
 
-    // 4. Client behavior rules - USER role
+    // 5. Client behavior rules (user-provided, freely set in UI) - USER role
     if (agentConfig.behavior_rules) {
       this.logger.debug('Adding client behavior rules as user message');
       this.addClientBehaviorRules(messagesForAPI, agentConfig);
     }
 
-    // 4b. Config-based behavior rules (from form fields) - USER role (separate messages)
-    this.addConfigBasedBehaviorRules(messagesForAPI, agentConfig);
-
-    // 5. Word parsing instruction (only for language assistants) - SYSTEM role
+    // 6. Word parsing instruction (only for language assistants) - SYSTEM role
     const isLanguageAssistant =
       this.languageAssistantService.isLanguageAssistant({
         agentType: agentConfig.agentType,
@@ -215,7 +219,9 @@ export class MessagePreparationService {
 
   /**
    * Add config-based behavior rules from form fields (response_length, age, gender, personality, sentiment, interests)
-   * Each rule is added as a separate USER role message
+   * These rules use preset prompts and only accept legal enum values
+   * Each rule is added as a separate SYSTEM role message
+   * These must appear BEFORE user-provided behavior rules
    */
   private addConfigBasedBehaviorRules(
     messagesForAPI: MessageForOpenAI[],
@@ -242,19 +248,19 @@ export class MessagePreparationService {
       configs.interests = agentConfig.interests;
     }
 
-    // Generate rules from config values
+    // Generate rules from config values (with validation)
     const generatedRules =
       this.agentConfigService.generateBehaviorRulesFromConfig(configs);
 
     if (generatedRules.length > 0) {
       this.logger.debug(
-        `Adding ${generatedRules.length} config-based behavior rules as separate user messages`
+        `Adding ${generatedRules.length} config-based behavior rules as separate system messages`
       );
 
-      // Add each rule as a separate USER message
+      // Add each rule as a separate SYSTEM message
       for (const rule of generatedRules) {
         messagesForAPI.push({
-          role: MessageRole.USER,
+          role: MessageRole.SYSTEM,
           content: rule,
         });
       }
