@@ -8,16 +8,14 @@ import {
 
 export class MessageService {
   /**
-   * Get chat history for an agent and optional session with pagination
+   * Get chat history for an agent and optional session (loads all messages)
    */
   static async getChatHistory(
     agentId: number,
-    sessionId?: number,
-    limit: number = 20,
-    cursor?: number
+    sessionId?: number
   ): Promise<ChatHistoryResponse> {
     return apiManager.get<ChatHistoryResponse>(
-      API_ENDPOINTS.CHAT.BY_AGENT(agentId, sessionId, limit, cursor)
+      API_ENDPOINTS.CHAT.BY_AGENT(agentId, sessionId)
     );
   }
 

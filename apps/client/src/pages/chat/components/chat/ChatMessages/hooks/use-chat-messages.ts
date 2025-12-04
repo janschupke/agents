@@ -4,6 +4,7 @@ import {
   Message,
   MessageRole,
   SendMessageResponse,
+  ChatHistoryResponse,
 } from '../../../../../../types/chat.types';
 import { SavedWordMatch } from '../../../../../../types/saved-word.types';
 import { useChatHistory } from '../../../../../../hooks/queries/use-chat';
@@ -26,6 +27,7 @@ interface UseChatMessagesReturn {
   isFetchingMore: boolean;
   hasNextPage: boolean;
   fetchNextPage: () => void;
+  sessionId: number | null; // Added sessionId from query data
 }
 
 /**
@@ -38,40 +40,26 @@ export function useChatMessages({
 }: UseChatMessagesOptions): UseChatMessagesReturn {
   const queryClient = useQueryClient();
   const {
-    data,
+    data: chatHistory,
     isLoading: loadingChatHistory,
     isFetching: fetchingChatHistory,
-    isFetchingNextPage,
-    hasNextPage,
-    fetchNextPage,
   } = useChatHistory(agentId, sessionId);
   const sendMessageMutation = useSendMessage();
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  // Combine all pages into single messages array
-  // Messages come in reverse chronological order (newest first), reverse for display
+  // Messages are already in chronological order from backend
   const messages = useMemo(() => {
-    if (!data?.pages) return [];
+    return chatHistory?.messages || [];
+  }, [chatHistory?.messages]);
 
-    // Each page has messages in chronological order (oldest first)
-    // We need to combine all pages, with oldest page first
-    const allMessages: Message[] = [];
-    // Process pages in order (oldest page first)
-    for (const page of data.pages) {
-      allMessages.push(...page.messages);
-    }
-    return allMessages;
-  }, [data]);
-
-  // Get saved word matches from the first page (they're the same across all pages)
+  // Get saved word matches
   const savedWordMatches = useMemo(() => {
-    const firstPage = data?.pages?.[0];
-    if (!firstPage?.savedWordMatches) {
+    if (!chatHistory?.savedWordMatches) {
       return new Map<string, SavedWordMatch>();
     }
 
     const map = new Map<string, SavedWordMatch>();
-    for (const match of firstPage.savedWordMatches) {
+    for (const match of chatHistory.savedWordMatches) {
       const lowerKey = match.originalWord.toLowerCase();
       // Only add if not already in map (first match wins)
       if (!map.has(lowerKey)) {
@@ -79,23 +67,7 @@ export function useChatMessages({
       }
     }
     return map;
-  }, [data?.pages?.[0]?.savedWordMatches]);
-
-  // Detect scroll to top and load more
-  useEffect(() => {
-    const container = messagesContainerRef.current;
-    if (!container || !hasNextPage || isFetchingNextPage) return;
-
-    const handleScroll = () => {
-      // Load more when scrolled to top (or near top)
-      if (container.scrollTop < 100) {
-        fetchNextPage();
-      }
-    };
-
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [chatHistory?.savedWordMatches]);
 
   // Clear messages when session or agent changes (handled by query key change)
   // No need for separate useEffect since React Query handles this
@@ -111,21 +83,18 @@ export function useChatMessages({
       });
 
       // Invalidate and refetch chat history to get updated messages
-      // This ensures new messages appear in the infinite query
       const queryKey = queryKeys.chat.history(agentId, sessionId || undefined);
       await queryClient.invalidateQueries({ queryKey });
 
       // Update saved word matches if new matches were returned
       if (result.savedWordMatches && result.savedWordMatches.length > 0) {
         // Update the chat history query cache with new saved word matches
-        queryClient.setQueryData(queryKey, (oldData: any) => {
-          if (!oldData?.pages) return oldData;
-          const firstPage = oldData.pages[0];
-          if (!firstPage) return oldData;
+        queryClient.setQueryData(queryKey, (oldData: ChatHistoryResponse | undefined) => {
+          if (!oldData) return oldData;
 
-          const existingMatches = firstPage.savedWordMatches || [];
+          const existingMatches = oldData.savedWordMatches || [];
           const newMatches = result.savedWordMatches || [];
-
+          
           // Merge matches, avoiding duplicates
           const matchMap = new Map<string, any>();
           [...existingMatches, ...newMatches].forEach((match) => {
@@ -134,16 +103,10 @@ export function useChatMessages({
               matchMap.set(key, match);
             }
           });
-
+          
           return {
             ...oldData,
-            pages: [
-              {
-                ...firstPage,
-                savedWordMatches: Array.from(matchMap.values()),
-              },
-              ...oldData.pages.slice(1),
-            ],
+            savedWordMatches: Array.from(matchMap.values()),
           };
         });
       }
@@ -155,18 +118,17 @@ export function useChatMessages({
     }
   };
 
-  // Only show loading if:
-  // 1. We're loading/fetching AND (we have no messages yet OR the history matches current session)
-  // This prevents showing loading state for stale/previous sessions when rapidly switching
+  // Only show loading if we're loading and have no messages yet
   const isInitialLoad = messages.length === 0;
-  const firstPage = data?.pages?.[0];
   const isLoadingForCurrentSession =
-    (loadingChatHistory || fetchingChatHistory) &&
-    (isInitialLoad || firstPage?.session?.id === sessionId);
+    (loadingChatHistory || fetchingChatHistory) && isInitialLoad;
   const loading = isLoadingForCurrentSession;
 
   // Separate isSendingMessage from loading to distinguish between initial load and message sending
   const isSendingMessage = sendMessageMutation.isPending;
+
+  // Get sessionId from query data
+  const sessionIdFromData = chatHistory?.session?.id ?? null;
 
   return {
     messages,
@@ -174,10 +136,11 @@ export function useChatMessages({
     loading,
     isSendingMessage,
     sendMessage,
-    setMessages: () => {}, // No-op since we use infinite query data directly
+    setMessages: () => {}, // No-op since we use query data directly
     messagesContainerRef,
-    isFetchingMore: isFetchingNextPage,
-    hasNextPage: hasNextPage ?? false,
-    fetchNextPage,
+    isFetchingMore: false, // No pagination
+    hasNextPage: false, // No pagination
+    fetchNextPage: () => Promise.resolve(), // No-op
+    sessionId: sessionIdFromData, // Return sessionId from query data
   };
 }

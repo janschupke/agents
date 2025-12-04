@@ -20,7 +20,7 @@ export function useChatModals(): UseChatModalsReturn {
     isOpen: false,
     title: '',
     data: null,
-  });
+    });
 
   const openJsonModal = (title: string, data: unknown) => {
     setJsonModal({ isOpen: true, title, data });

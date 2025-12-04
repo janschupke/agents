@@ -27,5 +27,5 @@ export default function Chat() {
   }
 
   // Handle /chat/:agentId route
-  return <ChatAgent agentId={parsedAgentId} />;
+      return <ChatAgent agentId={parsedAgentId} />;
 }

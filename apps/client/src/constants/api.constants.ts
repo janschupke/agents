@@ -3,17 +3,10 @@ export const API_BASE_URL =
 
 export const API_ENDPOINTS = {
   CHAT: {
-    BY_AGENT: (
-      agentId: number,
-      sessionId?: number,
-      limit?: number,
-      cursor?: number
-    ) => {
+    BY_AGENT: (agentId: number, sessionId?: number) => {
       const base = `/api/chat/${agentId}`;
       const params = new URLSearchParams();
       if (sessionId) params.append('sessionId', String(sessionId));
-      if (limit !== undefined) params.append('limit', String(limit));
-      if (cursor !== undefined) params.append('cursor', String(cursor));
       const queryString = params.toString();
       return queryString ? `${base}?${queryString}` : base;
     },

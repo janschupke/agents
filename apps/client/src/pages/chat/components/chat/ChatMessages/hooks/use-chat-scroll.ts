@@ -26,12 +26,22 @@ export function useChatScroll({
     const messageCount = messages.length;
     const isNewMessage = messageCount > previousMessageCountRef.current;
 
-    if (isInitialLoadRef.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
-      isInitialLoadRef.current = false;
-    } else if (isNewMessage) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messageCount === 0) {
+      previousMessageCountRef.current = messageCount;
+      return;
     }
+
+    // Use requestAnimationFrame + setTimeout to ensure DOM is fully rendered
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        if (isInitialLoadRef.current && messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
+          isInitialLoadRef.current = false;
+        } else if (isNewMessage && messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 50);
+    });
 
     previousMessageCountRef.current = messageCount;
   }, [messages]);

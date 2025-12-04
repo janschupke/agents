@@ -5,10 +5,8 @@ import { useChatMessages } from '../ChatMessages/hooks/use-chat-messages';
 import { useChatScroll } from '../ChatMessages/hooks/use-chat-scroll';
 import { useChatLoadingState } from '../../../hooks/use-chat-loading-state';
 import { useAgents } from '../../../../../hooks/queries/use-agents';
-import { useChatHistory } from '../../../../../hooks/queries/use-chat';
 import { useChatModals } from '../../../hooks/use-chat-modals';
 import AgentSidebar from '../../agent/AgentSidebar/AgentSidebar';
-import ChatHeader from '../ChatHeader/ChatHeader';
 import SavedWordModal from '../../saved-word/SavedWordModal/SavedWordModal';
 import {
   Sidebar,
@@ -16,6 +14,9 @@ import {
   PageHeader,
   PageContent,
   JsonModal,
+  Avatar,
+  Button,
+  IconSettings,
 } from '@openai/ui';
 import ChatContent from '../ChatContent/ChatContent';
 import ChatLoadingState from '../ChatLoadingState/ChatLoadingState';
@@ -52,12 +53,7 @@ function ChatAgentContent({
 
   // Backend automatically returns first session for agent
   // UI is completely agnostic to sessions - backend handles multiple sessions internally
-  const { data: chatHistory, isLoading: chatHistoryLoading } = useChatHistory(
-    agentId,
-    undefined
-  );
-  const sessionId = chatHistory?.session?.id ?? null;
-
+  // useChatMessages will handle fetching chat history and getting sessionId
   const {
     messages,
     savedWordMatches,
@@ -66,9 +62,11 @@ function ChatAgentContent({
     sendMessage,
     setMessages,
     messagesContainerRef,
+    isFetchingMore, // Get isFetchingMore to prevent scroll when loading older messages
+    sessionId, // Get sessionId from useChatMessages (comes from query data)
   } = useChatMessages({
     agentId,
-    sessionId,
+    sessionId: undefined, // Pass undefined - backend will return first session
   });
 
   const { messagesEndRef } = useChatScroll({
@@ -156,12 +154,12 @@ function ChatAgentContent({
   const { input, setInput, chatInputRef, handleSubmit, onRefReady } =
     useChatInput({
       currentSessionId: sessionId,
-      messagesLoading: false, // Don't disable input based on loading
-      showChatPlaceholder,
-      showTypingIndicator,
-      agentId,
-      sendMessage,
-    });
+    messagesLoading: false, // Don't disable input based on loading
+    showChatPlaceholder,
+    showTypingIndicator,
+    agentId,
+    sendMessage,
+  });
 
   // Full page loading (only on initial load)
   if (isInitialLoad || propLoading) {
@@ -189,7 +187,16 @@ function ChatAgentContent({
           />
         </Sidebar>
         <Container>
-          <PageHeader leftContent={<ChatHeader agent={null} agentId={null} />} />
+          <PageHeader
+            actions={
+              <Button
+                variant="icon"
+                disabled={true}
+              >
+                <IconSettings size="md" />
+              </Button>
+            }
+          />
           <PageContent>
             <div className="flex flex-col items-center justify-center h-full">
               <p className="text-text-secondary">{t('chat.noChatSelected')}</p>
@@ -216,7 +223,32 @@ function ChatAgentContent({
           <ContainerSkeleton />
         ) : (
           <>
-            <PageHeader leftContent={<ChatHeader agent={agent} agentId={agentId} />} />
+            <PageHeader
+              leftContent={
+                agent ? (
+                  <div className="flex items-center gap-3">
+                    <Avatar
+                      src={agent.avatarUrl || undefined}
+                      name={agent.name}
+                      size="md"
+                    />
+                    <h2 className="text-lg font-semibold text-text-secondary">
+                      {agent.name}
+                    </h2>
+                  </div>
+                ) : null
+              }
+              actions={
+                <Button
+                  variant="icon"
+                  onClick={() => navigate(ROUTES.CONFIG_AGENT(agentId!))}
+                  disabled={!agentId}
+                  tooltip={agentId ? t('chat.configureAgent') : undefined}
+                >
+                  <IconSettings size="md" />
+                </Button>
+              }
+            />
             <PageContent
               animateOnChange={sessionId}
               enableAnimation={true}

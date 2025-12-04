@@ -19,22 +19,21 @@ export default function ChatHeader({ agent, agentId }: ChatHeaderProps) {
     }
   };
 
+  // Only render content elements, not the wrapper (PageHeader provides the wrapper)
   return (
-    <div className="px-5 py-3 bg-background border-b border-border flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        {agent && (
-          <>
-            <Avatar
-              src={agent.avatarUrl || undefined}
-              name={agent.name}
-              size="md"
-            />
-            <h2 className="text-lg font-semibold text-text-secondary">
-              {agent.name}
-            </h2>
-          </>
-        )}
-      </div>
+    <>
+      {agent && (
+        <div className="flex items-center gap-3">
+          <Avatar
+            src={agent.avatarUrl || undefined}
+            name={agent.name}
+            size="md"
+          />
+          <h2 className="text-lg font-semibold text-text-secondary">
+            {agent.name}
+          </h2>
+        </div>
+      )}
       <Button
         variant="icon"
         onClick={handleConfigure}
@@ -43,6 +42,6 @@ export default function ChatHeader({ agent, agentId }: ChatHeaderProps) {
       >
         <IconSettings size="md" />
       </Button>
-    </div>
+    </>
   );
 }

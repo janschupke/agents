@@ -106,12 +106,10 @@ export class ChatService {
   async getChatHistory(
     agentId: number,
     userId: string,
-    sessionId?: number,
-    limit: number = 20,
-    cursor?: number
+    sessionId?: number
   ): Promise<ChatHistoryResponseDto> {
     this.logger.debug(
-      `Getting chat history for agent ${agentId}, user ${userId}, sessionId: ${sessionId || 'latest'}, limit: ${limit}, cursor: ${cursor || 'none'}`
+      `Getting chat history for agent ${agentId}, user ${userId}, sessionId: ${sessionId || 'latest'} (loading all messages)`
     );
     // Load agent with config
     const agent = await this.validateAgentAccess(agentId, userId);
@@ -142,13 +140,11 @@ export class ChatService {
       }
     }
 
-    // Load messages with cursor-based pagination
-    const { messages: messageRecords, hasMore } =
-      await this.messageRepository.findAllBySessionIdWithCursor(
-        session.id,
-        limit,
-        cursor
-      );
+    // Load all messages (no pagination) - use withRawData to get all fields
+    const messageRecords = await this.messageRepository.findAllBySessionIdWithRawData(
+      session.id
+      // No limit - loads all messages (default limit is 1000, which should be enough)
+    );
 
     // Get all message IDs
     const messageIds = messageRecords.map((m) => m.id);
@@ -240,7 +236,7 @@ export class ChatService {
       },
       messages,
       savedWordMatches,
-      hasMore,
+      hasMore: false, // No pagination, always false
     };
   }
 
