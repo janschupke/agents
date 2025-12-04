@@ -1,8 +1,11 @@
 import type { StorybookConfig } from '@storybook/react-vite';
 import { mergeConfig } from 'vite';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const config: StorybookConfig = {
   stories: [
