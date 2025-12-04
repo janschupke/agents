@@ -35,6 +35,8 @@ export const API_ROUTES = {
       `api/messages/${messageId}/translate-with-words`,
     WORD_TRANSLATIONS: (messageId: number) =>
       `api/messages/${messageId}/word-translations`,
+    TRANSLATE_WORDS: (messageId: number) =>
+      `api/messages/${messageId}/words/translate`,
     TRANSLATIONS: 'api/messages/translations',
   },
 

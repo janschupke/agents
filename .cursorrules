@@ -1,0 +1,751 @@
+# Agent Coding Guide
+
+## Quick Reference - Most Important Rules
+
+**CRITICAL RULES:**
+
+1. **Always check `@openai/utils` first** - Before creating any utility function (parsing, formatting, file ops)
+2. **Always use semantic color classes** - Never hardcode Tailwind colors (`gray-*`, `blue-*`, etc.). Use semantic classes like `bg-primary`, `text-text-primary`, etc. that map to CSS variables
+3. **Always use layout components** - Use `PageContainer`, `PageHeader`, `Card`, `Container` from `@openai/ui` instead of duplicating markup
+4. **Never use `any`** - Use proper TypeScript types or `unknown`
+5. **Never put business logic in components** - Extract to hooks, services, or utilities. Components handle presentation only.
+6. **Never duplicate logic/markup** - Extract to `@openai/ui` (reusable) or app utils (app-specific)
+7. **Check `@openai/ui` before creating components** - Generic components belong in `packages/ui`
+8. **No hardcoded strings/numbers** - Extract to constants
+9. **Always extract user-facing strings** - Use translation keys for all text visible to users, never translate logs
+10. **Edit i18n files directly** - Translation files are flat JSON files, edit them directly in `packages/i18n/src/locales/{lang}/`
+11. **Split large files** - Components <500 lines, functions <100 lines
+12. **Always translate new english user facing strings** - Put messages into en i18n locale, and use keys in code
+13. **Ignore other languages when generating code** - Only translate and populate English
+14. **Never translate console/logger messages** - Translate all user facing and api error response messages. Not logs
+15. **Always add logs when updating api** - New logic must have logging, modifying existing logic must update logging output. Use NestJS Logger: `private readonly logger = new Logger(ServiceName.name)`
+16. **Run typecheck** - When implementation is finished, run `pnpm typecheck` and `pnpm lint` on affected packages, and fix errors. Fix them in a maintainable way, and only fallback to using eslint-ignore where it truly makes sense
+
+## Core Principles
+
+### Never
+
+- **Never use `any`** - Use proper types or `unknown`
+- **Never use `[key: string]: unknown`** - List all properties explicitly
+- **Never put business logic in components** - Extract to hooks, services, or utilities. Components are for presentation only.
+- **Never call real APIs in tests** - Use mocks/fixtures
+- **Never hardcode magic values** - Extract to constants/enums
+- **Never duplicate logic/markup** - Extract to utilities/hooks/components
+- **Never let files bloat** - Split when components >500 lines or functions >100 lines
+- **Never leave generic components in apps** - Move to `packages/ui`
+- **Never use hardcoded Tailwind colors** - Use semantic color classes (`bg-primary`, `text-text-primary` not `bg-gray-100`, `text-gray-900`)
+- **Never duplicate layout markup** - Use `PageContainer`, `PageHeader`, `Card`, `Container` from `@openai/ui`
+- **Never hardcode user-facing strings** - Always use translation keys
+- **Never translate logs** - Console logs, error messages for developers remain in English
+
+### Always
+
+- **Always check `@openai/utils` first** - Before creating utility functions
+- **Always check `@openai/ui` first** - Before creating components
+- **Always use semantic color classes** - Single source of truth via CSS variables in UI package
+- **Always use layout components** - From `@openai/ui` instead of raw markup
+- **Always extract user-facing strings** - Use translation keys for all text visible to users
+- **Always split concerns** - Business logic separate from presentation
+- **Always use strong types** - Define interfaces for all data structures
+- **Always add tests** - Unit tests for logic, component tests for UI
+- **Always run lint/typecheck** - Before considering work complete
+
+## Monorepo Structure
+
+```
+apps/                    # Deployable applications (client, admin, api)
+packages/                # Reusable packages
+  ├── ui/               # Design system components (CSS variables for theming)
+  ├── utils/            # Generic utilities (ALWAYS CHECK FIRST)
+  └── i18n/             # Internationalization
+```
+
+**Package naming:** Use kebab-case (`@openai/ui`, `@openai/utils`, `@openai/i18n`)
+
+## Design System & Styling
+
+### Semantic Color Classes (CRITICAL)
+
+**All colors must use semantic classes that map to CSS variables** - Never hardcode Tailwind color classes. The UI package defines CSS variables in `packages/ui/src/styles/base.css` that apps can override for theming.
+
+```tsx
+// ✅ Good: Semantic color classes (theme-aware via CSS variables)
+<div className="bg-primary text-text-primary border-border">Container</div>
+<div className="bg-background-secondary text-text-secondary">Secondary</div>
+<button className="bg-primary hover:bg-primary-hover text-text-inverse">Button</button>
+
+// ❌ FORBIDDEN: Hardcoded colors
+<div className="bg-gray-100 dark:bg-gray-800 text-gray-900">Bad</div>
+<div className="bg-[#10b981]">Bad</div>
+```
+
+**Available semantic classes:**
+- **Primary**: `bg-primary`, `text-primary`, `bg-primary-hover`, `bg-primary-light`
+- **Background**: `bg-background`, `bg-background-secondary`, `bg-background-tertiary`
+- **Text**: `text-text-primary`, `text-text-secondary`, `text-text-tertiary`, `text-text-inverse`
+- **Border**: `border-border`, `border-border-focus`, `border-border-input`
+- **Message**: `bg-message-user`, `bg-message-assistant`, `text-message-user-text`, `text-message-assistant-text`
+- **Disabled**: `bg-disabled`, `bg-disabled-bg`, `text-disabled`
+
+See `packages/ui/src/styles/base.css` and `packages/ui/tailwind.config.js` for full list.
+
+### Layout Components (CRITICAL)
+
+**Always use layout components from `@openai/ui`** - Never duplicate markup.
+
+**Available:** `PageContainer`, `PageHeader`, `Card`, `Container`, `PageContent`, `Sidebar`, `SidebarItem`, `Footer`, `Badge`, `SectionHeader`, `MainTitle`, `PageTitle`, `Avatar`, etc.
+
+```tsx
+// ✅ Good: Use layout components
+import { PageContainer, Container, Card, PageHeader } from '@openai/ui'
+<PageContainer>
+  <Container>
+    <PageHeader title="Dashboard" actions={<Button>New</Button>} />
+    <Card title="Stats">Content</Card>
+  </Container>
+</PageContainer>
+
+// ❌ Bad: Duplicating markup
+<div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+  <div className="max-w-7xl mx-auto bg-white dark:bg-gray-800...">
+```
+
+**Component placement:**
+
+- **`@openai/ui`**: Generic/reusable components, layout patterns, design primitives
+- **App directories**: Feature-specific components, business logic tied to app context
+
+**Before creating:** Check `packages/ui/src/index.ts` for existing components.
+
+### Status Badges
+
+```tsx
+// ✅ Good: Use Badge component
+import { Badge } from '@openai/ui'
+<Badge variant="primary">Active</Badge>
+<Badge variant="secondary">Custom</Badge>
+
+// ❌ Bad: Inline conditional classes
+<span className={invoice.status === 'Paid' ? 'bg-green-100...' : 'bg-red-100...'}>
+```
+
+## Utility Functions
+
+### Always Check `@openai/utils` First
+
+**CRITICAL:** Before creating any utility, check `@openai/utils` - it's the single source of truth.
+
+**Available categories:**
+
+- **Date/Time**: `formatDate()`, `formatTime()`, `formatDateTime()` (using Luxon)
+- **Validation**: Various validation functions
+- **Hooks**: `useFormValidation()` for form validation
+
+```typescript
+// ✅ Good: Import from @openai/utils
+import { formatDate, formatTime } from '@openai/utils'
+import { useFormValidation } from '@openai/utils/hooks'
+
+// ❌ Bad: Creating duplicate utilities
+// Don't create formatDate, formatTime, etc. in app directories
+```
+
+**When to add to `@openai/utils` vs app:**
+
+- **`@openai/utils`**: Generic utilities used across apps (parsing, formatting, validation)
+- **App directory**: App-specific business logic utilities
+
+**Before creating:** Check `packages/utils/src/index.ts` and relevant category directories.
+
+## TypeScript Standards
+
+- **No `any` types** - Use proper types or `unknown`
+- **Define interfaces** - For all props, API responses, data structures
+- **Use type guards** - For runtime type checking
+- **Leverage utility types** - `Pick`, `Omit`, `Partial`, `Required`
+
+```typescript
+// ✅ Good: Explicit interfaces
+interface User {
+  id: string
+  email: string
+  name: string
+}
+
+// ❌ Bad: Using any
+function processUser(user: any) {}
+```
+
+## React Patterns
+
+### Component Structure
+
+1. **Imports** - External → design system → shared → app → feature
+2. **Type definitions** - Interfaces for props
+3. **Component definition**
+4. **Hooks** - useState, useEffect, custom hooks
+5. **Event handlers**
+6. **Computed values** - useMemo, derived state
+7. **Effects** - useEffect
+8. **Render** - JSX return
+
+### File Size Limits
+
+- **Components**: <500 lines (split if larger)
+- **Utilities**: <500 lines (split if larger)
+- **Hooks**: <200 lines (split if larger)
+
+### Separation of Concerns
+
+**CRITICAL**: Never put business logic in components. Components handle presentation only.
+
+```tsx
+// ❌ Bad: Business logic in component
+export function InvoiceForm() {
+  const [invoices, setInvoices] = useState([])
+
+  const handleSubmit = async e => {
+    e.preventDefault()
+    // Business logic here - BAD!
+    const response = await fetch('/api/invoices', {
+      method: 'POST',
+      body: JSON.stringify(formData),
+    })
+    const data = await response.json()
+    setInvoices([...invoices, data])
+    // Validation, error handling, etc. - all in component
+  }
+
+  return <form onSubmit={handleSubmit}>...</form>
+}
+
+// ✅ Good: Business logic in hook/service
+// hooks/useInvoiceForm.ts
+export function useInvoiceForm() {
+  const [invoices, setInvoices] = useState([])
+  const [error, setError] = useState(null)
+
+  const createInvoice = async data => {
+    try {
+      const invoice = await invoiceService.create(data)
+      setInvoices(prev => [...prev, invoice])
+      return invoice
+    } catch (err) {
+      setError(err)
+      throw err
+    }
+  }
+
+  return { invoices, createInvoice, error }
+}
+
+// components/InvoiceForm.tsx
+import { useInvoiceForm } from '../hooks/useInvoiceForm'
+export function InvoiceForm() {
+  const { createInvoice, error } = useInvoiceForm()
+
+  const handleSubmit = async e => {
+    e.preventDefault()
+    await createInvoice(formData) // Delegates to hook
+  }
+
+  return <form onSubmit={handleSubmit}>...</form> // Presentation only
+}
+```
+
+**Where business logic belongs:**
+
+- **Hooks** (`useInvoiceForm`, `useInvoices`) - State management, side effects, data fetching
+- **Services** (`invoiceService`) - API calls, data transformation
+- **Utilities** - Pure functions, calculations, validations
+- **Components** - Presentation, event handling that delegates to hooks/services
+
+## File Organization
+
+### Feature-Based Structure
+
+```
+features/invoices/
+├── components/     # Feature-specific components
+├── hooks/         # Feature-specific hooks
+├── services/      # API services
+├── types/         # Feature-specific types
+├── utils/         # Feature-specific utilities
+└── Invoices.tsx   # Main feature component
+```
+
+### Naming Conventions
+
+- **Components**: PascalCase (`InvoiceForm.tsx`)
+- **Hooks**: camelCase with `use` prefix (`useInvoices.ts`)
+- **Utilities**: camelCase (`formatCurrency.ts`)
+- **Types**: camelCase with `.types.ts` suffix (`invoice.types.ts`)
+- **Constants**: camelCase (`routes.ts`)
+- **Services**: camelCase with `Service` suffix (`invoiceService.ts`)
+
+### Import Organization
+
+```typescript
+// 1. External packages
+import React from 'react'
+// 2. Design system
+import { Button, Container } from '@openai/ui'
+// 3. Shared packages
+import { formatDate } from '@openai/utils'
+import { useTranslation, I18nNamespace } from '@openai/i18n'
+// 4. App-level (constants, contexts)
+import { ROUTES } from '../constants/routes'
+// 5. Feature-level (relative)
+import { useInvoices } from '../hooks/useInvoices'
+```
+
+## Constants & Configuration
+
+```typescript
+// ✅ Good: Centralized constants
+export const ROUTES = {
+  DASHBOARD: '/dashboard',
+  INVOICES: '/invoices',
+  INVOICES_EDIT: (id: string) => `/invoices/${id}/edit`,
+}
+
+// ✅ Good: Named constants (not magic values)
+const STATUS = { ACTIVE: 'active', INACTIVE: 'inactive' } as const
+const DEBOUNCE_DELAY_MS = 3000
+
+// ✅ Good: Const objects for string unions
+export const INVOICE_STATUS = { DRAFT: 'draft', SENT: 'sent', PAID: 'paid' } as const
+export type InvoiceStatus = (typeof INVOICE_STATUS)[keyof typeof INVOICE_STATUS]
+```
+
+## Internationalization (i18n)
+
+### Critical Rules
+
+1. **Always extract user-facing strings** - All text visible to users must use translation keys, not hardcoded strings
+2. **Never translate logs** - Console logs, error messages for developers, and debug output should remain in English
+3. **Translation files are flat JSON files** - Edit translation files directly in `packages/i18n/src/locales/{lang}/{namespace}.json`
+
+### User-Facing Strings
+
+**All text visible to users must be extracted to translation keys:**
+
+```tsx
+// ✅ Good: Use translation keys for user-facing text
+import { useTranslation, I18nNamespace } from '@openai/i18n'
+
+export function InvoiceForm() {
+  const { t } = useTranslation(I18nNamespace.CLIENT)
+
+  return (
+    <div>
+      <h1>{t('invoices.title')}</h1>
+      <button>{t('invoices.create')}</button>
+      <p>{t('invoices.description', { count: invoices.length })}</p>
+    </div>
+  )
+}
+
+// ❌ Bad: Hardcoded user-facing strings
+export function InvoiceForm() {
+  return (
+    <div>
+      <h1>Invoices</h1>
+      <button>Create Invoice</button>
+      <p>You have {invoices.length} invoices</p>
+    </div>
+  )
+}
+```
+
+### Logs and Debug Messages
+
+**Never translate logs, error messages for developers, or debug output:**
+
+```typescript
+// ✅ Good: Logs remain in English
+console.log('Fetching invoices from API')
+console.error('Failed to load invoices:', error)
+logger.debug('Processing invoice data', { invoiceId })
+
+// ❌ Bad: Translating logs
+console.log(t('logs.fetchingInvoices'))
+console.error(t('errors.failedToLoad'))
+```
+
+### Translation File Structure
+
+**Translation files are flat JSON files:**
+
+- **Files**: Located in `packages/i18n/src/locales/{lang}/{namespace}.json` (e.g., `en/client.json`, `en/api.json`)
+- **Edit files directly** - No categorization or merge script needed
+
+**File organization:**
+
+```
+packages/i18n/src/locales/
+├── en/
+│   ├── client.json              # Client app translations
+│   ├── admin.json               # Admin app translations
+│   ├── api.json                 # API translations
+│   └── common.json              # Common translations
+└── fi/
+    └── ...                      # Same structure for other languages
+```
+
+**Adding new translations:**
+
+1. Edit the appropriate namespace file directly (e.g., `packages/i18n/src/locales/en/client.json`)
+2. Add your translation keys in a hierarchical structure
+3. Use the keys in your code with `t('key.path')`
+
+### Testing with i18n
+
+**i18n is automatically mocked in tests:**
+
+- `useTranslation()` returns a mock that returns the translation key itself
+- This makes it easy to verify which keys are being used
+- No need to set up i18n in tests - it's handled globally
+
+```typescript
+// ✅ Good: Test can verify translation keys
+import { render, screen } from '@testing-library/react'
+import { useTranslation } from 'react-i18next'
+
+// Mock returns key: t('invoices.title') -> 'invoices.title'
+expect(screen.getByText('invoices.title')).toBeInTheDocument()
+
+// ❌ Bad: Don't try to set up real i18n in tests
+// The mock is already configured globally
+```
+
+### Namespace Usage
+
+**Use the correct namespace for each app:**
+
+```typescript
+import { useTranslation, I18nNamespace } from '@openai/i18n'
+
+// Client app
+const { t } = useTranslation(I18nNamespace.CLIENT)
+
+// Admin app
+const { t } = useTranslation(I18nNamespace.ADMIN)
+
+// API (if needed)
+const { t } = useTranslation(I18nNamespace.API)
+```
+
+### Translation Key Naming
+
+**Use descriptive, hierarchical keys:**
+
+```typescript
+// ✅ Good: Hierarchical, descriptive keys
+t('features.invoices.title')
+t('features.invoices.form.clientLabel')
+t('features.invoices.list.emptyMessage')
+t('common.buttons.save')
+t('common.buttons.cancel')
+
+// ❌ Bad: Flat, unclear keys
+t('title')
+t('label')
+t('message')
+```
+
+## Testing Standards
+
+### Test Organization
+
+The client app uses a two-tier testing approach:
+
+**Unit Tests** (fast, isolated):
+
+- Located alongside source files (`Component.test.tsx`, `useInvoices.test.ts`)
+- Use mocked providers/contexts for speed
+- Test individual functions, hooks, utilities in isolation
+- Run with `pnpm test:unit`
+
+**Integration Tests** (flows, full rendering):
+
+- Located in `src/test/integration/`
+- Use real providers and contexts (minimal mocking)
+- Use `renderWithRouter()` for routing
+- Test complete user flows across multiple views
+- Test components that require full context setup
+- Run with `pnpm test:integration`
+
+### When to Use Integration Tests
+
+**Put heavy tests in integration tests when they:**
+
+- Require real context providers (Auth, Router, etc.)
+- Test multi-step user flows across multiple views
+- Test complex component interactions
+- Need full rendering with all dependencies
+- Test navigation between pages
+- Test form submissions with real validation flows
+
+**Use unit tests for:**
+
+- Pure utility functions
+- Individual hook logic
+- Component rendering in isolation
+- Simple event handlers
+- Calculations and transformations
+
+### Testing Rules
+
+1. **Never call real APIs** - Use mocks/fixtures (MSW for HTTP)
+2. **Test business logic** - All utilities and hooks need unit tests
+3. **Test user interactions** - Use integration tests for flows
+4. **Mock external dependencies** - API calls, external services
+5. **Choose the right test type**:
+   - Unit tests for isolated components, hooks, utilities
+   - Integration tests for flows, full rendering, context-dependent components
+
+### Test Examples
+
+```typescript
+// ✅ Good: Unit test (isolated, fast)
+// components/InvoiceForm.test.tsx
+vi.mock('../services/invoiceService')
+describe('InvoiceForm', () => {
+  it('submits form data', async () => {
+    vi.spyOn(invoiceService, 'createInvoice').mockResolvedValue({ id: '1' })
+    render(<InvoiceForm />)
+    // test form submission with mocked service
+  })
+})
+
+// ✅ Good: Integration test (flow, full rendering, context)
+// src/test/integration/features/invoices/InvoiceCreationFlow.test.tsx
+describe('Invoice Creation Flow', () => {
+  it('creates invoice through complete flow', async () => {
+    const user = userEvent.setup()
+    renderWithRouter(<InvoiceForm />, { route: '/invoices/new' })
+
+    // Test complete flow with real contexts
+    await user.type(screen.getByLabelText('Client'), 'Test Client')
+    await user.type(screen.getByLabelText('Amount'), '1000')
+    await user.click(screen.getByRole('button', { name: 'Create Invoice' }))
+
+    // Verify navigation and state updates
+    expect(await screen.findByText('Invoice created')).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/invoices')
+  })
+
+  it('handles multi-step wizard flow', async () => {
+    // Test complex flow across multiple views
+  })
+})
+```
+
+### Running Tests
+
+```bash
+# Unit tests (default, fast)
+pnpm test:unit
+cd apps/client && pnpm test:unit
+
+# Integration tests (flows, full rendering)
+pnpm test:integration
+cd apps/client && pnpm test:integration
+
+# All tests
+pnpm test
+```
+
+## Backend (NestJS) Patterns
+
+```
+src/feature/
+├── feature.module.ts        # Feature module
+├── feature.controller.ts    # REST endpoints
+├── feature.service.ts       # Business logic
+├── feature.dto.ts           # DTOs with validation
+└── feature.entity.ts        # Database entity (if using TypeORM) or Prisma schema
+```
+
+```typescript
+// ✅ Good: Dependency injection
+@Injectable()
+export class InvoiceService {
+  private readonly logger = new Logger(InvoiceService.name);
+
+  constructor(
+    private readonly invoiceRepository: InvoiceRepository,
+    private readonly clientService: ClientService
+  ) {}
+}
+
+// ✅ Good: DTOs with validation
+export class CreateInvoiceDto {
+  @IsString()
+  @IsNotEmpty()
+  clientId: string
+  @IsNumber()
+  @Min(0)
+  amount: number
+}
+
+// ✅ Good: Logging with NestJS Logger
+@Injectable()
+export class InvoiceService {
+  private readonly logger = new Logger(InvoiceService.name);
+
+  async create(data: CreateInvoiceDto) {
+    this.logger.log(`Creating invoice for client ${data.clientId}`);
+    // ... implementation
+  }
+
+  async findById(id: string) {
+    this.logger.debug(`Finding invoice ${id}`);
+    // ... implementation
+  }
+
+  async handleError(error: Error) {
+    this.logger.error(`Failed to process invoice: ${error.message}`, error.stack);
+    // ... error handling
+  }
+}
+```
+
+## Common Patterns
+
+### API Service
+
+```typescript
+export const invoiceService = {
+  async getAll(): Promise<Invoice[]> {
+    const response = await fetch('/api/invoices')
+    return response.json()
+  },
+  async create(data: CreateInvoiceDto): Promise<Invoice> {
+    const response = await fetch('/api/invoices', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+    return response.json()
+  },
+}
+```
+
+### Custom Hook
+
+```typescript
+export function useInvoices() {
+  const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    invoiceService
+      .getAll()
+      .then(setInvoices)
+      .catch(setError)
+      .finally(() => setLoading(false))
+  }, [])
+
+  return { invoices, loading, error }
+}
+```
+
+### Form Pattern
+
+```typescript
+import { Input, Button } from '@openai/ui'
+
+export function InvoiceForm() {
+  const [formData, setFormData] = useState<InvoiceFormData>({
+    clientId: '',
+    amount: 0,
+  })
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await invoiceService.create(formData)
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <Input label="Client" value={formData.clientId} onChange={...} />
+      <Button type="submit">Create Invoice</Button>
+    </form>
+  )
+}
+```
+
+## Code Quality Checklist
+
+Before considering work complete:
+
+- [ ] **TypeScript**: No `any` types, all types properly defined
+- [ ] **Linting**: Run `pnpm lint` and fix all issues
+- [ ] **Type checking**: Run `pnpm typecheck` and fix all errors
+- [ ] **Tests**: Added tests for new business logic/components
+- [ ] **No duplication**: Extracted shared logic to utilities/hooks/components
+- [ ] **Constants**: No magic numbers/strings, extracted to constants
+- [ ] **i18n**: All user-facing strings use translation keys, logs remain in English
+- [ ] **Translation files**: Edited translation files directly in `packages/i18n/src/locales/{lang}/`
+- [ ] **Design system**: Used `@openai/ui` components where applicable
+- [ ] **Semantic colors**: Used semantic color classes (no hardcoded `gray-*`, `blue-*`, etc.)
+- [ ] **Layout components**: Used `PageContainer`, `PageHeader`, `Card`, `Container`, etc. from `@openai/ui`
+- [ ] **Utilities**: Checked `@openai/utils` before creating new utilities
+- [ ] **Logging**: Added NestJS Logger in API services/controllers where needed
+- [ ] **File size**: Components <500 lines, utilities <500 lines
+- [ ] **Separation of concerns**: Business logic separated from presentation
+- [ ] **Imports**: Properly organized (external → design system → app → feature)
+
+## Anti-Patterns
+
+```tsx
+// ❌ Bad: Hardcoded strings, colors, duplicated markup
+<button onClick={() => navigate('/invoices/new')}>New</button>
+<div className="bg-gray-100 dark:bg-gray-800 text-gray-900">Bad</div>
+<div className="min-h-screen bg-gray-50..."><div className="max-w-7xl...">...</div></div>
+
+// ❌ Bad: Duplicated logic, generic component in app, using any
+function Component1() { const [data, setData] = useState([]); fetch('/api/invoices').then(setData) }
+function Component2() { const [data, setData] = useState([]); fetch('/api/invoices').then(setData) }
+// apps/client/src/components/Button.tsx (should be in @openai/ui)
+function process(data: any) {}
+
+// ✅ Good: Use constants, semantic colors, layout components, extract to hooks
+<button onClick={() => navigate(ROUTES.INVOICES_NEW)}>New</button>
+<div className="bg-primary text-text-primary">Good</div>
+<PageContainer><Container><PageHeader title="Dashboard" /></Container></PageContainer>
+function useInvoices() { /* shared logic */ }
+import { Button } from '@openai/ui'
+function process(data: Invoice[]) {}
+```
+
+## Quick Reference
+
+### Commands
+
+```bash
+pnpm dev              # Start client app
+pnpm build            # Build all packages and apps
+pnpm test             # Run all tests
+pnpm test:unit        # Unit tests only
+pnpm test:integration # Integration tests only
+pnpm lint             # Lint all packages
+pnpm typecheck        # Type check all packages
+pnpm check            # Run lint, typecheck, test, and build
+```
+
+### Import Paths
+
+```typescript
+import { Button, Container, PageContainer } from '@openai/ui' // Design system
+import { formatDate, formatTime } from '@openai/utils' // Utilities
+import { useTranslation, I18nNamespace } from '@openai/i18n' // i18n
+import { ROUTES } from './constants/routes' // App constants
+import { useInvoices } from '../hooks/useInvoices' // Feature imports
+```
+
+---
+
+**Remember**: When in doubt, check existing code patterns. Consistency is key to maintainability.
