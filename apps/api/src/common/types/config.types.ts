@@ -30,7 +30,7 @@ export interface AgentConfig {
  * System configuration keys
  * Known system configuration keys used in the application
  */
-export type SystemConfigKey = 'behavior_rules';
+export type SystemConfigKey = 'behavior_rules' | 'system_prompt';
 
 /**
  * System configuration value types
@@ -38,6 +38,7 @@ export type SystemConfigKey = 'behavior_rules';
  */
 export interface SystemConfigValues {
   behavior_rules?: string | string[] | { rules: string[] };
+  system_prompt?: string;
 }
 
 /**

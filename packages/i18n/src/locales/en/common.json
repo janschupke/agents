@@ -1,4 +1,32 @@
 {
+  "aiRequestLogs": {
+    "collapse": "aiRequestLogs.collapse",
+    "deletedUser": "aiRequestLogs.deletedUser",
+    "error": "aiRequestLogs.error",
+    "expand": "aiRequestLogs.expand",
+    "loading": "aiRequestLogs.loading",
+    "noLogs": "aiRequestLogs.noLogs",
+    "pagination": {
+      "next": "aiRequestLogs.pagination.next",
+      "page": "aiRequestLogs.pagination.page",
+      "previous": "aiRequestLogs.pagination.previous",
+      "showing": "aiRequestLogs.pagination.showing"
+    },
+    "request": "aiRequestLogs.request",
+    "response": "aiRequestLogs.response",
+    "table": {
+      "actions": "aiRequestLogs.table.actions",
+      "datetime": "aiRequestLogs.table.datetime",
+      "model": "aiRequestLogs.table.model",
+      "price": "aiRequestLogs.table.price",
+      "response": "aiRequestLogs.table.response",
+      "tokens": "aiRequestLogs.table.tokens",
+      "user": "aiRequestLogs.table.user"
+    },
+    "title": "aiRequestLogs.title",
+    "total_one": "aiRequestLogs.total",
+    "total_other": "aiRequestLogs.total"
+  },
   "app": {
     "accessDenied": "app.accessDenied",
     "adminRoleRequired": "app.adminRoleRequired",
@@ -12,15 +40,58 @@
     "title": "OpenAI Chat",
     "welcome": "Welcome"
   },
+  "archetypes": {
+    "cancel": "archetypes.cancel",
+    "create": "archetypes.create",
+    "delete": "archetypes.delete",
+    "edit": "archetypes.edit",
+    "empty": "archetypes.empty",
+    "error": "archetypes.error",
+    "form": {
+      "add": "archetypes.form.add",
+      "addRule": "archetypes.form.addRule",
+      "age": "archetypes.form.age",
+      "agentType": "archetypes.form.agentType",
+      "availability": "archetypes.form.availability",
+      "avatarUrl": "archetypes.form.avatarUrl",
+      "basicInfo": "archetypes.form.basicInfo",
+      "behaviorRules": "archetypes.form.behaviorRules",
+      "configuration": "archetypes.form.configuration",
+      "description": "archetypes.form.description",
+      "errors": {
+        "ageRange": "archetypes.form.errors.ageRange",
+        "maxTokensMin": "archetypes.form.errors.maxTokensMin",
+        "nameRequired": "archetypes.form.errors.nameRequired",
+        "temperatureRange": "archetypes.form.errors.temperatureRange"
+      },
+      "gender": "archetypes.form.gender",
+      "interests": "archetypes.form.interests",
+      "language": "archetypes.form.language",
+      "maxTokens": "archetypes.form.maxTokens",
+      "model": "archetypes.form.model",
+      "name": "archetypes.form.name",
+      "personality": "archetypes.form.personality",
+      "remove": "archetypes.form.remove",
+      "responseLength": "archetypes.form.responseLength",
+      "selectAgentType": "archetypes.form.selectAgentType",
+      "selectAvailability": "archetypes.form.selectAvailability",
+      "selectGender": "archetypes.form.selectGender",
+      "selectPersonality": "archetypes.form.selectPersonality",
+      "selectResponseLength": "archetypes.form.selectResponseLength",
+      "selectSentiment": "archetypes.form.selectSentiment",
+      "sentiment": "archetypes.form.sentiment",
+      "systemPrompt": "archetypes.form.systemPrompt",
+      "temperature": "archetypes.form.temperature"
+    },
+    "save": "archetypes.save",
+    "saving": "archetypes.saving",
+    "title": "archetypes.title"
+  },
   "chat": {
     "chooseSession": "chat.chooseSession",
-    "createAgentFirst": "chat.createAgentFirst",
-    "createNewSession": "chat.createNewSession",
-    "defaultSessionName": "chat.defaultSessionName",
-    "deleteSessionTooltip": "chat.deleteSessionTooltip",
-    "editSessionName": "chat.editSessionName",
-    "editSessionNameTooltip": "chat.editSessionNameTooltip",
-    "enterSessionName": "chat.enterSessionName",
+    "configureAgent": "chat.configureAgent",
+    "conversations": "chat.conversations",
+    "createNewAgent": "chat.createNewAgent",
     "errors": {
       "fetchSessionFailed": "chat.errors.fetchSessionFailed",
       "sessionNotFound": "chat.errors.sessionNotFound"
@@ -29,17 +100,14 @@
       "viewRequestJson": "chat.message.viewRequestJson",
       "viewResponseJson": "chat.message.viewResponseJson"
     },
-    "newSession": "chat.newSession",
+    "newAgent": "chat.newAgent",
     "noAgents": "chat.noAgents",
-    "noSessions": "chat.noSessions",
+    "noChatSelected": "chat.noChatSelected",
     "openaiRequest": "chat.openaiRequest",
     "openaiResponse": "chat.openaiResponse",
     "placeholder": "chat.placeholder",
     "selectSession": "chat.selectSession",
     "send": "chat.send",
-    "session": "chat.session",
-    "sessionName": "chat.sessionName",
-    "sessions": "chat.sessions",
     "title": "chat.title",
     "translation": {
       "clickToTranslate": "chat.translation.clickToTranslate",
@@ -62,7 +130,17 @@
   },
   "config": {
     "addRule": "config.addRule",
-    "agentName": "config.agentName",
+    "age": "config.age",
+    "agentType": {
+      "description": "config.agentType.description",
+      "general": "config.agentType.general",
+      "label": "config.agentType.label",
+      "languageAssistant": "config.agentType.languageAssistant"
+    },
+    "archetypes": {
+      "title": "config.archetypes.title"
+    },
+    "availability": "config.availability",
     "behaviorRules": "config.behaviorRules",
     "confirm": {
       "unsavedChangesMessage": "config.confirm.unsavedChangesMessage",
@@ -70,24 +148,42 @@
     },
     "createAgent": "config.createAgent",
     "description": "config.description",
-    "enterAgentName": "config.enterAgentName",
     "enterDescription": "config.enterDescription",
     "enterSystemPrompt": "config.enterSystemPrompt",
     "errors": {
       "agentNotFound": "config.errors.agentNotFound",
       "createFailed": "config.errors.createFailed"
     },
+    "gender": "config.gender",
+    "interests": "config.interests",
+    "interestsDescription": "config.interestsDescription",
     "jsonInvalidError": "config.jsonInvalidError",
     "jsonPlaceholder": "config.jsonPlaceholder",
+    "language": {
+      "description": "config.language.description",
+      "label": "config.language.label",
+      "none": "config.language.none"
+    },
     "messages": {
       "agentCreated": "config.messages.agentCreated"
     },
+    "personality": "config.personality",
     "removeRule": "config.removeRule",
+    "responseLength": "config.responseLength",
+    "responseLengthAdapt": "config.responseLengthAdapt",
+    "responseLengthLong": "config.responseLengthLong",
+    "responseLengthShort": "config.responseLengthShort",
+    "responseLengthStandard": "config.responseLengthStandard",
     "rulePlaceholder": "config.rulePlaceholder",
     "rulesDescription": "config.rulesDescription",
     "saveButton": "config.saveButton",
     "saving": "config.saving",
     "selectAgent": "config.selectAgent",
+    "selectAvailability": "config.selectAvailability",
+    "selectPersonality": "config.selectPersonality",
+    "selectResponseLength": "config.selectResponseLength",
+    "selectSentiment": "config.selectSentiment",
+    "sentiment": "config.sentiment",
     "systemPrompt": "config.systemPrompt",
     "systemPromptDescription": "config.systemPromptDescription",
     "temperature": "config.temperature",
@@ -98,7 +194,19 @@
     "viewForm": "config.viewForm",
     "viewJson": "config.viewJson"
   },
+  "flashcards": {
+    "allLanguages": "flashcards.allLanguages",
+    "clickForNext": "flashcards.clickForNext",
+    "clickToFlip": "flashcards.clickToFlip",
+    "noWords": "flashcards.noWords",
+    "noWordsDescription": "flashcards.noWordsDescription",
+    "selectLanguage": "flashcards.selectLanguage",
+    "selectLanguageDescription": "flashcards.selectLanguageDescription",
+    "title": "flashcards.title"
+  },
   "navigation": {
+    "aiRequestLogs": "navigation.aiRequestLogs",
+    "archetypes": "navigation.archetypes",
     "systemRules": "navigation.systemRules",
     "users": "navigation.users"
   },
@@ -106,6 +214,8 @@
     "apiKey": {
       "apiKeySet": "profile.apiKey.apiKeySet",
       "deleteApiKey": "profile.apiKey.deleteApiKey",
+      "deleted": "profile.apiKey.deleted",
+      "deleteFailed": "profile.apiKey.deleteFailed",
       "editApiKey": "profile.apiKey.editApiKey",
       "enterApiKey": "profile.apiKey.enterApiKey",
       "openaiPlatform": "profile.apiKey.openaiPlatform",
@@ -114,7 +224,9 @@
       "saveTooltip": "profile.apiKey.saveTooltip",
       "saving": "profile.apiKey.saving",
       "securityNote": "profile.apiKey.securityNote",
-      "title": "profile.apiKey.title"
+      "title": "profile.apiKey.title",
+      "updated": "profile.apiKey.updated",
+      "updateFailed": "profile.apiKey.updateFailed"
     }
   },
   "savedWords": {

@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { MessageRole } from '../../common/enums/message-role.enum';
 import { BehaviorRulesUtil } from '../../common/utils/behavior-rules.util';
 import { SystemConfigRepository } from '../../system-config/system-config.repository';
+import { SystemConfigService } from '../../system-config/system-config.service';
 import { ConfigurationRulesService } from './configuration-rules.service';
 import { LanguageAssistantService } from '../../agent/services/language-assistant.service';
 import { AgentConfigService } from '../../agent/services/agent-config.service';
@@ -41,6 +42,7 @@ export class MessagePreparationService {
 
   constructor(
     private readonly systemConfigRepository: SystemConfigRepository,
+    private readonly systemConfigService: SystemConfigService,
     private readonly configurationRulesService: ConfigurationRulesService,
     private readonly languageAssistantService: LanguageAssistantService,
     private readonly agentConfigService: AgentConfigService
@@ -51,6 +53,7 @@ export class MessagePreparationService {
    * Handles: system prompts, behavior rules, memory context, and user messages
    *
    * Message Order:
+   * 0. Authoritative system prompt (admin-defined) - SYSTEM role (FIRST)
    * 1. Code-defined rules (datetime, language, etc.) - SYSTEM role
    * 2. Admin-defined system behavior rules - SYSTEM role
    * 3. Config-based behavior rules (from form fields with defined values) - SYSTEM role
@@ -87,6 +90,9 @@ export class MessagePreparationService {
 
     // Build messages array in the correct order
     const messagesForAPI: MessageForOpenAI[] = [];
+
+    // 0. Authoritative system prompt (admin-defined) - SYSTEM role (FIRST)
+    await this.addAuthoritativeSystemPrompt(messagesForAPI);
 
     // 1. Code-defined rules (datetime, language, etc.) - SYSTEM role
     this.addConfigurationRules(messagesForAPI, agentConfig, currentDateTime);
@@ -162,6 +168,30 @@ export class MessagePreparationService {
     });
   }
 
+  /**
+   * Add authoritative system prompt (admin-defined) - SYSTEM role
+   * This is the FIRST message in every chat request
+   */
+  private async addAuthoritativeSystemPrompt(
+    messagesForAPI: MessageForOpenAI[]
+  ): Promise<void> {
+    let systemPrompt: string | null = null;
+    try {
+      systemPrompt = await this.systemConfigService.getSystemPrompt();
+    } catch (error) {
+      this.logger.error('Error loading authoritative system prompt:', error);
+      // Continue without system prompt if loading fails
+    }
+
+    if (systemPrompt && systemPrompt.trim().length > 0) {
+      this.logger.debug('Adding authoritative system prompt as first message');
+      // Insert at the beginning (index 0) to ensure it's first
+      messagesForAPI.unshift({
+        role: MessageRole.SYSTEM,
+        content: systemPrompt.trim(),
+      });
+    }
+  }
 
   /**
    * Add system-wide behavior rules (admin-defined) - SYSTEM role

@@ -3,6 +3,7 @@ import { API_ENDPOINTS } from '../constants/api.constants.js';
 
 interface SystemBehaviorRules {
   rules: string[];
+  system_prompt?: string;
 }
 
 class SystemConfigService {
@@ -12,10 +13,13 @@ class SystemConfigService {
     );
   }
 
-  async updateBehaviorRules(rules: string[]): Promise<SystemBehaviorRules> {
+  async updateBehaviorRules(
+    rules: string[],
+    systemPrompt?: string
+  ): Promise<SystemBehaviorRules> {
     return apiManager.put<SystemBehaviorRules>(
       API_ENDPOINTS.SYSTEM_CONFIG_BEHAVIOR_RULES,
-      { rules }
+      { rules, system_prompt: systemPrompt }
     );
   }
 }

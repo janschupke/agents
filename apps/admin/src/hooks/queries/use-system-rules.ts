@@ -7,6 +7,12 @@ import { queryKeys } from './query-keys';
 
 interface SystemBehaviorRules {
   rules: string[];
+  system_prompt?: string;
+}
+
+interface UpdateSystemRulesParams {
+  rules: string[];
+  systemPrompt?: string;
 }
 
 export function useSystemRules() {
@@ -31,9 +37,13 @@ export function useSystemRules() {
 export function useUpdateSystemRules() {
   const queryClient = useQueryClient();
 
-  return useMutation<SystemBehaviorRules, Error, string[]>({
-    mutationFn: (rules: string[]) =>
-      systemConfigService.updateBehaviorRules(rules),
+  return useMutation<
+    SystemBehaviorRules,
+    Error,
+    UpdateSystemRulesParams
+  >({
+    mutationFn: ({ rules, systemPrompt }) =>
+      systemConfigService.updateBehaviorRules(rules, systemPrompt),
     onSuccess: (data) => {
       // Update the cache with the new rules
       queryClient.setQueryData<SystemBehaviorRules>(

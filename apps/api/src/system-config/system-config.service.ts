@@ -25,6 +25,23 @@ export class SystemConfigService {
     return rules;
   }
 
+  async getSystemPrompt(): Promise<string | null> {
+    this.logger.debug('Getting system prompt');
+    const config =
+      await this.systemConfigRepository.findByKey('system_prompt');
+    if (!config) {
+      this.logger.debug('No system prompt configured');
+      return null;
+    }
+
+    const prompt =
+      typeof config.configValue === 'string'
+        ? config.configValue
+        : String(config.configValue || '');
+    this.logger.debug('Found system prompt');
+    return prompt || null;
+  }
+
   async getAllConfigs(): Promise<SystemConfig> {
     this.logger.debug('Getting all system configs');
     return this.systemConfigRepository.findAllAsRecord();
@@ -34,6 +51,23 @@ export class SystemConfigService {
     this.logger.log(`Updating system behavior rules (${rules.length} rules)`);
     await this.systemConfigRepository.upsert('behavior_rules', rules);
     this.logger.log('System behavior rules updated successfully');
+  }
+
+  async updateSystemPrompt(systemPrompt: string | null): Promise<void> {
+    this.logger.log('Updating system prompt');
+    if (systemPrompt === null || systemPrompt.trim() === '') {
+      // Delete the config if prompt is empty
+      try {
+        await this.systemConfigRepository.delete('system_prompt');
+        this.logger.log('System prompt deleted');
+      } catch (error) {
+        // Ignore if it doesn't exist
+        this.logger.debug('System prompt config not found for deletion');
+      }
+    } else {
+      await this.systemConfigRepository.upsert('system_prompt', systemPrompt);
+      this.logger.log('System prompt updated successfully');
+    }
   }
 
   async updateConfigs(configs: UpdateSystemConfigDto): Promise<void> {

@@ -62,7 +62,6 @@
     "form": {
       "basicInfo": "Basic Information",
       "configuration": "Configuration",
-      "personality": "Personality & Behavior",
       "name": "Name",
       "description": "Description",
       "avatarUrl": "Avatar URL",

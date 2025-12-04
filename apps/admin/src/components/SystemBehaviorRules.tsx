@@ -14,15 +14,18 @@ export default function SystemBehaviorRules() {
   const { data, isLoading: loading, error: queryError } = useSystemRules();
   const updateMutation = useUpdateSystemRules();
   const [rules, setRules] = useState<string[]>([]);
+  const [systemPrompt, setSystemPrompt] = useState<string>('');
   const [success, setSuccess] = useState(false);
 
-  // Sync rules from query data
+  // Sync rules and system prompt from query data
   useEffect(() => {
     if (data) {
       setRules(data.rules || []);
+      setSystemPrompt(data.system_prompt || '');
     } else if (data === undefined && !loading) {
       // No rules set yet (404 case)
       setRules([]);
+      setSystemPrompt('');
     }
   }, [data, loading]);
 
@@ -40,11 +43,14 @@ export default function SystemBehaviorRules() {
   }, [updateMutation.isSuccess]);
 
   const handleSave = async () => {
-    updateMutation.mutate(rules, {
-      onError: () => {
-        // Error is handled by mutation state
-      },
-    });
+    updateMutation.mutate(
+      { rules, systemPrompt: systemPrompt.trim() || undefined },
+      {
+        onError: () => {
+          // Error is handled by mutation state
+        },
+      }
+    );
   };
 
   const error =
@@ -105,6 +111,21 @@ export default function SystemBehaviorRules() {
           {tAdmin('systemRules.saved')}
         </div>
       )}
+
+      <div>
+        <label className="block text-sm font-medium text-text-secondary mb-1.5">
+          {tAdmin('systemRules.systemPromptLabel') || 'Authoritative System Prompt'}
+        </label>
+        <textarea
+          value={systemPrompt}
+          onChange={(e) => setSystemPrompt(e.target.value)}
+          className="w-full min-h-[120px] px-3 py-2 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus font-mono resize-y"
+          placeholder={tAdmin('systemRules.systemPromptPlaceholder') || 'Enter the authoritative system prompt that will be sent as the first message in every chat request...'}
+        />
+        <p className="text-xs text-text-tertiary mt-2">
+          {tAdmin('systemRules.systemPromptDescription') || 'This system prompt will be sent as the first SYSTEM role message in every chat request. It is the authoritative system prompt for all agents.'}
+        </p>
+      </div>
 
       <div>
         <label className="block text-sm font-medium text-text-secondary mb-1.5">

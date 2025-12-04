@@ -20,7 +20,8 @@ export class SystemConfigController {
   async getBehaviorRules(): Promise<SystemBehaviorRulesDto> {
     this.logger.log('Getting system behavior rules');
     const rules = await this.systemConfigService.getBehaviorRules();
-    return { rules };
+    const systemPrompt = await this.systemConfigService.getSystemPrompt();
+    return { rules, system_prompt: systemPrompt || undefined };
   }
 
   @Put('behavior-rules')
@@ -33,7 +34,16 @@ export class SystemConfigController {
       `Updating system behavior rules (${body.rules.length} rules)`
     );
     await this.systemConfigService.updateBehaviorRules(body.rules);
-    return { rules: body.rules };
+    if (body.system_prompt !== undefined) {
+      await this.systemConfigService.updateSystemPrompt(
+        body.system_prompt || null
+      );
+    }
+    const systemPrompt = await this.systemConfigService.getSystemPrompt();
+    return {
+      rules: body.rules,
+      system_prompt: systemPrompt || undefined,
+    };
   }
 
   @Get()

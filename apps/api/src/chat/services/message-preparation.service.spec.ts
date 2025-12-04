@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MessagePreparationService } from './message-preparation.service';
 import { SystemConfigRepository } from '../../system-config/system-config.repository';
+import { SystemConfigService } from '../../system-config/system-config.service';
 import { ConfigurationRulesService } from './configuration-rules.service';
 import { LanguageAssistantService } from '../../agent/services/language-assistant.service';
 import { AgentConfigService } from '../../agent/services/agent-config.service';
@@ -15,6 +16,10 @@ describe('MessagePreparationService', () => {
 
   const mockSystemConfigRepository = {
     findByKey: jest.fn(),
+  };
+
+  const mockSystemConfigService = {
+    getSystemPrompt: jest.fn().mockResolvedValue(null),
   };
 
   const mockConfigurationRulesService = {
@@ -40,6 +45,10 @@ describe('MessagePreparationService', () => {
         {
           provide: SystemConfigRepository,
           useValue: mockSystemConfigRepository,
+        },
+        {
+          provide: SystemConfigService,
+          useValue: mockSystemConfigService,
         },
         {
           provide: ConfigurationRulesService,
@@ -68,6 +77,43 @@ describe('MessagePreparationService', () => {
     expect(service).toBeDefined();
   });
 
+  it('should add authoritative system prompt as first message when configured', async () => {
+    const authoritativePrompt = 'You are a helpful AI assistant.';
+    mockSystemConfigService.getSystemPrompt.mockResolvedValue(authoritativePrompt);
+
+    const messages = await service.prepareMessagesForOpenAI(
+      [],
+      {
+        agentType: AgentType.GENERAL,
+      },
+      'Hello',
+      []
+    );
+
+    expect(messages.length).toBeGreaterThan(0);
+    expect(messages[0].role).toBe(MessageRole.SYSTEM);
+    expect(messages[0].content).toBe(authoritativePrompt);
+    expect(mockSystemConfigService.getSystemPrompt).toHaveBeenCalled();
+  });
+
+  it('should not add authoritative system prompt when not configured', async () => {
+    mockSystemConfigService.getSystemPrompt.mockResolvedValue(null);
+
+    const messages = await service.prepareMessagesForOpenAI(
+      [],
+      {
+        agentType: AgentType.GENERAL,
+      },
+      'Hello',
+      []
+    );
+
+    // Should still have messages but not start with authoritative prompt
+    expect(messages.length).toBeGreaterThan(0);
+    // First message should not be the authoritative prompt (it would be code-defined rules or user message)
+    expect(messages[0].content).not.toBe('');
+  });
+
   describe('prepareMessagesForOpenAI - Rule Hierarchy', () => {
     const mockExistingMessages = [
       {
@@ -81,7 +127,8 @@ describe('MessagePreparationService', () => {
     ];
 
     describe('Complete Rule Hierarchy', () => {
-      it('should maintain correct order: code rules (SYSTEM) -> admin rules (SYSTEM) -> config-based rules (SYSTEM) -> system prompt (USER) -> user behavior rules (USER) -> conversation -> user message', async () => {
+      it('should maintain correct order: authoritative system prompt (SYSTEM, FIRST) -> code rules (SYSTEM) -> admin rules (SYSTEM) -> config-based rules (SYSTEM) -> system prompt (USER) -> user behavior rules (USER) -> conversation -> user message', async () => {
+        mockSystemConfigService.getSystemPrompt.mockResolvedValue('Authoritative system prompt');
         mockSystemConfigRepository.findByKey.mockResolvedValue({
           configKey: 'behavior_rules',
           configValue: ['Admin rule 1', 'Admin rule 2'],
@@ -124,30 +171,41 @@ describe('MessagePreparationService', () => {
         expect(userMessages.length).toBeGreaterThan(0);
 
         // Verify order by finding indices
-        const codeRuleIndex = result.findIndex((m) => 
-          m.role === MessageRole.SYSTEM && m.content.includes('Currently it\'s')
+        // Authoritative system prompt should be FIRST (index 0)
+        expect(result[0].role).toBe(MessageRole.SYSTEM);
+        expect(result[0].content).toBe('Authoritative system prompt');
+
+        const authoritativePromptIndex = result.findIndex(
+          (m) =>
+            m.role === MessageRole.SYSTEM &&
+            m.content === 'Authoritative system prompt'
         );
-        const adminRuleIndex = result.findIndex((m) => 
+        const codeRuleIndex = result.findIndex((m) =>
+          m.role === MessageRole.SYSTEM && m.content.includes("Currently it's")
+        );
+        const adminRuleIndex = result.findIndex((m) =>
           m.role === MessageRole.SYSTEM && m.content.includes('Admin rule')
         );
-        const configBasedRuleIndex = result.findIndex((m) => 
+        const configBasedRuleIndex = result.findIndex((m) =>
           m.role === MessageRole.SYSTEM && m.content.includes('You are male')
         );
-        const systemPromptIndex = result.findIndex((m) => 
-          m.role === MessageRole.USER && m.content === 'You are a helpful assistant'
+        const systemPromptIndex = result.findIndex(
+          (m) =>
+            m.role === MessageRole.USER &&
+            m.content === 'You are a helpful assistant'
         );
-        const userBehaviorRuleIndex = result.findIndex((m) => 
+        const userBehaviorRuleIndex = result.findIndex((m) =>
           m.role === MessageRole.USER && m.content.includes('Be polite')
         );
-        const conversationIndex = result.findIndex((m) => 
-          m.content === 'Hello'
-        );
-        const newMessageIndex = result.findIndex((m) => 
-          m.content === 'New message'
+        const conversationIndex = result.findIndex((m) => m.content === 'Hello');
+        const newMessageIndex = result.findIndex(
+          (m) => m.content === 'New message'
         );
 
-        // Verify hierarchy
-        expect(codeRuleIndex).toBeLessThan(adminRuleIndex);
+        // Verify hierarchy: authoritative prompt is first, then code rules, then admin rules, etc.
+        expect(authoritativePromptIndex).toBe(0); // Must be first
+        expect(codeRuleIndex).toBeGreaterThan(authoritativePromptIndex);
+        expect(adminRuleIndex).toBeGreaterThan(codeRuleIndex);
         expect(adminRuleIndex).toBeLessThan(configBasedRuleIndex);
         expect(configBasedRuleIndex).toBeLessThan(systemPromptIndex);
         expect(systemPromptIndex).toBeLessThan(userBehaviorRuleIndex);
