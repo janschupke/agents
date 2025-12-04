@@ -1,22 +1,19 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { OpenAIService } from '../openai/openai.service';
-import {
-  MessageWordTranslationRepository,
-  WordTranslation,
-} from './message-word-translation.repository';
-import { MessageTranslationRepository } from './message-translation.repository';
-import { OPENAI_PROMPTS } from '../common/constants/openai-prompts.constants.js';
-import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
-import { OPENAI_MODELS } from '../common/constants/api.constants.js';
-import { AiRequestLogService } from '../ai-request-log/ai-request-log.service';
+import { Injectable } from '@nestjs/common';
+import { WordTranslation } from './message-word-translation.repository';
+import { WordParsingService } from './services/word-parsing.service';
+import { WordTranslationOpenAIService } from './services/word-translation-openai.service';
+import { WordTranslationStorageService } from './services/word-translation-storage.service';
 
+/**
+ * Orchestration service for word translation operations
+ * Delegates to specialized services for parsing, translation, and storage
+ */
 @Injectable()
 export class WordTranslationService {
   constructor(
-    private readonly wordTranslationRepository: MessageWordTranslationRepository,
-    private readonly openaiService: OpenAIService,
-    private readonly translationRepository: MessageTranslationRepository,
-    private readonly aiRequestLogService: AiRequestLogService
+    private readonly wordParsingService: WordParsingService,
+    private readonly wordTranslationOpenAIService: WordTranslationOpenAIService,
+    private readonly wordTranslationStorageService: WordTranslationStorageService
   ) {}
 
   /**
@@ -29,13 +26,13 @@ export class WordTranslationService {
   ): Promise<void> {
     // Check if words already exist
     const exists =
-      await this.wordTranslationRepository.existsForMessage(messageId);
+      await this.wordTranslationStorageService.existsForMessage(messageId);
     if (exists) {
       return; // Already parsed
     }
 
     // Split message into sentences for context
-    const sentences = this.splitIntoSentences(messageContent);
+    const sentences = this.wordParsingService.splitIntoSentences(messageContent);
 
     // Create a map of word -> sentence for populating sentenceContext
     const wordToSentenceMap = new Map<string, string>();
@@ -47,12 +44,11 @@ export class WordTranslationService {
     });
 
     // Save to database with empty translations (will be filled when translation is requested)
-    await this.wordTranslationRepository.createMany(
+    await this.wordTranslationStorageService.saveParsedWords(
       messageId,
-      words.map((w) => ({
-        originalWord: w.originalWord,
-        translation: '', // Empty translation, will be filled later
-      })),
+      words,
+      messageContent,
+      sentences,
       wordToSentenceMap
     );
   }
@@ -68,7 +64,7 @@ export class WordTranslationService {
     messageContent: string
   ): Promise<void> {
     // Split message into sentences for context
-    const sentences = this.splitIntoSentences(messageContent);
+    const sentences = this.wordParsingService.splitIntoSentences(messageContent);
 
     // Create a map of word -> sentence for populating sentenceContext
     const wordToSentenceMap = new Map<string, string>();
@@ -79,29 +75,13 @@ export class WordTranslationService {
       }
     });
 
-    // Delete existing translations if any
-    await this.wordTranslationRepository.deleteByMessageId(messageId);
-
-    // Save word translations with translations
-    await this.wordTranslationRepository.createMany(
+    // Save extracted translations
+    await this.wordTranslationStorageService.saveExtractedTranslations(
       messageId,
-      words.map((w) => ({
-        originalWord: w.originalWord,
-        translation: w.translation,
-        sentenceContext: wordToSentenceMap.get(w.originalWord),
-      })),
+      words,
+      fullTranslation,
       wordToSentenceMap
     );
-
-    // Save full translation
-    const existing =
-      await this.translationRepository.findByMessageId(messageId);
-    if (!existing) {
-      await this.translationRepository.create(messageId, fullTranslation);
-    } else {
-      // Update existing translation
-      await this.translationRepository.update(messageId, fullTranslation);
-    }
   }
 
   /**
@@ -116,35 +96,34 @@ export class WordTranslationService {
   ): Promise<void> {
     // Check if words already exist
     const exists =
-      await this.wordTranslationRepository.existsForMessage(messageId);
+      await this.wordTranslationStorageService.existsForMessage(messageId);
     if (exists) {
       return; // Already parsed
     }
 
     // Split message into sentences for context
-    const sentences = this.splitIntoSentences(messageContent);
+    const sentences = this.wordParsingService.splitIntoSentences(messageContent);
 
     // Use OpenAI to parse words (without translation)
-    const wordTranslations = await this.parseWordsWithOpenAI(
+    const wordTranslations = await this.wordParsingService.parseWordsWithOpenAI(
       messageContent,
       sentences,
       apiKey
     );
 
     // Create a map of word -> sentence for populating sentenceContext
-    const wordToSentenceMap = this.createWordToSentenceMap(
+    const wordToSentenceMap = this.wordParsingService.createWordToSentenceMap(
       messageContent,
       sentences,
       wordTranslations
     );
 
     // Save to database with empty translations (will be filled when translation is requested)
-    await this.wordTranslationRepository.createMany(
+    await this.wordTranslationStorageService.saveParsedWords(
       messageId,
-      wordTranslations.map((wt) => ({
-        ...wt,
-        translation: '', // Empty translation, will be filled later
-      })),
+      wordTranslations.map((wt) => ({ originalWord: wt.originalWord })),
+      messageContent,
+      sentences,
       wordToSentenceMap
     );
   }
@@ -161,7 +140,9 @@ export class WordTranslationService {
   ): Promise<void> {
     // Check if translations already exist with actual translations
     const existingWords =
-      await this.wordTranslationRepository.findByMessageId(messageId);
+      await this.wordTranslationStorageService.getWordTranslationsForMessage(
+        messageId
+      );
     const hasTranslations =
       existingWords?.some((w) => w.translation.trim() !== '') ?? false;
 
@@ -169,12 +150,14 @@ export class WordTranslationService {
       return; // Already translated
     }
 
+    // Split message into sentences for context
+    const sentences = this.wordParsingService.splitIntoSentences(messageContent);
+
     // If words exist but without translations, use them
     if (existingWords && existingWords.length > 0) {
       // Translate only the pre-parsed words
-      const sentences = this.splitIntoSentences(messageContent);
       const { wordTranslations, fullTranslation } =
-        await this.translatePreParsedWordsWithOpenAI(
+        await this.wordTranslationOpenAIService.translatePreParsedWordsWithOpenAI(
           existingWords.map((w) => w.originalWord),
           messageContent,
           sentences,
@@ -182,432 +165,63 @@ export class WordTranslationService {
           userId
         );
 
-      // Update existing words with translations
-      // Delete old entries and create new ones with translations
-      await this.wordTranslationRepository.deleteByMessageId(messageId);
-      const wordToSentenceMap = this.createWordToSentenceMap(
+      // Create word-to-sentence map
+      const wordToSentenceMap = this.wordParsingService.createWordToSentenceMap(
         messageContent,
         sentences,
         wordTranslations
       );
-      await this.wordTranslationRepository.createMany(
+
+      // Update existing words with translations and save full translation
+      await this.wordTranslationStorageService.updateWordsWithTranslations(
         messageId,
         wordTranslations,
-        wordToSentenceMap
+        wordToSentenceMap,
+        fullTranslation
       );
 
-      // Save full message translation
-      if (fullTranslation) {
-        const existing =
-          await this.translationRepository.findByMessageId(messageId);
-        if (!existing) {
-          await this.translationRepository.create(messageId, fullTranslation);
-        }
-      } else {
-        await this.createFullTranslationFromWords(messageId, wordTranslations);
+      // If no full translation provided, derive from words
+      if (!fullTranslation) {
+        await this.wordTranslationStorageService.createFullTranslationFromWords(
+          messageId,
+          wordTranslations
+        );
       }
       return;
     }
 
     // No pre-parsed words exist, do full parse + translate
-    const sentences = this.splitIntoSentences(messageContent);
     const { wordTranslations, fullTranslation } =
-      await this.translateWordsWithOpenAI(
+      await this.wordTranslationOpenAIService.translateWordsWithOpenAI(
         messageContent,
         sentences,
         apiKey,
         userId
       );
 
-    const wordToSentenceMap = this.createWordToSentenceMap(
+    const wordToSentenceMap = this.wordParsingService.createWordToSentenceMap(
       messageContent,
       sentences,
       wordTranslations
     );
 
-    await this.wordTranslationRepository.createMany(
+    // Update words with translations and save full translation
+    await this.wordTranslationStorageService.updateWordsWithTranslations(
       messageId,
       wordTranslations,
-      wordToSentenceMap
+      wordToSentenceMap,
+      fullTranslation
     );
 
-    if (fullTranslation) {
-      const existing =
-        await this.translationRepository.findByMessageId(messageId);
-      if (!existing) {
-        await this.translationRepository.create(messageId, fullTranslation);
-      }
-    } else {
-      await this.createFullTranslationFromWords(messageId, wordTranslations);
-    }
-  }
-
-  /**
-   * Create full message translation from word translations
-   */
-  private async createFullTranslationFromWords(
-    messageId: number,
-    wordTranslations: WordTranslation[]
-  ): Promise<void> {
-    // Check if translation already exists
-    const existing =
-      await this.translationRepository.findByMessageId(messageId);
-    if (existing) {
-      return; // Already has translation
-    }
-
-    // Derive full translation by joining word translations with spaces
-    // This preserves the order and creates a readable full translation
-    const fullTranslation = wordTranslations
-      .map((wt) => wt.translation)
-      .join(' ');
-
-    // Save the derived full translation
-    await this.translationRepository.create(messageId, fullTranslation);
-  }
-
-  /**
-   * Split message into sentences for context
-   */
-  private splitIntoSentences(text: string): string[] {
-    // Split by sentence-ending punctuation, but keep the punctuation
-    // This handles various languages and punctuation marks
-    return text
-      .split(/([.!?。！？]+[\s\n]*)/)
-      .filter((s) => s.trim().length > 0);
-  }
-
-  /**
-   * Create a map of words to their containing sentences
-   */
-  private createWordToSentenceMap(
-    _messageContent: string,
-    sentences: string[],
-    wordTranslations: WordTranslation[]
-  ): Map<string, string> {
-    const wordToSentence = new Map<string, string>();
-
-    // For each word, find which sentence it belongs to
-    wordTranslations.forEach((wt) => {
-      if (!wordToSentence.has(wt.originalWord)) {
-        // Find the sentence containing this word
-        const containingSentence = sentences.find((sentence) =>
-          sentence.includes(wt.originalWord)
-        );
-        if (containingSentence) {
-          wordToSentence.set(wt.originalWord, containingSentence.trim());
-        }
-      }
-    });
-
-    return wordToSentence;
-  }
-
-  /**
-   * Parse words from message using OpenAI (without translation)
-   * Returns words with empty translations
-   */
-  private async parseWordsWithOpenAI(
-    messageContent: string,
-    _sentences: string[],
-    apiKey: string
-  ): Promise<WordTranslation[]> {
-    const openai = this.openaiService.getClient(apiKey);
-
-    const prompt = `Analyze the following text and identify all words/tokens, especially for languages without spaces (like Chinese, Japanese, etc.).
-
-Text:
-${messageContent}
-
-For each word or token, provide:
-1. The original word/token as it appears in the text
-
-Return a JSON object with:
-- "words": array where each element has:
-  - "originalWord": string (the word/token as it appears in the text)
-
-Example format:
-{
-  "words": [
-    {"originalWord": "你好"},
-    {"originalWord": "世界"},
-    ...
-  ]
-}
-
-Return ONLY the JSON object, no additional text.`;
-
-    try {
-      const completion = await openai.chat.completions.create({
-        model: OPENAI_MODELS.TRANSLATION,
-        messages: [
-          {
-            role: 'system',
-            content:
-              'You are a word parsing assistant. Return only valid JSON objects.',
-          },
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-        temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
-        response_format: { type: 'json_object' },
-      });
-
-      const response = completion.choices[0]?.message?.content?.trim();
-      if (!response) {
-        // Fallback: return empty array if parsing fails
-        return [];
-      }
-
-      let parsed: { words?: Array<{ originalWord?: string }> };
-      try {
-        parsed = JSON.parse(response);
-      } catch (e) {
-        return [];
-      }
-
-      const words = (parsed.words || [])
-        .filter((w) => w.originalWord && w.originalWord.trim().length > 0)
-        .map((w) => ({
-          originalWord: w.originalWord!,
-          translation: '', // Empty, will be filled when translation is requested
-        }));
-
-      return words;
-    } catch (error) {
-      // Return empty array on error - parsing is optional
-      return [];
-    }
-  }
-
-  /**
-   * Translate pre-parsed words using OpenAI
-   * Only requests translation, not word splitting
-   */
-  private async translatePreParsedWordsWithOpenAI(
-    words: string[],
-    messageContent: string,
-    _sentences: string[],
-    apiKey: string,
-    userId?: string
-  ): Promise<{
-    wordTranslations: WordTranslation[];
-    fullTranslation: string | null;
-  }> {
-    const openai = this.openaiService.getClient(apiKey);
-
-    const prompt = `You are a professional translator. Translate the following pre-parsed words to English, considering the sentence context.
-
-Text:
-${messageContent}
-
-Words to translate:
-${words.map((w, i) => `${i + 1}. ${w}`).join('\n')}
-
-For each word, provide:
-1. The original word/token as provided
-2. Its English translation considering the sentence context
-
-Also provide the full sentence translation in natural, fluent English.
-
-Return a JSON object with:
-- "fullTranslation": string (the complete message translated into natural, fluent English)
-- "words": array where each element has:
-  - "originalWord": string (the word/token as provided)
-  - "translation": string (English translation of the word in context)
-
-Return ONLY the JSON object, no additional text.`;
-
-    try {
-      const completion = await openai.chat.completions.create({
-        model: OPENAI_MODELS.TRANSLATION,
-        messages: [
-          {
-            role: 'system',
-            content: OPENAI_PROMPTS.WORD_TRANSLATION.SYSTEM,
-          },
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-        temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
-        response_format: { type: 'json_object' },
-      });
-
-      const response = completion.choices[0]?.message?.content?.trim();
-      if (!response) {
-        throw new HttpException(
-          'Word translation failed: No response',
-          HttpStatus.INTERNAL_SERVER_ERROR
-        );
-      }
-
-      let parsed: { words?: WordTranslation[]; fullTranslation?: string };
-      try {
-        parsed = JSON.parse(response);
-      } catch (e) {
-        throw new HttpException(
-          'Word translation failed: Invalid JSON',
-          HttpStatus.INTERNAL_SERVER_ERROR
-        );
-      }
-
-      const translations = parsed.words || [];
-      const fullTranslation = parsed.fullTranslation;
-
-      interface WordTranslationItem {
-        originalWord?: string;
-        translation?: string;
-      }
-      const wordTranslations = (translations as WordTranslationItem[])
-        .filter((wt) => wt.originalWord && wt.translation)
-        .map((wt) => ({
-          originalWord: wt.originalWord!,
-          translation: wt.translation!,
-        }));
-
-      // Log the request/response
-      await this.aiRequestLogService.logRequest(
-        userId,
-        {
-          model: OPENAI_MODELS.TRANSLATION,
-          messages: [
-            {
-              role: 'system',
-              content: OPENAI_PROMPTS.WORD_TRANSLATION.SYSTEM,
-            },
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-          temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
-          response_format: { type: 'json_object' },
-        },
-        completion
-      );
-
-      return {
-        wordTranslations,
-        fullTranslation: fullTranslation || null,
-      };
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw new HttpException(
-        `Word translation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
+    // If no full translation provided, derive from words
+    if (!fullTranslation) {
+      await this.wordTranslationStorageService.createFullTranslationFromWords(
+        messageId,
+        wordTranslations
       );
     }
   }
 
-  /**
-   * Translate words using OpenAI - let OpenAI handle word/token splitting
-   * Returns both word translations and full sentence translation
-   */
-  private async translateWordsWithOpenAI(
-    messageContent: string,
-    _sentences: string[],
-    apiKey: string,
-    userId?: string
-  ): Promise<{
-    wordTranslations: WordTranslation[];
-    fullTranslation: string | null;
-  }> {
-    const openai = this.openaiService.getClient(apiKey);
-
-    const prompt = OPENAI_PROMPTS.WORD_TRANSLATION.USER(messageContent);
-
-    try {
-      const completion = await openai.chat.completions.create({
-        model: OPENAI_MODELS.TRANSLATION,
-        messages: [
-          {
-            role: 'system',
-            content: OPENAI_PROMPTS.WORD_TRANSLATION.SYSTEM,
-          },
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-        temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
-        response_format: { type: 'json_object' },
-      });
-
-      const response = completion.choices[0]?.message?.content?.trim();
-      if (!response) {
-        throw new HttpException(
-          'Word translation failed: No response',
-          HttpStatus.INTERNAL_SERVER_ERROR
-        );
-      }
-
-      // Parse JSON response
-      let parsed: { words?: WordTranslation[]; fullTranslation?: string };
-      try {
-        parsed = JSON.parse(response);
-      } catch (e) {
-        throw new HttpException(
-          'Word translation failed: Invalid JSON',
-          HttpStatus.INTERNAL_SERVER_ERROR
-        );
-      }
-
-      const translations = parsed.words || [];
-      const fullTranslation = parsed.fullTranslation;
-
-      // Validate and map to our format
-      interface WordTranslationItem {
-        originalWord?: string;
-        translation?: string;
-      }
-      const wordTranslations = (translations as WordTranslationItem[])
-        .filter((wt) => wt.originalWord && wt.translation)
-        .map((wt) => ({
-          originalWord: wt.originalWord!,
-          translation: wt.translation!,
-        }));
-
-      // Log the request/response
-      await this.aiRequestLogService.logRequest(
-        userId,
-        {
-          model: OPENAI_MODELS.TRANSLATION,
-          messages: [
-            {
-              role: 'system',
-              content: OPENAI_PROMPTS.WORD_TRANSLATION.SYSTEM,
-            },
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-          temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
-          response_format: { type: 'json_object' },
-        },
-        completion
-      );
-
-      return {
-        wordTranslations,
-        fullTranslation: fullTranslation || null,
-      };
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw new HttpException(
-        `Word translation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
-  }
 
   /**
    * Get word translations for a message
@@ -616,13 +230,9 @@ Return ONLY the JSON object, no additional text.`;
   async getWordTranslationsForMessage(
     messageId: number
   ): Promise<WordTranslation[]> {
-    const translations =
-      await this.wordTranslationRepository.findByMessageId(messageId);
-    return translations.map((t) => ({
-      originalWord: t.originalWord,
-      translation: t.translation || '', // Return empty string if no translation yet
-      sentenceContext: t.sentenceContext ?? undefined,
-    }));
+    return this.wordTranslationStorageService.getWordTranslationsForMessage(
+      messageId
+    );
   }
 
   /**
@@ -631,22 +241,8 @@ Return ONLY the JSON object, no additional text.`;
   async getWordTranslationsForMessages(
     messageIds: number[]
   ): Promise<Map<number, WordTranslation[]>> {
-    const translations =
-      await this.wordTranslationRepository.findByMessageIds(messageIds);
-
-    const translationMap = new Map<number, WordTranslation[]>();
-
-    translations.forEach((t) => {
-      if (!translationMap.has(t.messageId)) {
-        translationMap.set(t.messageId, []);
-      }
-      translationMap.get(t.messageId)!.push({
-        originalWord: t.originalWord,
-        translation: t.translation,
-        sentenceContext: t.sentenceContext ?? undefined,
-      });
-    });
-
-    return translationMap;
+    return this.wordTranslationStorageService.getWordTranslationsForMessages(
+      messageIds
+    );
   }
 }

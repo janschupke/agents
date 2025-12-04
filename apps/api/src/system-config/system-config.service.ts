@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SystemConfigRepository } from './system-config.repository';
 import { UpdateSystemConfigDto } from '../common/dto/system-config.dto';
+import { SystemConfig } from '../common/types/config.types';
 
 @Injectable()
 export class SystemConfigService {
@@ -24,7 +25,7 @@ export class SystemConfigService {
     return rules;
   }
 
-  async getAllConfigs(): Promise<Record<string, unknown>> {
+  async getAllConfigs(): Promise<SystemConfig> {
     this.logger.debug('Getting all system configs');
     return this.systemConfigRepository.findAllAsRecord();
   }
@@ -38,7 +39,7 @@ export class SystemConfigService {
   async updateConfigs(configs: UpdateSystemConfigDto): Promise<void> {
     this.logger.log('Updating system configs');
     await this.systemConfigRepository.updateConfigs(
-      configs as Record<string, unknown>
+      configs as SystemConfig
     );
     this.logger.log('System configs updated successfully');
   }

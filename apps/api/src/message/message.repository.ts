@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Message, Prisma } from '@prisma/client';
 import { MessageRole } from '../common/enums/message-role.enum';
+import { MessageMetadata } from '../common/types/config.types';
 
 interface MessageForOpenAI {
   role: MessageRole;
@@ -16,7 +17,7 @@ export class MessageRepository {
     sessionId: number,
     role: MessageRole,
     content: string,
-    metadata?: Record<string, unknown>,
+    metadata?: MessageMetadata,
     rawRequest?: unknown,
     rawResponse?: unknown
   ): Promise<Message> {

@@ -4,6 +4,8 @@ import { ChatService } from './chat.service';
 import { MessagePreparationService } from './services/message-preparation.service';
 import { ConfigurationRulesService } from './services/configuration-rules.service';
 import { OpenAIChatService } from './services/openai-chat.service';
+import { ChatOrchestrationService } from './services/chat-orchestration.service';
+import { TranslationExtractionService } from './services/translation-extraction.service';
 import { AgentModule } from '../agent/agent.module';
 import { SessionRepository } from '../session/session.repository';
 import { SessionService } from '../session/session.service';
@@ -16,6 +18,8 @@ import { SystemConfigModule } from '../system-config/system-config.module';
 import { MessageTranslationModule } from '../message-translation/message-translation.module';
 import { SavedWordModule } from '../saved-word/saved-word.module';
 import { AiRequestLogModule } from '../ai-request-log/ai-request-log.module';
+import { AgentRepository } from '../agent/agent.repository';
+import { AgentConfigService } from '../agent/services/agent-config.service';
 
 @Module({
   imports: [
@@ -31,6 +35,8 @@ import { AiRequestLogModule } from '../ai-request-log/ai-request-log.module';
   controllers: [ChatController],
   providers: [
     ChatService,
+    ChatOrchestrationService,
+    TranslationExtractionService,
     MessagePreparationService,
     ConfigurationRulesService,
     OpenAIChatService,
@@ -38,6 +44,8 @@ import { AiRequestLogModule } from '../ai-request-log/ai-request-log.module';
     SessionRepository,
     MessageRepository,
     OpenAIService,
+    AgentRepository,
+    AgentConfigService,
   ],
 })
 export class ChatModule {}

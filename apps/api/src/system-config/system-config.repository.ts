@@ -1,24 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import type { SystemConfig, Prisma } from '@prisma/client';
+import type { SystemConfig as PrismaSystemConfig, Prisma } from '@prisma/client';
+import { SystemConfig } from '../common/types/config.types';
 
 @Injectable()
 export class SystemConfigRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findByKey(configKey: string): Promise<SystemConfig | null> {
+  async findByKey(configKey: string): Promise<PrismaSystemConfig | null> {
     return this.prisma.systemConfig.findUnique({
       where: { configKey },
     });
   }
 
-  async findAll(): Promise<SystemConfig[]> {
+  async findAll(): Promise<PrismaSystemConfig[]> {
     return this.prisma.systemConfig.findMany({
       orderBy: { configKey: 'asc' },
     });
   }
 
-  async findAllAsRecord(): Promise<Record<string, unknown>> {
+  async findAllAsRecord(): Promise<SystemConfig> {
     const configs = await this.prisma.systemConfig.findMany({
       select: {
         configKey: true,
@@ -48,7 +49,7 @@ export class SystemConfigRepository {
     });
   }
 
-  async updateConfigs(configs: Record<string, unknown>): Promise<void> {
+  async updateConfigs(configs: SystemConfig): Promise<void> {
     for (const [key, value] of Object.entries(configs)) {
       if (value !== undefined && value !== null) {
         await this.upsert(key, value);

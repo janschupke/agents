@@ -12,6 +12,9 @@ import { AiRequestLogModule } from '../ai-request-log/ai-request-log.module';
 import { InitialTranslationStrategy } from './strategies/initial-translation.strategy';
 import { OnDemandTranslationStrategy } from './strategies/on-demand-translation.strategy';
 import { TranslationStrategyFactory } from './translation-strategy.factory';
+import { WordParsingService } from './services/word-parsing.service';
+import { WordTranslationOpenAIService } from './services/word-translation-openai.service';
+import { WordTranslationStorageService } from './services/word-translation-storage.service';
 
 @Module({
   imports: [ApiCredentialsModule, AiRequestLogModule],
@@ -24,6 +27,10 @@ import { TranslationStrategyFactory } from './translation-strategy.factory';
     MessageRepository,
     SessionRepository,
     OpenAIService,
+    // Word translation sub-services
+    WordParsingService,
+    WordTranslationOpenAIService,
+    WordTranslationStorageService,
     // Translation strategies
     InitialTranslationStrategy,
     OnDemandTranslationStrategy,

@@ -1,4 +1,5 @@
 import { AgentType } from '../enums/agent-type.enum';
+import { AgentConfig } from '../types/config.types';
 
 export interface AgentWithConfig {
   id: number;
@@ -7,7 +8,7 @@ export interface AgentWithConfig {
   avatarUrl: string | null;
   agentType: AgentType | null;
   language: string | null;
-  configs: Record<string, unknown>;
+  configs: AgentConfig;
 }
 
 export interface AgentResponse {
@@ -19,5 +20,5 @@ export interface AgentResponse {
   agentType: AgentType | null;
   language: string | null;
   createdAt: Date;
-  configs?: Record<string, unknown>;
+  configs?: AgentConfig;
 }

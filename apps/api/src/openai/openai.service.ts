@@ -8,6 +8,9 @@ import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 import { MessageRole } from '../common/enums/message-role.enum';
+import { OpenAIErrorHandler } from '../common/utils/openai-error-handler.util';
+import { convertMessageRoleToOpenAI } from '../common/utils/message-role.util';
+import { PerformanceLogger } from '../common/utils/performance-logger.util';
 
 @Injectable()
 export class OpenAIService {
@@ -41,11 +44,18 @@ export class OpenAIService {
   async generateEmbedding(text: string, apiKey?: string): Promise<number[]> {
     try {
       const openai = this.getClient(apiKey);
-      const response = await openai.embeddings.create({
-        model: 'text-embedding-3-small',
-        input: text,
-        dimensions: NUMERIC_CONSTANTS.EMBEDDING_DIMENSIONS,
-      });
+      // Use embedding model - currently not in OPENAI_MODELS, using hardcoded value
+      const embeddingModel = 'text-embedding-3-small';
+      const response = await PerformanceLogger.measureAsync(
+        this.logger,
+        'OpenAI embedding generation',
+        async () => openai.embeddings.create({
+          model: embeddingModel,
+          input: text,
+          dimensions: NUMERIC_CONSTANTS.EMBEDDING_DIMENSIONS,
+        }),
+        { model: embeddingModel, textLength: text.length }
+      );
 
       if (response.data && response.data.length > 0) {
         const embedding = response.data[0].embedding;
@@ -109,7 +119,7 @@ export class OpenAIService {
       model: string;
       systemMessage: string;
       userMessage: string;
-      conversationHistory?: Array<{ role: string; content: string }>;
+      conversationHistory?: Array<{ role: MessageRole; content: string }>;
       temperature?: number;
       maxTokens?: number;
     }
@@ -143,7 +153,7 @@ export class OpenAIService {
               msg.role === MessageRole.ASSISTANT
           )
           .map((msg) => ({
-            role: msg.role.toLowerCase() as 'user' | 'assistant',
+            role: convertMessageRoleToOpenAI(msg.role),
             content: msg.content,
           }));
 
@@ -161,15 +171,23 @@ export class OpenAIService {
         content: options.userMessage,
       });
 
-      const completion = await openai.chat.completions.create({
-        model: options.model,
-        messages: messages as Parameters<
-          typeof openai.chat.completions.create
-        >[0]['messages'],
-        temperature:
-          options.temperature ?? NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE,
-        max_tokens: options.maxTokens,
-      });
+      const completion = await PerformanceLogger.measureAsync(
+        this.logger,
+        'OpenAI chat completion',
+        async () => openai.chat.completions.create({
+          model: options.model,
+          messages: messages as Parameters<
+            typeof openai.chat.completions.create
+          >[0]['messages'],
+          temperature:
+            options.temperature ?? NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE,
+          max_tokens: options.maxTokens,
+        }),
+        {
+          model: options.model,
+          messagesCount: messages.length,
+        }
+      );
 
       const response = completion.choices[0]?.message?.content;
       if (!response) {
@@ -178,14 +196,8 @@ export class OpenAIService {
 
       return response;
     } catch (error) {
-      const err = error as { message?: string };
-      this.logger.error(
-        'Error creating chat completion:',
-        err.message || 'Unknown error'
-      );
-      throw new InternalServerErrorException(
-        `Failed to create chat completion: ${err.message || 'Unknown error'}`
-      );
+      // Use centralized error handler
+      throw OpenAIErrorHandler.handleError(error, 'createChatCompletion');
     }
   }
 }

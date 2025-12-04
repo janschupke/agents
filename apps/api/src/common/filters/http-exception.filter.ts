@@ -8,7 +8,12 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ERROR_MESSAGES } from '../constants/error-messages.constants.js';
+import { ApiKeyRequiredException } from '../exceptions/index.js';
 
+/**
+ * Global exception filter for handling all exceptions
+ * Improved to use exception types instead of fragile string matching
+ */
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
@@ -22,19 +27,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let message: string | object = ERROR_MESSAGES.INTERNAL_SERVER_ERROR;
 
     if (exception instanceof HttpException) {
+      // HttpException already has proper status and message
       status = exception.getStatus();
       message = exception.getResponse();
+    } else if (exception instanceof ApiKeyRequiredException) {
+      // Use exception type instead of string matching
+      status = HttpStatus.UNAUTHORIZED;
+      message = exception.message || ERROR_MESSAGES.INVALID_API_KEY;
     } else if (exception instanceof Error) {
-      // Handle specific error types
-      if (
-        exception.message.includes('API key') ||
-        exception.message.includes('401')
-      ) {
-        status = HttpStatus.UNAUTHORIZED;
-        message = ERROR_MESSAGES.INVALID_API_KEY;
-      } else {
-        message = exception.message || ERROR_MESSAGES.UNKNOWN_ERROR;
-      }
+      // Handle generic errors
+      message = exception.message || ERROR_MESSAGES.UNKNOWN_ERROR;
       // Log unexpected errors for debugging
       this.logger.error(
         `Unhandled exception: ${exception.message}`,

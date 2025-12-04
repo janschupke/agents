@@ -5,6 +5,9 @@ import { OPENAI_MODELS } from '../../common/constants/api.constants';
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants';
 import { ERROR_MESSAGES } from '../../common/constants/error-messages.constants';
 import { AiRequestLogService } from '../../ai-request-log/ai-request-log.service';
+import { OpenAIErrorHandler } from '../../common/utils/openai-error-handler.util';
+import { convertMessageRoleToOpenAI } from '../../common/utils/message-role.util';
+import { PerformanceLogger } from '../../common/utils/performance-logger.util';
 import type OpenAI from 'openai';
 
 interface MessageForOpenAI {
@@ -44,7 +47,7 @@ export class OpenAIChatService {
     return {
       model: String(agentConfig.model || OPENAI_MODELS.DEFAULT),
       messages: messages.map((m) => ({
-        role: m.role.toLowerCase() as 'system' | 'user' | 'assistant',
+        role: convertMessageRoleToOpenAI(m.role),
         content: m.content,
       })),
       temperature: Number(
@@ -73,7 +76,10 @@ export class OpenAIChatService {
 
     try {
       const openai = this.openaiService.getClient(apiKey);
-      const completion = await openai.chat.completions.create({
+      const completion = await PerformanceLogger.measureAsync(
+        this.logger,
+        'OpenAI API call',
+        async () => openai.chat.completions.create({
         model: request.model,
         messages: request.messages as Array<{
           role: 'system' | 'user' | 'assistant';
@@ -81,7 +87,12 @@ export class OpenAIChatService {
         }>,
         temperature: request.temperature,
         max_tokens: request.max_tokens,
-      });
+        }),
+        {
+          model: request.model,
+          messagesCount: request.messages.length,
+        }
+      );
 
       const response = completion.choices[0]?.message?.content;
       if (!response) {
@@ -113,27 +124,8 @@ export class OpenAIChatService {
 
       return { response, completion };
     } catch (error) {
-      this.logger.error('OpenAI API call failed:', error);
-
-      // Handle API key errors
-      const errorObj = error as { message?: string; status?: number };
-      if (errorObj.message?.includes('API key') || errorObj.status === 401) {
-        throw new HttpException(
-          'Invalid API key. Please check your API credentials.',
-          HttpStatus.UNAUTHORIZED
-        );
-      }
-
-      // Re-throw HttpException as-is
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      // Wrap other errors
-      throw new HttpException(
-        errorObj.message || ERROR_MESSAGES.UNKNOWN_ERROR,
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
+      // Use centralized error handler
+      throw OpenAIErrorHandler.handleError(error, 'createChatCompletion');
     }
   }
 }
