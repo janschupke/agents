@@ -16,7 +16,7 @@ import { ResponseLength } from '../enums/response-length.enum';
 import { Gender } from '../enums/gender.enum';
 import { Sentiment } from '../enums/sentiment.enum';
 import { Availability } from '../enums/availability.enum';
-import { PersonalityType } from '../constants/personality-types.constants';
+import { PersonalityType } from '@openai/shared-types';
 
 export class AgentArchetypeConfigDto {
   @IsOptional()

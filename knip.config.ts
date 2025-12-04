@@ -22,6 +22,10 @@ const config: KnipConfig = {
       entry: ['src/index.ts'],
       project: ['src/**/*.ts', '!src/**/*.test.ts', '!src/**/*.spec.ts'],
     },
+    'packages/shared-types': {
+      entry: ['src/index.ts'],
+      project: ['src/**/*.ts', '!src/**/*.test.ts', '!src/**/*.spec.ts'],
+    },
   },
   ignore: [
     '**/dist/**',

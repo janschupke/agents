@@ -1,3 +1,8 @@
+/**
+ * Personality types for agent configuration
+ * Shared across client, admin, and API
+ */
+
 export const PERSONALITY_TYPES = [
   'Analytical',
   'Creative',

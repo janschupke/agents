@@ -45,13 +45,9 @@ export const ERROR_MESSAGES = {
     'Failed to create agent memory: no result returned',
 } as const;
 
+import { MAGIC_STRINGS as SHARED_MAGIC_STRINGS } from '@openai/shared-types';
+
+// Re-export shared magic strings for backward compatibility
 export const MAGIC_STRINGS = {
-  // User roles
-  DEFAULT_USER_ROLE: 'user',
-
-  // API provider names
-  OPENAI_PROVIDER: 'openai',
-
-  // Parse base
-  PARSE_INT_BASE: 10,
+  ...SHARED_MAGIC_STRINGS,
 } as const;

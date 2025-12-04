@@ -5,13 +5,14 @@
 **CRITICAL RULES:**
 
 1. **Always check `@openai/utils` first** - Before creating any utility function (parsing, formatting, file ops)
-2. **Always use semantic color classes** - Never hardcode Tailwind colors (`gray-*`, `blue-*`, etc.). Use semantic classes like `bg-primary`, `text-text-primary`, etc. that map to CSS variables
-3. **Always use layout components** - Use `PageContainer`, `PageHeader`, `Card`, `Container` from `@openai/ui` instead of duplicating markup
-4. **Never use `any`** - Use proper TypeScript types or `unknown`
-5. **Never put business logic in components** - Extract to hooks, services, or utilities. Components handle presentation only.
-6. **Never duplicate logic/markup** - Extract to `@openai/ui` (reusable) or app utils (app-specific)
-7. **Check `@openai/ui` before creating components** - Generic components belong in `packages/ui`
-8. **No hardcoded strings/numbers** - Extract to constants
+2. **Always check `@openai/shared-types` first** - Before creating constants, enums, or types used across multiple apps
+3. **Always use semantic color classes** - Never hardcode Tailwind colors (`gray-*`, `blue-*`, etc.). Use semantic classes like `bg-primary`, `text-text-primary`, etc. that map to CSS variables
+4. **Always use layout components** - Use `PageContainer`, `PageHeader`, `Card`, `Container` from `@openai/ui` instead of duplicating markup
+5. **Never use `any`** - Use proper TypeScript types or `unknown`
+6. **Never put business logic in components** - Extract to hooks, services, or utilities. Components handle presentation only.
+7. **Never duplicate logic/markup** - Extract to `@openai/ui` (reusable) or app utils (app-specific)
+8. **Check `@openai/ui` before creating components** - Generic components belong in `packages/ui`
+9. **No hardcoded strings/numbers** - Extract to constants, use `@openai/shared-types` for shared constants
 9. **Always extract user-facing strings** - Use translation keys for all text visible to users, never translate logs
 10. **Edit i18n files directly** - Translation files are flat JSON files, edit them directly in `packages/i18n/src/locales/{lang}/`
 11. **Split large files** - Components <500 lines, functions <100 lines
@@ -41,6 +42,7 @@
 ### Always
 
 - **Always check `@openai/utils` first** - Before creating utility functions
+- **Always check `@openai/shared-types` first** - Before creating constants, enums, or types used across apps
 - **Always check `@openai/ui` first** - Before creating components
 - **Always use semantic color classes** - Single source of truth via CSS variables in UI package
 - **Always use layout components** - From `@openai/ui` instead of raw markup
@@ -57,10 +59,11 @@ apps/                    # Deployable applications (client, admin, api)
 packages/                # Reusable packages
   ├── ui/               # Design system components (CSS variables for theming)
   ├── utils/            # Generic utilities (ALWAYS CHECK FIRST)
-  └── i18n/             # Internationalization
+  ├── i18n/             # Internationalization
+  └── shared-types/     # Shared types, constants, and enums (ALWAYS CHECK FIRST)
 ```
 
-**Package naming:** Use kebab-case (`@openai/ui`, `@openai/utils`, `@openai/i18n`)
+**Package naming:** Use kebab-case (`@openai/ui`, `@openai/utils`, `@openai/i18n`, `@openai/shared-types`)
 
 ## Design System & Styling
 
@@ -128,6 +131,42 @@ import { Badge } from '@openai/ui'
 // ❌ Bad: Inline conditional classes
 <span className={invoice.status === 'Paid' ? 'bg-green-100...' : 'bg-red-100...'}>
 ```
+
+## Shared Types & Constants
+
+### Always Check `@openai/shared-types` First
+
+**CRITICAL:** Before creating constants, enums, or types used across multiple apps, check `@openai/shared-types` - it's the single source of truth for shared constants.
+
+**Available exports:**
+
+- **Personality Types**: `PERSONALITY_TYPES`, `PersonalityType` - Agent personality type definitions
+- **Interests**: `INTERESTS`, `Interest` - Agent interest definitions
+- **Numeric Constants**: `NUMERIC_CONSTANTS` - Shared numeric constants (UI timeouts, file limits, pagination)
+- **OpenAI Models**: `OPENAI_MODELS` - OpenAI model name constants
+- **Magic Strings**: `MAGIC_STRINGS` - Shared string constants (user roles, provider names, parse base)
+
+```typescript
+// ✅ Good: Import from @openai/shared-types
+import { PERSONALITY_TYPES, PersonalityType } from '@openai/shared-types'
+import { INTERESTS, Interest } from '@openai/shared-types'
+import { NUMERIC_CONSTANTS } from '@openai/shared-types'
+import { OPENAI_MODELS, MAGIC_STRINGS } from '@openai/shared-types'
+
+// ✅ Good: Use subpath exports for specific imports
+import { PERSONALITY_TYPES } from '@openai/shared-types/personality-types'
+import { NUMERIC_CONSTANTS } from '@openai/shared-types/numeric'
+
+// ❌ Bad: Creating duplicate constants in apps
+// Don't create PERSONALITY_TYPES, INTERESTS, etc. in app directories
+```
+
+**When to add to `@openai/shared-types` vs app:**
+
+- **`@openai/shared-types`**: Constants, enums, or types used in 2+ apps (client, admin, API)
+- **App directory**: App-specific constants (e.g., `ROUTES` in client, `API_ROUTES` in API)
+
+**Before creating:** Check `packages/shared-types/src/index.ts` and relevant category files.
 
 ## Utility Functions
 
@@ -293,6 +332,7 @@ import { Button, Container } from '@openai/ui'
 // 3. Shared packages
 import { formatDate } from '@openai/utils'
 import { useTranslation, I18nNamespace } from '@openai/i18n'
+import { PERSONALITY_TYPES, NUMERIC_CONSTANTS } from '@openai/shared-types'
 // 4. App-level (constants, contexts)
 import { ROUTES } from '../constants/routes'
 // 5. Feature-level (relative)
@@ -301,8 +341,24 @@ import { useInvoices } from '../hooks/useInvoices'
 
 ## Constants & Configuration
 
+**CRITICAL:** Before creating constants, enums, or types used across multiple apps, check `@openai/shared-types` first.
+
+**When to use `@openai/shared-types`:**
+- Constants used in client, admin, and/or API (e.g., `PERSONALITY_TYPES`, `INTERESTS`, `NUMERIC_CONSTANTS`)
+- Enums or types shared across apps
+- Magic strings used in multiple apps (e.g., `OPENAI_PROVIDER`, `DEFAULT_USER_ROLE`)
+- OpenAI model names and configuration constants
+
+**When to keep in app:**
+- App-specific constants (e.g., `ROUTES` in client, `API_ROUTES` in API)
+- App-specific configuration values
+
 ```typescript
-// ✅ Good: Centralized constants
+// ✅ Good: Import shared constants from @openai/shared-types
+import { PERSONALITY_TYPES, PersonalityType, NUMERIC_CONSTANTS } from '@openai/shared-types'
+import { OPENAI_MODELS, MAGIC_STRINGS } from '@openai/shared-types'
+
+// ✅ Good: App-specific constants (keep in app)
 export const ROUTES = {
   DASHBOARD: '/dashboard',
   INVOICES: '/invoices',
@@ -311,7 +367,7 @@ export const ROUTES = {
 
 // ✅ Good: Named constants (not magic values)
 const STATUS = { ACTIVE: 'active', INACTIVE: 'inactive' } as const
-const DEBOUNCE_DELAY_MS = 3000
+const DEBOUNCE_DELAY_MS = NUMERIC_CONSTANTS.UI_DEBOUNCE_DELAY // Use shared constant
 
 // ✅ Good: Const objects for string unions
 export const INVOICE_STATUS = { DRAFT: 'draft', SENT: 'sent', PAID: 'paid' } as const
@@ -693,6 +749,7 @@ Before considering work complete:
 - [ ] **Semantic colors**: Used semantic color classes (no hardcoded `gray-*`, `blue-*`, etc.)
 - [ ] **Layout components**: Used `PageContainer`, `PageHeader`, `Card`, `Container`, etc. from `@openai/ui`
 - [ ] **Utilities**: Checked `@openai/utils` before creating new utilities
+- [ ] **Shared constants**: Checked `@openai/shared-types` before creating constants/enums used across apps
 - [ ] **Logging**: Added NestJS Logger in API services/controllers where needed
 - [ ] **File size**: Components <500 lines, utilities <500 lines
 - [ ] **Separation of concerns**: Business logic separated from presentation
@@ -742,6 +799,7 @@ pnpm check            # Run lint, typecheck, test, and build
 import { Button, Container, PageContainer } from '@openai/ui' // Design system
 import { formatDate, formatTime } from '@openai/utils' // Utilities
 import { useTranslation, I18nNamespace } from '@openai/i18n' // i18n
+import { PERSONALITY_TYPES, NUMERIC_CONSTANTS } from '@openai/shared-types' // Shared constants
 import { ROUTES } from './constants/routes' // App constants
 import { useInvoices } from '../hooks/useInvoices' // Feature imports
 ```

@@ -30,7 +30,7 @@ import {
   Sentiment,
   Availability,
 } from '../../../../../../types/agent.types';
-import { PersonalityType } from '../../../../../../constants/personality-types.constants';
+import { PersonalityType } from '@openai/shared-types';
 
 interface AgentConfigFormProps {
   agent: Agent | null;

@@ -1,8 +1,15 @@
 /**
- * Centralized numeric constants (magic numbers)
+ * Centralized numeric constants (magic numbers) for API
+ * Shared UI constants are imported from @openai/shared-types
  */
 
+import { NUMERIC_CONSTANTS as SHARED_NUMERIC_CONSTANTS } from '@openai/shared-types';
+
 export const NUMERIC_CONSTANTS = {
+  // Re-export shared constants
+  ...SHARED_NUMERIC_CONSTANTS,
+
+  // API-specific constants
   // Embedding dimensions
   EMBEDDING_DIMENSIONS: 1536,
 
@@ -22,21 +29,6 @@ export const NUMERIC_CONSTANTS = {
   MEMORY_SUMMARIZATION_LIMIT: 100,
   OPENAI_CHAT_CONTEXT_MESSAGES: 20, // Number of conversation messages (user/assistant pairs) to include in OpenAI requests
 
-  // Timeouts (milliseconds)
-  UI_DEBOUNCE_DELAY: 100,
-  UI_NOTIFICATION_DURATION: 3000,
-  UI_MODAL_DELAY: 200,
-  CACHE_TIMEOUT_MS: 5 * 60 * 1000, // 5 minutes
-
-  // Polling intervals (milliseconds)
-  POLLING_INTERVAL_START: 1000, // 1 second
-
-  // File upload limits
-  MAX_FILE_SIZE_MB: 5,
-  MAX_FILE_SIZE_BYTES: 5 * 1024 * 1024, // 5MB in bytes
-
-  // Pagination defaults
-  DEFAULT_PAGE_SIZE: 20,
-  DEFAULT_PAGE: 1,
+  // Pagination defaults (API-specific)
   MAX_PAGE_SIZE: 1000,
 } as const;

@@ -11,8 +11,7 @@ import {
   Sentiment,
   Availability,
 } from '../types/agent.types';
-import { PersonalityType, PERSONALITY_TYPES } from '../constants/personality-types.constants';
-import { INTERESTS } from '../constants/interests.constants';
+import { PersonalityType, PERSONALITY_TYPES, INTERESTS } from '@openai/shared-types';
 
 interface AgentArchetypeFormProps {
   archetype: AgentArchetype | null;

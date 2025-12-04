@@ -1,6 +1,6 @@
 import { FormField } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { INTERESTS, Interest } from '../../../../../../constants/interests.constants';
+import { INTERESTS, Interest } from '@openai/shared-types';
 
 interface InterestsDashboardProps {
   selectedInterests: string[];

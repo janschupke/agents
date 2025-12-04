@@ -1,3 +1,8 @@
+/**
+ * Interests for agent configuration
+ * Shared across client, admin, and API
+ */
+
 export const INTERESTS = [
   'Sports',
   'Music',

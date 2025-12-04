@@ -1,6 +1,6 @@
 import { FormField } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { PERSONALITY_TYPES } from '../../../../../../constants/personality-types.constants';
+import { PERSONALITY_TYPES } from '@openai/shared-types';
 
 interface PersonalityFieldProps {
   value: string | null;

@@ -13,7 +13,8 @@ A fullstack monorepo with a NestJS API and React client for AI-powered chat func
 ├── packages/
 │   ├── ui/          # Shared UI components and design system
 │   ├── i18n/        # Internationalization package
-│   └── utils/       # Shared utilities package
+│   ├── utils/       # Shared utilities package
+│   └── shared-types/ # Shared types, constants, and enums
 ├── pnpm-workspace.yaml
 └── package.json
 ```
@@ -164,6 +165,7 @@ Build specific package:
 pnpm --filter @openai/ui build
 pnpm --filter @openai/utils build
 pnpm --filter @openai/i18n build
+pnpm --filter @openai/shared-types build
 ```
 
 ### Code Quality
@@ -221,6 +223,24 @@ Internationalization package with support for multiple languages and namespaces.
 - `ADMIN` - Admin app translations
 - `API` - API translations
 - `COMMON` - Common translations
+
+### `@openai/shared-types`
+
+Shared types, constants, and enums used across client, admin, and API apps.
+
+**Available exports:**
+- `PERSONALITY_TYPES` and `PersonalityType` - Agent personality type definitions
+- `INTERESTS` and `Interest` - Agent interest definitions
+- `NUMERIC_CONSTANTS` - Shared numeric constants (UI timeouts, file limits, pagination)
+- `OPENAI_MODELS` - OpenAI model name constants
+- `MAGIC_STRINGS` - Shared string constants (user roles, provider names, etc.)
+
+**Subpath exports:**
+- `@openai/shared-types/personality-types`
+- `@openai/shared-types/interests`
+- `@openai/shared-types/numeric`
+- `@openai/shared-types/openai`
+- `@openai/shared-types/magic-strings`
 
 ## API Endpoints
 

@@ -1,10 +1,8 @@
 import { NUMERIC_CONSTANTS } from './numeric.constants.js';
+import { OPENAI_MODELS } from '@openai/shared-types';
 
-export const OPENAI_MODELS = {
-  DEFAULT: 'gpt-4o-mini',
-  TRANSLATION: 'gpt-4o-mini',
-  MEMORY: 'gpt-4o-mini',
-} as const;
+// Re-export for backward compatibility
+export { OPENAI_MODELS };
 
 export const DEFAULT_AGENT_CONFIG = {
   model: OPENAI_MODELS.DEFAULT,

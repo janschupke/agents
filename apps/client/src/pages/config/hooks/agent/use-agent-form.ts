@@ -9,7 +9,7 @@ import {
   Sentiment,
   Availability,
 } from '../../../../types/agent.types';
-import { PersonalityType, PERSONALITY_TYPES } from '../../../../constants/personality-types.constants';
+import { PersonalityType, PERSONALITY_TYPES } from '@openai/shared-types';
 
 export interface AgentFormValues extends Record<string, unknown> {
   name: string;
