@@ -1,5 +1,6 @@
 import { NUMERIC_CONSTANTS } from './numeric.constants.js';
 import { OPENAI_MODELS, OPENAI_MODEL_PRICING } from '@openai/shared-types';
+import { OPENAI_PROMPTS } from './openai-prompts.constants.js';
 
 // Re-export for backward compatibility
 export { OPENAI_MODELS, OPENAI_MODEL_PRICING };
@@ -8,7 +9,7 @@ export const DEFAULT_AGENT_CONFIG = {
   model: OPENAI_MODELS.DEFAULT,
   temperature: NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE,
   max_tokens: NUMERIC_CONSTANTS.DEFAULT_MAX_TOKENS,
-  system_prompt: 'You are a helpful assistant.',
+  system_prompt: OPENAI_PROMPTS.DEFAULT_SYSTEM_PROMPT,
 } as const;
 
 export const MEMORY_CONFIG = {

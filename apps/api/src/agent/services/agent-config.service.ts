@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DEFAULT_AGENT_CONFIG } from '../../common/constants/api.constants';
+import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants';
 import { ResponseLength } from '../../common/enums/response-length.enum';
 import { Gender } from '../../common/enums/gender.enum';
 import { Sentiment } from '../../common/enums/sentiment.enum';
@@ -55,9 +56,13 @@ export class AgentConfigService {
       if (validValues.includes(responseLength as ResponseLength)) {
         const validatedLength = responseLength as ResponseLength;
         if (validatedLength === ResponseLength.ADAPT) {
-          rules.push("Adapt your response length to the user's message and context");
+          rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.RESPONSE_LENGTH.ADAPT);
         } else {
-          rules.push(`Respond with messages of ${validatedLength} length`);
+          rules.push(
+            OPENAI_PROMPTS.CONFIG_BASED_RULES.RESPONSE_LENGTH.FIXED(
+              validatedLength
+            )
+          );
         }
       } else {
         this.logger.warn(
@@ -71,17 +76,17 @@ export class AgentConfigService {
       const age = Number(configs.age);
       if (!isNaN(age) && age >= 0 && age <= 100) {
         if (age < 13) {
-          rules.push(`You are ${age} years old. Speak like a child - use simpler language, show curiosity and wonder, and express yourself in an age-appropriate way.`);
+          rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.CHILD(age));
         } else if (age < 18) {
-          rules.push(`You are ${age} years old. Speak like a teenager - use casual language, show enthusiasm, and express yourself in a way that reflects teenage interests and concerns.`);
+          rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.TEENAGER(age));
         } else if (age < 30) {
-          rules.push(`You are ${age} years old. Speak like a young adult - use modern, energetic language and show interest in contemporary topics and experiences.`);
+          rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.YOUNG_ADULT(age));
         } else if (age < 50) {
-          rules.push(`You are ${age} years old. Speak like a mature adult - use balanced, thoughtful language and show experience and wisdom in your communication.`);
+          rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.MATURE_ADULT(age));
         } else if (age < 70) {
-          rules.push(`You are ${age} years old. Speak like a middle-aged adult - use refined language, show life experience, and communicate with wisdom and perspective.`);
+          rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.MIDDLE_AGED(age));
         } else {
-          rules.push(`You are ${age} years old. Speak like an elder - use thoughtful, wise language, draw from extensive life experience, and communicate with patience and depth.`);
+          rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.ELDER(age));
         }
       } else {
         this.logger.warn(`Invalid age value: ${configs.age}. Must be a number between 0 and 100`);
@@ -94,7 +99,7 @@ export class AgentConfigService {
       const validValues = Object.values(Gender);
       if (validValues.includes(gender as Gender)) {
         const validatedGender = gender as Gender;
-        rules.push(`You are ${validatedGender}`);
+        rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.GENDER(validatedGender));
       } else {
         this.logger.warn(
           `Invalid gender value: ${gender}. Valid values: ${validValues.join(', ')}`
@@ -106,7 +111,9 @@ export class AgentConfigService {
     if (configs.personality !== undefined && configs.personality !== null) {
       const personality = configs.personality as string;
       if (PERSONALITY_TYPES.includes(personality as PersonalityType)) {
-        rules.push(`Your personality is ${personality}`);
+        rules.push(
+          OPENAI_PROMPTS.CONFIG_BASED_RULES.PERSONALITY(personality)
+        );
       } else {
         this.logger.warn(
           `Invalid personality value: ${personality}. Valid values: ${PERSONALITY_TYPES.join(', ')}`
@@ -120,7 +127,9 @@ export class AgentConfigService {
       const validValues = Object.values(Sentiment);
       if (validValues.includes(sentiment as Sentiment)) {
         const validatedSentiment = sentiment as Sentiment;
-        rules.push(`You feel ${validatedSentiment} toward the user`);
+        rules.push(
+          OPENAI_PROMPTS.CONFIG_BASED_RULES.SENTIMENT(validatedSentiment)
+        );
       } else {
         this.logger.warn(
           `Invalid sentiment value: ${sentiment}. Valid values: ${validValues.join(', ')}`
@@ -133,7 +142,7 @@ export class AgentConfigService {
       const interests = configs.interests.filter((i): i is string => typeof i === 'string');
       if (interests.length > 0) {
         const interestsList = interests.join(', ');
-        rules.push(`These are your interests: ${interestsList}`);
+        rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.INTERESTS(interestsList));
       }
     }
 

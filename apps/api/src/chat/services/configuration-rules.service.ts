@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AgentWithConfig } from '../../common/interfaces/agent.interface';
 import { LanguageAssistantService } from '../../agent/services/language-assistant.service';
+import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants';
 import { ResponseLength } from '../../common/enums/response-length.enum';
 import { Gender } from '../../common/enums/gender.enum';
 import { Sentiment } from '../../common/enums/sentiment.enum';
@@ -117,18 +118,15 @@ export class ConfigurationRulesService {
    * Generate datetime rule
    */
   private generateDatetimeRule(currentDateTime: Date): string {
-    // Format: "Currently it's {ISO 8601 datetime}"
     const isoString = currentDateTime.toISOString();
-    return `Currently it's ${isoString}`;
+    return OPENAI_PROMPTS.CONFIGURATION_RULES.DATETIME(isoString);
   }
 
   /**
    * Generate language rule
    */
   private generateLanguageRule(language: string): string {
-    // Format: "Always respond in {language}"
-    // Language name could be enhanced with a language name mapping service
-    return `Always respond in ${language}`;
+    return OPENAI_PROMPTS.CONFIGURATION_RULES.LANGUAGE(language);
   }
 
   /**
@@ -199,42 +197,43 @@ export class ConfigurationRulesService {
 
   private generateResponseLengthRule(responseLength: ResponseLength): string {
     if (responseLength === ResponseLength.ADAPT) {
-      return "Adapt your response length to the user's message and context";
+      return OPENAI_PROMPTS.CONFIG_BASED_RULES.RESPONSE_LENGTH.ADAPT;
     }
-    return `Respond with messages of ${responseLength} length`;
+    return OPENAI_PROMPTS.CONFIG_BASED_RULES.RESPONSE_LENGTH.FIXED(
+      responseLength
+    );
   }
 
   private generateAgeRule(age: number): string {
-    // Tailor the prompt to make the agent speak in the appropriate age style
     if (age < 13) {
-      return `You are ${age} years old. Speak like a child - use simpler language, show curiosity and wonder, and express yourself in an age-appropriate way.`;
+      return OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.CHILD(age);
     } else if (age < 18) {
-      return `You are ${age} years old. Speak like a teenager - use casual language, show enthusiasm, and express yourself in a way that reflects teenage interests and concerns.`;
+      return OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.TEENAGER(age);
     } else if (age < 30) {
-      return `You are ${age} years old. Speak like a young adult - use modern, energetic language and show interest in contemporary topics and experiences.`;
+      return OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.YOUNG_ADULT(age);
     } else if (age < 50) {
-      return `You are ${age} years old. Speak like a mature adult - use balanced, thoughtful language and show experience and wisdom in your communication.`;
+      return OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.MATURE_ADULT(age);
     } else if (age < 70) {
-      return `You are ${age} years old. Speak like a middle-aged adult - use refined language, show life experience, and communicate with wisdom and perspective.`;
+      return OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.MIDDLE_AGED(age);
     } else {
-      return `You are ${age} years old. Speak like an elder - use thoughtful, wise language, draw from extensive life experience, and communicate with patience and depth.`;
+      return OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.ELDER(age);
     }
   }
 
   private generateGenderRule(gender: Gender): string {
-    return `You are ${gender}`;
+    return OPENAI_PROMPTS.CONFIG_BASED_RULES.GENDER(gender);
   }
 
   private generatePersonalityRule(personality: string): string {
-    return `Your personality is ${personality}`;
+    return OPENAI_PROMPTS.CONFIG_BASED_RULES.PERSONALITY(personality);
   }
 
   private generateInterestsRule(interests: string[]): string {
     const interestsList = interests.join(', ');
-    return `These are your interests: ${interestsList}`;
+    return OPENAI_PROMPTS.CONFIG_BASED_RULES.INTERESTS(interestsList);
   }
 
   private generateSentimentRule(sentiment: Sentiment): string {
-    return `You feel ${sentiment} toward the user`;
+    return OPENAI_PROMPTS.CONFIG_BASED_RULES.SENTIMENT(sentiment);
   }
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { OpenAIService } from '../../openai/openai.service';
 import { OPENAI_MODELS } from '../../common/constants/api.constants.js';
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants.js';
+import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants.js';
 import { WordTranslation } from '../message-word-translation.repository';
 
 /**
@@ -89,8 +90,7 @@ Return ONLY the JSON object, no additional text.`;
         messages: [
           {
             role: 'system',
-            content:
-              'You are a word parsing assistant. Return only valid JSON objects.',
+            content: OPENAI_PROMPTS.WORD_PARSING.SYSTEM,
           },
           {
             role: 'user',
