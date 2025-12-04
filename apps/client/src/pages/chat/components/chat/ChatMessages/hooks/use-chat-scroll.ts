@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 interface UseChatScrollOptions {
   messages: unknown[];
   sessionId: number | null;
+  showTypingIndicator?: boolean;
 }
 
 interface UseChatScrollReturn {
@@ -16,10 +17,12 @@ interface UseChatScrollReturn {
 export function useChatScroll({
   messages,
   sessionId,
+  showTypingIndicator = false,
 }: UseChatScrollOptions): UseChatScrollReturn {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isInitialLoadRef = useRef(true);
   const previousMessageCountRef = useRef(0);
+  const previousTypingIndicatorRef = useRef(false);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -45,6 +48,21 @@ export function useChatScroll({
 
     previousMessageCountRef.current = messageCount;
   }, [messages]);
+
+  // Scroll to bottom when typing indicator appears
+  useEffect(() => {
+    if (showTypingIndicator && !previousTypingIndicatorRef.current && messagesEndRef.current) {
+      // Typing indicator just appeared, scroll to show it
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 50);
+      });
+    }
+    previousTypingIndicatorRef.current = showTypingIndicator;
+  }, [showTypingIndicator]);
 
   // Reset initial load flag when session changes
   useEffect(() => {

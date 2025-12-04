@@ -70,6 +70,7 @@ function ChatAgentContent({
   const { messagesEndRef } = useChatScroll({
     messages,
     sessionId: sessionId ?? null,
+    showTypingIndicator: isSendingMessage,
   });
 
   // Modal management

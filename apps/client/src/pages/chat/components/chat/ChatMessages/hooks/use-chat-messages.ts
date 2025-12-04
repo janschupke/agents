@@ -2,6 +2,7 @@ import { useMemo, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Message,
+  MessageRole,
   SendMessageResponse,
   ChatHistoryResponse,
 } from '../../../../../../types/chat.types';
@@ -74,6 +75,33 @@ export function useChatMessages({
   const sendMessage = async (message: string) => {
     if (!message.trim() || !agentId) return;
 
+    const queryKey = queryKeys.chat.history(agentId, sessionId || undefined);
+    
+    // Optimistically add user message to cache immediately
+    const optimisticUserMessage: Message = {
+      role: MessageRole.USER,
+      content: message.trim(),
+      rawRequest: undefined,
+    };
+    
+    queryClient.setQueryData(queryKey, (oldData: ChatHistoryResponse | undefined) => {
+      if (!oldData) {
+        // If no data yet, create minimal structure
+        return {
+          agent: { id: agentId, name: '', description: null },
+          session: sessionId ? { id: sessionId, session_name: null } : null,
+          messages: [optimisticUserMessage],
+          savedWordMatches: [],
+          hasMore: false,
+        };
+      }
+      
+      return {
+        ...oldData,
+        messages: [...oldData.messages, optimisticUserMessage],
+      };
+    });
+
     try {
       const result = await sendMessageMutation.mutateAsync({
         agentId,
@@ -81,8 +109,7 @@ export function useChatMessages({
         sessionId: sessionId || undefined,
       });
 
-      // Invalidate and refetch chat history to get updated messages
-      const queryKey = queryKeys.chat.history(agentId, sessionId || undefined);
+      // Invalidate and refetch chat history to get updated messages with IDs
       await queryClient.invalidateQueries({ queryKey });
 
       // Update saved word matches if new matches were returned

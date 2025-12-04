@@ -85,8 +85,7 @@ export default function MessageBubble({
         </div>
 
         {/* Action buttons container - overlay text with background when visible */}
-        {/* Only show translation button for language assistants */}
-        {enableTranslation && (
+        {(enableTranslation || hasRawData) && (
         <div
           className={`absolute top-2 right-2 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity ${
             message.role === MessageRole.USER
@@ -95,31 +94,33 @@ export default function MessageBubble({
           } rounded px-1 py-0.5`}
           style={{ pointerEvents: 'auto' }}
         >
-          {/* Translation button */}
-          <Button
-            onClick={handleTranslate}
-            disabled={isTranslating || !messageId}
-            variant="message-bubble"
-            size="xs"
-            className="p-1"
-            tooltip={
-              isTranslating
-                ? t('chat.translation.translating')
-                : hasTranslation
-                  ? showTranslation
-                    ? t('chat.translation.hideTranslation')
-                    : t('chat.translation.showTranslation')
-                  : t('chat.translation.clickToTranslate')
-            }
-          >
-            {isTranslating ? (
-              <div className={`${getSizeClasses('xs').iconSize} border-2 border-current border-t-transparent rounded-full animate-spin`} />
-            ) : (
-              <IconTranslate size="xs" />
-            )}
-          </Button>
+          {/* Translation button - only for language assistants */}
+          {enableTranslation && (
+            <Button
+              onClick={handleTranslate}
+              disabled={isTranslating || !messageId}
+              variant="message-bubble"
+              size="xs"
+              className="p-1"
+              tooltip={
+                isTranslating
+                  ? t('chat.translation.translating')
+                  : hasTranslation
+                    ? showTranslation
+                      ? t('chat.translation.hideTranslation')
+                      : t('chat.translation.showTranslation')
+                    : t('chat.translation.clickToTranslate')
+              }
+            >
+              {isTranslating ? (
+                <div className={`${getSizeClasses('xs').iconSize} border-2 border-current border-t-transparent rounded-full animate-spin`} />
+              ) : (
+                <IconTranslate size="xs" />
+              )}
+            </Button>
+          )}
 
-          {/* JSON view button */}
+          {/* JSON view button - show for all agents if raw data exists */}
           {hasRawData && (
             <Button
               onClick={() => {
