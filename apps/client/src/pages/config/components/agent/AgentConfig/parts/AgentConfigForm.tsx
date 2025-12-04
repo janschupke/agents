@@ -119,10 +119,8 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
 
     // Memory operations hook
     const {
-      editingId,
       deletingId,
       handleDeleteMemory,
-      handleEditMemory,
       handleRefreshMemories,
     } = useAgentMemoryOperations({ agentId: agent?.id || null });
 
@@ -290,9 +288,7 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
               agentId={agent.id}
               memories={memories}
               loading={loadingMemories}
-              editingId={editingId}
               deletingId={deletingId}
-              onEdit={handleEditMemory}
               onDelete={handleDeleteMemory}
               onRefresh={handleRefreshMemories}
             />

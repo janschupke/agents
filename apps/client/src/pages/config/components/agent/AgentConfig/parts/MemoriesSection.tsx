@@ -6,9 +6,7 @@ interface MemoriesSectionProps {
   agentId: number;
   memories: AgentMemory[];
   loading: boolean;
-  editingId: number | null;
   deletingId: number | null;
-  onEdit: (memoryId: number, newKeyPoint: string) => void;
   onDelete: (memoryId: number) => void;
   onRefresh: () => void;
 }
@@ -20,9 +18,7 @@ export default function MemoriesSection({
   agentId,
   memories,
   loading,
-  editingId,
   deletingId,
-  onEdit,
   onDelete,
   onRefresh,
 }: MemoriesSectionProps) {
@@ -49,9 +45,7 @@ export default function MemoriesSection({
       <MemoriesList
         memories={memories}
         loading={loading}
-        editingId={editingId}
         deletingId={deletingId}
-        onEdit={onEdit}
         onDelete={onDelete}
         onRefresh={onRefresh}
         agentId={agentId}

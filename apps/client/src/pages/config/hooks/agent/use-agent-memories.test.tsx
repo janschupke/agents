@@ -7,21 +7,13 @@ import { ToastProvider } from '../../../../contexts/ToastContext';
 // Mock dependencies - use hoisted to ensure stable references
 const {
   mockConfirm,
-  mockUpdateMemory,
   mockDeleteMemory,
   mockInvalidateQueries,
-  updateMemoryMutation,
   deleteMemoryMutation,
 } = vi.hoisted(() => {
   const mockConfirm = vi.fn();
-  const mockUpdateMemory = vi.fn();
   const mockDeleteMemory = vi.fn();
   const mockInvalidateQueries = vi.fn();
-
-  const updateMemoryMutation = {
-    mutateAsync: mockUpdateMemory,
-    isPending: false,
-  };
 
   const deleteMemoryMutation = {
     mutateAsync: mockDeleteMemory,
@@ -30,10 +22,8 @@ const {
 
   return {
     mockConfirm,
-    mockUpdateMemory,
     mockDeleteMemory,
     mockInvalidateQueries,
-    updateMemoryMutation,
     deleteMemoryMutation,
   };
 });
@@ -47,7 +37,6 @@ vi.mock('../../../../../hooks/ui/useConfirm', () => {
 });
 
 vi.mock('../../../../../hooks/mutations/use-agent-mutations', () => ({
-  useUpdateMemory: () => updateMemoryMutation,
   useDeleteMemory: () => deleteMemoryMutation,
 }));
 
@@ -76,12 +65,11 @@ describe('useAgentMemories', () => {
     mockConfirm.mockResolvedValue(false);
   });
 
-  it('should initialize with null editingId and deletingId', () => {
+  it('should initialize with null deletingId', () => {
     const { result } = renderHook(() => useAgentMemories({ agentId: 1 }), {
       wrapper,
     });
 
-    expect(result.current.editingId).toBeNull();
     expect(result.current.deletingId).toBeNull();
   });
 
@@ -148,37 +136,6 @@ describe('useAgentMemories', () => {
 
     expect(mockConfirm).not.toHaveBeenCalled();
     expect(mockDeleteMemory).not.toHaveBeenCalled();
-  });
-
-  it.skip('should edit memory', async () => {
-    mockUpdateMemory.mockResolvedValue(undefined);
-
-    const { result } = renderHook(() => useAgentMemories({ agentId: 1 }), {
-      wrapper,
-    });
-
-    await act(async () => {
-      await result.current.handleEditMemory(1, 'Updated key point');
-    });
-
-    expect(mockUpdateMemory).toHaveBeenCalledWith({
-      agentId: 1,
-      memoryId: 1,
-      keyPoint: 'Updated key point',
-    });
-    expect(result.current.editingId).toBeNull();
-  });
-
-  it.skip('should not edit memory when agentId is null', async () => {
-    const { result } = renderHook(() => useAgentMemories({ agentId: null }), {
-      wrapper,
-    });
-
-    await act(async () => {
-      await result.current.handleEditMemory(1, 'Updated key point');
-    });
-
-    expect(mockUpdateMemory).not.toHaveBeenCalled();
   });
 
   it.skip('should refresh memories', () => {

@@ -17,7 +17,8 @@ describe('MessagePreparationService', () => {
     getSystemBehaviorRules: jest.fn(),
     getAgentBehaviorRules: jest.fn(),
     mergeBehaviorRules: jest.fn(),
-    generateConfigurationRules: jest.fn(),
+    generateConfigurationRules: jest.fn().mockReturnValue([]),
+    formatConfigurationRules: jest.fn().mockReturnValue(''),
   };
 
   const mockLanguageAssistantService = {
@@ -77,19 +78,13 @@ describe('MessagePreparationService', () => {
       },
     ];
 
-    it('should prepare messages with system prompt and behavior rules', async () => {
+    it('should prepare messages with correct structure: code rules (system) -> admin rules (system) -> client system prompt (user) -> client behavior rules (user) -> conversation -> user message', async () => {
       mockSystemConfigRepository.findByKey.mockResolvedValue(null);
-      mockConfigurationRulesService.getSystemBehaviorRules.mockResolvedValue(
-        []
-      );
-      mockConfigurationRulesService.getAgentBehaviorRules.mockReturnValue(
-        'Be polite'
-      );
-      mockConfigurationRulesService.mergeBehaviorRules.mockReturnValue(
-        'Be polite'
-      );
-      mockConfigurationRulesService.generateConfigurationRules.mockReturnValue(
-        []
+      mockConfigurationRulesService.generateConfigurationRules.mockReturnValue([
+        { content: 'Currently it\'s 2025-01-01T00:00:00.000Z', order: 1 },
+      ]);
+      mockConfigurationRulesService.formatConfigurationRules.mockReturnValue(
+        'Currently it\'s 2025-01-01T00:00:00.000Z'
       );
 
       const result = await service.prepareMessagesForOpenAI(
@@ -101,21 +96,30 @@ describe('MessagePreparationService', () => {
 
       expect(result).toBeDefined();
       expect(result.length).toBeGreaterThan(0);
+      
+      // First message should be code-defined rules (system)
       expect(result[0].role).toBe(MessageRole.SYSTEM);
-      expect(result[0].content).toContain('You are a helpful assistant');
+      expect(result[0].content).toContain('Currently it\'s');
+      
+      // Client system prompt should be user role
+      const systemPromptMessage = result.find(
+        (m) => m.role === MessageRole.USER && m.content === 'You are a helpful assistant'
+      );
+      expect(systemPromptMessage).toBeDefined();
+      
+      // Client behavior rules should be user role
+      const behaviorRulesMessage = result.find(
+        (m) => m.role === MessageRole.USER && m.content.includes('Be polite')
+      );
+      expect(behaviorRulesMessage).toBeDefined();
+      
+      // Last message should be the new user message
+      expect(result[result.length - 1].role).toBe(MessageRole.USER);
+      expect(result[result.length - 1].content).toBe('New message');
     });
 
     it('should include memories when provided', async () => {
       mockSystemConfigRepository.findByKey.mockResolvedValue(null);
-      mockConfigurationRulesService.getSystemBehaviorRules.mockResolvedValue(
-        []
-      );
-      mockConfigurationRulesService.getAgentBehaviorRules.mockReturnValue(
-        'Be polite'
-      );
-      mockConfigurationRulesService.mergeBehaviorRules.mockReturnValue(
-        'Be polite'
-      );
       mockConfigurationRulesService.generateConfigurationRules.mockReturnValue(
         []
       );
@@ -141,15 +145,6 @@ describe('MessagePreparationService', () => {
 
     it('should include existing conversation history', async () => {
       mockSystemConfigRepository.findByKey.mockResolvedValue(null);
-      mockConfigurationRulesService.getSystemBehaviorRules.mockResolvedValue(
-        []
-      );
-      mockConfigurationRulesService.getAgentBehaviorRules.mockReturnValue(
-        'Be polite'
-      );
-      mockConfigurationRulesService.mergeBehaviorRules.mockReturnValue(
-        'Be polite'
-      );
       mockConfigurationRulesService.generateConfigurationRules.mockReturnValue(
         []
       );
@@ -161,22 +156,14 @@ describe('MessagePreparationService', () => {
         []
       );
 
-      expect(result.length).toBeGreaterThan(2); // System + history + new message
+      expect(result.length).toBeGreaterThan(2); // Rules + client config + history + new message
       const userMessages = result.filter((m) => m.role === MessageRole.USER);
-      expect(userMessages.length).toBeGreaterThan(0);
+      // Should have: client system prompt + client behavior rules + conversation history + new message
+      expect(userMessages.length).toBeGreaterThanOrEqual(4);
     });
 
     it('should handle empty existing messages', async () => {
       mockSystemConfigRepository.findByKey.mockResolvedValue(null);
-      mockConfigurationRulesService.getSystemBehaviorRules.mockResolvedValue(
-        []
-      );
-      mockConfigurationRulesService.getAgentBehaviorRules.mockReturnValue(
-        'Be polite'
-      );
-      mockConfigurationRulesService.mergeBehaviorRules.mockReturnValue(
-        'Be polite'
-      );
       mockConfigurationRulesService.generateConfigurationRules.mockReturnValue(
         []
       );
@@ -190,20 +177,18 @@ describe('MessagePreparationService', () => {
 
       expect(result).toBeDefined();
       expect(result.length).toBeGreaterThan(0);
-      expect(result[0].role).toBe(MessageRole.SYSTEM);
+      // Client system prompt should be user role
+      const systemPromptMessage = result.find(
+        (m) => m.role === MessageRole.USER && m.content === 'You are a helpful assistant'
+      );
+      expect(systemPromptMessage).toBeDefined();
+      // Last message should be the user message
+      expect(result[result.length - 1].role).toBe(MessageRole.USER);
+      expect(result[result.length - 1].content).toBe('First message');
     });
 
     it('should handle missing behavior rules', async () => {
       mockSystemConfigRepository.findByKey.mockResolvedValue(null);
-      mockConfigurationRulesService.getSystemBehaviorRules.mockResolvedValue(
-        []
-      );
-      mockConfigurationRulesService.getAgentBehaviorRules.mockReturnValue(
-        undefined
-      );
-      mockConfigurationRulesService.mergeBehaviorRules.mockReturnValue(
-        undefined
-      );
       mockConfigurationRulesService.generateConfigurationRules.mockReturnValue(
         []
       );
@@ -221,6 +206,11 @@ describe('MessagePreparationService', () => {
 
       expect(result).toBeDefined();
       expect(result.length).toBeGreaterThan(0);
+      // Should still have client system prompt as user message
+      const systemPromptMessage = result.find(
+        (m) => m.role === MessageRole.USER && m.content === 'You are a helpful assistant'
+      );
+      expect(systemPromptMessage).toBeDefined();
     });
   });
 });

@@ -1,21 +1,16 @@
 import { AgentMemory } from '../../../../../../types/chat.types';
 import {
   IconClose,
-  IconEdit,
   SkeletonList,
   Card,
   Button,
-  Textarea,
 } from '@openai/ui';
 import { formatRelativeDate } from '@openai/utils';
-import { useMemoryEditing } from '../../../../hooks/memory/use-memory-editing';
 
 interface MemoriesListProps {
   memories: AgentMemory[];
   loading: boolean;
-  editingId: number | null;
   deletingId: number | null;
-  onEdit: (memoryId: number, newKeyPoint: string) => void;
   onDelete: (memoryId: number) => void;
   onRefresh: () => void;
   agentId: number;
@@ -24,21 +19,11 @@ interface MemoriesListProps {
 export default function MemoriesList({
   memories,
   loading,
-  editingId,
   deletingId,
-  onEdit,
   onDelete,
   onRefresh: _onRefresh,
   agentId,
 }: MemoriesListProps) {
-  const {
-    editingMemoryId,
-    editValue,
-    setEditValue,
-    handleStartEdit,
-    handleCancelEdit,
-    handleSaveEdit,
-  } = useMemoryEditing();
 
   if (agentId < 0) {
     return (
@@ -79,65 +64,22 @@ export default function MemoriesList({
                   <> • Session: #{memory.context.sessionId}</>
                 )}
               </div>
-              {editingMemoryId === memory.id ? (
-                <div className="space-y-2">
-                  <Textarea
-                    value={editValue}
-                    onChange={(e) => setEditValue(e.target.value)}
-                    className="bg-background-secondary border-border focus:ring-2 focus:ring-primary"
-                    rows={2}
-                    autoFocus
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => handleSaveEdit(memory.id, onEdit)}
-                      disabled={!editValue.trim() || editingId === memory.id}
-                      variant="primary"
-                      size="sm"
-                      loading={editingId === memory.id}
-                    >
-                      Save
-                    </Button>
-                    <Button
-                      onClick={handleCancelEdit}
-                      disabled={editingId === memory.id}
-                      variant="secondary"
-                      size="sm"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-sm text-text-primary break-words">
-                  {memory.keyPoint}
-                </div>
-              )}
-            </div>
-            {editingMemoryId !== memory.id && (
-              <div className="flex gap-1 flex-shrink-0">
-                <Button
-                  onClick={() => handleStartEdit(memory)}
-                  disabled={editingId === memory.id || deletingId === memory.id}
-                  variant="icon-compact"
-                  size="sm"
-                  className="w-7 p-0"
-                  tooltip="Edit"
-                >
-                  <IconEdit className="w-4 h-4" />
-                </Button>
-                <Button
-                  onClick={() => onDelete(memory.id)}
-                  disabled={deletingId === memory.id || editingId === memory.id}
-                  variant="danger"
-                  size="sm"
-                  className="w-7 p-0"
-                  tooltip="Delete"
-                >
-                  <IconClose className="w-3 h-3" />
-                </Button>
+              <div className="text-sm text-text-primary break-words">
+                {memory.keyPoint}
               </div>
-            )}
+            </div>
+            <div className="flex gap-1 flex-shrink-0">
+              <Button
+                onClick={() => onDelete(memory.id)}
+                disabled={deletingId === memory.id}
+                variant="danger"
+                size="sm"
+                className="w-7 p-0"
+                tooltip="Delete"
+              >
+                <IconClose className="w-3 h-3" />
+              </Button>
+            </div>
           </div>
         </Card>
       ))}

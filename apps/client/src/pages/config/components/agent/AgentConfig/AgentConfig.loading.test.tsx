@@ -70,10 +70,8 @@ vi.mock('../../hooks/agent/use-is-new-agent', () => ({
 
 vi.mock('../../hooks/agent/use-agent-memories', () => ({
   useAgentMemories: vi.fn(() => ({
-    editingId: null,
     deletingId: null,
     handleDeleteMemory: vi.fn(),
-    handleEditMemory: vi.fn(),
     handleRefreshMemories: vi.fn(),
   })),
 }));

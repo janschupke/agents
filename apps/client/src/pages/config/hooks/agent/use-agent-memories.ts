@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  useUpdateMemory,
-  useDeleteMemory,
-} from '../../../../hooks/mutations/use-agent-mutations';
+import { useDeleteMemory } from '../../../../hooks/mutations/use-agent-mutations';
 import { queryKeys } from '../../../../hooks/queries/query-keys';
 import { useConfirm } from '../../../../hooks/ui/useConfirm';
 
@@ -12,24 +9,20 @@ interface UseAgentMemoriesOptions {
 }
 
 interface UseAgentMemoriesReturn {
-  editingId: number | null;
   deletingId: number | null;
   handleDeleteMemory: (memoryId: number) => Promise<void>;
-  handleEditMemory: (memoryId: number, newKeyPoint: string) => Promise<void>;
   handleRefreshMemories: () => void;
 }
 
 /**
- * Manages memory operations (edit, delete, refresh) for an agent
+ * Manages memory operations (delete, refresh) for an agent
  */
 export function useAgentMemories({
   agentId,
 }: UseAgentMemoriesOptions): UseAgentMemoriesReturn {
   const { confirm } = useConfirm();
   const queryClient = useQueryClient();
-  const updateMemoryMutation = useUpdateMemory();
   const deleteMemoryMutation = useDeleteMemory();
-  const [editingId, setEditingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const handleDeleteMemory = async (memoryId: number) => {
@@ -58,24 +51,6 @@ export function useAgentMemories({
     }
   };
 
-  const handleEditMemory = async (memoryId: number, newKeyPoint: string) => {
-    if (!agentId || agentId < 0) return;
-
-    setEditingId(memoryId);
-    try {
-      await updateMemoryMutation.mutateAsync({
-        agentId,
-        memoryId,
-        keyPoint: newKeyPoint,
-      });
-    } catch (error) {
-      // Error is handled by mutation hook
-      console.error('Failed to update memory:', error);
-    } finally {
-      setEditingId(null);
-    }
-  };
-
   const handleRefreshMemories = () => {
     if (!agentId || agentId < 0) return;
     queryClient.invalidateQueries({
@@ -84,10 +59,8 @@ export function useAgentMemories({
   };
 
   return {
-    editingId,
     deletingId,
     handleDeleteMemory,
-    handleEditMemory,
     handleRefreshMemories,
   };
 }

@@ -37,12 +37,14 @@ export class MessagePreparationService {
    * Prepare messages array for OpenAI API call
    * Handles: system prompts, behavior rules, memory context, and user messages
    *
-   * Rule Order:
-   * 1. System prompt
-   * 2. Admin-defined system behavior rules
-   * 3. Configuration rules (datetime, language) - from ConfigurationRulesService
-   * 4. User-defined behavior rules
-   * 5. Word parsing instruction (only for language assistants)
+   * Message Order:
+   * 1. Code-defined rules (datetime, language, etc.) - SYSTEM role
+   * 2. Admin-defined system behavior rules - SYSTEM role
+   * 3. Client config system prompt - USER role
+   * 4. Client behavior rules - USER role
+   * 5. Word parsing instruction (only for language assistants) - SYSTEM role
+   * 6. Conversation history (user/assistant messages)
+   * 7. Current user message
    */
   async prepareMessagesForOpenAI(
     existingMessages: MessageForOpenAI[],
@@ -56,7 +58,6 @@ export class MessagePreparationService {
     );
 
     // Limit conversation history to most recent messages (user/assistant only)
-    // System messages will be added separately, so we only limit conversation history
     const conversationMessages = existingMessages.filter(
       (msg) =>
         msg.role === MessageRole.USER || msg.role === MessageRole.ASSISTANT
@@ -68,34 +69,31 @@ export class MessagePreparationService {
       `Limited conversation history from ${conversationMessages.length} to ${limitedConversationMessages.length} messages`
     );
 
-    // Start with limited conversation messages
-    const messagesForAPI = [...limitedConversationMessages];
+    // Build messages array in the correct order
+    const messagesForAPI: MessageForOpenAI[] = [];
 
-    // Add memory context if found
-    if (relevantMemories.length > 0) {
-      this.logger.debug(`Adding ${relevantMemories.length} memory contexts`);
-      this.addMemoryContext(relevantMemories, messagesForAPI);
-    }
-
-    // Add system prompt if not already present
-    if (agentConfig.system_prompt) {
-      this.logger.debug('Adding system prompt');
-      this.addSystemPrompt(messagesForAPI, String(agentConfig.system_prompt));
-    }
-
-    // Add system-wide behavior rules (admin-defined)
-    await this.addSystemBehaviorRules(messagesForAPI, agentConfig);
-
-    // Add configuration rules (datetime, language) - AFTER admin rules, BEFORE user rules
+    // 1. Code-defined rules (datetime, language, etc.) - SYSTEM role
     this.addConfigurationRules(messagesForAPI, agentConfig, currentDateTime);
 
-    // Add agent-specific behavior rules (user-defined)
-    if (agentConfig.behavior_rules) {
-      this.logger.debug('Adding agent-specific behavior rules');
-      this.addAgentBehaviorRules(messagesForAPI, agentConfig);
+    // 2. Admin-defined system behavior rules - SYSTEM role
+    await this.addSystemBehaviorRules(messagesForAPI);
+
+    // 3. Client config system prompt - USER role
+    if (agentConfig.system_prompt) {
+      this.logger.debug('Adding client system prompt as user message');
+      messagesForAPI.push({
+        role: MessageRole.USER,
+        content: String(agentConfig.system_prompt),
+      });
     }
 
-    // Add word parsing instruction ONLY for language assistants
+    // 4. Client behavior rules - USER role
+    if (agentConfig.behavior_rules) {
+      this.logger.debug('Adding client behavior rules as user message');
+      this.addClientBehaviorRules(messagesForAPI, agentConfig);
+    }
+
+    // 5. Word parsing instruction (only for language assistants) - SYSTEM role
     const isLanguageAssistant =
       this.languageAssistantService.isLanguageAssistant({
         agentType: agentConfig.agentType,
@@ -107,7 +105,16 @@ export class MessagePreparationService {
       this.addWordParsingInstruction(messagesForAPI);
     }
 
-    // Add user message
+    // Add memory context if found (as system message after rules)
+    if (relevantMemories.length > 0) {
+      this.logger.debug(`Adding ${relevantMemories.length} memory contexts`);
+      this.addMemoryContext(messagesForAPI, relevantMemories);
+    }
+
+    // 6. Conversation history (user/assistant messages)
+    messagesForAPI.push(...limitedConversationMessages);
+
+    // 7. Current user message
     messagesForAPI.push({
       role: MessageRole.USER,
       content: userMessage,
@@ -118,58 +125,29 @@ export class MessagePreparationService {
   }
 
   /**
-   * Add memory context to messages array
+   * Add memory context to messages array (as system message)
    */
   private addMemoryContext(
-    relevantMemories: string[],
-    messagesForAPI: MessageForOpenAI[]
+    messagesForAPI: MessageForOpenAI[],
+    relevantMemories: string[]
   ): void {
     const memoryContext = `Relevant context from previous conversations:\n${relevantMemories
       .map((m, i) => `${i + 1}. ${m}`)
       .join('\n\n')}`;
 
-    const systemMessages = messagesForAPI.filter(
-      (m) => m.role === MessageRole.SYSTEM
-    );
-    const nonSystemMessages = messagesForAPI.filter(
-      (m) => m.role !== MessageRole.SYSTEM
-    );
-
-    // Clear and rebuild with memory context inserted
-    messagesForAPI.length = 0;
-    messagesForAPI.push(...systemMessages);
+    // Add memory context as a system message after rules but before conversation history
     messagesForAPI.push({
       role: MessageRole.SYSTEM,
       content: memoryContext,
     });
-    messagesForAPI.push(...nonSystemMessages);
   }
 
-  /**
-   * Add system prompt if not already present
-   */
-  private addSystemPrompt(
-    messagesForAPI: MessageForOpenAI[],
-    systemPrompt: string
-  ): void {
-    if (
-      !messagesForAPI.some(
-        (m) => m.role === MessageRole.SYSTEM && m.content === systemPrompt
-      )
-    ) {
-      messagesForAPI.unshift({
-        role: MessageRole.SYSTEM,
-        content: systemPrompt,
-      });
-    }
-  }
 
   /**
-   * Add system-wide behavior rules
+   * Add system-wide behavior rules (admin-defined) - SYSTEM role
    */
   private async addSystemBehaviorRules(
-    messagesForAPI: MessageForOpenAI[],
-    agentConfig: AgentConfig
+    messagesForAPI: MessageForOpenAI[]
   ): Promise<void> {
     let systemBehaviorRules: string[] = [];
     try {
@@ -188,90 +166,41 @@ export class MessagePreparationService {
         BehaviorRulesUtil.formatSystemRules(systemBehaviorRules);
 
       if (systemBehaviorRulesMessage.length > 0) {
-        // Check if system behavior rules are already present
-        if (
-          !messagesForAPI.some(
-            (m) =>
-              m.role === MessageRole.SYSTEM &&
-              m.content === systemBehaviorRulesMessage
-          )
-        ) {
-          // Add system behavior rules after system prompt but before agent-specific rules
-          const systemPromptIndex = messagesForAPI.findIndex(
-            (m) =>
-              m.role === MessageRole.SYSTEM &&
-              m.content === String(agentConfig.system_prompt || '')
-          );
-
-          if (systemPromptIndex >= 0) {
-            // Insert after system prompt
-            messagesForAPI.splice(systemPromptIndex + 1, 0, {
-              role: MessageRole.SYSTEM,
-              content: systemBehaviorRulesMessage,
-            });
-          } else {
-            // No system prompt found, add at the beginning
-            messagesForAPI.unshift({
-              role: MessageRole.SYSTEM,
-              content: systemBehaviorRulesMessage,
-            });
-          }
-        }
+        // Add as system message after code-defined rules
+        messagesForAPI.push({
+          role: MessageRole.SYSTEM,
+          content: systemBehaviorRulesMessage,
+        });
       }
     }
   }
 
   /**
-   * Add agent-specific behavior rules
+   * Add client behavior rules - USER role
    */
-  private addAgentBehaviorRules(
+  private addClientBehaviorRules(
     messagesForAPI: MessageForOpenAI[],
     agentConfig: AgentConfig
   ): void {
     const behaviorRules = BehaviorRulesUtil.parse(agentConfig.behavior_rules!);
 
-    // Format behavior rules as a system message
     if (behaviorRules.length > 0) {
       const behaviorRulesMessage =
         BehaviorRulesUtil.formatAgentRules(behaviorRules);
 
       if (behaviorRulesMessage.length > 0) {
-        // Check if behavior rules are already present (exact match)
-        if (
-          !messagesForAPI.some(
-            (m) =>
-              m.role === MessageRole.SYSTEM &&
-              m.content === behaviorRulesMessage
-          )
-        ) {
-          // Add behavior rules after system prompt but before other system messages
-          const systemPromptIndex = messagesForAPI.findIndex(
-            (m) =>
-              m.role === MessageRole.SYSTEM &&
-              m.content === String(agentConfig.system_prompt || '')
-          );
-
-          if (systemPromptIndex >= 0) {
-            // Insert after system prompt
-            messagesForAPI.splice(systemPromptIndex + 1, 0, {
-              role: MessageRole.SYSTEM,
-              content: behaviorRulesMessage,
-            });
-          } else {
-            // No system prompt found, add at the beginning
-            messagesForAPI.unshift({
-              role: MessageRole.SYSTEM,
-              content: behaviorRulesMessage,
-            });
-          }
-        }
+        // Add as user message after client system prompt
+        messagesForAPI.push({
+          role: MessageRole.USER,
+          content: behaviorRulesMessage,
+        });
       }
     }
   }
 
   /**
-   * Add configuration rules (datetime, language)
-   * These come after admin-defined system rules but before user-defined behavior rules
+   * Add configuration rules (datetime, language, etc.) - SYSTEM role
+   * These are code-defined rules that come first
    */
   private addConfigurationRules(
     messagesForAPI: MessageForOpenAI[],
@@ -304,35 +233,11 @@ export class MessagePreparationService {
       );
 
     if (configurationRulesMessage.length > 0) {
-      // Check if configuration rules are already present
-      if (
-        !messagesForAPI.some(
-          (m) =>
-            m.role === MessageRole.SYSTEM &&
-            m.content === configurationRulesMessage
-        )
-      ) {
-        // Find insertion point: after system prompt and admin rules, before user behavior rules
-        // Insert after the last system message (which should be admin rules)
-        const lastSystemIndex = messagesForAPI
-          .map((m, i) => ({ role: m.role, index: i }))
-          .filter((m) => m.role === MessageRole.SYSTEM)
-          .pop()?.index;
-
-        if (lastSystemIndex !== undefined) {
-          // Insert after last system message
-          messagesForAPI.splice(lastSystemIndex + 1, 0, {
-            role: MessageRole.SYSTEM,
-            content: configurationRulesMessage,
-          });
-        } else {
-          // No system messages found, add at the beginning
-          messagesForAPI.unshift({
-            role: MessageRole.SYSTEM,
-            content: configurationRulesMessage,
-          });
-        }
-      }
+      // Add as first system message (code-defined rules come first)
+      messagesForAPI.push({
+        role: MessageRole.SYSTEM,
+        content: configurationRulesMessage,
+      });
     }
   }
 
