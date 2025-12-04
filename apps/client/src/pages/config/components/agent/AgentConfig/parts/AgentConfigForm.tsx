@@ -6,9 +6,7 @@ import { useAgentMemories as useAgentMemoryOperations } from '../../../../hooks/
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { FormContainer } from '@openai/ui';
 import {
-  DescriptionField,
   TemperatureField,
-  SystemPromptField,
   BehaviorRulesField,
 } from './AgentConfigFormFields';
 import AgentConfigFormSkeleton from './AgentConfigFormSkeleton';
@@ -16,6 +14,13 @@ import AgentNameAndAvatar from './AgentNameAndAvatar';
 import MemoriesSection from './MemoriesSection';
 import AgentTypeField from './AgentTypeField';
 import LanguageField from './LanguageField';
+import ResponseLengthField from './ResponseLengthField';
+import AgeField from './AgeField';
+import GenderField from './GenderField';
+import PersonalityField from './PersonalityField';
+import SentimentField from './SentimentField';
+import AvailabilityField from './AvailabilityField';
+import InterestsDashboard from './InterestsDashboard';
 import { forwardRef, useImperativeHandle, useEffect, useRef } from 'react';
 
 interface AgentConfigFormProps {
@@ -31,6 +36,7 @@ interface AgentConfigFormProps {
 export interface AgentConfigFormRef {
   save: () => Promise<void>;
   canSave: () => boolean;
+  updateName: (name: string) => void;
 }
 
 const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
@@ -102,6 +108,10 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
     useImperativeHandle(ref, () => ({
       save: handleSave,
       canSave: () => !!agent && !!values.name.trim(),
+      updateName: (name: string) => {
+        setValue('name', name);
+        setTouched('name');
+      },
     }));
 
     // Notify parent when form state changes
@@ -138,36 +148,64 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
           >
             <AgentNameAndAvatar
               avatarUrl={values.avatarUrl}
-              name={values.name}
-              nameError={errors.name ?? undefined}
-              nameTouched={touched.name}
+              description={values.description}
+              descriptionError={errors.description ?? undefined}
               saving={saving}
-              autoFocus={agent.id < 0}
               onAvatarChange={(url) => setValue('avatarUrl', url)}
-              onNameChange={(value) => setValue('name', value)}
-              onNameBlur={() => setTouched('name')}
+              onDescriptionChange={(val) => setValue('description', val)}
             />
-            <DescriptionField
-              value={values.description}
-              onChange={(val) => setValue('description', val)}
+
+            {/* 2-column layout for language, agent type, temperature */}
+            <div className="grid grid-cols-2 gap-5">
+              <AgentTypeField
+                value={values.agentType}
+                onChange={(val) => setValue('agentType', val)}
+              />
+              <LanguageField
+                value={values.language}
+                agentType={values.agentType}
+                onChange={(val) => setValue('language', val)}
+              />
+              <TemperatureField
+                value={values.temperature}
+                onChange={(val) => setValue('temperature', val)}
+              />
+            </div>
+
+            {/* 2-column layout for new simple fields */}
+            <div className="grid grid-cols-2 gap-5">
+              <ResponseLengthField
+                value={values.responseLength}
+                onChange={(val) => setValue('responseLength', val)}
+              />
+              <AgeField
+                value={values.age}
+                onChange={(val) => setValue('age', val)}
+              />
+              <GenderField
+                value={values.gender}
+                onChange={(val) => setValue('gender', val)}
+              />
+              <PersonalityField
+                value={values.personality}
+                onChange={(val) => setValue('personality', val)}
+              />
+              <SentimentField
+                value={values.sentiment}
+                onChange={(val) => setValue('sentiment', val)}
+              />
+              <AvailabilityField
+                value={values.availability}
+                onChange={(val) => setValue('availability', val)}
+              />
+            </div>
+
+            {/* Full width interests dashboard */}
+            <InterestsDashboard
+              selectedInterests={values.interests}
+              onChange={(interests) => setValue('interests', interests)}
             />
-            <AgentTypeField
-              value={values.agentType}
-              onChange={(val) => setValue('agentType', val)}
-            />
-            <LanguageField
-              value={values.language}
-              agentType={values.agentType}
-              onChange={(val) => setValue('language', val)}
-            />
-            <TemperatureField
-              value={values.temperature}
-              onChange={(val) => setValue('temperature', val)}
-            />
-            <SystemPromptField
-              value={values.systemPrompt}
-              onChange={(val) => setValue('systemPrompt', val)}
-            />
+
             <BehaviorRulesField
               rules={values.behaviorRules}
               onChange={(rules) => setValue('behaviorRules', rules)}

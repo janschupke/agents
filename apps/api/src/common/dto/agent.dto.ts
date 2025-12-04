@@ -8,9 +8,15 @@ import {
   ValidateNested,
   IsEnum,
   Length,
+  IsArray,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { AgentType } from '../enums/agent-type.enum';
+import { ResponseLength } from '../enums/response-length.enum';
+import { Gender } from '../enums/gender.enum';
+import { Sentiment } from '../enums/sentiment.enum';
+import { Availability } from '../enums/availability.enum';
+import { PersonalityType } from '../constants/personality-types.constants';
 
 export class AgentConfigDto {
   @IsOptional()
@@ -34,6 +40,37 @@ export class AgentConfigDto {
   @IsNumber()
   @Min(1)
   max_tokens?: number;
+
+  @IsOptional()
+  @IsEnum(ResponseLength)
+  response_length?: ResponseLength;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  age?: number;
+
+  @IsOptional()
+  @IsEnum(Gender)
+  gender?: Gender;
+
+  @IsOptional()
+  @IsString()
+  personality?: PersonalityType;
+
+  @IsOptional()
+  @IsEnum(Sentiment)
+  sentiment?: Sentiment;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  interests?: string[];
+
+  @IsOptional()
+  @IsEnum(Availability)
+  availability?: Availability;
 }
 
 export class CreateAgentDto {

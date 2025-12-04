@@ -46,7 +46,7 @@ export function useAgentSave({
           language: values.language || null,
           configs: {
             temperature: values.temperature,
-            system_prompt: values.systemPrompt,
+            system_prompt: values.description,
             behavior_rules: values.behaviorRules,
           },
         });
@@ -60,11 +60,19 @@ export function useAgentSave({
           language: values.language || undefined,
           configs: {
             temperature: values.temperature,
-            system_prompt: values.systemPrompt.trim() || undefined,
+            system_prompt: values.description.trim() || undefined,
             behavior_rules:
               values.behaviorRules.filter((r) => r.trim()).length > 0
                 ? values.behaviorRules.filter((r) => r.trim())
                 : undefined,
+            // New fields
+            response_length: values.responseLength || undefined,
+            age: values.age ?? undefined,
+            gender: values.gender || undefined,
+            personality: values.personality || undefined,
+            sentiment: values.sentiment || undefined,
+            interests: values.interests.length > 0 ? values.interests : undefined,
+            availability: values.availability || undefined,
           },
         };
         const savedAgent = await createAgentMutation.mutateAsync(agentData);
@@ -81,11 +89,19 @@ export function useAgentSave({
             language: values.language || undefined,
             configs: {
               temperature: values.temperature,
-              system_prompt: values.systemPrompt.trim() || undefined,
+              system_prompt: values.description.trim() || undefined,
               behavior_rules:
                 values.behaviorRules.filter((r) => r.trim()).length > 0
                   ? values.behaviorRules.filter((r) => r.trim())
                   : undefined,
+              // New fields
+              response_length: values.responseLength || undefined,
+              age: values.age ?? undefined,
+              gender: values.gender || undefined,
+              personality: values.personality || undefined,
+              sentiment: values.sentiment || undefined,
+              interests: values.interests.length > 0 ? values.interests : undefined,
+              availability: values.availability || undefined,
             },
           },
         });

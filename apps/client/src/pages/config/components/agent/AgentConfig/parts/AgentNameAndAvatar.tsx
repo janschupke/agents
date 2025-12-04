@@ -1,31 +1,25 @@
-import { AvatarPicker, ValidatedInput, FormField } from '@openai/ui';
+import { AvatarPicker, Textarea, FormField } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 interface AgentNameAndAvatarProps {
   avatarUrl: string | null;
-  name: string;
-  nameError?: string;
-  nameTouched?: boolean;
+  description: string; // This is now the system prompt (renamed to Description)
+  descriptionError?: string;
   saving: boolean;
-  autoFocus?: boolean;
   onAvatarChange: (url: string | null) => void;
-  onNameChange: (value: string) => void;
-  onNameBlur: () => void;
+  onDescriptionChange: (value: string) => void;
 }
 
 /**
- * Combined avatar picker and name input field component
+ * Combined avatar picker and description field component
  */
 export default function AgentNameAndAvatar({
   avatarUrl,
-  name,
-  nameError,
-  nameTouched,
+  description,
+  descriptionError,
   saving,
-  autoFocus = false,
   onAvatarChange,
-  onNameChange,
-  onNameBlur,
+  onDescriptionChange,
 }: AgentNameAndAvatarProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
 
@@ -34,23 +28,17 @@ export default function AgentNameAndAvatar({
       <AvatarPicker value={avatarUrl} onChange={onAvatarChange} />
       <div className="flex-1">
         <FormField
-          label={t('config.agentName')}
-          labelFor="agent-name"
-          error={nameError}
-          touched={nameTouched}
+          label={t('config.description')}
+          labelFor="agent-description"
+          error={descriptionError}
         >
-          <ValidatedInput
-            id="agent-name"
-            type="text"
-            value={name}
-            onChange={(e) => onNameChange(e.target.value)}
-            onBlur={onNameBlur}
-            error={nameError}
-            touched={nameTouched}
+          <Textarea
+            id="agent-description"
+            value={description}
+            onChange={(e) => onDescriptionChange(e.target.value)}
+            rows={4}
+            placeholder={t('config.enterDescription')}
             disabled={saving}
-            className="w-full"
-            placeholder={t('config.enterAgentName')}
-            autoFocus={autoFocus}
           />
         </FormField>
       </div>

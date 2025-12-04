@@ -5,6 +5,7 @@ import AgentConfigForm, { AgentConfigFormRef } from './parts/AgentConfigForm';
 import AgentConfigErrorState from './parts/AgentConfigErrorState';
 import AgentConfigLoadingState from './parts/AgentConfigLoadingState';
 import AgentConfigFormSkeleton from './parts/AgentConfigFormSkeleton';
+import EditableAgentNameHeader from './parts/EditableAgentNameHeader';
 import {
   Sidebar,
   Container,
@@ -132,7 +133,21 @@ export default function AgentConfig({
         ) : (
           <>
             <PageHeader
-              title={t('config.title')}
+              title={
+                currentAgent ? (
+                  <EditableAgentNameHeader
+                    name={currentAgent.name}
+                    onNameChange={(newName) => {
+                      if (formRef.current) {
+                        formRef.current.updateName(newName);
+                      }
+                    }}
+                    isSaving={isSaving}
+                  />
+                ) : (
+                  t('config.title')
+                )
+              }
               actions={
                 currentAgent ? (
                   <FormButton

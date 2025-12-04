@@ -2,17 +2,31 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Agent } from '../../../../types/chat.types';
 import { useFormValidation, validationRules } from '@openai/utils';
 import { parseBehaviorRules } from '../../utils/agent.utils';
-import { AgentType } from '../../../../types/agent.types';
+import {
+  AgentType,
+  ResponseLength,
+  Gender,
+  Sentiment,
+  Availability,
+} from '../../../../types/agent.types';
+import { PersonalityType } from '../../../../constants/personality-types.constants';
 
 export interface AgentFormValues extends Record<string, unknown> {
   name: string;
-  description: string;
+  description: string; // This is now the system prompt (renamed)
   avatarUrl: string | null;
   agentType: AgentType;
   language: string | null;
   temperature: number;
-  systemPrompt: string;
   behaviorRules: string[];
+  // New fields
+  responseLength: ResponseLength | null;
+  age: number | null;
+  gender: Gender | null;
+  personality: PersonalityType | null;
+  sentiment: Sentiment | null;
+  interests: string[];
+  availability: Availability | null;
 }
 
 interface UseAgentFormOptions {
@@ -49,27 +63,41 @@ export function useAgentForm({
       const config = agentData.configs || {};
       return {
         name: agent.name,
-        description: agent.description || '',
+        description:
+          typeof config.system_prompt === 'string' ? config.system_prompt : '',
         avatarUrl: agent.avatarUrl || null,
         agentType: agent.agentType || AgentType.GENERAL,
         language: agent.language || null,
         temperature:
           typeof config.temperature === 'number' ? config.temperature : 0.7,
-        systemPrompt:
-          typeof config.system_prompt === 'string' ? config.system_prompt : '',
         behaviorRules: parseBehaviorRules(config.behavior_rules),
+        // New fields
+        responseLength: config.response_length || null,
+        age: typeof config.age === 'number' ? config.age : null,
+        gender: config.gender || null,
+        personality: config.personality || null,
+        sentiment: config.sentiment || null,
+        interests: Array.isArray(config.interests) ? config.interests : [],
+        availability: config.availability || null,
       };
     } else if (agent && agent.id < 0) {
       // New agent
       return {
         name: agent.name || '',
-        description: agent.description || '',
+        description: '',
         avatarUrl: agent.avatarUrl || null,
         agentType: agent.agentType || AgentType.GENERAL,
         language: agent.language || null,
         temperature: 0.7,
-        systemPrompt: '',
         behaviorRules: [],
+        // New fields
+        responseLength: null,
+        age: null,
+        gender: null,
+        personality: null,
+        sentiment: null,
+        interests: [],
+        availability: null,
       };
     }
     return {
@@ -79,8 +107,15 @@ export function useAgentForm({
       agentType: AgentType.GENERAL,
       language: null,
       temperature: 0.7,
-      systemPrompt: '',
       behaviorRules: [],
+      // New fields
+      responseLength: null,
+      age: null,
+      gender: null,
+      personality: null,
+      sentiment: null,
+      interests: [],
+      availability: null,
     };
   }, [agent, agentData]);
 
@@ -115,7 +150,10 @@ export function useAgentForm({
     if (agent && agentData) {
       const config = agentData.configs || {};
       setValue('name', agent.name);
-      setValue('description', agent.description || '');
+      setValue(
+        'description',
+        typeof config.system_prompt === 'string' ? config.system_prompt : ''
+      );
       setValue('avatarUrl', agent.avatarUrl || null);
       setValue('agentType', agent.agentType || AgentType.GENERAL);
       setValue('language', agent.language || null);
@@ -123,20 +161,34 @@ export function useAgentForm({
         'temperature',
         typeof config.temperature === 'number' ? config.temperature : 0.7
       );
-      setValue(
-        'systemPrompt',
-        typeof config.system_prompt === 'string' ? config.system_prompt : ''
-      );
       setValue('behaviorRules', parseBehaviorRules(config.behavior_rules));
+      // New fields
+      setValue('responseLength', config.response_length || null);
+      setValue('age', typeof config.age === 'number' ? config.age : null);
+      setValue('gender', config.gender || null);
+      setValue('personality', config.personality || null);
+      setValue('sentiment', config.sentiment || null);
+      setValue(
+        'interests',
+        Array.isArray(config.interests) ? config.interests : []
+      );
+      setValue('availability', config.availability || null);
     } else if (agent && agent.id < 0) {
       setValue('name', agent.name || '');
-      setValue('description', agent.description || '');
+      setValue('description', '');
       setValue('avatarUrl', agent.avatarUrl || null);
       setValue('agentType', agent.agentType || AgentType.GENERAL);
       setValue('language', agent.language || null);
       setValue('temperature', 0.7);
-      setValue('systemPrompt', '');
       setValue('behaviorRules', []);
+      // New fields
+      setValue('responseLength', null);
+      setValue('age', null);
+      setValue('gender', null);
+      setValue('personality', null);
+      setValue('sentiment', null);
+      setValue('interests', []);
+      setValue('availability', null);
     } else {
       reset();
     }
