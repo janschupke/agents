@@ -1,21 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Button } from '@openai/ui';
-import { AgentFormMode, AgentFormData } from '../types/agent-form.types';
-import { useAgentFormValidation } from '../hooks/use-agent-form-validation';
+import { AgentFormMode, AgentFormData } from '../../../types/agent-form.types';
+import { useAgentFormValidation } from '../../../hooks/agent';
 import {
   BasicInfoSection,
   ConfigurationSection,
   BehaviorRulesSection,
   PersonalitySection,
-} from './agent-form';
+} from './index';
 import {
   AgentType,
   ResponseLength,
   Gender,
   Sentiment,
   Availability,
-} from '../types/agent.types';
+} from '../../../types/agent.types';
 import { PersonalityType } from '@openai/shared-types';
 
 export interface AgentFormProps {

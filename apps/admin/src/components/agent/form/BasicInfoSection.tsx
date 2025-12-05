@@ -1,6 +1,6 @@
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Input, Textarea, Select } from '@openai/ui';
-import { AgentType } from '../../types/agent.types';
+import { AgentType } from '../../../types/agent.types';
 import { ChangeEvent } from 'react';
 
 interface BasicInfoSectionProps {

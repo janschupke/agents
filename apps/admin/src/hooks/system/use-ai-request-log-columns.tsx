@@ -1,20 +1,19 @@
-import React from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useNavigate } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@openai/ui';
-import type { AiRequestLog } from '../types/ai-request-log.types';
+import type { AiRequestLog } from '../../types/ai-request-log.types';
 import {
   AiRequestLogOrderBy,
   OrderDirection,
-} from '../types/ai-request-log.enums';
-import { ROUTES } from '../constants/routes.constants';
+} from '../../types/ai-request-log.enums';
+import { ROUTES } from '../../constants/routes.constants';
 import {
   formatDate,
   formatPrice,
   formatRequest,
   formatResponse,
-} from '../utils/format-ai-request-log';
+} from '../../utils/format-ai-request-log';
 
 interface UseAiRequestLogColumnsProps {
   currentOrderBy: AiRequestLogOrderBy;

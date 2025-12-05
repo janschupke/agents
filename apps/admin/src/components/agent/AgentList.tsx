@@ -1,7 +1,7 @@
-import { AgentWithStats } from '../types/agent.types';
+import { AgentWithStats } from '../../types/agent.types';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Button, Avatar, Badge, Table } from '@openai/ui';
-import { IconEdit, IconTrash, IconEye } from './ui/Icons';
+import { IconEdit, IconTrash, IconEye } from '../ui/Icons';
 import { ColumnDef } from '@tanstack/react-table';
 
 interface AgentListProps {

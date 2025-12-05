@@ -1,6 +1,6 @@
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { Agent } from '../../types/agent.types';
-import { DetailCard } from '../shared';
+import { Agent } from '../../../types/agent.types';
+import { DetailCard } from '../../shared';
 
 interface AgentConfigurationProps {
   agent: Agent;

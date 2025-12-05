@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { HTTP_STATUS } from '@openai/shared-types';
-import { AgentType } from '../types/agent.types';
+import { AgentType } from '../../types/agent.types';
 import {
   useSystemRules,
   useUpdateSystemRules,
-} from './queries/use-system-rules';
-import { useToast } from '../contexts/ToastContext';
+} from '../queries/use-system-rules';
+import { useToast } from '../../contexts/ToastContext';
 
 export interface AgentTypeFormData {
   rules: string[];
@@ -200,6 +200,11 @@ export function useSystemRulesForm() {
           : null;
   };
 
+  const isLoading =
+    mainData.isLoading ||
+    generalData.isLoading ||
+    languageAssistantData.isLoading;
+
   return {
     activeTab,
     setActiveTab,
@@ -211,7 +216,6 @@ export function useSystemRulesForm() {
     handleSystemPromptChange,
     handleSave,
     getError,
-    generalData,
-    languageAssistantData,
+    isLoading,
   };
 }

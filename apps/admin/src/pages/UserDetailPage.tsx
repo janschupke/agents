@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { ConfirmModal } from '@openai/ui';
 import { queryKeys } from '../hooks/queries/query-keys';
 import { PageHeaderWithBack } from '../components/shared';
-import { useDeleteUser } from '../hooks/use-delete-user';
+import { useDeleteUser } from '../hooks/user';
 
 export default function UserDetailPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);

@@ -5,7 +5,7 @@ import {
   Gender,
   Sentiment,
   Availability,
-} from '../../types/agent.types';
+} from '../../../types/agent.types';
 import {
   PersonalityType,
   PERSONALITY_TYPES,

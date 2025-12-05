@@ -1,29 +1,29 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { UserService } from '../services/user.service';
-import { queryKeys } from './queries/query-keys';
-import { useToast } from '../contexts/ToastContext';
+import { AgentService } from '../../services/agent.service';
+import { queryKeys } from '../queries/query-keys';
+import { useToast } from '../../contexts/ToastContext';
 import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '../constants/routes.constants';
+import { ROUTES } from '../../constants/routes.constants';
 
-interface UseDeleteUserOptions {
+interface UseDeleteAgentOptions {
   onSuccess?: () => void;
   redirectOnSuccess?: boolean;
 }
 
-export function useDeleteUser(options: UseDeleteUserOptions = {}) {
+export function useDeleteAgent(options: UseDeleteAgentOptions = {}) {
   const { t } = useTranslation(I18nNamespace.ADMIN);
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   return useMutation({
-    mutationFn: (id: string) => UserService.deleteUser(id),
+    mutationFn: (id: number) => AgentService.deleteAgent(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.list() });
-      showToast(t('users.delete.success') || 'User deleted successfully', 'success');
+      queryClient.invalidateQueries({ queryKey: queryKeys.agent.list() });
+      showToast(t('agents.delete.success') || 'Agent deleted successfully', 'success');
       if (options.redirectOnSuccess) {
-        navigate(ROUTES.USERS);
+        navigate(ROUTES.AGENTS);
       }
       options.onSuccess?.();
     },
@@ -31,7 +31,7 @@ export function useDeleteUser(options: UseDeleteUserOptions = {}) {
       const errorMessage =
         error && typeof error === 'object' && 'message' in error
           ? (error.message as string)
-          : t('users.delete.error') || 'Failed to delete user';
+          : t('agents.delete.error') || 'Failed to delete agent';
       showToast(errorMessage, 'error');
     },
   });

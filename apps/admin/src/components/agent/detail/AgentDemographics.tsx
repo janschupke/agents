@@ -1,7 +1,7 @@
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Badge } from '@openai/ui';
-import { Agent } from '../../types/agent.types';
-import { DetailCard } from '../shared';
+import { Agent } from '../../../types/agent.types';
+import { DetailCard } from '../../shared';
 
 interface AgentDemographicsProps {
   agent: Agent;
@@ -77,7 +77,7 @@ export default function AgentDemographics({ agent }: AgentDemographicsProps) {
                 {t('agents.detail.interests')}
               </div>
               <div className="flex flex-wrap gap-2 mt-1">
-                {agent.configs.interests.map((interest, i) => (
+                {agent.configs.interests.map((interest: string, i: number) => (
                   <Badge key={i} variant="secondary">
                     {interest}
                   </Badge>

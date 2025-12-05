@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useAiRequestLogs } from '../hooks/queries/use-ai-request-logs';
-import AiRequestLogTable from '../components/AiRequestLogTable';
+import { AiRequestLogTable } from '../components/system';
 import {
   AiRequestLogOrderBy,
   OrderDirection,

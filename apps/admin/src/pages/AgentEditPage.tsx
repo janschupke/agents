@@ -4,13 +4,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AgentService } from '../services/agent.service';
 import { ROUTES } from '../constants/routes.constants';
 import { queryKeys } from '../hooks/queries/query-keys';
-import AgentForm from '../components/AgentForm';
+import { AgentForm } from '../components/agent';
 import { AgentFormMode, AgentFormData } from '../types/agent-form.types';
 import { LoadingState, PageHeaderWithBack } from '../components/shared';
 import {
   mapToFormData,
   mapFormDataToUpdateRequest,
-} from '../hooks/use-agent-form-mapping';
+} from '../hooks/agent';
 import { UpdateAgentRequest } from '../types/agent.types';
 
 export default function AgentEditPage() {

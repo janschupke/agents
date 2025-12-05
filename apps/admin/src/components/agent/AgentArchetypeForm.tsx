@@ -1,13 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AgentArchetypeService } from '../services/agent-archetype.service';
-import { AgentArchetype } from '../types/agent-archetype.types';
-import { queryKeys } from '../hooks/queries/query-keys';
-import AgentForm from './AgentForm';
-import { AgentFormMode, AgentFormData } from '../types/agent-form.types';
+import { AgentArchetypeService } from '../../services/agent-archetype.service';
+import { AgentArchetype } from '../../types/agent-archetype.types';
+import { queryKeys } from '../../hooks/queries/query-keys';
+import { AgentForm } from './form';
+import { AgentFormMode, AgentFormData } from '../../types/agent-form.types';
 import {
   mapToFormData,
   mapFormDataToArchetypeRequest,
-} from '../hooks/use-agent-form-mapping';
+} from '../../hooks/agent';
 
 interface AgentArchetypeFormProps {
   archetype: AgentArchetype | null;

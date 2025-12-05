@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { AgentArchetypeService } from '../services/agent-archetype.service';
-import { queryKeys } from './queries/query-keys';
-import { useToast } from '../contexts/ToastContext';
+import { AgentArchetypeService } from '../../services/agent-archetype.service';
+import { queryKeys } from '../queries/query-keys';
+import { useToast } from '../../contexts/ToastContext';
 
 export function useDeleteArchetype() {
   const { t } = useTranslation(I18nNamespace.ADMIN);

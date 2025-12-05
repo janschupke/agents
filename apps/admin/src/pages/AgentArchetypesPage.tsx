@@ -4,12 +4,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@openai/ui';
 import { AgentArchetypeService } from '../services/agent-archetype.service';
 import { AgentArchetype } from '../types/agent-archetype.types';
-import AgentArchetypeList from '../components/AgentArchetypeList';
-import AgentArchetypeForm from '../components/AgentArchetypeForm';
+import {
+  AgentArchetypeList,
+  AgentArchetypeForm,
+} from '../components/agent';
 import { IconPlus } from '../components/ui/Icons';
 import { queryKeys } from '../hooks/queries/query-keys';
 import { AdminPageHeader } from '../components/shared';
-import { useDeleteArchetype } from '../hooks/use-delete-archetype';
+import { useDeleteArchetype } from '../hooks/agent';
 
 export default function AgentArchetypesPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);

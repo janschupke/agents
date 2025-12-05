@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AgentMemory } from '../types/agent.types';
-import { AgentService } from '../services/agent.service';
+import { AgentMemory } from '../../types/agent.types';
+import { AgentService } from '../../services/agent.service';
 import { Button, Card, Skeleton } from '@openai/ui';
-import { IconEdit, IconTrash } from './ui/Icons';
+import { IconEdit, IconTrash } from '../ui/Icons';
 import { formatRelativeDate } from '@openai/utils';
-import { queryKeys } from '../hooks/queries/query-keys';
+import { queryKeys } from '../../hooks/queries/query-keys';
 
 interface AgentMemoriesListProps {
   agentId: number;

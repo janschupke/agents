@@ -2,13 +2,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useQuery } from '@tanstack/react-query';
 import { Button, Card, ConfirmModal } from '@openai/ui';
-import AgentMemoriesList from '../components/AgentMemoriesList';
+import { AgentMemoriesList } from '../components/agent';
 import { ROUTES } from '../constants/routes.constants';
 import { IconEdit, IconTrash } from '../components/ui/Icons';
 import { queryKeys } from '../hooks/queries/query-keys';
 import { LoadingState, PageHeaderWithBack } from '../components/shared';
 import { useState, useEffect } from 'react';
-import { useDeleteAgent } from '../hooks/use-delete-agent';
+import { useDeleteAgent } from '../hooks/agent';
 import { AgentService } from '../services/agent.service';
 import { useToast } from '../contexts/ToastContext';
 import { extractErrorMessage } from '../utils/extract-error-message';
@@ -16,7 +16,7 @@ import {
   AgentBasicInfo,
   AgentConfiguration,
   AgentDemographics,
-} from '../components/agent-detail';
+} from '../components/agent/detail';
 
 export default function AgentDetailPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);

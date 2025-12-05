@@ -1,10 +1,10 @@
-import { User } from '../types/user.types';
+import { User } from '../../types/user.types';
 import { formatDate } from '@openai/utils';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Avatar, Badge, Button, Table } from '@openai/ui';
 import { Link } from 'react-router-dom';
-import { IconEye, IconEdit, IconTrash } from './ui/Icons';
-import { ROUTES } from '../constants/routes.constants';
+import { IconEye, IconEdit, IconTrash } from '../ui/Icons';
+import { ROUTES } from '../../constants/routes.constants';
 import { ColumnDef } from '@tanstack/react-table';
 
 interface UserListProps {
@@ -101,24 +101,34 @@ export default function UserList({ users, loading, onDelete }: UserListProps) {
         return (
           <div className="flex justify-end gap-2">
             <Link to={ROUTES.USER_DETAIL(user.id)}>
-              <Button variant="icon" size="sm" tooltip={t('users.list.view')}>
+              <Button
+                variant="icon"
+                size="sm"
+                tooltip={t('users.view')}
+              >
                 <IconEye className="w-5 h-5" />
               </Button>
             </Link>
             <Link to={ROUTES.USER_EDIT(user.id)}>
-              <Button variant="icon" size="sm" tooltip={t('users.list.edit')}>
+              <Button
+                variant="icon"
+                size="sm"
+                tooltip={t('users.edit')}
+              >
                 <IconEdit className="w-5 h-5" />
               </Button>
             </Link>
-            <Button
-              variant="icon"
-              size="sm"
-              onClick={() => onDelete?.(user.id)}
-              tooltip={t('users.list.delete')}
-              className="hover:text-red-500"
-            >
-              <IconTrash className="w-5 h-5" />
-            </Button>
+            {onDelete && (
+              <Button
+                variant="icon"
+                size="sm"
+                onClick={() => onDelete(user.id)}
+                tooltip={t('users.delete')}
+                className="hover:text-red-500"
+              >
+                <IconTrash className="w-5 h-5" />
+              </Button>
+            )}
           </div>
         );
       },
@@ -130,7 +140,7 @@ export default function UserList({ users, loading, onDelete }: UserListProps) {
       data={users}
       columns={columns}
       loading={loading}
-      emptyMessage={t('users.noUsersFound')}
+      emptyMessage={t('users.empty')}
     />
   );
 }

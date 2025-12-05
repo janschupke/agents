@@ -1,8 +1,8 @@
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Avatar, Badge } from '@openai/ui';
-import { Agent } from '../../types/agent.types';
+import { Agent } from '../../../types/agent.types';
 import { formatDate } from '@openai/utils';
-import { DetailCard } from '../shared';
+import { DetailCard } from '../../shared';
 
 interface AgentBasicInfoProps {
   agent: Agent;

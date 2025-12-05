@@ -1,11 +1,11 @@
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useUsers } from '../hooks/queries/use-user';
-import UserList from '../components/UserList';
+import { UserList } from '../components/user';
 import { useState } from 'react';
 import { ConfirmModal } from '@openai/ui';
 import { LoadingState, AdminPageHeader } from '../components/shared';
 import { useToast } from '../contexts/ToastContext';
-import { useDeleteUser } from '../hooks/use-delete-user';
+import { useDeleteUser } from '../hooks/user';
 
 export default function UsersPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);

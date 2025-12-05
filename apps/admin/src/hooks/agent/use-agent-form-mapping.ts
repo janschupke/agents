@@ -5,11 +5,11 @@ import {
   Gender,
   Sentiment,
   Availability,
-} from '../types/agent.types';
-import { AgentArchetype } from '../types/agent-archetype.types';
-import { AgentFormData } from '../types/agent-form.types';
+} from '../../types/agent.types';
+import { AgentArchetype } from '../../types/agent-archetype.types';
+import { AgentFormData } from '../../types/agent-form.types';
 import { PersonalityType } from '@openai/shared-types';
-import { AgentArchetypeService } from '../services/agent-archetype.service';
+import { AgentArchetypeService } from '../../services/agent-archetype.service';
 
 /**
  * Maps Agent or AgentArchetype to AgentFormData

@@ -1,9 +1,9 @@
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Button, Tabs } from '@openai/ui';
-import { IconTrash, IconPlus } from './ui/Icons';
-import { AgentType } from '../types/agent.types';
-import { useSystemRulesForm } from '../hooks/use-system-rules-form';
-import { LoadingState } from './shared';
+import { IconTrash, IconPlus } from '../ui/Icons';
+import { AgentType } from '../../types/agent.types';
+import { useSystemRulesForm } from '../../hooks/system';
+import { LoadingState } from '../shared';
 
 type TabType = AgentType;
 
@@ -22,12 +22,8 @@ export default function SystemBehaviorRules() {
     handleSystemPromptChange,
     handleSave,
     getError,
-    generalData,
-    languageAssistantData,
+    isLoading,
   } = useSystemRulesForm();
-
-  const isLoading =
-    generalData.isLoading || languageAssistantData.isLoading;
 
   if (isLoading) {
     return <LoadingState message={tAdmin('app.loading')} />;
@@ -35,10 +31,7 @@ export default function SystemBehaviorRules() {
 
   const tabs: Array<{ id: TabType; label: string }> = [
     { id: AgentType.GENERAL, label: tAdmin('systemRules.general') },
-    {
-      id: AgentType.LANGUAGE_ASSISTANT,
-      label: AgentType.LANGUAGE_ASSISTANT,
-    },
+    { id: AgentType.LANGUAGE_ASSISTANT, label: AgentType.LANGUAGE_ASSISTANT },
   ];
 
   const renderForm = (tab: TabType) => {
@@ -78,7 +71,7 @@ export default function SystemBehaviorRules() {
             {tAdmin('systemRules.label')}
           </label>
           <div className="space-y-2">
-            {currentFormData.rules.map((rule, index) => (
+            {currentFormData.rules.map((rule: string, index: number) => (
               <div key={index} className="flex items-center gap-2">
                 <input
                   type="text"
@@ -90,31 +83,25 @@ export default function SystemBehaviorRules() {
                   })}
                 />
                 <Button
-                  type="button"
                   variant="icon"
                   size="sm"
                   onClick={() => handleRemoveRule(tab, index)}
-                  tooltip={tAdmin('systemRules.removeRule')}
-                  className="flex-shrink-0 hover:text-red-600"
+                  className="text-text-tertiary hover:text-text-primary"
                 >
                   <IconTrash className="w-4 h-4" />
                 </Button>
               </div>
             ))}
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => handleAddRule(tab)}
-              className="w-full"
-            >
-              <IconPlus className="w-4 h-4" />
-              <span>{tAdmin('systemRules.addRule')}</span>
-            </Button>
           </div>
-          <p className="text-xs text-text-tertiary mt-2">
-            {tAdmin('systemRules.placeholder')}
-          </p>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => handleAddRule(tab)}
+            className="mt-2"
+          >
+            <IconPlus className="w-4 h-4" />
+            {tAdmin('systemRules.addRule')}
+          </Button>
         </div>
 
         <div className="flex justify-end">

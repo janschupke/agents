@@ -1,12 +1,12 @@
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import type { AiRequestLog } from '../types/ai-request-log.types';
+import type { AiRequestLog } from '../../types/ai-request-log.types';
 import {
   AiRequestLogOrderBy,
   OrderDirection,
-} from '../types/ai-request-log.enums';
+} from '../../types/ai-request-log.enums';
 import { Table } from '@openai/ui';
-import { useAiRequestLogColumns } from '../hooks/use-ai-request-log-columns';
-import { formatJson } from '../utils/format-ai-request-log';
+import { useAiRequestLogColumns } from '../../hooks/system';
+import { formatJson } from '../../utils/format-ai-request-log';
 
 interface AiRequestLogTableProps {
   logs: AiRequestLog[];

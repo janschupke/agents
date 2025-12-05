@@ -1,7 +1,7 @@
-import { AgentArchetype } from '../types/agent-archetype.types';
+import { AgentArchetype } from '../../types/agent-archetype.types';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Button, Avatar, Badge, Table } from '@openai/ui';
-import { IconEdit, IconTrash } from './ui/Icons';
+import { IconEdit, IconTrash } from '../ui/Icons';
 import { ColumnDef } from '@tanstack/react-table';
 
 interface AgentArchetypeListProps {
