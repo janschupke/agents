@@ -1,28 +1,21 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Button, Avatar, Badge, Card, Skeleton } from '@openai/ui';
-import { IconEdit, IconTrash, IconArrowLeft } from '../components/ui/Icons';
+import { IconEdit, IconTrash } from '../components/ui/Icons';
 import { UserService } from '../services/user.service';
 import { User } from '../types/user.types';
 import { ROUTES } from '../constants/routes.constants';
 import { formatDate } from '@openai/utils';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@openai/ui';
+import { ConfirmModal } from '@openai/ui';
 import { queryKeys } from '../hooks/queries/query-keys';
+import { PageHeaderWithBack } from '../components/shared';
+import { useDeleteUser } from '../hooks/use-delete-user';
 
 export default function UserDetailPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const {
@@ -35,12 +28,8 @@ export default function UserDetailPage() {
     enabled: !!id,
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: (userId: string) => UserService.deleteUser(userId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.list() });
-      navigate(ROUTES.USERS);
-    },
+  const deleteMutation = useDeleteUser({
+    redirectOnSuccess: true,
   });
 
   const handleDelete = () => {
@@ -74,40 +63,33 @@ export default function UserDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="icon"
-            size="sm"
-            onClick={() => navigate(ROUTES.USERS)}
-            tooltip={t('users.detail.back')}
-          >
-            <IconArrowLeft className="w-5 h-5" />
-          </Button>
-          <h2 className="text-xl font-semibold text-text-secondary">
-            {user.firstName || user.lastName
-              ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
-              : user.email || user.id}
-          </h2>
-        </div>
-        <div className="flex gap-2">
-          <Link to={ROUTES.USER_EDIT(user.id)}>
-            <Button variant="secondary" size="sm">
-              <IconEdit className="w-4 h-4" />
-              {t('users.detail.edit')}
+      <PageHeaderWithBack
+        title={
+          user.firstName || user.lastName
+            ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+            : user.email || user.id
+        }
+        backPath={ROUTES.USERS}
+        actions={
+          <>
+            <Link to={ROUTES.USER_EDIT(user.id)}>
+              <Button variant="secondary" size="sm">
+                <IconEdit className="w-4 h-4" />
+                {t('users.detail.edit')}
+              </Button>
+            </Link>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={handleDelete}
+              tooltip={t('users.detail.delete')}
+            >
+              <IconTrash className="w-4 h-4" />
+              {t('users.detail.delete')}
             </Button>
-          </Link>
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={handleDelete}
-            tooltip={t('users.detail.delete')}
-          >
-            <IconTrash className="w-4 h-4" />
-            {t('users.detail.delete')}
-          </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <Card padding="md" variant="outlined">
         <h3 className="text-lg font-semibold text-text-secondary mb-4">
@@ -178,32 +160,20 @@ export default function UserDetailPage() {
           </div>
         </div>
       </Card>
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
-          <DialogHeader onClose={() => setShowDeleteDialog(false)}>
-            <DialogTitle>{t('users.delete.confirm')}</DialogTitle>
-          </DialogHeader>
-          <div className="px-6 py-4">
-            <p className="text-sm text-text-primary">
-              {t('users.delete.confirmMessage')}
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowDeleteDialog(false)}>
-              {t('users.delete.cancel')}
-            </Button>
-            <Button
-              variant="danger"
-              onClick={confirmDelete}
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending
-                ? t('users.delete.deleting')
-                : t('users.delete.confirm')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmModal
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={confirmDelete}
+        title={t('users.delete.confirm')}
+        message={t('users.delete.confirmMessage')}
+        confirmText={
+          deleteMutation.isPending
+            ? t('users.delete.deleting')
+            : t('users.delete.confirm')
+        }
+        cancelText={t('users.delete.cancel')}
+        confirmVariant="danger"
+      />
     </div>
   );
 }

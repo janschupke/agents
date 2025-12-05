@@ -1,20 +1,23 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, Card, Avatar, Badge } from '@openai/ui';
-import { AgentService } from '../services/agent.service';
+import { useQuery } from '@tanstack/react-query';
+import { Button, Card, Avatar, Badge, ConfirmModal } from '@openai/ui';
 import AgentMemoriesList from '../components/AgentMemoriesList';
 import { ROUTES } from '../constants/routes.constants';
-import { IconEdit, IconTrash, IconArrowLeft } from '../components/ui/Icons';
+import { IconEdit, IconTrash } from '../components/ui/Icons';
 import { formatDate } from '@openai/utils';
 import { queryKeys } from '../hooks/queries/query-keys';
+import { LoadingState, PageHeaderWithBack } from '../components/shared';
+import { useState } from 'react';
+import { useDeleteAgent } from '../hooks/use-delete-agent';
+import { AgentService } from '../services/agent.service';
 
 export default function AgentDetailPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const agentId = id ? parseInt(id, 10) : null;
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const {
     data: agent,
@@ -32,12 +35,8 @@ export default function AgentDetailPage() {
     enabled: !!agentId,
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: () => AgentService.deleteAgent(agentId!),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.agent.list() });
-      navigate(ROUTES.AGENTS);
-    },
+  const deleteMutation = useDeleteAgent({
+    redirectOnSuccess: true,
   });
 
   const handleEdit = () => {
@@ -47,8 +46,12 @@ export default function AgentDetailPage() {
   };
 
   const handleDelete = () => {
-    if (window.confirm(t('agents.delete.confirm'))) {
-      deleteMutation.mutate();
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (agentId) {
+      deleteMutation.mutate(agentId);
     }
   };
 
@@ -59,11 +62,7 @@ export default function AgentDetailPage() {
   }
 
   if (loadingAgent) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-text-secondary">{t('agents.detail.loading')}</div>
-      </div>
-    );
+    return <LoadingState message={t('agents.detail.loading')} />;
   }
 
   if (agentError || !agent) {
@@ -76,36 +75,27 @@ export default function AgentDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="icon"
-            size="sm"
-            onClick={() => navigate(ROUTES.AGENTS)}
-            tooltip={t('agents.detail.back')}
-          >
-            <IconArrowLeft className="w-5 h-5" />
-          </Button>
-          <h2 className="text-xl font-semibold text-text-secondary">
-            {agent.name}
-          </h2>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={handleEdit} size="sm">
-            <IconEdit className="w-4 h-4" />
-            {t('agents.detail.edit')}
-          </Button>
-          <Button
-            onClick={handleDelete}
-            variant="danger"
-            size="sm"
-            disabled={deleteMutation.isPending}
-          >
-            <IconTrash className="w-4 h-4" />
-            {t('agents.detail.delete')}
-          </Button>
-        </div>
-      </div>
+      <PageHeaderWithBack
+        title={agent.name}
+        backPath={ROUTES.AGENTS}
+        actions={
+          <>
+            <Button onClick={handleEdit} size="sm">
+              <IconEdit className="w-4 h-4" />
+              {t('agents.detail.edit')}
+            </Button>
+            <Button
+              onClick={handleDelete}
+              variant="danger"
+              size="sm"
+              disabled={deleteMutation.isPending}
+            >
+              <IconTrash className="w-4 h-4" />
+              {t('agents.detail.delete')}
+            </Button>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Basic Information */}
@@ -318,6 +308,16 @@ export default function AgentDetailPage() {
           />
         </Card>
       </div>
+      <ConfirmModal
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={confirmDelete}
+        title={t('agents.delete.confirm')}
+        message={t('agents.delete.confirmMessage') || t('agents.delete.confirm')}
+        confirmText={t('agents.delete.confirm')}
+        cancelText={t('agents.delete.cancel') || 'Cancel'}
+        confirmVariant="danger"
+      />
     </div>
   );
 }

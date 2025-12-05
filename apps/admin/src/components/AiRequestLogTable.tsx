@@ -8,6 +8,13 @@ import {
 import { ROUTES } from '../constants/routes.constants';
 import { Table, Button } from '@openai/ui';
 import { ColumnDef } from '@tanstack/react-table';
+import {
+  formatDate,
+  formatPrice,
+  formatRequest,
+  formatResponse,
+  formatJson,
+} from '../utils/format-ai-request-log';
 
 interface AiRequestLogTableProps {
   logs: AiRequestLog[];
@@ -35,45 +42,6 @@ export default function AiRequestLogTable({
 }: AiRequestLogTableProps) {
   const { t } = useTranslation(I18nNamespace.ADMIN);
   const navigate = useNavigate();
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
-  };
-
-  const formatPrice = (price: number | string | null | undefined) => {
-    if (price === null || price === undefined) {
-      return '$0.000000';
-    }
-    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-    if (isNaN(numPrice)) {
-      return '$0.000000';
-    }
-    return `$${numPrice.toFixed(6)}`;
-  };
-
-  const truncateText = (text: string, maxLength: number = 100) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  };
-
-  const formatRequest = (requestJson: Record<string, unknown>): string => {
-    const requestStr = JSON.stringify(requestJson, null, 2);
-    return truncateText(requestStr, 100);
-  };
-
-  const formatResponse = (responseJson: Record<string, unknown>): string => {
-    const responseContent =
-      (
-        responseJson as {
-          choices?: Array<{ message?: { content?: string } }>;
-        }
-      )?.choices?.[0]?.message?.content || '';
-    return truncateText(responseContent, 100);
-  };
-
-  const formatJson = (json: Record<string, unknown>) => {
-    return JSON.stringify(json, null, 2);
-  };
 
   const getSortIcon = (column: AiRequestLogOrderBy) => {
     if (currentOrderBy !== column) return null;

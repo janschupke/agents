@@ -6,6 +6,7 @@ import {
   AiRequestLogOrderBy,
   OrderDirection,
 } from '../types/ai-request-log.enums';
+import { LoadingState, AdminPageHeader } from '../components/shared';
 
 export default function AiRequestLogsPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
@@ -26,11 +27,7 @@ export default function AiRequestLogsPage() {
   });
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-text-secondary">{t('aiRequestLogs.loading')}</div>
-      </div>
-    );
+    return <LoadingState message={t('aiRequestLogs.loading')} />;
   }
 
   if (error) {
@@ -43,16 +40,14 @@ export default function AiRequestLogsPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-text-secondary mb-2">
-          {t('aiRequestLogs.title')}
-        </h2>
-        <p className="text-text-tertiary text-sm">
-          {data?.pagination.total
+      <AdminPageHeader
+        title={t('aiRequestLogs.title')}
+        description={
+          data?.pagination.total
             ? t('aiRequestLogs.total', { count: data.pagination.total })
-            : t('aiRequestLogs.noLogs')}
-        </p>
-      </div>
+            : t('aiRequestLogs.noLogs')
+        }
+      />
       <AiRequestLogTable
         logs={data?.logs || []}
         pagination={

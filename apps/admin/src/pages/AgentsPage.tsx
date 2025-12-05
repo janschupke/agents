@@ -1,17 +1,20 @@
 import { useState } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { AgentService } from '../services/agent.service';
 import AgentList from '../components/AgentList';
 import { ROUTES } from '../constants/routes.constants';
 import { queryKeys } from '../hooks/queries/query-keys';
+import { AdminPageHeader } from '../components/shared';
+import { useDeleteAgent } from '../hooks/use-delete-agent';
+import { ConfirmModal } from '@openai/ui';
 
 export default function AgentsPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const {
     data: agents = [],
@@ -22,10 +25,9 @@ export default function AgentsPage() {
     queryFn: () => AgentService.getAllAgents(),
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => AgentService.deleteAgent(id),
+  const deleteMutation = useDeleteAgent({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.agent.list() });
+      setShowDeleteDialog(false);
       setDeletingId(null);
     },
   });
@@ -39,9 +41,13 @@ export default function AgentsPage() {
   };
 
   const handleDelete = (id: number) => {
-    if (window.confirm(t('agents.delete.confirm'))) {
-      setDeletingId(id);
-      deleteMutation.mutate(id);
+    setDeletingId(id);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (deletingId) {
+      deleteMutation.mutate(deletingId);
     }
   };
 
@@ -57,14 +63,10 @@ export default function AgentsPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-text-secondary mb-2">
-          {t('agents.list.title')}
-        </h2>
-        <p className="text-text-tertiary text-sm">
-          {t('agents.list.total', { count: agents.length })}
-        </p>
-      </div>
+      <AdminPageHeader
+        title={t('agents.list.title')}
+        description={t('agents.list.total', { count: agents.length })}
+      />
       <AgentList
         agents={agents}
         loading={isLoading}
@@ -72,6 +74,23 @@ export default function AgentsPage() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         deletingId={deletingId}
+      />
+      <ConfirmModal
+        isOpen={showDeleteDialog}
+        onClose={() => {
+          setShowDeleteDialog(false);
+          setDeletingId(null);
+        }}
+        onConfirm={confirmDelete}
+        title={t('agents.delete.confirm')}
+        message={t('agents.delete.confirmMessage') || t('agents.delete.confirm')}
+        confirmText={
+          deleteMutation.isPending
+            ? t('agents.delete.deleting') || 'Deleting...'
+            : t('agents.delete.confirm')
+        }
+        cancelText={t('agents.delete.cancel') || 'Cancel'}
+        confirmVariant="danger"
       />
     </div>
   );

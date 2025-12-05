@@ -2,12 +2,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Button, Card, Skeleton, Input } from '@openai/ui';
-import { IconArrowLeft } from '../components/ui/Icons';
 import { UserService, UpdateUserRequest } from '../services/user.service';
 import { User } from '../types/user.types';
 import { ROUTES } from '../constants/routes.constants';
 import { useState, useEffect } from 'react';
 import { queryKeys } from '../hooks/queries/query-keys';
+import { PageHeaderWithBack } from '../components/shared';
 
 export default function UserEditPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
@@ -90,46 +90,39 @@ export default function UserEditPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="icon"
-            size="sm"
-            onClick={() => navigate(ROUTES.USERS)}
-            tooltip={t('users.edit.back')}
-          >
-            <IconArrowLeft className="w-5 h-5" />
-          </Button>
-          <h2 className="text-xl font-semibold text-text-secondary">
-            {t('users.edit.title')}
-          </h2>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(ROUTES.USERS)}
-          >
-            {t('users.edit.cancel')}
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={(e) => {
-              e?.preventDefault();
-              if (e) {
-                handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
-              }
-            }}
-            disabled={updateMutation.isPending}
-            loading={updateMutation.isPending}
-          >
-            {updateMutation.isPending
-              ? t('users.edit.saving')
-              : t('users.edit.save')}
-          </Button>
-        </div>
-      </div>
+      <PageHeaderWithBack
+        title={t('users.edit.title')}
+        backPath={ROUTES.USERS}
+        actions={
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(ROUTES.USERS)}
+            >
+              {t('users.edit.cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={(e) => {
+                e?.preventDefault();
+                if (e) {
+                  handleSubmit(
+                    e as unknown as React.FormEvent<HTMLFormElement>
+                  );
+                }
+              }}
+              disabled={updateMutation.isPending}
+              loading={updateMutation.isPending}
+            >
+              {updateMutation.isPending
+                ? t('users.edit.saving')
+                : t('users.edit.save')}
+            </Button>
+          </>
+        }
+      />
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card padding="md" variant="outlined">

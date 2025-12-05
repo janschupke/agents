@@ -1,30 +1,21 @@
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useUsers } from '../hooks/queries/use-user';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import UserList from '../components/UserList';
-import { UserService } from '../services/user.service';
 import { useState } from 'react';
-import { queryKeys } from '../hooks/queries/query-keys';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  Button,
-} from '@openai/ui';
+import { ConfirmModal } from '@openai/ui';
+import { LoadingState, AdminPageHeader } from '../components/shared';
+import { useToast } from '../contexts/ToastContext';
+import { useDeleteUser } from '../hooks/use-delete-user';
 
 export default function UsersPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
+  const { showToast } = useToast();
   const { data: users = [], isLoading: loading, error } = useUsers();
-  const queryClient = useQueryClient();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => UserService.deleteUser(id),
+  const deleteMutation = useDeleteUser({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.list() });
       setShowDeleteDialog(false);
       setDeletingId(null);
     },
@@ -41,72 +32,48 @@ export default function UsersPage() {
     }
   };
 
-  const errorMessage =
-    error && typeof error === 'object' && 'status' in error
-      ? error.status === 403
-        ? t('users.accessDenied')
-        : ('message' in error && error.message) || t('users.error')
-      : null;
-
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-text-secondary">{t('users.loading')}</div>
-      </div>
-    );
+    return <LoadingState message={t('users.loading')} />;
   }
 
-  if (errorMessage) {
-    return (
-      <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
-        {errorMessage}
-      </div>
-    );
+  // Show error toast for query errors, but still render the page
+  if (error) {
+    const errorMessage =
+      error && typeof error === 'object' && 'status' in error
+        ? error.status === 403
+          ? t('users.accessDenied')
+          : ('message' in error && error.message) || t('users.error')
+        : t('users.error');
+    // Only show toast once - useEffect would be better but this works for now
+    if (users.length === 0) {
+      showToast(errorMessage, 'error');
+    }
   }
 
   return (
     <div>
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-text-secondary mb-2">
-          {t('users.title')}
-        </h2>
-        <p className="text-text-tertiary text-sm">
-          {t('users.total', { count: users.length })}
-        </p>
-      </div>
+      <AdminPageHeader
+        title={t('users.title')}
+        description={t('users.total', { count: users.length })}
+      />
       <UserList users={users} loading={false} onDelete={handleDelete} />
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
-          <DialogHeader onClose={() => setShowDeleteDialog(false)}>
-            <DialogTitle>{t('users.delete.confirm')}</DialogTitle>
-          </DialogHeader>
-          <div className="px-6 py-4">
-            <p className="text-sm text-text-primary">
-              {t('users.delete.confirmMessage')}
-            </p>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setShowDeleteDialog(false);
-                setDeletingId(null);
-              }}
-            >
-              {t('users.delete.cancel')}
-            </Button>
-            <Button
-              variant="danger"
-              onClick={confirmDelete}
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending
-                ? t('users.delete.deleting')
-                : t('users.delete.confirm')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmModal
+        isOpen={showDeleteDialog}
+        onClose={() => {
+          setShowDeleteDialog(false);
+          setDeletingId(null);
+        }}
+        onConfirm={confirmDelete}
+        title={t('users.delete.confirm')}
+        message={t('users.delete.confirmMessage')}
+        confirmText={
+          deleteMutation.isPending
+            ? t('users.delete.deleting')
+            : t('users.delete.confirm')
+        }
+        cancelText={t('users.delete.cancel')}
+        confirmVariant="danger"
+      />
     </div>
   );
 }

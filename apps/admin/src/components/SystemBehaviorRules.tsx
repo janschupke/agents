@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { NUMERIC_CONSTANTS, HTTP_STATUS } from '@openai/shared-types';
+import { HTTP_STATUS } from '@openai/shared-types';
 import { Button, Tabs } from '@openai/ui';
 import {
   useSystemRules,
@@ -8,6 +8,7 @@ import {
 } from '../hooks/queries/use-system-rules';
 import { IconTrash, IconPlus } from './ui/Icons';
 import { AgentType } from '../types/agent.types';
+import { useToast } from '../contexts/ToastContext';
 
 type TabType = AgentType;
 
@@ -19,6 +20,7 @@ interface AgentTypeFormData {
 export default function SystemBehaviorRules() {
   const { t: tAdmin } = useTranslation(I18nNamespace.ADMIN);
   const { t: tCommon } = useTranslation(I18nNamespace.COMMON);
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<TabType>(AgentType.GENERAL);
 
   // Separate form data for each agent type
@@ -33,10 +35,6 @@ export default function SystemBehaviorRules() {
   const languageAssistantData = useSystemRules(AgentType.LANGUAGE_ASSISTANT);
 
   const updateMutation = useUpdateSystemRules();
-  const [success, setSuccess] = useState<Record<TabType, boolean>>({
-    [AgentType.GENERAL]: false,
-    [AgentType.LANGUAGE_ASSISTANT]: false,
-  });
 
   // Sync rules and system prompt from query data for each tab
   useEffect(() => {
@@ -112,16 +110,10 @@ export default function SystemBehaviorRules() {
   // Show success message after successful save
   useEffect(() => {
     if (updateMutation.isSuccess && updateMutation.variables) {
-      const savedTab: TabType = updateMutation.variables.agentType as AgentType;
-      setSuccess((prev) => ({ ...prev, [savedTab]: true }));
-      const timer = setTimeout(
-        () => setSuccess((prev) => ({ ...prev, [savedTab]: false })),
-        NUMERIC_CONSTANTS.UI_NOTIFICATION_DURATION
-      );
-      return () => clearTimeout(timer);
+      showToast(tAdmin('systemRules.saved'), 'success');
     }
     return undefined;
-  }, [updateMutation.isSuccess, updateMutation.variables]);
+  }, [updateMutation.isSuccess, updateMutation.variables, showToast, tAdmin]);
 
   const handleSave = async (tab: TabType) => {
     const currentFormData = formData[tab];
@@ -133,8 +125,12 @@ export default function SystemBehaviorRules() {
         agentType: tab,
       },
       {
-        onError: () => {
-          // Error is handled by mutation state
+        onError: (error: unknown) => {
+          const errorMessage =
+            error && typeof error === 'object' && 'message' in error
+              ? (error.message as string)
+              : tAdmin('systemRules.error');
+          showToast(errorMessage, 'error');
         },
       }
     );
@@ -226,7 +222,6 @@ export default function SystemBehaviorRules() {
   const renderForm = (tab: TabType) => {
     const currentFormData = formData[tab];
     const error = getError(tab);
-    const isSuccess = success[tab];
 
     return (
       <div className="space-y-6">
@@ -236,11 +231,6 @@ export default function SystemBehaviorRules() {
           </div>
         )}
 
-        {isSuccess && (
-          <div className="bg-message-success border border-border text-text-primary px-4 py-3 rounded-md text-sm">
-            {tAdmin('systemRules.saved')}
-          </div>
-        )}
 
         <div>
           <label className="block text-sm font-medium text-text-secondary mb-1.5">

@@ -3,6 +3,7 @@ import { useUser, SignInButton, SignOutButton } from '@clerk/clerk-react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useCurrentUser } from './hooks/queries/use-user';
 import Layout from './components/Layout';
+import { ToastProvider } from './contexts/ToastContext';
 import UsersPage from './pages/UsersPage';
 import UserDetailPage from './pages/UserDetailPage';
 import UserEditPage from './pages/UserEditPage';
@@ -99,8 +100,9 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Layout>
-        <Routes>
+      <ToastProvider>
+        <Layout>
+          <Routes>
           <Route path="/" element={<Navigate to={ROUTES.USERS} replace />} />
           <Route path={ROUTES.USERS} element={<UsersPage />} />
           <Route
@@ -128,6 +130,7 @@ function App() {
           />
         </Routes>
       </Layout>
+      </ToastProvider>
     </BrowserRouter>
   );
 }

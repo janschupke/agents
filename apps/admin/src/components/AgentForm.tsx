@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { Button, Input, Textarea } from '@openai/ui';
+import { Button } from '@openai/ui';
+import { AgentFormMode, AgentFormData } from '../types/agent-form.types';
+import { useAgentFormValidation } from '../hooks/use-agent-form-validation';
+import {
+  BasicInfoSection,
+  ConfigurationSection,
+  BehaviorRulesSection,
+  PersonalitySection,
+} from './agent-form';
 import {
   AgentType,
   ResponseLength,
@@ -8,12 +16,7 @@ import {
   Sentiment,
   Availability,
 } from '../types/agent.types';
-import {
-  PersonalityType,
-  PERSONALITY_TYPES,
-  INTERESTS,
-} from '@openai/shared-types';
-import { AgentFormMode, AgentFormData } from '../types/agent-form.types';
+import { PersonalityType } from '@openai/shared-types';
 
 export interface AgentFormProps {
   mode: AgentFormMode;
@@ -74,7 +77,10 @@ export default function AgentForm({
   });
 
   const [newBehaviorRule, setNewBehaviorRule] = useState('');
-  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const { validate, errors } = useAgentFormValidation({
+    isArchetype,
+  });
 
   useEffect(() => {
     if (initialData) {
@@ -100,47 +106,18 @@ export default function AgentForm({
     }
   }, [initialData]);
 
-  const validate = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formValues.name.trim()) {
-      newErrors.name = isArchetype
-        ? t('archetypes.form.errors.nameRequired')
-        : t('agents.edit.name') + ' is required';
-    }
-
-    if (
-      formValues.temperature &&
-      (Number(formValues.temperature) < 0 || Number(formValues.temperature) > 2)
-    ) {
-      newErrors.temperature = isArchetype
-        ? t('archetypes.form.errors.temperatureRange')
-        : 'Temperature must be between 0 and 2';
-    }
-
-    if (
-      formValues.age &&
-      (Number(formValues.age) < 0 || Number(formValues.age) > 100)
-    ) {
-      newErrors.age = isArchetype
-        ? t('archetypes.form.errors.ageRange')
-        : 'Age must be between 0 and 100';
-    }
-
-    if (formValues.maxTokens && Number(formValues.maxTokens) < 1) {
-      newErrors.maxTokens = isArchetype
-        ? t('archetypes.form.errors.maxTokensMin')
-        : 'Max tokens must be at least 1';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validate()) {
+    if (
+      !validate({
+        name: formValues.name,
+        temperature: formValues.temperature,
+        age: formValues.age,
+        maxTokens: formValues.maxTokens,
+      })
+    ) {
       return;
     }
 
@@ -252,450 +229,64 @@ export default function AgentForm({
 
       <div className="space-y-6">
         {/* Basic Info */}
-        <div className="space-y-4">
-          <h4 className="text-sm font-medium text-text-secondary">
-            {isArchetype
-              ? t('archetypes.form.basicInfo')
-              : t('agents.detail.basicInfo')}
-          </h4>
-
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">
-              {isArchetype ? t('archetypes.form.name') : t('agents.edit.name')}{' '}
-              <span className="text-red-500">*</span>
-            </label>
-            <Input
-              type="text"
-              value={formValues.name}
-              onChange={(e) =>
-                setFormValues({ ...formValues, name: e.target.value })
-              }
-              className={errors.name ? 'border-red-500' : ''}
-              required
-            />
-            {errors.name && (
-              <p className="text-red-500 text-xs mt-1">{errors.name}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">
-              {isArchetype
-                ? t('archetypes.form.description')
-                : t('agents.edit.description')}
-            </label>
-            <Textarea
-              value={formValues.description}
-              onChange={(e) =>
-                setFormValues({ ...formValues, description: e.target.value })
-              }
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">
-              {isArchetype
-                ? t('archetypes.form.avatarUrl')
-                : t('agents.edit.avatarUrl')}
-            </label>
-            <Input
-              type="url"
-              value={formValues.avatarUrl}
-              onChange={(e) =>
-                setFormValues({ ...formValues, avatarUrl: e.target.value })
-              }
-              placeholder="https://..."
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">
-                {isArchetype
-                  ? t('archetypes.form.agentType')
-                  : t('agents.edit.agentType')}
-              </label>
-              <select
-                value={formValues.agentType}
-                onChange={(e) =>
-                  setFormValues({
-                    ...formValues,
-                    agentType: e.target.value as AgentType | '',
-                  })
-                }
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-text-primary"
-              >
-                <option value="">
-                  {isArchetype
-                    ? t('archetypes.form.selectAgentType')
-                    : 'Select agent type'}
-                </option>
-                <option value={AgentType.GENERAL}>{AgentType.GENERAL}</option>
-                <option value={AgentType.LANGUAGE_ASSISTANT}>
-                  {AgentType.LANGUAGE_ASSISTANT}
-                </option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">
-                {isArchetype
-                  ? t('archetypes.form.language')
-                  : t('agents.edit.language')}
-              </label>
-              <Input
-                type="text"
-                value={formValues.language}
-                onChange={(e) =>
-                  setFormValues({ ...formValues, language: e.target.value })
-                }
-                placeholder="en, zh, ja, etc."
-              />
-            </div>
-          </div>
-        </div>
+        <BasicInfoSection
+          formValues={{
+            name: formValues.name,
+            description: formValues.description,
+            avatarUrl: formValues.avatarUrl,
+            agentType: formValues.agentType,
+            language: formValues.language,
+          }}
+          errors={errors}
+          isArchetype={isArchetype}
+          onFieldChange={(field: string, value: string) =>
+            setFormValues({ ...formValues, [field]: value })
+          }
+        />
 
         {/* Configuration */}
-        <div className="space-y-4">
-          <h4 className="text-sm font-medium text-text-secondary">
-            {isArchetype ? t('archetypes.form.configuration') : 'Configuration'}
-          </h4>
+        <ConfigurationSection
+          formValues={{
+            temperature: formValues.temperature,
+            maxTokens: formValues.maxTokens,
+            model: formValues.model,
+            systemPrompt: formValues.systemPrompt,
+          }}
+          errors={errors}
+          isArchetype={isArchetype}
+          onFieldChange={(field: string, value: string) =>
+            setFormValues({ ...formValues, [field]: value })
+          }
+        />
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">
-                {isArchetype ? t('archetypes.form.temperature') : 'Temperature'}{' '}
-                (0-2)
-              </label>
-              <Input
-                type="number"
-                step="0.1"
-                min="0"
-                max="2"
-                value={formValues.temperature}
-                onChange={(e) =>
-                  setFormValues({ ...formValues, temperature: e.target.value })
-                }
-                className={errors.temperature ? 'border-red-500' : ''}
-              />
-              {errors.temperature && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.temperature}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">
-                {isArchetype ? t('archetypes.form.maxTokens') : 'Max Tokens'}
-              </label>
-              <Input
-                type="number"
-                min="1"
-                value={formValues.maxTokens}
-                onChange={(e) =>
-                  setFormValues({ ...formValues, maxTokens: e.target.value })
-                }
-                className={errors.maxTokens ? 'border-red-500' : ''}
-              />
-              {errors.maxTokens && (
-                <p className="text-red-500 text-xs mt-1">{errors.maxTokens}</p>
-              )}
-            </div>
-          </div>
-
-          {isArchetype && (
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">
-                {t('archetypes.form.systemPrompt')}
-              </label>
-              <Textarea
-                value={formValues.systemPrompt}
-                onChange={(e) =>
-                  setFormValues({ ...formValues, systemPrompt: e.target.value })
-                }
-                rows={4}
-              />
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">
-              {isArchetype ? t('archetypes.form.model') : 'Model'}
-            </label>
-            <Input
-              type="text"
-              value={formValues.model}
-              onChange={(e) =>
-                setFormValues({ ...formValues, model: e.target.value })
-              }
-              placeholder="gpt-4, gpt-3.5-turbo, etc."
-            />
-          </div>
-
-          {isArchetype && (
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">
-                {t('archetypes.form.behaviorRules')}
-              </label>
-              <div className="space-y-2">
-                <div className="flex gap-2">
-                  <Input
-                    type="text"
-                    value={newBehaviorRule}
-                    onChange={(e) => setNewBehaviorRule(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addBehaviorRule();
-                      }
-                    }}
-                    placeholder={t('archetypes.form.addRule')}
-                  />
-                  <Button type="button" onClick={addBehaviorRule} size="sm">
-                    {t('archetypes.form.add')}
-                  </Button>
-                </div>
-                {formValues.behaviorRules.length > 0 && (
-                  <div className="space-y-1">
-                    {formValues.behaviorRules.map((rule, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-2 p-2 bg-background rounded border border-border"
-                      >
-                        <span className="flex-1 text-sm text-text-primary">
-                          {rule}
-                        </span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeBehaviorRule(index)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          {t('archetypes.form.remove')}
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+        {isArchetype && (
+          <BehaviorRulesSection
+            behaviorRules={formValues.behaviorRules}
+            newBehaviorRule={newBehaviorRule}
+            onNewRuleChange={setNewBehaviorRule}
+            onAddRule={addBehaviorRule}
+            onRemoveRule={removeBehaviorRule}
+          />
+        )}
 
         {/* Personality & Behavior */}
-        <div className="space-y-4">
-          <h4 className="text-sm font-medium text-text-secondary">
-            {isArchetype
-              ? t('archetypes.form.personality')
-              : 'Personality & Behavior'}
-          </h4>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">
-                {isArchetype
-                  ? t('archetypes.form.responseLength')
-                  : 'Response Length'}
-              </label>
-              <select
-                value={formValues.responseLength}
-                onChange={(e) =>
-                  setFormValues({
-                    ...formValues,
-                    responseLength: e.target.value as ResponseLength | '',
-                  })
-                }
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-text-primary"
-              >
-                <option value="">
-                  {isArchetype
-                    ? t('archetypes.form.selectResponseLength')
-                    : 'Select response length'}
-                </option>
-                <option value={ResponseLength.SHORT}>
-                  {ResponseLength.SHORT}
-                </option>
-                <option value={ResponseLength.STANDARD}>
-                  {ResponseLength.STANDARD}
-                </option>
-                <option value={ResponseLength.LONG}>
-                  {ResponseLength.LONG}
-                </option>
-                <option value={ResponseLength.ADAPT}>
-                  {ResponseLength.ADAPT}
-                </option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">
-                {isArchetype ? t('archetypes.form.age') : 'Age'} (0-100)
-              </label>
-              <Input
-                type="number"
-                min="0"
-                max="100"
-                value={formValues.age}
-                onChange={(e) =>
-                  setFormValues({ ...formValues, age: e.target.value })
-                }
-                className={errors.age ? 'border-red-500' : ''}
-              />
-              {errors.age && (
-                <p className="text-red-500 text-xs mt-1">{errors.age}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">
-                {isArchetype ? t('archetypes.form.gender') : 'Gender'}
-              </label>
-              <select
-                value={formValues.gender}
-                onChange={(e) =>
-                  setFormValues({
-                    ...formValues,
-                    gender: e.target.value as Gender | '',
-                  })
-                }
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-text-primary"
-              >
-                <option value="">
-                  {isArchetype
-                    ? t('archetypes.form.selectGender')
-                    : 'Select gender'}
-                </option>
-                <option value={Gender.MALE}>{Gender.MALE}</option>
-                <option value={Gender.FEMALE}>{Gender.FEMALE}</option>
-                <option value={Gender.NON_BINARY}>{Gender.NON_BINARY}</option>
-                <option value={Gender.PREFER_NOT_TO_SAY}>
-                  {Gender.PREFER_NOT_TO_SAY}
-                </option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">
-                {isArchetype ? t('archetypes.form.personality') : 'Personality'}
-              </label>
-              <select
-                value={formValues.personality}
-                onChange={(e) =>
-                  setFormValues({
-                    ...formValues,
-                    personality: e.target.value as PersonalityType | '',
-                  })
-                }
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-text-primary"
-              >
-                <option value="">
-                  {isArchetype
-                    ? t('archetypes.form.selectPersonality')
-                    : 'Select personality'}
-                </option>
-                {PERSONALITY_TYPES.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">
-                {isArchetype ? t('archetypes.form.sentiment') : 'Sentiment'}
-              </label>
-              <select
-                value={formValues.sentiment}
-                onChange={(e) =>
-                  setFormValues({
-                    ...formValues,
-                    sentiment: e.target.value as Sentiment | '',
-                  })
-                }
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-text-primary"
-              >
-                <option value="">
-                  {isArchetype
-                    ? t('archetypes.form.selectSentiment')
-                    : 'Select sentiment'}
-                </option>
-                <option value={Sentiment.NEUTRAL}>{Sentiment.NEUTRAL}</option>
-                <option value={Sentiment.ENGAGED}>{Sentiment.ENGAGED}</option>
-                <option value={Sentiment.FRIENDLY}>{Sentiment.FRIENDLY}</option>
-                <option value={Sentiment.ATTRACTED}>
-                  {Sentiment.ATTRACTED}
-                </option>
-                <option value={Sentiment.OBSESSED}>{Sentiment.OBSESSED}</option>
-                <option value={Sentiment.DISINTERESTED}>
-                  {Sentiment.DISINTERESTED}
-                </option>
-                <option value={Sentiment.ANGRY}>{Sentiment.ANGRY}</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">
-                {isArchetype
-                  ? t('archetypes.form.availability')
-                  : 'Availability'}
-              </label>
-              <select
-                value={formValues.availability}
-                onChange={(e) =>
-                  setFormValues({
-                    ...formValues,
-                    availability: e.target.value as Availability | '',
-                  })
-                }
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-text-primary"
-              >
-                <option value="">
-                  {isArchetype
-                    ? t('archetypes.form.selectAvailability')
-                    : 'Select availability'}
-                </option>
-                <option value={Availability.AVAILABLE}>
-                  {Availability.AVAILABLE}
-                </option>
-                <option value={Availability.STANDARD}>
-                  {Availability.STANDARD}
-                </option>
-                <option value={Availability.BUSY}>{Availability.BUSY}</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">
-              {isArchetype ? t('archetypes.form.interests') : 'Interests'}
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {INTERESTS.map((interest) => (
-                <Button
-                  key={interest}
-                  type="button"
-                  variant={
-                    formValues.interests.includes(interest)
-                      ? 'primary'
-                      : 'secondary'
-                  }
-                  size="xs"
-                  onClick={() => toggleInterest(interest)}
-                >
-                  {interest}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
+        <PersonalitySection
+          formValues={{
+            responseLength: formValues.responseLength,
+            age: formValues.age,
+            gender: formValues.gender,
+            personality: formValues.personality,
+            sentiment: formValues.sentiment,
+            availability: formValues.availability,
+            interests: formValues.interests,
+          }}
+          errors={errors}
+          isArchetype={isArchetype}
+          onFieldChange={(field: string, value: string | string[]) =>
+            setFormValues({ ...formValues, [field]: value })
+          }
+          onToggleInterest={toggleInterest}
+        />
 
         {/* Actions */}
         <div className="flex gap-2 pt-4 border-t border-border">

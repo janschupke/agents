@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@openai/ui';
 import { AgentArchetypeService } from '../services/agent-archetype.service';
 import { AgentArchetype } from '../types/agent-archetype.types';
@@ -8,6 +8,8 @@ import AgentArchetypeList from '../components/AgentArchetypeList';
 import AgentArchetypeForm from '../components/AgentArchetypeForm';
 import { IconPlus } from '../components/ui/Icons';
 import { queryKeys } from '../hooks/queries/query-keys';
+import { AdminPageHeader } from '../components/shared';
+import { useDeleteArchetype } from '../hooks/use-delete-archetype';
 
 export default function AgentArchetypesPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
@@ -25,12 +27,7 @@ export default function AgentArchetypesPage() {
     queryFn: () => AgentArchetypeService.getAllArchetypes(),
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => AgentArchetypeService.deleteArchetype(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.archetype.list() });
-    },
-  });
+  const deleteMutation = useDeleteArchetype();
 
   const handleCreate = () => {
     setEditingArchetype(null);
@@ -65,17 +62,17 @@ export default function AgentArchetypesPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-text-secondary">
-          {t('archetypes.title')}
-        </h2>
-        {!isCreating && !editingArchetype && (
-          <Button onClick={handleCreate} size="sm">
-            <IconPlus className="w-4 h-4" />
-            {t('archetypes.create')}
-          </Button>
-        )}
-      </div>
+      <AdminPageHeader
+        title={t('archetypes.title')}
+        actions={
+          !isCreating && !editingArchetype ? (
+            <Button onClick={handleCreate} size="sm">
+              <IconPlus className="w-4 h-4" />
+              {t('archetypes.create')}
+            </Button>
+          ) : undefined
+        }
+      />
       {isCreating || editingArchetype ? (
         <AgentArchetypeForm
           archetype={editingArchetype}
