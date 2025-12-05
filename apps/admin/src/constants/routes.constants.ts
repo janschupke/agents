@@ -1,5 +1,7 @@
 export const ROUTES = {
   USERS: '/users',
+  USER_DETAIL: (id: string) => `/users/${id}`,
+  USER_EDIT: (id: string) => `/users/${id}/edit`,
   SYSTEM_RULES: '/system-rules',
   AGENT_ARCHETYPES: '/agent-archetypes',
   AI_REQUEST_LOGS: '/ai-request-logs',

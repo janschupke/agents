@@ -1,14 +1,26 @@
 import { User } from '../types/user.types';
 import { formatDate } from '@openai/utils';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { Avatar, Badge } from '@openai/ui';
+import { Avatar, Badge, Button } from '@openai/ui';
+import { Link } from 'react-router-dom';
+import { IconEye, IconEdit, IconTrash } from './ui/Icons';
+import { ROUTES } from '../constants/routes.constants';
 
 interface UserListProps {
   users: User[];
   loading: boolean;
+  onView?: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
-export default function UserList({ users, loading }: UserListProps) {
+export default function UserList({
+  users,
+  loading,
+  onView,
+  onEdit,
+  onDelete,
+}: UserListProps) {
   const { t } = useTranslation(I18nNamespace.ADMIN);
 
   if (loading) {
@@ -44,6 +56,9 @@ export default function UserList({ users, loading }: UserListProps) {
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                 {t('users.columns.created')}
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-text-secondary uppercase tracking-wider">
+                {t('users.columns.actions')}
               </th>
             </tr>
           </thead>
@@ -104,6 +119,37 @@ export default function UserList({ users, loading }: UserListProps) {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
                   {formatDate(user.createdAt)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div className="flex justify-end gap-2">
+                    <Link to={ROUTES.USER_DETAIL(user.id)}>
+                      <Button
+                        variant="icon"
+                        size="sm"
+                        tooltip={t('users.list.view')}
+                      >
+                        <IconEye className="w-5 h-5" />
+                      </Button>
+                    </Link>
+                    <Link to={ROUTES.USER_EDIT(user.id)}>
+                      <Button
+                        variant="icon"
+                        size="sm"
+                        tooltip={t('users.list.edit')}
+                      >
+                        <IconEdit className="w-5 h-5" />
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="icon"
+                      size="sm"
+                      onClick={() => onDelete?.(user.id)}
+                      tooltip={t('users.list.delete')}
+                      className="hover:text-red-500"
+                    >
+                      <IconTrash className="w-5 h-5" />
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))}

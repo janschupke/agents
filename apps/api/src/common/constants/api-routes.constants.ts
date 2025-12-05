@@ -44,6 +44,7 @@ export const API_ROUTES = {
     BASE: 'api/user',
     ME: 'api/user/me',
     ALL: 'api/user/all',
+    BY_ID: (id: string) => `api/user/${id}`,
   },
 
   SYSTEM_CONFIG: {

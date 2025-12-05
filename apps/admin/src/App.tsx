@@ -4,6 +4,8 @@ import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useCurrentUser } from './hooks/queries/use-user';
 import Layout from './components/Layout';
 import UsersPage from './pages/UsersPage';
+import UserDetailPage from './pages/UserDetailPage';
+import UserEditPage from './pages/UserEditPage';
 import SystemRulesPage from './pages/SystemRulesPage';
 import AgentArchetypesPage from './pages/AgentArchetypesPage';
 import AiRequestLogsPage from './pages/AiRequestLogsPage';
@@ -101,6 +103,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to={ROUTES.USERS} replace />} />
           <Route path={ROUTES.USERS} element={<UsersPage />} />
+          <Route path={ROUTES.USER_DETAIL(':id')} element={<UserDetailPage />} />
+          <Route path={ROUTES.USER_EDIT(':id')} element={<UserEditPage />} />
           <Route path={ROUTES.SYSTEM_RULES} element={<SystemRulesPage />} />
           <Route
             path={ROUTES.AGENT_ARCHETYPES}

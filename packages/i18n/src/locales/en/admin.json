@@ -32,7 +32,45 @@
       "roles": "Roles",
       "createdAt": "Created At",
       "user": "User",
-      "created": "Created"
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "list": {
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "detail": {
+      "title": "User Details",
+      "edit": "Edit User",
+      "delete": "Delete User",
+      "basicInfo": "Basic Information",
+      "userId": "User ID",
+      "back": "Back",
+      "error": "Failed to load user",
+      "notFound": "User not found",
+      "loading": "Loading user..."
+    },
+    "edit": {
+      "title": "Edit User",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "back": "Back",
+      "basicInfo": "Basic Information",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "imageUrl": "Image URL",
+      "error": "Failed to load user",
+      "notFound": "User not found",
+      "loading": "Loading user..."
+    },
+    "delete": {
+      "confirm": "Delete User",
+      "confirmMessage": "Are you sure you want to delete this user? This action cannot be undone.",
+      "cancel": "Cancel",
+      "deleting": "Deleting...",
+      "success": "User deleted successfully"
     },
     "noRoles": "No roles",
     "admin": "Admin"

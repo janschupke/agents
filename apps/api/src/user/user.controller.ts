@@ -1,4 +1,12 @@
-import { Controller, Get, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Put,
+  Delete,
+  Param,
+  Body,
+  Logger,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { ClerkService } from '../auth/clerk.service';
 import { User } from '../auth/decorators/user.decorator';
@@ -6,7 +14,11 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UseGuards } from '@nestjs/common';
 import { RolesGuard } from '../auth/roles.guard';
 import { AuthenticatedUser } from '../common/types/auth.types';
-import { UserResponseDto, UserListResponseDto } from '../common/dto/user.dto';
+import {
+  UserResponseDto,
+  UserListResponseDto,
+  UpdateUserDto,
+} from '../common/dto/user.dto';
 import { API_ROUTES } from '../common/constants/api-routes.constants.js';
 import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
 
@@ -79,5 +91,52 @@ export class UserController {
       imageUrl: dbUser.imageUrl,
       roles: dbRoles,
     };
+  }
+
+  @Get(':id')
+  @Roles('admin')
+  @UseGuards(RolesGuard)
+  async getUserById(@Param('id') id: string): Promise<UserListResponseDto> {
+    this.logger.log(`Getting user ${id} (admin only)`);
+    const user = await this.userService.findById(id);
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      imageUrl: user.imageUrl,
+      roles: (user.roles as string[]) || [],
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+  }
+
+  @Put(':id')
+  @Roles('admin')
+  @UseGuards(RolesGuard)
+  async updateUser(
+    @Param('id') id: string,
+    @Body() body: UpdateUserDto
+  ): Promise<UserListResponseDto> {
+    this.logger.log(`Updating user ${id} (admin only)`);
+    const user = await this.userService.update(id, body);
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      imageUrl: user.imageUrl,
+      roles: (user.roles as string[]) || [],
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+  }
+
+  @Delete(':id')
+  @Roles('admin')
+  @UseGuards(RolesGuard)
+  async deleteUser(@Param('id') id: string): Promise<void> {
+    this.logger.log(`Deleting user ${id} (admin only)`);
+    await this.userService.delete(id);
   }
 }

@@ -4,6 +4,7 @@ export const API_BASE_URL =
 export const API_ENDPOINTS = {
   USER_ME: '/api/user/me',
   USER_ALL: '/api/user/all',
+  USER_BY_ID: (id: string) => `/api/user/${id}`,
   HEALTHCHECK: '/api/healthcheck',
   SYSTEM_CONFIG_BEHAVIOR_RULES: '/api/system-config/behavior-rules',
   AGENT_ARCHETYPES: {

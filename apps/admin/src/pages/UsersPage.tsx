@@ -1,10 +1,48 @@
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useUsers } from '../hooks/queries/use-user';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import UserList from '../components/UserList';
+import { UserService } from '../services/user.service';
+import { useState } from 'react';
+import { ROUTES } from '../constants/routes.constants';
+import { queryKeys } from '../hooks/queries/query-keys';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  Button,
+} from '@openai/ui';
 
 export default function UsersPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
   const { data: users = [], isLoading: loading, error } = useUsers();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => UserService.deleteUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.list() });
+      setShowDeleteDialog(false);
+      setDeletingId(null);
+    },
+  });
+
+  const handleDelete = (id: string) => {
+    setDeletingId(id);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (deletingId) {
+      deleteMutation.mutate(deletingId);
+    }
+  };
 
   const errorMessage =
     error && typeof error === 'object' && 'status' in error
@@ -39,7 +77,45 @@ export default function UsersPage() {
           {t('users.total', { count: users.length })}
         </p>
       </div>
-      <UserList users={users} loading={false} />
+      <UserList
+        users={users}
+        loading={false}
+        onView={(id) => navigate(ROUTES.USER_DETAIL(id))}
+        onEdit={(id) => navigate(ROUTES.USER_EDIT(id))}
+        onDelete={handleDelete}
+      />
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader onClose={() => setShowDeleteDialog(false)}>
+            <DialogTitle>{t('users.delete.confirm')}</DialogTitle>
+          </DialogHeader>
+          <div className="px-6 py-4">
+            <p className="text-sm text-text-primary">
+              {t('users.delete.confirmMessage')}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setShowDeleteDialog(false);
+                setDeletingId(null);
+              }}
+            >
+              {t('users.delete.cancel')}
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending
+                ? t('users.delete.deleting')
+                : t('users.delete.confirm')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

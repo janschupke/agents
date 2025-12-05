@@ -58,4 +58,15 @@ export class UserService {
     this.logger.debug('Finding all users');
     return this.userRepository.findAll();
   }
+
+  async delete(id: string): Promise<void> {
+    this.logger.log(`Deleting user ${id}`);
+    // Check if user exists before deleting
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      this.logger.warn(`User ${id} not found for deletion`);
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    await this.userRepository.delete(id);
+  }
 }

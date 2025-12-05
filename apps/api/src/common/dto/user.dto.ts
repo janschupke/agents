@@ -19,3 +19,11 @@ export class UserListResponseDto {
   createdAt!: Date;
   updatedAt!: Date;
 }
+
+export class UpdateUserDto {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  imageUrl?: string;
+  roles?: string[];
+}

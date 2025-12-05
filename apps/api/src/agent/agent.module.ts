@@ -19,6 +19,11 @@ import { AgentArchetypeModule } from '../agent-archetype/agent-archetype.module'
     LanguageAssistantService,
     SessionRepository,
   ],
-  exports: [AgentRepository, AgentConfigService, LanguageAssistantService],
+  exports: [
+    AgentService,
+    AgentRepository,
+    AgentConfigService,
+    LanguageAssistantService,
+  ],
 })
 export class AgentModule {}
