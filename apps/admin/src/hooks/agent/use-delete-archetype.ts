@@ -13,7 +13,10 @@ export function useDeleteArchetype() {
     mutationFn: (id: number) => AgentArchetypeService.deleteArchetype(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.archetype.list() });
-      showToast(t('archetypes.delete.success') || 'Archetype deleted successfully', 'success');
+      showToast(
+        t('archetypes.delete.success') || 'Archetype deleted successfully',
+        'success'
+      );
     },
     onError: (error: unknown) => {
       const errorMessage =

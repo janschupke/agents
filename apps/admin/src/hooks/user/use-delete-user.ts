@@ -21,7 +21,10 @@ export function useDeleteUser(options: UseDeleteUserOptions = {}) {
     mutationFn: (id: string) => UserService.deleteUser(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.list() });
-      showToast(t('users.delete.success') || 'User deleted successfully', 'success');
+      showToast(
+        t('users.delete.success') || 'User deleted successfully',
+        'success'
+      );
       if (options.redirectOnSuccess) {
         navigate(ROUTES.USERS);
       }

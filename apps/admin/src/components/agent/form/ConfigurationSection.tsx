@@ -43,9 +43,7 @@ export default function ConfigurationSection({
             className={errors.temperature ? 'border-red-500' : ''}
           />
           {errors.temperature && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.temperature}
-            </p>
+            <p className="text-red-500 text-xs mt-1">{errors.temperature}</p>
           )}
         </div>
 

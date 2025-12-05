@@ -45,9 +45,7 @@ export default function AgentBasicInfo({ agent }: AgentBasicInfoProps) {
           <div className="text-text-tertiary">
             {t('agents.detail.language')}
           </div>
-          <div className="text-text-primary mt-1">
-            {agent.language || '-'}
-          </div>
+          <div className="text-text-primary mt-1">{agent.language || '-'}</div>
         </div>
         <div>
           <div className="text-text-tertiary">{t('agents.detail.userId')}</div>

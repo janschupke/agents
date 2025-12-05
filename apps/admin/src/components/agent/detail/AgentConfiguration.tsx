@@ -6,9 +6,7 @@ interface AgentConfigurationProps {
   agent: Agent;
 }
 
-export default function AgentConfiguration({
-  agent,
-}: AgentConfigurationProps) {
+export default function AgentConfiguration({ agent }: AgentConfigurationProps) {
   const { t } = useTranslation(I18nNamespace.ADMIN);
 
   return (

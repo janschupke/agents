@@ -6,9 +6,7 @@ export function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleString();
 }
 
-export function formatPrice(
-  price: number | string | null | undefined
-): string {
+export function formatPrice(price: number | string | null | undefined): string {
   if (price === null || price === undefined) {
     return '$0.000000';
   }
@@ -24,16 +22,12 @@ export function truncateText(text: string, maxLength: number = 100): string {
   return text.substring(0, maxLength) + '...';
 }
 
-export function formatRequest(
-  requestJson: Record<string, unknown>
-): string {
+export function formatRequest(requestJson: Record<string, unknown>): string {
   const requestStr = JSON.stringify(requestJson, null, 2);
   return truncateText(requestStr, 100);
 }
 
-export function formatResponse(
-  responseJson: Record<string, unknown>
-): string {
+export function formatResponse(responseJson: Record<string, unknown>): string {
   const responseContent =
     (
       responseJson as {

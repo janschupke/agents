@@ -34,9 +34,7 @@ export default function AgentDemographics({ agent }: AgentDemographicsProps) {
             <div className="text-text-tertiary">
               {t('agents.detail.gender')}
             </div>
-            <div className="text-text-primary mt-1">
-              {agent.configs.gender}
-            </div>
+            <div className="text-text-primary mt-1">{agent.configs.gender}</div>
           </div>
         )}
         {agent.configs?.personality && (

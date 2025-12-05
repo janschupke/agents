@@ -46,7 +46,6 @@ export default function AgentArchetypeForm({
     },
   });
 
-
   const handleSubmit = async (data: AgentFormData) => {
     const requestData = mapFormDataToArchetypeRequest(data);
 

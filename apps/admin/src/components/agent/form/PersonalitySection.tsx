@@ -69,9 +69,7 @@ export default function PersonalitySection({
               {ResponseLength.STANDARD}
             </option>
             <option value={ResponseLength.LONG}>{ResponseLength.LONG}</option>
-            <option value={ResponseLength.ADAPT}>
-              {ResponseLength.ADAPT}
-            </option>
+            <option value={ResponseLength.ADAPT}>{ResponseLength.ADAPT}</option>
           </Select>
         </div>
 
@@ -161,9 +159,7 @@ export default function PersonalitySection({
             <option value={Sentiment.NEUTRAL}>{Sentiment.NEUTRAL}</option>
             <option value={Sentiment.ENGAGED}>{Sentiment.ENGAGED}</option>
             <option value={Sentiment.FRIENDLY}>{Sentiment.FRIENDLY}</option>
-            <option value={Sentiment.ATTRACTED}>
-              {Sentiment.ATTRACTED}
-            </option>
+            <option value={Sentiment.ATTRACTED}>{Sentiment.ATTRACTED}</option>
             <option value={Sentiment.OBSESSED}>{Sentiment.OBSESSED}</option>
             <option value={Sentiment.DISINTERESTED}>
               {Sentiment.DISINTERESTED}
@@ -174,9 +170,7 @@ export default function PersonalitySection({
 
         <div>
           <label className="block text-sm font-medium text-text-primary mb-1">
-            {isArchetype
-              ? t('archetypes.form.availability')
-              : 'Availability'}
+            {isArchetype ? t('archetypes.form.availability') : 'Availability'}
           </label>
           <Select
             value={formValues.availability}

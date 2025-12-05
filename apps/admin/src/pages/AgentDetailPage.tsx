@@ -134,7 +134,9 @@ export default function AgentDetailPage() {
         onClose={() => setShowDeleteDialog(false)}
         onConfirm={confirmDelete}
         title={t('agents.delete.confirm')}
-        message={t('agents.delete.confirmMessage') || t('agents.delete.confirm')}
+        message={
+          t('agents.delete.confirmMessage') || t('agents.delete.confirm')
+        }
         confirmText={t('agents.delete.confirm')}
         cancelText={t('agents.delete.cancel') || 'Cancel'}
         confirmVariant="danger"

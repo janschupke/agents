@@ -101,20 +101,12 @@ export default function UserList({ users, loading, onDelete }: UserListProps) {
         return (
           <div className="flex justify-end gap-2">
             <Link to={ROUTES.USER_DETAIL(user.id)}>
-              <Button
-                variant="icon"
-                size="sm"
-                tooltip={t('users.view')}
-              >
+              <Button variant="icon" size="sm" tooltip={t('users.view')}>
                 <IconEye className="w-5 h-5" />
               </Button>
             </Link>
             <Link to={ROUTES.USER_EDIT(user.id)}>
-              <Button
-                variant="icon"
-                size="sm"
-                tooltip={t('users.edit')}
-              >
+              <Button variant="icon" size="sm" tooltip={t('users.edit')}>
                 <IconEdit className="w-5 h-5" />
               </Button>
             </Link>

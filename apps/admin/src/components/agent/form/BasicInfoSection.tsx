@@ -83,12 +83,12 @@ export default function BasicInfoSection({
               ? t('archetypes.form.agentType')
               : t('agents.edit.agentType')}
           </label>
-            <Select
-              value={formValues.agentType}
-              onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                onFieldChange('agentType', e.target.value)
-              }
-            >
+          <Select
+            value={formValues.agentType}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+              onFieldChange('agentType', e.target.value)
+            }
+          >
             <option value="">
               {isArchetype
                 ? t('archetypes.form.selectAgentType')

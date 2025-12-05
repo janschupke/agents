@@ -21,7 +21,10 @@ export function useDeleteAgent(options: UseDeleteAgentOptions = {}) {
     mutationFn: (id: number) => AgentService.deleteAgent(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.agent.list() });
-      showToast(t('agents.delete.success') || 'Agent deleted successfully', 'success');
+      showToast(
+        t('agents.delete.success') || 'Agent deleted successfully',
+        'success'
+      );
       if (options.redirectOnSuccess) {
         navigate(ROUTES.AGENTS);
       }

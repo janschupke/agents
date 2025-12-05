@@ -38,10 +38,7 @@ export default function AgentsPage() {
   // Show error toast if there's an error
   useEffect(() => {
     if (error) {
-      const errorMessage = extractErrorMessage(
-        error,
-        t('agents.list.error')
-      );
+      const errorMessage = extractErrorMessage(error, t('agents.list.error'));
       showToast(errorMessage, 'error');
     }
   }, [error, showToast, t]);
@@ -87,7 +84,9 @@ export default function AgentsPage() {
         }}
         onConfirm={confirmDelete}
         title={t('agents.delete.confirm')}
-        message={t('agents.delete.confirmMessage') || t('agents.delete.confirm')}
+        message={
+          t('agents.delete.confirmMessage') || t('agents.delete.confirm')
+        }
         confirmText={
           deleteMutation.isPending
             ? t('agents.delete.deleting') || 'Deleting...'

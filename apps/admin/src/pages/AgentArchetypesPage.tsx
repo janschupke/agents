@@ -4,10 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@openai/ui';
 import { AgentArchetypeService } from '../services/agent-archetype.service';
 import { AgentArchetype } from '../types/agent-archetype.types';
-import {
-  AgentArchetypeList,
-  AgentArchetypeForm,
-} from '../components/agent';
+import { AgentArchetypeList, AgentArchetypeForm } from '../components/agent';
 import { IconPlus } from '../components/ui/Icons';
 import { queryKeys } from '../hooks/queries/query-keys';
 import { AdminPageHeader } from '../components/shared';

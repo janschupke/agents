@@ -12,6 +12,22 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'clerk-vendor': ['@clerk/clerk-react'],
+          'query-vendor': ['@tanstack/react-query'],
+          'ui-vendor': ['@openai/ui'],
+          'i18n-vendor': ['@openai/i18n'],
+          'shared-vendor': ['@openai/shared-types', '@openai/utils'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 500,
+  },
   test: {
     globals: true,
     environment: 'jsdom',
