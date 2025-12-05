@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { AgentWithConfig } from '../../common/interfaces/agent.interface';
-import { LanguageAssistantService } from '../../agent/services/language-assistant.service';
 import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants';
 import { ResponseLength } from '../../common/enums/response-length.enum';
 import { Gender } from '../../common/enums/gender.enum';
@@ -13,9 +12,7 @@ interface ConfigurationRule {
 
 @Injectable()
 export class ConfigurationRulesService {
-  constructor(
-    private readonly languageAssistantService: LanguageAssistantService
-  ) {}
+  constructor() {}
 
   /**
    * Generate configuration rules for an agent
@@ -29,8 +26,7 @@ export class ConfigurationRulesService {
    * @deprecated Use AgentConfigService.generateBehaviorRulesFromConfig() instead
    */
   generateConfigurationRules(
-    agent: AgentWithConfig,
-    currentDateTime: Date = new Date()
+    agent: AgentWithConfig
   ): ConfigurationRule[] {
     const rules: ConfigurationRule[] = [];
 

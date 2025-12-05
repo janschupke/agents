@@ -47,6 +47,7 @@ describe('SystemConfigService', () => {
         id: 1,
         configKey: 'behavior_rules',
         configValue: ['Rule 1', 'Rule 2'],
+        agentType: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -63,6 +64,7 @@ describe('SystemConfigService', () => {
         id: 1,
         configKey: 'behavior_rules',
         configValue: JSON.stringify(['Rule 1', 'Rule 2']),
+        agentType: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -79,6 +81,7 @@ describe('SystemConfigService', () => {
         id: 1,
         configKey: 'behavior_rules',
         configValue: { rules: ['Rule 1', 'Rule 2'] },
+        agentType: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -95,6 +98,7 @@ describe('SystemConfigService', () => {
         id: 1,
         configKey: 'behavior_rules',
         configValue: JSON.stringify({ rules: ['Rule 1', 'Rule 2'] }),
+        agentType: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -111,6 +115,7 @@ describe('SystemConfigService', () => {
         id: 1,
         configKey: 'behavior_rules',
         configValue: 'Single rule',
+        agentType: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -127,6 +132,7 @@ describe('SystemConfigService', () => {
         id: 1,
         configKey: 'behavior_rules',
         configValue: null,
+        agentType: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -163,6 +169,7 @@ describe('SystemConfigService', () => {
         id: 1,
         configKey: 'behavior_rules',
         configValue: rules,
+        agentType: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

@@ -21,9 +21,20 @@ export function useSystemRules(agentType: AgentType | null = null) {
   const { isSignedIn, isLoaded } = useUser();
   const tokenReady = useTokenReady();
 
-  return useQuery<SystemBehaviorRules>({
-    queryKey: queryKeys.system.behaviorRules(agentType),
-    queryFn: () => systemConfigService.getBehaviorRules(agentType),
+  return useQuery({
+    queryKey: queryKeys.system.behaviorRules()(agentType),
+    queryFn: async (): Promise<SystemBehaviorRules> => {
+      try {
+        return await systemConfigService.getBehaviorRules(agentType);
+      } catch (error) {
+        // Treat 404 as "no data" - return empty rules
+        const err = error as { status?: number };
+        if (err?.status === HTTP_STATUS.NOT_FOUND) {
+          return { rules: [], system_prompt: undefined };
+        }
+        throw error;
+      }
+    },
     enabled: isSignedIn && isLoaded && tokenReady,
     retry: (failureCount, error) => {
       // Don't retry on 404 (no rules set yet)
@@ -46,12 +57,11 @@ export function useUpdateSystemRules() {
   >({
     mutationFn: ({ rules, systemPrompt, agentType }) =>
       systemConfigService.updateBehaviorRules(rules, systemPrompt, agentType),
-    onSuccess: (data, variables) => {
-      // Update the cache with the new rules
-      queryClient.setQueryData<SystemBehaviorRules>(
-        queryKeys.system.behaviorRules(variables.agentType),
-        data
-      );
+    onSuccess: (_data, variables) => {
+      // Invalidate and refetch to ensure fresh data
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.system.behaviorRules()(variables.agentType ?? null),
+      });
     },
   });
 }

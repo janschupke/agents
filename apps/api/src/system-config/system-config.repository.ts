@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type {
   SystemConfig as PrismaSystemConfig,
@@ -9,6 +9,8 @@ import { SystemConfig } from '../common/types/config.types';
 
 @Injectable()
 export class SystemConfigRepository {
+  private readonly logger = new Logger(SystemConfigRepository.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async findByKey(configKey: string): Promise<PrismaSystemConfig | null> {
@@ -21,6 +23,18 @@ export class SystemConfigRepository {
     configKey: string,
     agentType: AgentType | null
   ): Promise<PrismaSystemConfig | null> {
+    // For null agentType (main/default), use findFirst
+    // because Prisma's unique constraint doesn't handle null well with findUnique
+    if (agentType === null) {
+      return this.prisma.systemConfig.findFirst({
+        where: {
+          configKey,
+          agentType: null,
+        },
+      });
+    }
+
+    // For non-null agentType, use the unique constraint
     return this.prisma.systemConfig.findUnique({
       where: {
         configKey_agentType: {
@@ -59,6 +73,35 @@ export class SystemConfigRepository {
     configValue: unknown,
     agentType: AgentType | null = null
   ): Promise<PrismaSystemConfig> {
+    // For null agentType (main/default), use findFirst + update/create pattern
+    // because Prisma's unique constraint doesn't handle null well
+    if (agentType === null) {
+      const existing = await this.prisma.systemConfig.findFirst({
+        where: {
+          configKey,
+          agentType: null,
+        },
+      });
+
+      if (existing) {
+        return this.prisma.systemConfig.update({
+          where: { id: existing.id },
+          data: {
+            configValue: configValue as Prisma.InputJsonValue,
+          },
+        });
+      } else {
+        return this.prisma.systemConfig.create({
+          data: {
+            configKey,
+            configValue: configValue as Prisma.InputJsonValue,
+            agentType: null,
+          },
+        });
+      }
+    }
+
+    // For non-null agentType, use the unique constraint
     return this.prisma.systemConfig.upsert({
       where: {
         configKey_agentType: {
@@ -123,24 +166,56 @@ export class SystemConfigRepository {
   ): Promise<string[]> {
     // Try to get type-specific rules first
     if (agentType !== null) {
+      this.logger.debug(
+        `Looking for type-specific behavior rules for agent type: ${agentType}`
+      );
       const typeSpecific = await this.findByKeyAndAgentType(
         'behavior_rules',
         agentType
       );
-      if (typeSpecific && typeSpecific.configValue) {
-        const rules = this.parseBehaviorRules(typeSpecific.configValue);
-        if (rules.length > 0) {
-          return rules;
+      if (typeSpecific) {
+        this.logger.debug(
+          `Found type-specific config for ${agentType}, configValue type: ${typeof typeSpecific.configValue}`
+        );
+        if (typeSpecific.configValue) {
+          const rules = this.parseBehaviorRules(typeSpecific.configValue);
+          this.logger.debug(
+            `Parsed ${rules.length} rules from type-specific config for ${agentType}`
+          );
+          if (rules.length > 0) {
+            return rules;
+          }
+        } else {
+          this.logger.debug(
+            `Type-specific config for ${agentType} has no configValue`
+          );
         }
+      } else {
+        this.logger.debug(
+          `No type-specific behavior rules found for agent type: ${agentType}, falling back to main`
+        );
       }
     }
 
     // Fall back to main rules
+    this.logger.debug('Looking for main (null) behavior rules');
     const main = await this.findByKeyAndAgentType('behavior_rules', null);
-    if (main && main.configValue) {
-      return this.parseBehaviorRules(main.configValue);
+    if (main) {
+      this.logger.debug(
+        `Found main config, configValue type: ${typeof main.configValue}`
+      );
+      if (main.configValue) {
+        const rules = this.parseBehaviorRules(main.configValue);
+        this.logger.debug(`Parsed ${rules.length} rules from main config`);
+        return rules;
+      } else {
+        this.logger.debug('Main config has no configValue');
+      }
+    } else {
+      this.logger.debug('No main behavior rules found');
     }
 
+    this.logger.debug('Returning empty array - no behavior rules found');
     return [];
   }
 
@@ -184,6 +259,23 @@ export class SystemConfigRepository {
     configKey: string,
     agentType: AgentType | null
   ): Promise<void> {
+    // For null agentType (main/default), find first then delete
+    if (agentType === null) {
+      const existing = await this.prisma.systemConfig.findFirst({
+        where: {
+          configKey,
+          agentType: null,
+        },
+      });
+      if (existing) {
+        await this.prisma.systemConfig.delete({
+          where: { id: existing.id },
+        });
+      }
+      return;
+    }
+
+    // For non-null agentType, use the unique constraint
     await this.prisma.systemConfig.delete({
       where: {
         configKey_agentType: {

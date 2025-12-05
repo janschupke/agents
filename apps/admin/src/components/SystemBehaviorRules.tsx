@@ -9,47 +9,121 @@ import {
 import { IconTrash, IconPlus } from './ui/Icons';
 import { AgentType } from '../types/agent.types';
 
+type TabType = 'main' | AgentType;
+
+interface AgentTypeFormData {
+  rules: string[];
+  systemPrompt: string;
+}
+
 export default function SystemBehaviorRules() {
   const { t: tAdmin } = useTranslation(I18nNamespace.ADMIN);
   const { t: tCommon } = useTranslation(I18nNamespace.COMMON);
-  const [selectedAgentType, setSelectedAgentType] = useState<AgentType | null>(null);
-  const { data, isLoading: loading, error: queryError } = useSystemRules(selectedAgentType);
-  const updateMutation = useUpdateSystemRules();
-  const [rules, setRules] = useState<string[]>([]);
-  const [systemPrompt, setSystemPrompt] = useState<string>('');
-  const [success, setSuccess] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('main');
+  
+  // Separate form data for each agent type
+  const [formData, setFormData] = useState<Record<TabType, AgentTypeFormData>>({
+    main: { rules: [], systemPrompt: '' },
+    [AgentType.GENERAL]: { rules: [], systemPrompt: '' },
+    [AgentType.LANGUAGE_ASSISTANT]: { rules: [], systemPrompt: '' },
+  });
 
-  // Sync rules and system prompt from query data
+  // Load data for all tabs
+  const mainData = useSystemRules(null);
+  const generalData = useSystemRules(AgentType.GENERAL);
+  const languageAssistantData = useSystemRules(AgentType.LANGUAGE_ASSISTANT);
+  
+  const updateMutation = useUpdateSystemRules();
+  const [success, setSuccess] = useState<Record<TabType, boolean>>({
+    main: false,
+    [AgentType.GENERAL]: false,
+    [AgentType.LANGUAGE_ASSISTANT]: false,
+  });
+
+  // Sync rules and system prompt from query data for each tab
   useEffect(() => {
+    const data = mainData.data as { rules: string[]; system_prompt?: string } | undefined;
     if (data) {
-      setRules(data.rules || []);
-      setSystemPrompt(data.system_prompt || '');
-    } else if (data === undefined && !loading) {
-      // No rules set yet (404 case)
-      setRules([]);
-      setSystemPrompt('');
+      setFormData((prev) => ({
+        ...prev,
+        main: {
+          rules: data.rules || [],
+          systemPrompt: data.system_prompt || '',
+        },
+      }));
+    } else if (!mainData.isLoading && !mainData.isError) {
+      // No data and not loading/erroring means empty state
+      setFormData((prev) => ({
+        ...prev,
+        main: { rules: [], systemPrompt: '' },
+      }));
     }
-  }, [data, loading]);
+  }, [mainData.data, mainData.isLoading, mainData.isError]);
+
+  useEffect(() => {
+    const data = generalData.data as { rules: string[]; system_prompt?: string } | undefined;
+    if (data) {
+      setFormData((prev) => ({
+        ...prev,
+        [AgentType.GENERAL]: {
+          rules: data.rules || [],
+          systemPrompt: data.system_prompt || '',
+        },
+      }));
+    } else if (!generalData.isLoading && !generalData.isError) {
+      // No data and not loading/erroring means empty state
+      setFormData((prev) => ({
+        ...prev,
+        [AgentType.GENERAL]: { rules: [], systemPrompt: '' },
+      }));
+    }
+  }, [generalData.data, generalData.isLoading, generalData.isError]);
+
+  useEffect(() => {
+    const data = languageAssistantData.data as { rules: string[]; system_prompt?: string } | undefined;
+    if (data) {
+      setFormData((prev) => ({
+        ...prev,
+        [AgentType.LANGUAGE_ASSISTANT]: {
+          rules: data.rules || [],
+          systemPrompt: data.system_prompt || '',
+        },
+      }));
+    } else if (!languageAssistantData.isLoading && !languageAssistantData.isError) {
+      // No data and not loading/erroring means empty state
+      setFormData((prev) => ({
+        ...prev,
+        [AgentType.LANGUAGE_ASSISTANT]: { rules: [], systemPrompt: '' },
+      }));
+    }
+  }, [languageAssistantData.data, languageAssistantData.isLoading, languageAssistantData.isError]);
 
   // Show success message after successful save
   useEffect(() => {
-    if (updateMutation.isSuccess) {
-      setSuccess(true);
+    if (updateMutation.isSuccess && updateMutation.variables) {
+      const savedTab: TabType =
+        updateMutation.variables.agentType === null
+          ? 'main'
+          : (updateMutation.variables.agentType as AgentType);
+      setSuccess((prev) => ({ ...prev, [savedTab]: true }));
       const timer = setTimeout(
-        () => setSuccess(false),
+        () => setSuccess((prev) => ({ ...prev, [savedTab]: false })),
         NUMERIC_CONSTANTS.UI_NOTIFICATION_DURATION
       );
       return () => clearTimeout(timer);
     }
     return undefined;
-  }, [updateMutation.isSuccess]);
+  }, [updateMutation.isSuccess, updateMutation.variables]);
 
-  const handleSave = async () => {
+  const handleSave = async (tab: TabType) => {
+    const agentType = tab === 'main' ? null : tab;
+    const currentFormData = formData[tab];
+    
     updateMutation.mutate(
       {
-        rules,
-        systemPrompt: systemPrompt.trim() || undefined,
-        agentType: selectedAgentType,
+        rules: currentFormData.rules,
+        systemPrompt: currentFormData.systemPrompt.trim() || undefined,
+        agentType,
       },
       {
         onError: () => {
@@ -59,8 +133,16 @@ export default function SystemBehaviorRules() {
     );
   };
 
-  const error =
-    queryError && typeof queryError === 'object' && 'status' in queryError
+  const getError = (tab: TabType) => {
+    const queryData =
+      tab === 'main'
+        ? mainData
+        : tab === AgentType.GENERAL
+          ? generalData
+          : languageAssistantData;
+    
+    const queryError = queryData.error;
+    return queryError && typeof queryError === 'object' && 'status' in queryError
       ? queryError.status === HTTP_STATUS.NOT_FOUND
         ? null // 404 is expected when no rules are set
         : ('message' in queryError && queryError.message) ||
@@ -72,28 +154,171 @@ export default function SystemBehaviorRules() {
         : updateMutation.isError
           ? tAdmin('systemRules.error')
           : null;
-
-  const handleAddRule = () => {
-    setRules([...rules, '']);
   };
 
-  const handleRemoveRule = (index: number) => {
-    setRules(rules.filter((_, i) => i !== index));
+  const handleAddRule = (tab: TabType) => {
+    setFormData((prev) => ({
+      ...prev,
+      [tab]: {
+        ...prev[tab],
+        rules: [...prev[tab].rules, ''],
+      },
+    }));
   };
 
-  const handleRuleChange = (index: number, value: string) => {
-    const newRules = [...rules];
-    newRules[index] = value;
-    setRules(newRules);
+  const handleRemoveRule = (tab: TabType, index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      [tab]: {
+        ...prev[tab],
+        rules: prev[tab].rules.filter((_, i) => i !== index),
+      },
+    }));
   };
 
-  if (loading) {
+  const handleRuleChange = (tab: TabType, index: number, value: string) => {
+    setFormData((prev) => {
+      const newRules = [...prev[tab].rules];
+      newRules[index] = value;
+      return {
+        ...prev,
+        [tab]: {
+          ...prev[tab],
+          rules: newRules,
+        },
+      };
+    });
+  };
+
+  const handleSystemPromptChange = (tab: TabType, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [tab]: {
+        ...prev[tab],
+        systemPrompt: value,
+      },
+    }));
+  };
+
+  const isLoading =
+    mainData.isLoading ||
+    generalData.isLoading ||
+    languageAssistantData.isLoading;
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-text-secondary">{tAdmin('app.loading')}</div>
       </div>
     );
   }
+
+  const tabs: Array<{ id: TabType; label: string }> = [
+    { id: 'main', label: 'Main (Default)' },
+    { id: AgentType.GENERAL, label: AgentType.GENERAL },
+    { id: AgentType.LANGUAGE_ASSISTANT, label: AgentType.LANGUAGE_ASSISTANT },
+  ];
+
+  const renderForm = (tab: TabType) => {
+    const currentFormData = formData[tab];
+    const error = getError(tab);
+    const isSuccess = success[tab];
+
+    return (
+      <div className="space-y-6">
+        {error && (
+          <div className="bg-message-error border border-border text-text-primary px-4 py-3 rounded-md text-sm">
+            {error}
+          </div>
+        )}
+
+        {isSuccess && (
+          <div className="bg-message-success border border-border text-text-primary px-4 py-3 rounded-md text-sm">
+            {tAdmin('systemRules.saved')}
+          </div>
+        )}
+
+        <div>
+          <label className="block text-sm font-medium text-text-secondary mb-1.5">
+            {tAdmin('systemRules.systemPromptLabel') ||
+              'Authoritative System Prompt'}
+          </label>
+          <textarea
+            value={currentFormData.systemPrompt}
+            onChange={(e) => handleSystemPromptChange(tab, e.target.value)}
+            className="w-full min-h-[120px] px-3 py-2 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus font-mono resize-y"
+            placeholder={
+              tAdmin('systemRules.systemPromptPlaceholder') ||
+              'Enter the authoritative system prompt that will be sent as the first message in every chat request...'
+            }
+          />
+          <p className="text-xs text-text-tertiary mt-2">
+            {tAdmin('systemRules.systemPromptDescription') ||
+              'This system prompt will be sent as the first SYSTEM role message in every chat request. It is the authoritative system prompt for all agents.'}
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-text-secondary mb-1.5">
+            {tAdmin('systemRules.label')}
+          </label>
+          <div className="space-y-2">
+            {currentFormData.rules.map((rule, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={rule}
+                  onChange={(e) =>
+                    handleRuleChange(tab, index, e.target.value)
+                  }
+                  className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus"
+                  placeholder={tAdmin('systemRules.rulePlaceholder', {
+                    index: (index + 1).toString(),
+                  })}
+                />
+                <Button
+                  type="button"
+                  variant="icon"
+                  size="sm"
+                  onClick={() => handleRemoveRule(tab, index)}
+                  tooltip={tAdmin('systemRules.removeRule')}
+                  className="flex-shrink-0 hover:text-red-600"
+                >
+                  <IconTrash className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => handleAddRule(tab)}
+              className="w-full"
+            >
+              <IconPlus className="w-4 h-4" />
+              <span>{tAdmin('systemRules.addRule')}</span>
+            </Button>
+          </div>
+          <p className="text-xs text-text-tertiary mt-2">
+            {tAdmin('systemRules.placeholder')}
+          </p>
+        </div>
+
+        <div className="flex justify-end">
+          <Button
+            onClick={() => handleSave(tab)}
+            disabled={updateMutation.isPending}
+            loading={updateMutation.isPending}
+            size="sm"
+          >
+            {updateMutation.isPending
+              ? tCommon('app.saving')
+              : tAdmin('systemRules.save')}
+          </Button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -106,115 +331,28 @@ export default function SystemBehaviorRules() {
         </p>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-text-secondary mb-1.5">
-          {tAdmin('systemRules.agentTypeLabel') || 'Agent Type Category'}
-        </label>
-        <select
-          value={selectedAgentType || 'main'}
-          onChange={(e) => {
-            const value = e.target.value;
-            setSelectedAgentType(
-              value === 'main' || value === 'null' ? null : (value as AgentType)
-            );
-          }}
-          className="w-full px-3 py-2 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus"
-        >
-          <option value="main">Main (Default)</option>
-          <option value={AgentType.GENERAL}>{AgentType.GENERAL}</option>
-          <option value={AgentType.LANGUAGE_ASSISTANT}>
-            {AgentType.LANGUAGE_ASSISTANT}
-          </option>
-        </select>
-        <p className="text-xs text-text-tertiary mt-2">
-          {tAdmin('systemRules.agentTypeDescription') ||
-            'Select the agent type category. Rules and prompts can be customized per agent type, with "Main" as the default fallback.'}
-        </p>
-      </div>
-
-      {error && (
-        <div className="bg-message-error border border-border text-text-primary px-4 py-3 rounded-md text-sm">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="bg-message-success border border-border text-text-primary px-4 py-3 rounded-md text-sm">
-          {tAdmin('systemRules.saved')}
-        </div>
-      )}
-
-      <div>
-        <label className="block text-sm font-medium text-text-secondary mb-1.5">
-          {tAdmin('systemRules.systemPromptLabel') || 'Authoritative System Prompt'}
-        </label>
-        <textarea
-          value={systemPrompt}
-          onChange={(e) => setSystemPrompt(e.target.value)}
-          className="w-full min-h-[120px] px-3 py-2 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus font-mono resize-y"
-          placeholder={tAdmin('systemRules.systemPromptPlaceholder') || 'Enter the authoritative system prompt that will be sent as the first message in every chat request...'}
-        />
-        <p className="text-xs text-text-tertiary mt-2">
-          {tAdmin('systemRules.systemPromptDescription') || 'This system prompt will be sent as the first SYSTEM role message in every chat request. It is the authoritative system prompt for all agents.'}
-        </p>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-text-secondary mb-1.5">
-          {tAdmin('systemRules.label')}
-        </label>
-        <div className="space-y-2">
-          {rules.map((rule, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <input
-                type="text"
-                value={rule}
-                onChange={(e) => handleRuleChange(index, e.target.value)}
-                className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus"
-                placeholder={tAdmin('systemRules.rulePlaceholder', {
-                  index: (index + 1).toString(),
-                })}
-              />
-              <Button
-                type="button"
-                variant="icon"
-                size="sm"
-                onClick={() => handleRemoveRule(index)}
-                tooltip={tAdmin('systemRules.removeRule')}
-                className="flex-shrink-0 hover:text-red-600"
-              >
-                <IconTrash className="w-4 h-4" />
-              </Button>
-            </div>
+      {/* Tabs */}
+      <div className="border-b border-border">
+        <div className="flex gap-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
+                activeTab === tab.id
+                  ? 'text-primary border-primary'
+                  : 'text-text-tertiary border-transparent hover:text-text-secondary hover:border-border'
+              }`}
+            >
+              {tab.label}
+            </button>
           ))}
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={handleAddRule}
-            className="w-full"
-          >
-            <IconPlus className="w-4 h-4" />
-            <span>{tAdmin('systemRules.addRule')}</span>
-          </Button>
         </div>
-        <p className="text-xs text-text-tertiary mt-2">
-          {tAdmin('systemRules.placeholder')}
-        </p>
       </div>
 
-      <div className="flex justify-end">
-        <Button
-          onClick={handleSave}
-          disabled={updateMutation.isPending}
-          loading={updateMutation.isPending}
-          size="sm"
-        >
-          {updateMutation.isPending
-            ? tCommon('app.saving')
-            : tAdmin('systemRules.save')}
-        </Button>
-      </div>
+      {/* Tab Content */}
+      <div>{renderForm(activeTab)}</div>
     </div>
   );
 }

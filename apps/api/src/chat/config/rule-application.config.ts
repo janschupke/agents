@@ -3,10 +3,8 @@ import {
   SystemPromptSource,
   BehaviorRulesSource,
 } from '../enums/rule-source.enum';
-import {
-  PromptMergeOptions,
-  RulesTransformOptions,
-} from '../services/prompt-transformation.service';
+import { PromptMergeOptions } from '../services/prompt-transformation.service';
+import { RulesTransformOptions } from '../services/behavior-rules-transformation.service';
 
 export interface RuleApplicationConfig {
   // System prompt sources (in merge order)

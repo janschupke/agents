@@ -200,6 +200,10 @@ export class MessagePreparationService {
           agentConfig.agentType || null
         );
 
+      this.logger.debug(
+        `Retrieved system prompt for agent type: ${agentConfig.agentType || 'main'} (length: ${mainPrompt?.length || 0})`
+      );
+
       // 2. Get agent archetype system prompt (if exists)
       const archetypePrompt = agentArchetype?.systemPrompt || null;
 
@@ -215,6 +219,10 @@ export class MessagePreparationService {
         currentDateTime
       );
 
+      this.logger.debug(
+        `Merged system prompt (length: ${finalPrompt.trim().length})`
+      );
+
       // 5. Add as first SYSTEM message
       if (finalPrompt.trim().length > 0) {
         this.logger.debug('Adding merged system prompt as first message');
@@ -222,6 +230,10 @@ export class MessagePreparationService {
           role: MessageRole.SYSTEM,
           content: finalPrompt.trim(),
         });
+      } else {
+        this.logger.debug(
+          'System prompt is empty, not adding to messages'
+        );
       }
     } catch (error) {
       this.logger.error('Error loading system prompt:', error);
@@ -245,6 +257,10 @@ export class MessagePreparationService {
           agentConfig.agentType || null
         );
 
+      this.logger.debug(
+        `Retrieved ${mainRules.length} system behavior rules for agent type: ${agentConfig.agentType || 'main'}`
+      );
+
       // 2. Merge and transform to single message
       const rulesMessage =
         this.behaviorRulesTransformationService.mergeAndTransformRules(
@@ -255,6 +271,10 @@ export class MessagePreparationService {
           }
         );
 
+      this.logger.debug(
+        `Transformed system behavior rules to message (length: ${rulesMessage.trim().length})`
+      );
+
       // 3. Add as SYSTEM message
       if (rulesMessage.trim().length > 0) {
         this.logger.debug('Adding system behavior rules as system message');
@@ -262,6 +282,10 @@ export class MessagePreparationService {
           role: MessageRole.SYSTEM,
           content: rulesMessage.trim(),
         });
+      } else {
+        this.logger.debug(
+          'System behavior rules message is empty, not adding to messages'
+        );
       }
     } catch (error) {
       this.logger.error('Error loading system behavior rules:', error);
