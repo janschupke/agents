@@ -146,9 +146,16 @@
     "collapse": "Collapse",
     "request": "Request",
     "response": "Response",
+    "logTypes": {
+      "message": "Message",
+      "memory": "Memory",
+      "translation": "Translation"
+    },
     "table": {
       "datetime": "Date/Time",
       "user": "User",
+      "agent": "Agent",
+      "logType": "Type",
       "model": "Model",
       "tokens": "Tokens",
       "price": "Est. Price",

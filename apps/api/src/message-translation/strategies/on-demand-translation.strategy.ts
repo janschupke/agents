@@ -35,13 +35,15 @@ export class OnDemandTranslationStrategy implements TranslationStrategy {
 
     // Use existing translateWordsInMessage which handles pre-parsed words
     // This is the current implementation for user messages
-    // Extract userId from context if available (passed through from service)
+    // Extract userId and agentId from context if available (passed through from service)
     const userId = _context?.userId;
+    const agentId = _context?.agentId;
     await this.wordTranslationService.translateWordsInMessage(
       messageId,
       messageContent,
       apiKey,
-      userId
+      userId,
+      agentId
     );
 
     // Get the created translations

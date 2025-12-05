@@ -5,7 +5,7 @@ import {
   AiRequestLogOrderBy,
   OrderDirection,
 } from './constants/ai-request-log.constants';
-import { Prisma } from '@prisma/client';
+import { Prisma, LogType } from '@prisma/client';
 import OpenAI from 'openai';
 
 @Injectable()
@@ -49,7 +49,11 @@ export class AiRequestLogService {
   async logRequest(
     userId: string | undefined,
     request: OpenAI.Chat.Completions.ChatCompletionCreateParams,
-    completion: OpenAI.Chat.Completions.ChatCompletion
+    completion: OpenAI.Chat.Completions.ChatCompletion,
+    options?: {
+      agentId?: number | null;
+      logType: LogType;
+    }
   ): Promise<void> {
     try {
       const promptTokens = completion.usage?.prompt_tokens || 0;
@@ -65,6 +69,8 @@ export class AiRequestLogService {
 
       await this.aiRequestLogRepository.create({
         userId: userId ?? null,
+        agentId: options?.agentId ?? null,
+        logType: options?.logType ?? LogType.MESSAGE,
         requestJson: request as unknown as Prisma.InputJsonValue,
         responseJson: completion as unknown as Prisma.InputJsonValue,
         model,
@@ -75,7 +81,7 @@ export class AiRequestLogService {
       });
 
       this.logger.debug(
-        `Logged AI request: model=${model}, tokens=${totalTokens}, price=$${estimatedPrice.toFixed(6)}`
+        `Logged AI request: model=${model}, tokens=${totalTokens}, price=$${estimatedPrice.toFixed(6)}, type=${options?.logType ?? LogType.MESSAGE}, agentId=${options?.agentId ?? 'null'}`
       );
     } catch (error) {
       // Don't throw - logging failures shouldn't break the main flow

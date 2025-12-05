@@ -1,8 +1,12 @@
 import { AiRequestLogOrderBy, OrderDirection } from './ai-request-log.enums';
 
+export type LogType = 'MESSAGE' | 'MEMORY' | 'TRANSLATION';
+
 export interface AiRequestLog {
   id: number;
   userId: string | null;
+  agentId: number | null;
+  logType: LogType;
   requestJson: Record<string, unknown>;
   responseJson: Record<string, unknown>;
   model: string;
@@ -16,6 +20,11 @@ export interface AiRequestLog {
     email: string | null;
     firstName: string | null;
     lastName: string | null;
+  } | null;
+  agent?: {
+    id: number;
+    name: string;
+    avatarUrl: string | null;
   } | null;
 }
 

@@ -78,11 +78,11 @@ describe('AgentMemoryService', () => {
   describe('extractKeyInsights', () => {
     it('should return empty array for empty messages', async () => {
       mockMemoryExtractionService.extractKeyInsights.mockResolvedValue([]);
-      const result = await service.extractKeyInsights([], 'api-key');
+      const result = await service.extractKeyInsights([], 'api-key', 1, 'user-1');
       expect(result).toEqual([]);
       expect(
         mockMemoryExtractionService.extractKeyInsights
-      ).toHaveBeenCalledWith([], 'api-key');
+      ).toHaveBeenCalledWith([], 'api-key', 1, 'user-1');
     });
 
     it('should extract insights from OpenAI response', async () => {
@@ -99,14 +99,14 @@ describe('AgentMemoryService', () => {
         expectedInsights
       );
 
-      const result = await service.extractKeyInsights(messages, 'api-key');
+      const result = await service.extractKeyInsights(messages, 'api-key', 1, 'user-1');
 
       expect(result).toHaveLength(2);
       expect(result[0]).toBe('User likes programming');
       expect(result[1]).toBe('Assistant is helpful');
       expect(
         mockMemoryExtractionService.extractKeyInsights
-      ).toHaveBeenCalledWith(messages, 'api-key');
+      ).toHaveBeenCalledWith(messages, 'api-key', 1, 'user-1');
     });
 
     it('should filter out numbered lines and bullets', async () => {
@@ -117,7 +117,7 @@ describe('AgentMemoryService', () => {
         expectedInsights
       );
 
-      const result = await service.extractKeyInsights(messages, 'api-key');
+      const result = await service.extractKeyInsights(messages, 'api-key', 1, 'user-1');
 
       // Numbered lines are filtered out, only bullet points remain after processing
       expect(result).toHaveLength(2);
@@ -136,7 +136,7 @@ describe('AgentMemoryService', () => {
         limitedInsights
       );
 
-      const result = await service.extractKeyInsights(messages, 'api-key');
+      const result = await service.extractKeyInsights(messages, 'api-key', 1, 'user-1');
 
       expect(result.length).toBeLessThanOrEqual(
         MEMORY_CONFIG.MAX_KEY_INSIGHTS_PER_UPDATE
@@ -148,7 +148,7 @@ describe('AgentMemoryService', () => {
 
       mockMemoryExtractionService.extractKeyInsights.mockResolvedValue([]);
 
-      const result = await service.extractKeyInsights(messages, 'api-key');
+      const result = await service.extractKeyInsights(messages, 'api-key', 1, 'user-1');
 
       expect(result).toEqual([]);
     });
@@ -158,7 +158,7 @@ describe('AgentMemoryService', () => {
 
       mockMemoryExtractionService.extractKeyInsights.mockResolvedValue([]);
 
-      const result = await service.extractKeyInsights(messages, 'api-key');
+      const result = await service.extractKeyInsights(messages, 'api-key', 1, 'user-1');
 
       expect(result).toEqual([]);
     });
@@ -193,7 +193,7 @@ describe('AgentMemoryService', () => {
 
       expect(
         mockMemoryExtractionService.extractKeyInsights
-      ).toHaveBeenCalledWith(messages, apiKey);
+      ).toHaveBeenCalledWith(messages, apiKey, 1, 'user-1');
       expect(memoryRepository.create).toHaveBeenCalledTimes(2);
       expect(openaiService.generateEmbedding).toHaveBeenCalledTimes(2);
     });
@@ -207,7 +207,7 @@ describe('AgentMemoryService', () => {
 
       expect(
         mockMemoryExtractionService.extractKeyInsights
-      ).toHaveBeenCalledWith(messages, 'api-key');
+      ).toHaveBeenCalledWith(messages, 'api-key', 1, 'user-1');
       expect(memoryRepository.create).not.toHaveBeenCalled();
     });
 

@@ -91,7 +91,8 @@ export class MessageTranslationService {
       message.content,
       contextMessages,
       apiKey,
-      userId
+      userId,
+      session.agentId
     );
 
     // Save translation
@@ -139,7 +140,8 @@ export class MessageTranslationService {
     message: string,
     context: Array<{ role: string; content: string }>,
     apiKey: string,
-    userId?: string
+    userId?: string,
+    agentId?: number | null
   ): Promise<string> {
     const openai = this.openaiService.getClient(apiKey);
 
@@ -192,7 +194,11 @@ export class MessageTranslationService {
         temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
         max_tokens: NUMERIC_CONSTANTS.DEFAULT_MAX_TOKENS,
       },
-      completion
+      completion,
+      {
+        agentId,
+        logType: 'TRANSLATION' as const,
+      }
     );
 
     this.logger.debug('Translation completed');
@@ -298,10 +304,14 @@ export class MessageTranslationService {
       context = {
         conversationHistory: contextMessages,
         messageRole: message.role as MessageRole,
+        agentId: session.agentId,
+        userId,
       };
     } else {
       context = {
         messageRole: message.role as MessageRole,
+        agentId: session.agentId,
+        userId,
       };
     }
 

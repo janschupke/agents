@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, LogType } from '@prisma/client';
 import {
   AiRequestLogOrderBy,
   OrderDirection,
@@ -12,6 +12,8 @@ export class AiRequestLogRepository {
 
   async create(data: {
     userId?: string | null;
+    agentId?: number | null;
+    logType: LogType;
     requestJson: Prisma.InputJsonValue;
     responseJson: Prisma.InputJsonValue;
     model: string;
@@ -24,6 +26,7 @@ export class AiRequestLogRepository {
       data: {
         ...data,
         userId: data.userId ?? null,
+        agentId: data.agentId ?? null,
       },
     });
   }
@@ -72,6 +75,13 @@ export class AiRequestLogRepository {
             email: true,
             firstName: true,
             lastName: true,
+          },
+        },
+        agent: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true,
           },
         },
       },

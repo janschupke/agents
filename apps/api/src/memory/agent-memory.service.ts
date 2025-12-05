@@ -30,9 +30,16 @@ export class AgentMemoryService {
    */
   async extractKeyInsights(
     messages: Array<{ role: string; content: string }>,
-    apiKey: string
+    apiKey: string,
+    agentId: number,
+    userId: string
   ): Promise<string[]> {
-    return this.memoryExtractionService.extractKeyInsights(messages, apiKey);
+    return this.memoryExtractionService.extractKeyInsights(
+      messages,
+      apiKey,
+      agentId,
+      userId
+    );
   }
 
   async createMemory(
@@ -47,7 +54,12 @@ export class AgentMemoryService {
       `Attempting to create memories for agent ${agentId}, user ${userId}, session ${sessionId} (${messages.length} messages)`
     );
 
-    const insights = await this.extractKeyInsights(messages, apiKey);
+    const insights = await this.extractKeyInsights(
+      messages,
+      apiKey,
+      agentId,
+      userId
+    );
 
     if (insights.length === 0) {
       this.logger.log(

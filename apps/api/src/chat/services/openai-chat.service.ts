@@ -65,7 +65,8 @@ export class OpenAIChatService {
   async createChatCompletion(
     apiKey: string,
     request: OpenAIRequest,
-    userId?: string
+    userId?: string,
+    agentId?: number | null
   ): Promise<{
     response: string;
     completion: OpenAI.Chat.Completions.ChatCompletion;
@@ -120,7 +121,11 @@ export class OpenAIChatService {
           temperature: request.temperature,
           max_tokens: request.max_tokens,
         },
-        completion
+        completion,
+        {
+          agentId,
+          logType: 'MESSAGE' as const,
+        }
       );
 
       return { response, completion };

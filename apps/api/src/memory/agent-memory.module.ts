@@ -10,9 +10,10 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { OpenAIService } from '../openai/openai.service';
 import { ApiCredentialsModule } from '../api-credentials/api-credentials.module';
 import { AgentModule } from '../agent/agent.module';
+import { AiRequestLogModule } from '../ai-request-log/ai-request-log.module';
 
 @Module({
-  imports: [PrismaModule, ApiCredentialsModule, AgentModule],
+  imports: [PrismaModule, ApiCredentialsModule, AgentModule, AiRequestLogModule],
   controllers: [AgentMemoryController],
   providers: [
     AgentMemoryService,

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
+import { useNavigate } from 'react-router-dom';
 import type { AiRequestLog } from '../types/ai-request-log.types';
 import {
   AiRequestLogOrderBy,
   OrderDirection,
 } from '../types/ai-request-log.enums';
+import { ROUTES } from '../constants/routes.constants';
 
 interface AiRequestLogTableProps {
   logs: AiRequestLog[];
@@ -31,6 +33,7 @@ export default function AiRequestLogTable({
   currentOrderDirection,
 }: AiRequestLogTableProps) {
   const { t } = useTranslation(I18nNamespace.ADMIN);
+  const navigate = useNavigate();
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
   const toggleRow = (id: number) => {
@@ -102,6 +105,12 @@ export default function AiRequestLogTable({
                 {t('aiRequestLogs.table.user')}
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">
+                {t('aiRequestLogs.table.agent')}
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">
+                {t('aiRequestLogs.table.logType')}
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">
                 {t('aiRequestLogs.table.model')}
               </th>
               <th
@@ -130,7 +139,7 @@ export default function AiRequestLogTable({
             {logs.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={9}
                   className="px-4 py-8 text-center text-text-tertiary"
                 >
                   {t('aiRequestLogs.noLogs')}
@@ -157,6 +166,23 @@ export default function AiRequestLogTable({
                           log.user.email ||
                           log.userId
                         : log.userId || t('aiRequestLogs.deletedUser')}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-text-primary">
+                      {log.agent ? (
+                        <button
+                          onClick={() => navigate(ROUTES.AGENT_DETAIL(log.agent!.id))}
+                          className="text-primary hover:text-primary-hover hover:underline"
+                        >
+                          {log.agent.name}
+                        </button>
+                      ) : (
+                        <span className="text-text-tertiary">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-text-primary">
+                      <span className="inline-flex items-center px-2 py-1 rounded text-xs bg-background-tertiary text-text-secondary">
+                        {t(`aiRequestLogs.logTypes.${log.logType.toLowerCase()}`)}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-text-primary">
                       {log.model}

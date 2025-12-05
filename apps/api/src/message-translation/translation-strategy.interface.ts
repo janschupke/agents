@@ -10,6 +10,7 @@ export interface TranslationContext {
   conversationHistory?: Array<{ role: string; content: string }>;
   messageRole: MessageRole;
   userId?: string;
+  agentId?: number | null;
 }
 
 export interface TranslationStrategy {

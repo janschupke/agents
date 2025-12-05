@@ -22,6 +22,12 @@ enum MessageRole {
   SYSTEM
 }
 
+enum LogType {
+  MESSAGE
+  MEMORY
+  TRANSLATION
+}
+
 model User {
   id             String              @id // Clerk user ID
   email          String?
@@ -66,11 +72,12 @@ model Agent {
   availability   String? // 'available' | 'standard' | 'busy'
   memorySummary  String? @map("memory_summary") @db.Text // Summary of how memories affect agent's feelings and behavior
 
-  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  configs    AgentConfig[] // Keep for backward compatibility during migration
-  sessions   ChatSession[]
-  memories   AgentMemory[]
-  savedWords SavedWord[]
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  configs       AgentConfig[] // Keep for backward compatibility during migration
+  sessions      ChatSession[]
+  memories      AgentMemory[]
+  savedWords    SavedWord[]
+  aiRequestLogs AiRequestLog[]
 
   @@index([userId])
   @@index([agentType])
@@ -268,6 +275,8 @@ model AgentArchetype {
 model AiRequestLog {
   id               Int      @id @default(autoincrement())
   userId           String?  @map("user_id") // Nullable for deleted users
+  agentId          Int?     @map("agent_id") // Nullable for logs without agent context
+  logType          LogType  @default(MESSAGE) @map("log_type")
   requestJson      Json     @map("request_json") // Full OpenAI request
   responseJson     Json     @map("response_json") // Full OpenAI response
   model            String // Model name (e.g., 'gpt-4o-mini')
@@ -277,9 +286,12 @@ model AiRequestLog {
   estimatedPrice   Decimal  @map("estimated_price") @db.Decimal(10, 6) // Price in USD
   createdAt        DateTime @default(now()) @map("created_at")
 
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user  User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  agent Agent? @relation(fields: [agentId], references: [id], onDelete: SetNull)
 
   @@index([userId])
+  @@index([agentId])
+  @@index([logType])
   @@index([createdAt])
   @@index([model])
   @@map("ai_request_logs")

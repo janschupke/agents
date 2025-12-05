@@ -26,7 +26,8 @@ export class WordTranslationOpenAIService {
     messageContent: string,
     _sentences: string[],
     apiKey: string,
-    userId?: string
+    userId?: string,
+    agentId?: number | null
   ): Promise<{
     wordTranslations: WordTranslation[];
     fullTranslation: string | null;
@@ -122,7 +123,11 @@ Return ONLY the JSON object, no additional text.`;
           temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
           response_format: { type: 'json_object' },
         },
-        completion
+        completion,
+        {
+          agentId,
+          logType: 'TRANSLATION' as const,
+        }
       );
 
       return {
@@ -148,7 +153,8 @@ Return ONLY the JSON object, no additional text.`;
     messageContent: string,
     _sentences: string[],
     apiKey: string,
-    userId?: string
+    userId?: string,
+    agentId?: number | null
   ): Promise<{
     wordTranslations: WordTranslation[];
     fullTranslation: string | null;
@@ -226,7 +232,11 @@ Return ONLY the JSON object, no additional text.`;
           temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
           response_format: { type: 'json_object' },
         },
-        completion
+        completion,
+        {
+          agentId,
+          logType: 'TRANSLATION' as const,
+        }
       );
 
       return {

@@ -50,10 +50,11 @@ export class InitialTranslationStrategy implements TranslationStrategy {
       conversationHistory
     );
 
-    // Extract userId from context if available
+    // Extract userId and agentId from context if available
     const userId = context?.userId;
+    const agentId = context?.agentId;
     // Call to OpenAI for translation with context
-    const result = await this.translateWithContext(prompt, apiKey, userId);
+    const result = await this.translateWithContext(prompt, apiKey, userId, agentId);
 
     // Save translations
     await this.saveTranslations(messageId, result, messageContent);
@@ -101,7 +102,8 @@ Return ONLY the JSON object, no additional text.`;
   private async translateWithContext(
     prompt: string,
     apiKey: string,
-    userId?: string
+    userId?: string,
+    agentId?: number | null
   ): Promise<{
     translation: string;
     wordTranslations: WordTranslation[];
@@ -186,7 +188,11 @@ Return ONLY the JSON object, no additional text.`;
           temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
           response_format: { type: 'json_object' },
         },
-        completion
+        completion,
+        {
+          agentId,
+          logType: 'TRANSLATION' as const,
+        }
       );
 
       return {

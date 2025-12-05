@@ -211,7 +211,8 @@ export class ChatOrchestrationService {
       await this.openaiChatService.createChatCompletion(
         apiKey,
         openaiRequest,
-        context.userId
+        context.userId,
+        context.agentId
       );
     this.logger.log(
       `Received response from OpenAI (length: ${response.length})`

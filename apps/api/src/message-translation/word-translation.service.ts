@@ -139,7 +139,8 @@ export class WordTranslationService {
     messageId: number,
     messageContent: string,
     apiKey: string,
-    userId?: string
+    userId?: string,
+    agentId?: number | null
   ): Promise<void> {
     // Check if translations already exist with actual translations
     const existingWords =
@@ -166,7 +167,8 @@ export class WordTranslationService {
           messageContent,
           sentences,
           apiKey,
-          userId
+          userId,
+          agentId
         );
 
       // Create word-to-sentence map
@@ -200,7 +202,8 @@ export class WordTranslationService {
         messageContent,
         sentences,
         apiKey,
-        userId
+        userId,
+        agentId
       );
 
     const wordToSentenceMap = this.wordParsingService.createWordToSentenceMap(

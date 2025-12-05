@@ -355,18 +355,11 @@ export class AgentRepository {
   }
 
   async getTokenCount(agentId: number): Promise<number> {
-    // Get agent's userId to approximate token count
-    const agent = await this.findById(agentId);
-    if (!agent) {
-      return 0;
-    }
-
-    // Sum tokens from AiRequestLog for the agent's user
-    // Note: This is an approximation since tokens aren't directly linked to agents
+    // Sum tokens from AiRequestLog for this specific agent
     const result = await this.prisma.$queryRaw<Array<{ sum: bigint | null }>>`
       SELECT COALESCE(SUM(total_tokens), 0)::int as sum
       FROM ai_request_logs
-      WHERE user_id = ${agent.userId}
+      WHERE agent_id = ${agentId}
     `;
     return Number(result[0]?.sum || 0);
   }
