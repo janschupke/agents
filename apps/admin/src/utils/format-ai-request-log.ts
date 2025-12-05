@@ -2,10 +2,6 @@
  * Utility functions for formatting AI request log data
  */
 
-export function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleString();
-}
-
 export function formatPrice(price: number | string | null | undefined): string {
   if (price === null || price === undefined) {
     return '$0.000000';

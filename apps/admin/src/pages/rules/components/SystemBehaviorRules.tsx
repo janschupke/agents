@@ -48,21 +48,16 @@ export default function SystemBehaviorRules() {
 
         <div>
           <label className="block text-sm font-medium text-text-secondary mb-1.5">
-            {tAdmin('systemRules.systemPromptLabel') ||
-              'Authoritative System Prompt'}
+            {tAdmin('systemRules.systemPromptLabel')}
           </label>
           <textarea
             value={currentFormData.systemPrompt}
             onChange={(e) => handleSystemPromptChange(tab, e.target.value)}
             className="w-full min-h-[120px] px-3 py-2 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus font-mono resize-y"
-            placeholder={
-              tAdmin('systemRules.systemPromptPlaceholder') ||
-              'Enter the authoritative system prompt that will be sent as the first message in every chat request...'
-            }
+            placeholder={tAdmin('systemRules.systemPromptPlaceholder')}
           />
           <p className="text-xs text-text-tertiary mt-2">
-            {tAdmin('systemRules.systemPromptDescription') ||
-              'This system prompt will be sent as the first SYSTEM role message in every chat request. It is the authoritative system prompt for all agents.'}
+            {tAdmin('systemRules.systemPromptDescription')}
           </p>
         </div>
 

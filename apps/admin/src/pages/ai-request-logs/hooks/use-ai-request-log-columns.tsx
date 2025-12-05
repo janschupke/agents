@@ -8,8 +8,8 @@ import {
   OrderDirection,
 } from '../../../types/ai-request-log.enums';
 import { ROUTES } from '../../../constants/routes.constants';
+import { formatDateTime } from '@openai/utils';
 import {
-  formatDate,
   formatPrice,
   formatRequest,
   formatResponse,
@@ -66,7 +66,7 @@ export function useAiRequestLogColumns({
       ),
       cell: ({ row }: { row: { original: AiRequestLog } }) => (
         <div className="text-sm text-text-primary">
-          {formatDate(row.original.createdAt)}
+          {formatDateTime(row.original.createdAt)}
         </div>
       ),
       enableSorting: false,

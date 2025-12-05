@@ -12,7 +12,9 @@ export enum MessageRole {
 /**
  * Convert MessageRole enum to lowercase string for OpenAI API
  */
-export function messageRoleToOpenAI(role: MessageRole): 'user' | 'assistant' | 'system' {
+export function messageRoleToOpenAI(
+  role: MessageRole
+): 'user' | 'assistant' | 'system' {
   const roleMap: Record<MessageRole, 'user' | 'assistant' | 'system'> = {
     [MessageRole.USER]: 'user',
     [MessageRole.ASSISTANT]: 'assistant',
@@ -24,7 +26,9 @@ export function messageRoleToOpenAI(role: MessageRole): 'user' | 'assistant' | '
 /**
  * Convert lowercase string to MessageRole enum
  */
-export function openAIToMessageRole(role: 'user' | 'assistant' | 'system'): MessageRole {
+export function openAIToMessageRole(
+  role: 'user' | 'assistant' | 'system'
+): MessageRole {
   const roleMap: Record<'user' | 'assistant' | 'system', MessageRole> = {
     user: MessageRole.USER,
     assistant: MessageRole.ASSISTANT,

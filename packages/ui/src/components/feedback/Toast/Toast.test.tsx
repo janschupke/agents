@@ -21,25 +21,19 @@ describe('Toast', () => {
 
   it('should render success type', () => {
     const handleClose = vi.fn();
-    render(
-      <Toast message="Test" type="success" onClose={handleClose} />
-    );
+    render(<Toast message="Test" type="success" onClose={handleClose} />);
     expect(screen.getByText('Test')).toBeInTheDocument();
   });
 
   it('should render error type', () => {
     const handleClose = vi.fn();
-    render(
-      <Toast message="Test" type="error" onClose={handleClose} />
-    );
+    render(<Toast message="Test" type="error" onClose={handleClose} />);
     expect(screen.getByText('Test')).toBeInTheDocument();
   });
 
   it('should render info type', () => {
     const handleClose = vi.fn();
-    render(
-      <Toast message="Test" type="info" onClose={handleClose} />
-    );
+    render(<Toast message="Test" type="info" onClose={handleClose} />);
     expect(screen.getByText('Test')).toBeInTheDocument();
   });
 

@@ -67,7 +67,13 @@ export default function AvatarInput({
                 src={value}
                 alt="Avatar"
                 className="w-full h-full object-cover"
-                style={{ maxWidth: '96px', maxHeight: '96px', width: '100%', height: '100%', objectFit: 'cover' }}
+                style={{
+                  maxWidth: '96px',
+                  maxHeight: '96px',
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                }}
               />
             </div>
             {!disabled && (

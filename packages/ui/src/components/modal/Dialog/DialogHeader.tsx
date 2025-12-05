@@ -9,10 +9,7 @@ interface DialogHeaderProps {
 /**
  * Dialog header component
  */
-export default function DialogHeader({
-  children,
-  onClose,
-}: DialogHeaderProps) {
+export default function DialogHeader({ children, onClose }: DialogHeaderProps) {
   return (
     <div className="flex items-center justify-between px-6 py-4 border-b border-border">
       {children}

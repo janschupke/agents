@@ -116,7 +116,7 @@ export default function AgentList({
               onClick={() => onDelete(agent.id)}
               disabled={deletingId === agent.id}
               tooltip={t('agents.list.delete')}
-              className="hover:text-red-500"
+              className="hover:text-danger"
             >
               <IconTrash className="w-5 h-5" />
             </Button>

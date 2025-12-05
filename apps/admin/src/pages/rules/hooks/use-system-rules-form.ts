@@ -2,10 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { HTTP_STATUS } from '@openai/shared-types';
 import { AgentType } from '../../../types/agent.types';
-import {
-  useSystemRules,
-  useUpdateSystemRules,
-} from './use-system-rules';
+import { useSystemRules, useUpdateSystemRules } from './use-system-rules';
 import { useToast } from '../../../contexts/ToastContext';
 
 export interface AgentTypeFormData {

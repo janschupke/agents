@@ -13,8 +13,12 @@ const UsersPage = lazy(() => import('./pages/users/UsersPage'));
 const UserDetailPage = lazy(() => import('./pages/users/UserDetailPage'));
 const UserEditPage = lazy(() => import('./pages/users/UserEditPage'));
 const SystemRulesPage = lazy(() => import('./pages/rules/SystemRulesPage'));
-const AgentArchetypesPage = lazy(() => import('./pages/agents/AgentArchetypesPage'));
-const AiRequestLogsPage = lazy(() => import('./pages/ai-request-logs/AiRequestLogsPage'));
+const AgentArchetypesPage = lazy(
+  () => import('./pages/agents/AgentArchetypesPage')
+);
+const AiRequestLogsPage = lazy(
+  () => import('./pages/ai-request-logs/AiRequestLogsPage')
+);
 const AgentsPage = lazy(() => import('./pages/agents/AgentsPage'));
 const AgentDetailPage = lazy(() => import('./pages/agents/AgentDetailPage'));
 const AgentEditPage = lazy(() => import('./pages/agents/AgentEditPage'));

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Slider from './Slider';
 
@@ -15,26 +15,18 @@ describe('Slider', () => {
   });
 
   it('calls onChange when value changes', async () => {
-    const user = userEvent.setup();
     const onChange = vi.fn();
     render(<Slider value={50} onChange={onChange} label="Test" />);
 
-    const input = screen.getByRole('slider');
-    await user.click(input);
-    await user.type(input, '{arrowright}');
+    const input = screen.getByRole('slider') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: '75' } });
 
-    expect(onChange).toHaveBeenCalled();
+    expect(onChange).toHaveBeenCalledWith(75);
   });
 
   it('respects min and max values', () => {
     render(
-      <Slider
-        value={50}
-        onChange={vi.fn()}
-        min={0}
-        max={100}
-        label="Test"
-      />
+      <Slider value={50} onChange={vi.fn()} min={0} max={100} label="Test" />
     );
     const input = screen.getByRole('slider');
     expect(input).toHaveAttribute('min', '0');

@@ -9,6 +9,7 @@ import { MemorySummaryService } from './services/memory-summary.service';
 import { MEMORY_CONFIG } from '../common/constants/api.constants.js';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 import { AgentMemory } from '@prisma/client';
+import { MessageFixtures } from '../../test/message-fixtures';
 
 describe('AgentMemoryService', () => {
   let service: AgentMemoryService;
@@ -101,8 +102,8 @@ describe('AgentMemoryService', () => {
 
     it('should extract insights from OpenAI response', async () => {
       const messages = [
-        { role: 'user', content: 'Hello' },
-        { role: 'assistant', content: 'Hi there!' },
+        MessageFixtures.userString('Hello'),
+        MessageFixtures.assistantString('Hi there!'),
       ];
       const expectedInsights = [
         'User likes programming',

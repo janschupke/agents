@@ -29,7 +29,6 @@ export default function AgentNameAndAvatar({
         value={avatarUrl}
         onChange={onAvatarChange}
         disabled={saving}
-        allowUrlInput={true}
       />
       <div className="flex-1">
         <FormField

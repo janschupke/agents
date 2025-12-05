@@ -53,7 +53,7 @@ export default function AgentArchetypesPage() {
   if (error) {
     return (
       <div>
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
+        <div className="bg-error-light border border-error-border text-error-text px-4 py-3 rounded-md">
           {t('archetypes.error')}
         </div>
       </div>

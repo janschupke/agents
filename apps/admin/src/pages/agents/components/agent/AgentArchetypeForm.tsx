@@ -3,7 +3,10 @@ import { AgentArchetypeService } from '../../../../services/agent-archetype.serv
 import { AgentArchetype } from '../../../../types/agent-archetype.types';
 import { queryKeys } from '../../../../hooks/queries/query-keys';
 import { AgentForm } from './form';
-import { AgentFormMode, AgentFormData } from '../../../../types/agent-form.types';
+import {
+  AgentFormMode,
+  AgentFormData,
+} from '../../../../types/agent-form.types';
 import {
   mapToFormData,
   mapFormDataToArchetypeRequest,

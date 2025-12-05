@@ -7,7 +7,10 @@ import { queryKeys } from '../../hooks/queries/query-keys';
 import { AgentForm } from './components/agent/form';
 import { AgentFormMode, AgentFormData } from '../../types/agent-form.types';
 import { LoadingState, PageHeaderWithBack } from '../../components/shared';
-import { mapToFormData, mapFormDataToUpdateRequest } from './hooks/use-agent-form-mapping';
+import {
+  mapToFormData,
+  mapFormDataToUpdateRequest,
+} from './hooks/use-agent-form-mapping';
 import { UpdateAgentRequest } from '../../types/agent.types';
 
 export default function AgentEditPage() {
@@ -60,7 +63,7 @@ export default function AgentEditPage() {
 
   if (agentError || !agent) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
+      <div className="bg-error-light border border-error-border text-error-text px-4 py-3 rounded-md">
         {t('agents.edit.error')}
       </div>
     );

@@ -113,7 +113,6 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
         setValue('availability', configs.availability as Availability);
     };
 
-
     const loadingConfig = loadingAgent && agent !== null && agent.id > 0;
     const formRef = useRef<HTMLFormElement>(null);
 

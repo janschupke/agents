@@ -39,10 +39,7 @@ export default function Dialog({
 
   return (
     <ModalBackdrop onClose={() => onOpenChange(false)}>
-      <ModalContainer
-        maxWidth={maxWidth}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <ModalContainer maxWidth={maxWidth} onClick={(e) => e.stopPropagation()}>
         {children}
       </ModalContainer>
     </ModalBackdrop>

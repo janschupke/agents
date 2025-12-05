@@ -36,7 +36,7 @@ export default function BasicInfoSection({
         label={
           <>
             {isArchetype ? t('archetypes.form.name') : t('agents.edit.name')}{' '}
-            <span className="text-red-500">*</span>
+            <span className="text-danger">*</span>
           </>
         }
         labelFor="agent-name"

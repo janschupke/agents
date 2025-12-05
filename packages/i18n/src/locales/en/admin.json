@@ -85,7 +85,10 @@
     "rulePlaceholder": "Rule {{index}}",
     "save": "Save Rules",
     "saved": "Behavior rules saved successfully!",
-    "error": "Failed to save behavior rules"
+    "error": "Failed to save behavior rules",
+    "systemPromptLabel": "Authoritative System Prompt",
+    "systemPromptPlaceholder": "Enter the authoritative system prompt that will be sent as the first message in every chat request...",
+    "systemPromptDescription": "This system prompt will be sent as the first SYSTEM role message in every chat request. It is the authoritative system prompt for all agents."
   },
   "archetypes": {
     "title": "Agent Archetypes",

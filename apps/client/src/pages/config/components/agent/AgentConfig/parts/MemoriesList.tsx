@@ -1,10 +1,5 @@
 import { AgentMemory } from '../../../../../../types/chat.types';
-import {
-  IconClose,
-  SkeletonList,
-  Card,
-  Button,
-} from '@openai/ui';
+import { IconClose, SkeletonList, Card, Button } from '@openai/ui';
 import { formatRelativeDate } from '@openai/utils';
 
 interface MemoriesListProps {
@@ -24,7 +19,6 @@ export default function MemoriesList({
   onRefresh: _onRefresh,
   agentId,
 }: MemoriesListProps) {
-
   if (agentId < 0) {
     return (
       <div className="text-text-tertiary text-center py-6 text-sm">

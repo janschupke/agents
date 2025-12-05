@@ -9,7 +9,7 @@ import {
   createTestAgent,
   createTestApiCredentials,
 } from './setup';
-import { MessageRole } from '../src/common/enums/message-role.enum';
+import { MessageRole } from '@openai/shared-types';
 import { PrismaService } from '../src/prisma/prisma.service';
 
 describe('Chat API (e2e)', () => {

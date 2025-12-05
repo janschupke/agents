@@ -41,7 +41,9 @@ function Table<T>({
   emptyMessage = 'No data available',
   className = '',
 }: TableProps<T>) {
-  const [expandedRows, setExpandedRows] = React.useState<Set<string>>(new Set());
+  const [expandedRows, setExpandedRows] = React.useState<Set<string>>(
+    new Set()
+  );
   const [sortingState, setSortingState] = React.useState<SortingState>([]);
 
   const getRowId = expandable?.getRowId;
@@ -96,7 +98,10 @@ function Table<T>({
                   <th
                     key={header.id}
                     className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase"
-                    style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
+                    style={{
+                      width:
+                        header.getSize() !== 150 ? header.getSize() : undefined,
+                    }}
                   >
                     {header.isPlaceholder ? null : (
                       <div
@@ -107,7 +112,10 @@ function Table<T>({
                         }
                         onClick={header.column.getToggleSortingHandler()}
                       >
-                        {flexRender(header.column.columnDef.header, header.getContext())}
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                         {{
                           asc: ' ↑',
                           desc: ' ↓',
@@ -131,7 +139,9 @@ function Table<T>({
               </tr>
             ) : (
               table.getRowModel().rows.map((row) => {
-                const rowId = getRowId ? getRowId(row.original) : String(row.id);
+                const rowId = getRowId
+                  ? getRowId(row.original)
+                  : String(row.id);
                 const isExpanded = expandedRows.has(rowId);
                 return (
                   <React.Fragment key={row.id}>
@@ -141,7 +151,10 @@ function Table<T>({
                           key={cell.id}
                           className="px-4 py-3 text-sm text-text-primary"
                         >
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
                         </td>
                       ))}
                     </tr>
@@ -163,37 +176,47 @@ function Table<T>({
         </table>
       </div>
 
-      {pagination && (() => {
-        const totalPages = Math.ceil(pagination.total / pagination.pageSize);
-        return totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-border flex items-center justify-between">
-            <div className="text-sm text-text-tertiary">
-              Showing {pagination.page * pagination.pageSize - pagination.pageSize + 1} to{' '}
-              {Math.min(pagination.page * pagination.pageSize, pagination.total)} of{' '}
-              {pagination.total}
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => pagination.onPageChange(pagination.page - 1)}
-                disabled={pagination.page === 1}
-                className="px-3 py-1 text-sm border border-border rounded hover:bg-background-tertiary disabled:opacity-50 disabled:cursor-not-allowed text-text-primary"
-              >
-                Previous
-              </button>
-              <span className="px-3 py-1 text-sm text-text-secondary">
-                Page {pagination.page} of {totalPages}
-              </span>
-              <button
-                onClick={() => pagination.onPageChange(pagination.page + 1)}
-                disabled={pagination.page >= totalPages}
-                className="px-3 py-1 text-sm border border-border rounded hover:bg-background-tertiary disabled:opacity-50 disabled:cursor-not-allowed text-text-primary"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        );
-      })()}
+      {pagination &&
+        (() => {
+          const totalPages = Math.ceil(pagination.total / pagination.pageSize);
+          return (
+            totalPages > 1 && (
+              <div className="px-4 py-3 border-t border-border flex items-center justify-between">
+                <div className="text-sm text-text-tertiary">
+                  Showing{' '}
+                  {pagination.page * pagination.pageSize -
+                    pagination.pageSize +
+                    1}{' '}
+                  to{' '}
+                  {Math.min(
+                    pagination.page * pagination.pageSize,
+                    pagination.total
+                  )}{' '}
+                  of {pagination.total}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => pagination.onPageChange(pagination.page - 1)}
+                    disabled={pagination.page === 1}
+                    className="px-3 py-1 text-sm border border-border rounded hover:bg-background-tertiary disabled:opacity-50 disabled:cursor-not-allowed text-text-primary"
+                  >
+                    Previous
+                  </button>
+                  <span className="px-3 py-1 text-sm text-text-secondary">
+                    Page {pagination.page} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => pagination.onPageChange(pagination.page + 1)}
+                    disabled={pagination.page >= totalPages}
+                    className="px-3 py-1 text-sm border border-border rounded hover:bg-background-tertiary disabled:opacity-50 disabled:cursor-not-allowed text-text-primary"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )
+          );
+        })()}
     </div>
   );
 }

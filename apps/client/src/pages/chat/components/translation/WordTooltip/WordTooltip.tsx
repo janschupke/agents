@@ -53,7 +53,7 @@ export default function WordTooltip({
   const tooltipElement =
     showTooltip && hasContent ? (
       <div
-        className="fixed z-50 px-3 py-2 text-xs bg-gray-900 text-white rounded shadow-lg pointer-events-none min-w-[120px]"
+        className="fixed z-50 px-3 py-2 text-xs bg-background-inverse text-text-inverse rounded shadow-lg pointer-events-none min-w-[120px]"
         style={{
           left: `${tooltipPosition.x}px`,
           top: `${tooltipPosition.y}px`,
@@ -62,9 +62,11 @@ export default function WordTooltip({
       >
         <div className="font-semibold mb-1">{originalWord}</div>
         {displayPinyin && (
-          <div className="text-gray-300 mb-1 text-[10px]">{displayPinyin}</div>
+          <div className="text-text-tertiary mb-1 text-[10px]">
+            {displayPinyin}
+          </div>
         )}
-        {translation && <div className="text-gray-100">{translation}</div>}
+        {translation && <div className="text-text-inverse">{translation}</div>}
         <div
           className="absolute top-full left-1/2 transform -translate-x-1/2"
           style={{

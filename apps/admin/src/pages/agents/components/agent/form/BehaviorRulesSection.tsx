@@ -54,7 +54,7 @@ export default function BehaviorRulesSection({
                   variant="ghost"
                   size="sm"
                   onClick={() => onRemoveRule(index)}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-danger hover:text-danger-hover"
                 >
                   {t('archetypes.form.remove')}
                 </Button>

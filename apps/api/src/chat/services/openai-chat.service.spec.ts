@@ -3,8 +3,7 @@ import { HttpException } from '@nestjs/common';
 import { OpenAIChatService } from './openai-chat.service';
 import { OpenAIService } from '../../openai/openai.service';
 import { AiRequestLogService } from '../../ai-request-log/ai-request-log.service';
-import { MessageRole } from '@openai/shared-types';
-import { OPENAI_MODELS } from '../../common/constants/api.constants';
+import { MessageRole, OPENAI_MODELS } from '@openai/shared-types';
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants';
 import type OpenAI from 'openai';
 
@@ -64,7 +63,7 @@ describe('OpenAIChatService', () => {
         { role: MessageRole.USER, content: 'User message' },
       ];
       const agentConfig = {
-        model: 'gpt-4o-mini',
+        model: OPENAI_MODELS.DEFAULT,
         temperature: 0.7,
         max_tokens: 1000,
       };
@@ -72,7 +71,7 @@ describe('OpenAIChatService', () => {
       const result = service.createOpenAIRequest(messages, agentConfig);
 
       expect(result).toEqual({
-        model: 'gpt-4o-mini',
+        model: OPENAI_MODELS.DEFAULT,
         messages: [
           { role: 'system', content: 'System message' },
           { role: 'user', content: 'User message' },

@@ -83,7 +83,9 @@ export default function Slider({
         </div>
       )}
       {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
-      {hint && !error && <p className="text-xs text-text-tertiary mt-1">{hint}</p>}
+      {hint && !error && (
+        <p className="text-xs text-text-tertiary mt-1">{hint}</p>
+      )}
     </div>
   );
 }

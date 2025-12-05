@@ -45,6 +45,19 @@ export default {
           DEFAULT: 'rgb(var(--color-disabled) / <alpha-value>)',
           bg: 'rgb(var(--color-disabled-bg) / <alpha-value>)',
         },
+        // Error/Danger colors - shared across all apps
+        error: {
+          DEFAULT: 'rgb(var(--color-error) / <alpha-value>)',
+          light: 'rgb(var(--color-error-light) / <alpha-value>)',
+          border: 'rgb(var(--color-error-border) / <alpha-value>)',
+          text: 'rgb(var(--color-error-text) / <alpha-value>)',
+        },
+        danger: {
+          DEFAULT: 'rgb(var(--color-danger) / <alpha-value>)',
+          hover: 'rgb(var(--color-danger-hover) / <alpha-value>)',
+        },
+        // Background inverse - for dark backgrounds
+        'background-inverse': 'rgb(var(--color-background-inverse) / <alpha-value>)',
       },
       boxShadow: {
         sm: 'var(--shadow-sm)',

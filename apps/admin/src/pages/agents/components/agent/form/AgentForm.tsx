@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Button } from '@openai/ui';
-import { AgentFormMode, AgentFormData } from '../../../../../types/agent-form.types';
+import {
+  AgentFormMode,
+  AgentFormData,
+} from '../../../../../types/agent-form.types';
 import { useAgentFormValidation } from '../../../hooks/use-agent-form-validation';
 import {
   BasicInfoSection,

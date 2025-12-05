@@ -36,6 +36,17 @@
   --color-disabled: 156 163 175; /* gray-400 */
   --color-disabled-bg: 243 244 246; /* gray-100 */
 
+  /* Error/Danger colors - Shared across all apps */
+  --color-error: 239 68 68; /* red-500 */
+  --color-error-light: 254 242 242; /* red-50 */
+  --color-error-border: 254 202 202; /* red-200 */
+  --color-error-text: 153 27 27; /* red-800 */
+  --color-danger: 239 68 68; /* red-500 */
+  --color-danger-hover: 220 38 38; /* red-600 */
+
+  /* Background inverse - For dark backgrounds (tooltips, dropdowns) */
+  --color-background-inverse: 17 24 39; /* gray-900 */
+
   /* Shadows - Shared across all apps */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md:

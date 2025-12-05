@@ -85,7 +85,7 @@ export default function AgentArchetypeList({
               size="sm"
               onClick={() => onDelete(archetype.id)}
               tooltip={t('archetypes.delete')}
-              className="hover:text-red-500"
+              className="hover:text-danger"
             >
               <IconTrash className="w-5 h-5" />
             </Button>

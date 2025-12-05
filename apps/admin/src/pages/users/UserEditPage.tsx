@@ -5,6 +5,7 @@ import { Button, Card, Skeleton, Input } from '@openai/ui';
 import { UserService, UpdateUserRequest } from '../../services/user.service';
 import { User } from '../../types/user.types';
 import { ROUTES } from '../../constants/routes.constants';
+import { ALL_USER_ROLES } from '../../constants/user-roles.constants';
 import { useState, useEffect } from 'react';
 import { queryKeys } from '../../hooks/queries/query-keys';
 import { PageHeaderWithBack } from '../../components/shared';
@@ -81,7 +82,7 @@ export default function UserEditPage() {
   if (error || !user) {
     return (
       <div className="space-y-6">
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
+        <div className="bg-error-light border border-error-border text-error-text px-4 py-3 rounded-md">
           {t('users.edit.error')}
         </div>
       </div>
@@ -180,7 +181,7 @@ export default function UserEditPage() {
                 {t('users.columns.roles')}
               </label>
               <div className="flex flex-wrap gap-2">
-                {['admin', 'user'].map((role) => (
+                {ALL_USER_ROLES.map((role) => (
                   <button
                     key={role}
                     type="button"

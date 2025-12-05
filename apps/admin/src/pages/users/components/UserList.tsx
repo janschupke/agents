@@ -116,7 +116,7 @@ export default function UserList({ users, loading, onDelete }: UserListProps) {
                 size="sm"
                 onClick={() => onDelete(user.id)}
                 tooltip={t('users.delete')}
-                className="hover:text-red-500"
+                className="hover:text-danger"
               >
                 <IconTrash className="w-5 h-5" />
               </Button>

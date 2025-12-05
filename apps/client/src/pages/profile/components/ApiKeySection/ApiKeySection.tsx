@@ -91,7 +91,7 @@ export default function ApiKeySection() {
                 disabled={saving}
                 variant="icon-compact"
                 size="sm"
-                className="w-8 p-0 hover:text-red-500"
+                className="w-8 p-0 hover:text-danger"
                 tooltip={t('profile.apiKey.deleteApiKey')}
               >
                 <IconTrash className="w-4 h-4" />

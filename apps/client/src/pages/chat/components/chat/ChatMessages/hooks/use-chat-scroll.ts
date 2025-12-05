@@ -132,7 +132,9 @@ export function useChatScroll({
       if (!shouldAutoScrollRef.current) {
         // Check if user is near bottom (within 150px)
         const isNearBottom =
-          container.scrollHeight - container.scrollTop - container.clientHeight <
+          container.scrollHeight -
+            container.scrollTop -
+            container.clientHeight <
           150;
         if (!isNearBottom) {
           return; // User scrolled up, don't auto-scroll
