@@ -70,11 +70,6 @@ export default function BasicInfoSection({
       <AvatarInput
         value={formValues.avatarUrl || null}
         onChange={(url) => onFieldChange('avatarUrl', url || '')}
-        label={
-          isArchetype
-            ? t('archetypes.form.avatarUrl')
-            : t('agents.edit.avatarUrl')
-        }
         allowUrlInput={true}
       />
 
