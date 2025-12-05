@@ -1,12 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MessageRole } from '../../common/enums/message-role.enum';
 import { BehaviorRulesUtil } from '../../common/utils/behavior-rules.util';
-import { SystemConfigRepository } from '../../system-config/system-config.repository';
 import { SystemConfigService } from '../../system-config/system-config.service';
-import { ConfigurationRulesService } from './configuration-rules.service';
 import { LanguageAssistantService } from '../../agent/services/language-assistant.service';
 import { AgentConfigService } from '../../agent/services/agent-config.service';
-import { AgentWithConfig } from '../../common/interfaces/agent.interface';
 import { AgentType } from '../../common/enums/agent-type.enum';
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants';
 import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants';
@@ -14,6 +11,9 @@ import { ResponseLength } from '../../common/enums/response-length.enum';
 import { Gender } from '../../common/enums/gender.enum';
 import { Sentiment } from '../../common/enums/sentiment.enum';
 import { PersonalityType } from '@openai/shared-types';
+import { PromptTransformationService } from './prompt-transformation.service';
+import { BehaviorRulesTransformationService } from './behavior-rules-transformation.service';
+import type { AgentArchetype } from '@prisma/client';
 
 interface MessageForOpenAI {
   role: MessageRole;
@@ -41,11 +41,11 @@ export class MessagePreparationService {
   private readonly logger = new Logger(MessagePreparationService.name);
 
   constructor(
-    private readonly systemConfigRepository: SystemConfigRepository,
     private readonly systemConfigService: SystemConfigService,
-    private readonly configurationRulesService: ConfigurationRulesService,
     private readonly languageAssistantService: LanguageAssistantService,
-    private readonly agentConfigService: AgentConfigService
+    private readonly agentConfigService: AgentConfigService,
+    private readonly promptTransformationService: PromptTransformationService,
+    private readonly behaviorRulesTransformationService: BehaviorRulesTransformationService
   ) {}
 
   /**
@@ -53,23 +53,32 @@ export class MessagePreparationService {
    * Handles: system prompts, behavior rules, memory context, and user messages
    *
    * Message Order:
-   * 0. Authoritative system prompt (admin-defined) - SYSTEM role (FIRST)
-   * 1. Code-defined rules (datetime, language, etc.) - SYSTEM role
-   * 2. Admin-defined system behavior rules - SYSTEM role
-   * 3. Config-based behavior rules (from form fields with defined values) - SYSTEM role
-   *    - These use preset prompts and only accept legal enum values (response_length, age, gender, personality, sentiment, interests)
-   * 4. Client config system prompt - USER role
-   * 5. Client behavior rules (user-provided, freely set in UI) - USER role
-   * 6. Word parsing instruction (only for language assistants) - SYSTEM role
-   * 7. Memory context (if any) - SYSTEM role
+   * 1. System prompt (by agent type) - SYSTEM role
+   *    - Merged from: Main system prompt + Agent type-specific system prompt + Agent archetype system prompt
+   *    - Includes current time embedded in the prompt
+   * 2. System behavior rules (by agent type) - SYSTEM role
+   *    - Merged from: Main system behavior rules + Agent type-specific behavior rules
+   *    - Transformed from array to single message
+   * 3. Client agent config rules (system) - SYSTEM role
+   *    - Generated from agent config values (response_length, age, gender, personality, sentiment, interests)
+   *    - Includes language rule if set
+   *    - Transformed from array to single message
+   * 4. Client agent description (user prompt) - USER role
+   *    - Agent's system_prompt field
+   * 5. Client agent config rules (user) - USER role
+   *    - Agent's behavior_rules field
+   *    - Transformed from array to single message
+   * 6. Word parsing instruction (language assistants only) - SYSTEM role
+   * 7. Memory context - SYSTEM role
    * 8. Conversation history (user/assistant messages)
-   * 9. Current user message
+   * 9. Current user message - USER role
    */
   async prepareMessagesForOpenAI(
     existingMessages: MessageForOpenAI[],
     agentConfig: AgentConfig,
     userMessage: string,
     relevantMemories: string[],
+    agentArchetype: AgentArchetype | null = null,
     currentDateTime: Date = new Date()
   ): Promise<MessageForOpenAI[]> {
     this.logger.debug(
@@ -91,20 +100,21 @@ export class MessagePreparationService {
     // Build messages array in the correct order
     const messagesForAPI: MessageForOpenAI[] = [];
 
-    // 0. Authoritative system prompt (admin-defined) - SYSTEM role (FIRST)
-    await this.addAuthoritativeSystemPrompt(messagesForAPI);
+    // 1. System prompt (by agent type) - merged and with current time
+    await this.addSystemPrompt(
+      messagesForAPI,
+      agentConfig,
+      agentArchetype,
+      currentDateTime
+    );
 
-    // 1. Code-defined rules (datetime, language, etc.) - SYSTEM role
-    this.addConfigurationRules(messagesForAPI, agentConfig, currentDateTime);
+    // 2. System behavior rules (by agent type) - merged and transformed
+    await this.addSystemBehaviorRules(messagesForAPI, agentConfig);
 
-    // 2. Admin-defined system behavior rules - SYSTEM role
-    await this.addSystemBehaviorRules(messagesForAPI);
+    // 3. Client agent config rules (system) - generated from config values
+    this.addClientAgentConfigRules(messagesForAPI, agentConfig);
 
-    // 3. Config-based behavior rules (from form fields with defined values) - SYSTEM role
-    // These use preset prompts and only accept legal enum values
-    this.addConfigBasedBehaviorRules(messagesForAPI, agentConfig);
-
-    // 4. Client config system prompt - USER role
+    // 4. Client agent description (user prompt)
     if (agentConfig.system_prompt) {
       this.logger.debug('Adding client system prompt as user message');
       messagesForAPI.push({
@@ -113,7 +123,7 @@ export class MessagePreparationService {
       });
     }
 
-    // 5. Client behavior rules (user-provided, freely set in UI) - USER role
+    // 5. Client agent config rules (user) - transformed
     if (agentConfig.behavior_rules) {
       this.logger.debug('Adding client behavior rules as user message');
       this.addClientBehaviorRules(messagesForAPI, agentConfig);
@@ -173,64 +183,95 @@ export class MessagePreparationService {
   }
 
   /**
-   * Add authoritative system prompt (admin-defined) - SYSTEM role
-   * This is the FIRST message in every chat request
+   * Add system prompt (by agent type) - SYSTEM role
+   * Merged from: Main system prompt + Agent type-specific system prompt + Agent archetype system prompt
+   * Includes current time embedded in the prompt
    */
-  private async addAuthoritativeSystemPrompt(
-    messagesForAPI: MessageForOpenAI[]
+  private async addSystemPrompt(
+    messagesForAPI: MessageForOpenAI[],
+    agentConfig: AgentConfig,
+    agentArchetype: AgentArchetype | null,
+    currentDateTime: Date
   ): Promise<void> {
-    let systemPrompt: string | null = null;
     try {
-      systemPrompt = await this.systemConfigService.getSystemPrompt();
-    } catch (error) {
-      this.logger.error('Error loading authoritative system prompt:', error);
-      // Continue without system prompt if loading fails
-    }
+      // 1. Get main system prompt (by agent type, falls back to main)
+      const mainPrompt =
+        await this.systemConfigService.getSystemPromptByAgentType(
+          agentConfig.agentType || null
+        );
 
-    if (systemPrompt && systemPrompt.trim().length > 0) {
-      this.logger.debug('Adding authoritative system prompt as first message');
-      // Insert at the beginning (index 0) to ensure it's first
-      messagesForAPI.unshift({
-        role: MessageRole.SYSTEM,
-        content: systemPrompt.trim(),
-      });
+      // 2. Get agent archetype system prompt (if exists)
+      const archetypePrompt = agentArchetype?.systemPrompt || null;
+
+      // 3. Merge prompts
+      const mergedPrompt = this.promptTransformationService.mergeSystemPrompts([
+        mainPrompt,
+        archetypePrompt,
+      ]);
+
+      // 4. Embed current time
+      const finalPrompt = this.promptTransformationService.embedCurrentTime(
+        mergedPrompt,
+        currentDateTime
+      );
+
+      // 5. Add as first SYSTEM message
+      if (finalPrompt.trim().length > 0) {
+        this.logger.debug('Adding merged system prompt as first message');
+        messagesForAPI.unshift({
+          role: MessageRole.SYSTEM,
+          content: finalPrompt.trim(),
+        });
+      }
+    } catch (error) {
+      this.logger.error('Error loading system prompt:', error);
+      // Continue without system prompt if loading fails
     }
   }
 
   /**
-   * Add system-wide behavior rules (admin-defined) - SYSTEM role
+   * Add system behavior rules (by agent type) - SYSTEM role
+   * Merged from: Main system behavior rules + Agent type-specific behavior rules
+   * Transformed from array to single message
    */
   private async addSystemBehaviorRules(
-    messagesForAPI: MessageForOpenAI[]
+    messagesForAPI: MessageForOpenAI[],
+    agentConfig: AgentConfig
   ): Promise<void> {
-    let systemBehaviorRules: string[] = [];
     try {
-      const systemConfig =
-        await this.systemConfigRepository.findByKey('behavior_rules');
-      if (systemConfig && systemConfig.configValue) {
-        systemBehaviorRules = BehaviorRulesUtil.parse(systemConfig.configValue);
+      // 1. Get main system behavior rules (by agent type, falls back to main)
+      const mainRules =
+        await this.systemConfigService.getBehaviorRulesByAgentType(
+          agentConfig.agentType || null
+        );
+
+      // 2. Merge and transform to single message
+      const rulesMessage =
+        this.behaviorRulesTransformationService.mergeAndTransformRules(
+          [mainRules],
+          {
+            role: MessageRole.SYSTEM,
+            header: 'System Behavior Rules (Required):',
+          }
+        );
+
+      // 3. Add as SYSTEM message
+      if (rulesMessage.trim().length > 0) {
+        this.logger.debug('Adding system behavior rules as system message');
+        messagesForAPI.push({
+          role: MessageRole.SYSTEM,
+          content: rulesMessage.trim(),
+        });
       }
     } catch (error) {
       this.logger.error('Error loading system behavior rules:', error);
       // Continue without system rules if loading fails
     }
-
-    if (systemBehaviorRules.length > 0) {
-      const systemBehaviorRulesMessage =
-        BehaviorRulesUtil.formatSystemRules(systemBehaviorRules);
-
-      if (systemBehaviorRulesMessage.length > 0) {
-        // Add as system message after code-defined rules
-        messagesForAPI.push({
-          role: MessageRole.SYSTEM,
-          content: systemBehaviorRulesMessage,
-        });
-      }
-    }
   }
 
   /**
-   * Add client behavior rules - USER role
+   * Add client behavior rules (user) - USER role
+   * Transformed from array to single message
    */
   private addClientBehaviorRules(
     messagesForAPI: MessageForOpenAI[],
@@ -239,30 +280,43 @@ export class MessagePreparationService {
     const behaviorRules = BehaviorRulesUtil.parse(agentConfig.behavior_rules!);
 
     if (behaviorRules.length > 0) {
-      const behaviorRulesMessage =
-        BehaviorRulesUtil.formatAgentRules(behaviorRules);
+      const rulesMessage =
+        this.behaviorRulesTransformationService.transformRulesToMessage(
+          behaviorRules,
+          { role: MessageRole.USER }
+        );
 
-      if (behaviorRulesMessage.length > 0) {
-        // Add as user message after client system prompt
+      if (rulesMessage.trim().length > 0) {
+        this.logger.debug('Adding client behavior rules as user message');
         messagesForAPI.push({
           role: MessageRole.USER,
-          content: behaviorRulesMessage,
+          content: rulesMessage.trim(),
         });
       }
     }
   }
 
   /**
-   * Add config-based behavior rules from form fields (response_length, age, gender, personality, sentiment, interests)
-   * These rules use preset prompts and only accept legal enum values
-   * Each rule is added as a separate SYSTEM role message
-   * These must appear BEFORE user-provided behavior rules
+   * Add client agent config rules (system) - SYSTEM role
+   * Generated from agent config values (response_length, age, gender, personality, sentiment, interests)
+   * Includes language rule if set
+   * Transformed from array to single message
    */
-  private addConfigBasedBehaviorRules(
+  private addClientAgentConfigRules(
     messagesForAPI: MessageForOpenAI[],
     agentConfig: AgentConfig
   ): void {
-    // Build configs object from agentConfig
+    // 1. Generate rules from config values
+    const configRules: string[] = [];
+
+    // Language rule (moved from ConfigurationRulesService)
+    if (agentConfig.language) {
+      configRules.push(
+        OPENAI_PROMPTS.CONFIGURATION_RULES.LANGUAGE(agentConfig.language)
+      );
+    }
+
+    // Other config-based rules (response_length, age, gender, etc.)
     const configs: Record<string, unknown> = {};
     if (agentConfig.response_length !== undefined) {
       configs.response_length = agentConfig.response_length;
@@ -283,67 +337,30 @@ export class MessagePreparationService {
       configs.interests = agentConfig.interests;
     }
 
-    // Generate rules from config values (with validation)
     const generatedRules =
       this.agentConfigService.generateBehaviorRulesFromConfig(configs);
+    configRules.push(...generatedRules);
 
-    if (generatedRules.length > 0) {
-      this.logger.debug(
-        `Adding ${generatedRules.length} config-based behavior rules as separate system messages`
-      );
+    // 2. Transform to single SYSTEM message
+    if (configRules.length > 0) {
+      const rulesMessage =
+        this.behaviorRulesTransformationService.transformRulesToMessage(
+          configRules,
+          { role: MessageRole.SYSTEM }
+        );
 
-      // Add each rule as a separate SYSTEM message
-      for (const rule of generatedRules) {
+      if (rulesMessage.trim().length > 0) {
+        this.logger.debug(
+          `Adding ${configRules.length} client agent config rules as system message`
+        );
         messagesForAPI.push({
           role: MessageRole.SYSTEM,
-          content: rule,
+          content: rulesMessage.trim(),
         });
       }
     }
   }
 
-  /**
-   * Add configuration rules (datetime, language, etc.) - SYSTEM role
-   * These are code-defined rules that come first
-   */
-  private addConfigurationRules(
-    messagesForAPI: MessageForOpenAI[],
-    agentConfig: AgentConfig,
-    currentDateTime: Date
-  ): void {
-    const agent: AgentWithConfig = {
-      id: 0, // Not needed for configuration rules
-      name: '',
-      description: null,
-      avatarUrl: null,
-      agentType: agentConfig.agentType || AgentType.GENERAL,
-      language: agentConfig.language || null,
-      configs: {},
-    };
-
-    const configurationRules =
-      this.configurationRulesService.generateConfigurationRules(
-        agent,
-        currentDateTime
-      );
-
-    if (configurationRules.length === 0) {
-      return;
-    }
-
-    const configurationRulesMessage =
-      this.configurationRulesService.formatConfigurationRules(
-        configurationRules
-      );
-
-    if (configurationRulesMessage.length > 0) {
-      // Add as first system message (code-defined rules come first)
-      messagesForAPI.push({
-        role: MessageRole.SYSTEM,
-        content: configurationRulesMessage,
-      });
-    }
-  }
 
   /**
    * Add instruction for assistant to include translations in response (required)

@@ -7,11 +7,13 @@ import {
   useUpdateSystemRules,
 } from '../hooks/queries/use-system-rules';
 import { IconTrash, IconPlus } from './ui/Icons';
+import { AgentType } from '../types/agent.types';
 
 export default function SystemBehaviorRules() {
   const { t: tAdmin } = useTranslation(I18nNamespace.ADMIN);
   const { t: tCommon } = useTranslation(I18nNamespace.COMMON);
-  const { data, isLoading: loading, error: queryError } = useSystemRules();
+  const [selectedAgentType, setSelectedAgentType] = useState<AgentType | null>(null);
+  const { data, isLoading: loading, error: queryError } = useSystemRules(selectedAgentType);
   const updateMutation = useUpdateSystemRules();
   const [rules, setRules] = useState<string[]>([]);
   const [systemPrompt, setSystemPrompt] = useState<string>('');
@@ -44,7 +46,11 @@ export default function SystemBehaviorRules() {
 
   const handleSave = async () => {
     updateMutation.mutate(
-      { rules, systemPrompt: systemPrompt.trim() || undefined },
+      {
+        rules,
+        systemPrompt: systemPrompt.trim() || undefined,
+        agentType: selectedAgentType,
+      },
       {
         onError: () => {
           // Error is handled by mutation state
@@ -97,6 +103,32 @@ export default function SystemBehaviorRules() {
         </h2>
         <p className="text-text-tertiary text-sm">
           {tAdmin('systemRules.description')}
+        </p>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-text-secondary mb-1.5">
+          {tAdmin('systemRules.agentTypeLabel') || 'Agent Type Category'}
+        </label>
+        <select
+          value={selectedAgentType || 'main'}
+          onChange={(e) => {
+            const value = e.target.value;
+            setSelectedAgentType(
+              value === 'main' || value === 'null' ? null : (value as AgentType)
+            );
+          }}
+          className="w-full px-3 py-2 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus"
+        >
+          <option value="main">Main (Default)</option>
+          <option value={AgentType.GENERAL}>{AgentType.GENERAL}</option>
+          <option value={AgentType.LANGUAGE_ASSISTANT}>
+            {AgentType.LANGUAGE_ASSISTANT}
+          </option>
+        </select>
+        <p className="text-xs text-text-tertiary mt-2">
+          {tAdmin('systemRules.agentTypeDescription') ||
+            'Select the agent type category. Rules and prompts can be customized per agent type, with "Main" as the default fallback.'}
         </p>
       </div>
 

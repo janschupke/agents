@@ -181,12 +181,16 @@ export class ChatOrchestrationService {
     );
 
     // Prepare messages for OpenAI using MessagePreparationService
+    // Note: Agent archetype is not currently linked to agents, so passing null
+    // TODO: Add archetypeId to Agent model or load archetype separately if needed
     const messagesForAPI =
       await this.messagePreparationService.prepareMessagesForOpenAI(
         existingMessages,
         agentConfig,
         context.message,
-        relevantMemories
+        relevantMemories,
+        null, // agentArchetype - not currently linked
+        new Date() // currentDateTime
       );
 
     // Create OpenAI request using OpenAIChatService

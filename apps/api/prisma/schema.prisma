@@ -196,13 +196,15 @@ model MessageWordTranslation {
 }
 
 model SystemConfig {
-  id          Int      @id @default(autoincrement())
-  configKey   String   @map("config_key")
-  configValue Json     @map("config_value")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id          Int       @id @default(autoincrement())
+  configKey   String    @map("config_key")
+  configValue Json      @map("config_value")
+  agentType   AgentType? @map("agent_type") // Optional agent type for categorization
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  @@unique([configKey])
+  @@unique([configKey, agentType]) // Unique constraint on key + agentType combination
+  @@index([agentType]) // Index for agent type queries
   @@map("system_configs")
 }
 

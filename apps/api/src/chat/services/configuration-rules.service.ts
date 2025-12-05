@@ -19,12 +19,14 @@ export class ConfigurationRulesService {
 
   /**
    * Generate configuration rules for an agent
-   * These rules come after admin-defined system rules but before user-defined behavior rules
+   * NOTE: This service is deprecated. Datetime and language rules have been moved:
+   * - Datetime: Now embedded in system prompt via PromptTransformationService
+   * - Language: Now in client agent config rules via MessagePreparationService
+   * 
+   * This service now only handles config-based rules (response_length, age, etc.)
+   * which will eventually be moved to AgentConfigService.generateBehaviorRulesFromConfig()
    *
-   * Order:
-   * 1. Admin-defined system rules (handled in MessagePreparationService)
-   * 2. Configuration rules (datetime, language) - THIS SERVICE
-   * 3. User-defined behavior rules (handled in MessagePreparationService)
+   * @deprecated Use AgentConfigService.generateBehaviorRulesFromConfig() instead
    */
   generateConfigurationRules(
     agent: AgentWithConfig,
@@ -32,24 +34,9 @@ export class ConfigurationRulesService {
   ): ConfigurationRule[] {
     const rules: ConfigurationRule[] = [];
 
-    // Rule 1: Current datetime (always added)
-    const datetimeRule = this.generateDatetimeRule(currentDateTime);
-    rules.push({
-      content: datetimeRule,
-      order: 1,
-    });
+    // NOTE: Datetime and language rules removed - handled elsewhere now
 
-    // Rule 2: Language rule (if language is set)
-    const language = this.languageAssistantService.getAgentLanguage(agent);
-    if (language) {
-      const languageRule = this.generateLanguageRule(language);
-      rules.push({
-        content: languageRule,
-        order: 2,
-      });
-    }
-
-    // Rule 3: Response length (if set)
+    // Rule 1: Response length (if set)
     const responseLength = this.getResponseLength(agent);
     if (responseLength) {
       const responseLengthRule =
@@ -114,20 +101,9 @@ export class ConfigurationRulesService {
     return rules.sort((a, b) => a.order - b.order);
   }
 
-  /**
-   * Generate datetime rule
-   */
-  private generateDatetimeRule(currentDateTime: Date): string {
-    const isoString = currentDateTime.toISOString();
-    return OPENAI_PROMPTS.CONFIGURATION_RULES.DATETIME(isoString);
-  }
-
-  /**
-   * Generate language rule
-   */
-  private generateLanguageRule(language: string): string {
-    return OPENAI_PROMPTS.CONFIGURATION_RULES.LANGUAGE(language);
-  }
+  // NOTE: generateDatetimeRule() and generateLanguageRule() removed
+  // - Datetime is now embedded in system prompt via PromptTransformationService
+  // - Language is now in client agent config rules via MessagePreparationService
 
   /**
    * Format configuration rules as a single system message

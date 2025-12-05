@@ -7,6 +7,7 @@ export const API_ENDPOINTS = {
   USER_BY_ID: (id: string) => `/api/user/${id}`,
   HEALTHCHECK: '/api/healthcheck',
   SYSTEM_CONFIG_BEHAVIOR_RULES: '/api/system-config/behavior-rules',
+  SYSTEM_CONFIG_SYSTEM_PROMPT: '/api/system-config/system-prompt',
   AGENT_ARCHETYPES: {
     BASE: '/api/agent-archetypes',
     BY_ID: (id: number) => `/api/agent-archetypes/${id}`,

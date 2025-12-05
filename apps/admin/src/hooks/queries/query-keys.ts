@@ -20,7 +20,12 @@ export const queryKeys = {
   system: {
     all: [QueryKey.SYSTEM] as const,
     behaviorRules: () =>
-      [...queryKeys.system.all, QueryKey.BEHAVIOR_RULES] as const,
+      (agentType?: string | null) =>
+        [
+          ...queryKeys.system.all,
+          QueryKey.BEHAVIOR_RULES,
+          agentType || 'main',
+        ] as const,
   },
   aiRequestLogs: {
     all: [QueryKey.AI_REQUEST_LOGS] as const,

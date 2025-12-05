@@ -3,6 +3,8 @@ import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 import { MessagePreparationService } from './services/message-preparation.service';
 import { ConfigurationRulesService } from './services/configuration-rules.service';
+import { PromptTransformationService } from './services/prompt-transformation.service';
+import { BehaviorRulesTransformationService } from './services/behavior-rules-transformation.service';
 import { OpenAIChatService } from './services/openai-chat.service';
 import { ChatOrchestrationService } from './services/chat-orchestration.service';
 import { TranslationExtractionService } from './services/translation-extraction.service';
@@ -39,6 +41,8 @@ import { AgentConfigService } from '../agent/services/agent-config.service';
     TranslationExtractionService,
     MessagePreparationService,
     ConfigurationRulesService,
+    PromptTransformationService,
+    BehaviorRulesTransformationService,
     OpenAIChatService,
     SessionService,
     SessionRepository,
