@@ -6,6 +6,9 @@ import {
   Availability,
 } from '@openai/shared-types';
 
+// Re-export for convenience (these are enums, not types)
+export { AgentType, ResponseLength, Gender, Sentiment, Availability };
+
 export interface Agent {
   id: number;
   userId: string;

@@ -1,4 +1,4 @@
-import { AvatarPicker, Textarea, FormField } from '@openai/ui';
+import { AvatarInput, Textarea, FormField } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 interface AgentNameAndAvatarProps {
@@ -25,7 +25,12 @@ export default function AgentNameAndAvatar({
 
   return (
     <div className="flex items-start gap-4">
-      <AvatarPicker value={avatarUrl} onChange={onAvatarChange} />
+      <AvatarInput
+        value={avatarUrl}
+        onChange={onAvatarChange}
+        disabled={saving}
+        allowUrlInput={true}
+      />
       <div className="flex-1">
         <FormField
           label={t('config.description')}

@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 import { ComponentSize, getInputSizeClasses } from '../size-system';
 
-interface SelectProps
+export interface SelectProps
   extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
   className?: string;
   size?: ComponentSize;

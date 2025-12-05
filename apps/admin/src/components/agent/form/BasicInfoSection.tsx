@@ -1,5 +1,5 @@
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { Input, Textarea, Select } from '@openai/ui';
+import { Input, Textarea, Select, AvatarInput, FormField } from '@openai/ui';
 import { AgentType } from '../../../types/agent.types';
 import { ChangeEvent } from 'react';
 
@@ -32,49 +32,51 @@ export default function BasicInfoSection({
           : t('agents.detail.basicInfo')}
       </h4>
 
-      <div>
-        <label className="block text-sm font-medium text-text-primary mb-1">
-          {isArchetype ? t('archetypes.form.name') : t('agents.edit.name')}{' '}
-          <span className="text-red-500">*</span>
-        </label>
+      <FormField
+        label={
+          <>
+            {isArchetype ? t('archetypes.form.name') : t('agents.edit.name')}{' '}
+            <span className="text-red-500">*</span>
+          </>
+        }
+        labelFor="agent-name"
+        error={errors.name}
+      >
         <Input
+          id="agent-name"
           type="text"
           value={formValues.name}
           onChange={(e) => onFieldChange('name', e.target.value)}
-          className={errors.name ? 'border-red-500' : ''}
           required
         />
-        {errors.name && (
-          <p className="text-red-500 text-xs mt-1">{errors.name}</p>
-        )}
-      </div>
+      </FormField>
 
-      <div>
-        <label className="block text-sm font-medium text-text-primary mb-1">
-          {isArchetype
+      <FormField
+        label={
+          isArchetype
             ? t('archetypes.form.description')
-            : t('agents.edit.description')}
-        </label>
+            : t('agents.edit.description')
+        }
+        labelFor="agent-description"
+      >
         <Textarea
+          id="agent-description"
           value={formValues.description}
           onChange={(e) => onFieldChange('description', e.target.value)}
           rows={3}
         />
-      </div>
+      </FormField>
 
-      <div>
-        <label className="block text-sm font-medium text-text-primary mb-1">
-          {isArchetype
+      <AvatarInput
+        value={formValues.avatarUrl || null}
+        onChange={(url) => onFieldChange('avatarUrl', url || '')}
+        label={
+          isArchetype
             ? t('archetypes.form.avatarUrl')
-            : t('agents.edit.avatarUrl')}
-        </label>
-        <Input
-          type="url"
-          value={formValues.avatarUrl}
-          onChange={(e) => onFieldChange('avatarUrl', e.target.value)}
-          placeholder="https://..."
-        />
-      </div>
+            : t('agents.edit.avatarUrl')
+        }
+        allowUrlInput={true}
+      />
 
       <div className="grid grid-cols-2 gap-4">
         <div>

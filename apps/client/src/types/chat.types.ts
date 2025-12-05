@@ -1,5 +1,6 @@
-// MessageRole is now imported from @openai/shared-types
-export type { MessageRole } from '@openai/shared-types';
+// MessageRole is now imported from @openai/shared-types (this is an enum, not a type)
+import { MessageRole } from '@openai/shared-types';
+export { MessageRole };
 
 export interface WordTranslation {
   originalWord: string;

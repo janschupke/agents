@@ -1,5 +1,5 @@
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { Input, Textarea } from '@openai/ui';
+import { Input, Textarea, Slider } from '@openai/ui';
 
 interface ConfigurationSectionProps {
   formValues: {
@@ -21,6 +21,13 @@ export default function ConfigurationSection({
 }: ConfigurationSectionProps) {
   const { t } = useTranslation(I18nNamespace.ADMIN);
 
+  const temperatureValue = formValues.temperature
+    ? parseFloat(formValues.temperature)
+    : 0.7;
+  const maxTokensValue = formValues.maxTokens
+    ? parseInt(formValues.maxTokens, 10)
+    : 1000;
+
   return (
     <div className="space-y-4">
       <h4 className="text-sm font-medium text-text-secondary">
@@ -28,40 +35,33 @@ export default function ConfigurationSection({
       </h4>
 
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-text-primary mb-1">
-            {isArchetype ? t('archetypes.form.temperature') : 'Temperature'}{' '}
-            (0-2)
-          </label>
-          <Input
-            type="number"
-            step="0.1"
-            min="0"
-            max="2"
-            value={formValues.temperature}
-            onChange={(e) => onFieldChange('temperature', e.target.value)}
-            className={errors.temperature ? 'border-red-500' : ''}
-          />
-          {errors.temperature && (
-            <p className="text-red-500 text-xs mt-1">{errors.temperature}</p>
-          )}
-        </div>
+        <Slider
+          id="agent-temperature"
+          value={temperatureValue}
+          onChange={(val) => onFieldChange('temperature', val.toString())}
+          min={0}
+          max={2}
+          step={0.1}
+          label={isArchetype ? t('archetypes.form.temperature') : 'Temperature'}
+          valueFormatter={(val) => val.toFixed(2)}
+          error={errors.temperature}
+          labels={{
+            min: 'Deterministic',
+            mid: 'Balanced',
+            max: 'Creative',
+          }}
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-text-primary mb-1">
-            {isArchetype ? t('archetypes.form.maxTokens') : 'Max Tokens'}
-          </label>
-          <Input
-            type="number"
-            min="1"
-            value={formValues.maxTokens}
-            onChange={(e) => onFieldChange('maxTokens', e.target.value)}
-            className={errors.maxTokens ? 'border-red-500' : ''}
-          />
-          {errors.maxTokens && (
-            <p className="text-red-500 text-xs mt-1">{errors.maxTokens}</p>
-          )}
-        </div>
+        <Slider
+          id="agent-max-tokens"
+          value={maxTokensValue}
+          onChange={(val) => onFieldChange('maxTokens', val.toString())}
+          min={1}
+          max={4000}
+          step={1}
+          label={isArchetype ? t('archetypes.form.maxTokens') : 'Max Tokens'}
+          error={errors.maxTokens}
+        />
       </div>
 
       {isArchetype && (

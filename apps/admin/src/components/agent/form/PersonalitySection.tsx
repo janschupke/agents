@@ -1,5 +1,5 @@
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { Button, Input, Select } from '@openai/ui';
+import { Select, ChipSelector, Slider } from '@openai/ui';
 import {
   ResponseLength,
   Gender,
@@ -26,7 +26,6 @@ interface PersonalitySectionProps {
   errors: Record<string, string>;
   isArchetype: boolean;
   onFieldChange: (field: string, value: string | string[]) => void;
-  onToggleInterest: (interest: string) => void;
 }
 
 export default function PersonalitySection({
@@ -34,7 +33,6 @@ export default function PersonalitySection({
   errors,
   isArchetype,
   onFieldChange,
-  onToggleInterest,
 }: PersonalitySectionProps) {
   const { t } = useTranslation(I18nNamespace.ADMIN);
 
@@ -73,22 +71,16 @@ export default function PersonalitySection({
           </Select>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-text-primary mb-1">
-            {isArchetype ? t('archetypes.form.age') : 'Age'} (0-100)
-          </label>
-          <Input
-            type="number"
-            min="0"
-            max="100"
-            value={formValues.age}
-            onChange={(e) => onFieldChange('age', e.target.value)}
-            className={errors.age ? 'border-red-500' : ''}
-          />
-          {errors.age && (
-            <p className="text-red-500 text-xs mt-1">{errors.age}</p>
-          )}
-        </div>
+        <Slider
+          id="agent-age"
+          value={formValues.age ? parseInt(formValues.age, 10) : 25}
+          onChange={(val) => onFieldChange('age', val.toString())}
+          min={0}
+          max={100}
+          step={1}
+          label={isArchetype ? t('archetypes.form.age') : 'Age'}
+          error={errors.age}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -194,28 +186,13 @@ export default function PersonalitySection({
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-text-primary mb-2">
-          {isArchetype ? t('archetypes.form.interests') : 'Interests'}
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {INTERESTS.map((interest) => (
-            <Button
-              key={interest}
-              type="button"
-              variant={
-                formValues.interests.includes(interest)
-                  ? 'primary'
-                  : 'secondary'
-              }
-              size="xs"
-              onClick={() => onToggleInterest(interest)}
-            >
-              {interest}
-            </Button>
-          ))}
-        </div>
-      </div>
+      <ChipSelector
+        id="agent-interests"
+        options={[...INTERESTS]}
+        selected={formValues.interests}
+        onChange={(interests) => onFieldChange('interests', interests)}
+        label={isArchetype ? t('archetypes.form.interests') : 'Interests'}
+      />
     </div>
   );
 }

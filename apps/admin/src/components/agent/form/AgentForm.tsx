@@ -204,14 +204,6 @@ export default function AgentForm({
     });
   };
 
-  const toggleInterest = (interest: string) => {
-    setFormValues({
-      ...formValues,
-      interests: formValues.interests.includes(interest)
-        ? formValues.interests.filter((i) => i !== interest)
-        : [...formValues.interests, interest],
-    });
-  };
 
   return (
     <form
@@ -284,7 +276,6 @@ export default function AgentForm({
           onFieldChange={(field: string, value: string | string[]) =>
             setFormValues({ ...formValues, [field]: value })
           }
-          onToggleInterest={toggleInterest}
         />
 
         {/* Actions */}
