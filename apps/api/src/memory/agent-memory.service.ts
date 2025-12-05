@@ -6,6 +6,7 @@ import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 import { MemoryExtractionService } from './services/memory-extraction.service';
 import { MemoryRetrievalService } from './services/memory-retrieval.service';
 import { MemorySummarizationService } from './services/memory-summarization.service';
+import { MemorySummaryService } from './services/memory-summary.service';
 
 /**
  * Orchestration service for memory operations
@@ -20,7 +21,8 @@ export class AgentMemoryService {
     private readonly openaiService: OpenAIService,
     private readonly memoryExtractionService: MemoryExtractionService,
     private readonly memoryRetrievalService: MemoryRetrievalService,
-    private readonly memorySummarizationService: MemorySummarizationService
+    private readonly memorySummarizationService: MemorySummarizationService,
+    private readonly memorySummaryService: MemorySummaryService
   ) {}
 
   /**
@@ -103,6 +105,18 @@ export class AgentMemoryService {
     this.logger.log(
       `Memory creation completed for agent ${agentId}, user ${userId}: ${createdCount}/${insights.length} memories created`
     );
+
+    // Trigger summary generation asynchronously (don't block)
+    if (createdCount > 0) {
+      this.memorySummaryService
+        .generateSummary(agentId, userId, apiKey)
+        .catch((error) => {
+          this.logger.error(
+            `Error generating memory summary after creation:`,
+            error
+          );
+        });
+    }
 
     return createdCount;
   }
@@ -188,6 +202,16 @@ export class AgentMemoryService {
     // Reset update count
     await this.memoryRepository.resetUpdateCount(agentId, userId);
     this.logger.log('Memory summarization completed');
+
+    // Trigger summary generation asynchronously (don't block)
+    this.memorySummaryService
+      .generateSummary(agentId, userId, apiKey)
+      .catch((error) => {
+        this.logger.error(
+          `Error generating memory summary after summarization:`,
+          error
+        );
+      });
   }
 
   /**

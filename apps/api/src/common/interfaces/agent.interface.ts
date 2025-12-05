@@ -21,4 +21,5 @@ export interface AgentResponse {
   language: string | null;
   createdAt: Date;
   configs?: AgentConfig;
+  memorySummary?: string | null;
 }

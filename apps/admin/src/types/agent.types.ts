@@ -1,34 +1,57 @@
-export enum AgentType {
-  GENERAL = 'GENERAL',
-  LANGUAGE_ASSISTANT = 'LANGUAGE_ASSISTANT',
+export interface Agent {
+  id: number;
+  userId: string;
+  name: string;
+  description: string | null;
+  avatarUrl: string | null;
+  agentType: 'GENERAL' | 'LANGUAGE_ASSISTANT' | null;
+  language: string | null;
+  createdAt: string;
+  memorySummary?: string | null;
+  configs?: {
+    temperature?: number;
+    system_prompt?: string;
+    behavior_rules?: string | unknown;
+    model?: string;
+    max_tokens?: number;
+    response_length?: string;
+    age?: number;
+    gender?: string;
+    personality?: string;
+    sentiment?: string;
+    interests?: string[];
+    availability?: string;
+  };
 }
 
-export enum ResponseLength {
-  SHORT = 'short',
-  STANDARD = 'standard',
-  LONG = 'long',
-  ADAPT = 'adapt',
+export interface AgentWithStats extends Agent {
+  totalMessages: number;
+  totalTokens: number;
 }
 
-export enum Gender {
-  MALE = 'male',
-  FEMALE = 'female',
-  NON_BINARY = 'non-binary',
-  PREFER_NOT_TO_SAY = 'prefer-not-to-say',
+export interface AgentMemory {
+  id: number;
+  agentId: number;
+  userId: string;
+  keyPoint: string;
+  context?: {
+    sessionId?: number;
+    sessionName?: string | null;
+    messageCount?: number;
+  };
+  createdAt: string;
+  updatedAt: string;
 }
 
-export enum Sentiment {
-  NEUTRAL = 'neutral',
-  ENGAGED = 'engaged',
-  FRIENDLY = 'friendly',
-  ATTRACTED = 'attracted',
-  OBSESSED = 'obsessed',
-  DISINTERESTED = 'disinterested',
-  ANGRY = 'angry',
+export interface UpdateAgentRequest {
+  name: string;
+  description?: string;
+  avatarUrl?: string;
+  agentType?: 'GENERAL' | 'LANGUAGE_ASSISTANT';
+  language?: string;
+  configs?: Record<string, unknown>;
 }
 
-export enum Availability {
-  AVAILABLE = 'available',
-  STANDARD = 'standard',
-  BUSY = 'busy',
+export interface UpdateMemoryRequest {
+  keyPoint: string;
 }

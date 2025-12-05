@@ -64,6 +64,7 @@ model Agent {
   sentiment      String? // 'neutral' | 'engaged' | 'friendly' | 'attracted' | 'obsessed' | 'disinterested' | 'angry'
   interests      Json? // Array of strings
   availability   String? // 'available' | 'standard' | 'busy'
+  memorySummary  String? @map("memory_summary") @db.Text // Summary of how memories affect agent's feelings and behavior
 
   user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   configs    AgentConfig[] // Keep for backward compatibility during migration

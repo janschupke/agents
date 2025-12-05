@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { AgentMemoryService } from './agent-memory.service';
 import { AgentMemoryRepository } from './agent-memory.repository';
+import { MemorySummaryService } from './services/memory-summary.service';
 import { User } from '../auth/decorators/user.decorator';
 import { AuthenticatedUser } from '../common/types/auth.types';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
@@ -46,6 +47,7 @@ export class AgentMemoryController {
   constructor(
     private readonly memoryService: AgentMemoryService,
     private readonly memoryRepository: AgentMemoryRepository,
+    private readonly memorySummaryService: MemorySummaryService,
     private readonly apiCredentialsService: ApiCredentialsService
   ) {}
 
@@ -134,6 +136,22 @@ export class AgentMemoryController {
 
     const updated = await this.memoryRepository.update(memoryId, body.keyPoint);
 
+    // Trigger summary generation asynchronously (don't block)
+    const apiKey = await this.apiCredentialsService.getApiKey(
+      user.id,
+      MAGIC_STRINGS.OPENAI_PROVIDER
+    );
+    if (apiKey) {
+      this.memorySummaryService
+        .generateSummary(agentId, user.id, apiKey)
+        .catch((error) => {
+          this.logger.error(
+            `Error generating memory summary after update:`,
+            error
+          );
+        });
+    }
+
     return {
       id: updated.id,
       agentId: updated.agentId,
@@ -167,6 +185,22 @@ export class AgentMemoryController {
     }
 
     await this.memoryRepository.delete(memoryId);
+
+    // Trigger summary generation asynchronously (don't block)
+    const apiKey = await this.apiCredentialsService.getApiKey(
+      user.id,
+      MAGIC_STRINGS.OPENAI_PROVIDER
+    );
+    if (apiKey) {
+      this.memorySummaryService
+        .generateSummary(agentId, user.id, apiKey)
+        .catch((error) => {
+          this.logger.error(
+            `Error generating memory summary after delete:`,
+            error
+          );
+        });
+    }
   }
 
   @Post('summarize')

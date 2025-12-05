@@ -5,12 +5,14 @@ import { AgentMemoryRepository } from './agent-memory.repository';
 import { MemoryExtractionService } from './services/memory-extraction.service';
 import { MemoryRetrievalService } from './services/memory-retrieval.service';
 import { MemorySummarizationService } from './services/memory-summarization.service';
+import { MemorySummaryService } from './services/memory-summary.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { OpenAIService } from '../openai/openai.service';
 import { ApiCredentialsModule } from '../api-credentials/api-credentials.module';
+import { AgentModule } from '../agent/agent.module';
 
 @Module({
-  imports: [PrismaModule, ApiCredentialsModule],
+  imports: [PrismaModule, ApiCredentialsModule, AgentModule],
   controllers: [AgentMemoryController],
   providers: [
     AgentMemoryService,
@@ -18,8 +20,9 @@ import { ApiCredentialsModule } from '../api-credentials/api-credentials.module'
     MemoryExtractionService,
     MemoryRetrievalService,
     MemorySummarizationService,
+    MemorySummaryService,
     OpenAIService,
   ],
-  exports: [AgentMemoryService, AgentMemoryRepository],
+  exports: [AgentMemoryService, AgentMemoryRepository, MemorySummaryService],
 })
 export class AgentMemoryModule {}

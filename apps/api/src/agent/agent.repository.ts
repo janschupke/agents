@@ -327,4 +327,47 @@ export class AgentRepository {
       where: { id },
     });
   }
+
+  async updateMemorySummary(
+    agentId: number,
+    summary: string | null
+  ): Promise<void> {
+    await this.prisma.agent.update({
+      where: { id: agentId },
+      data: { memorySummary: summary },
+    });
+  }
+
+  async findAllForAdmin(): Promise<Agent[]> {
+    return this.prisma.agent.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getMessageCount(agentId: number): Promise<number> {
+    const result = await this.prisma.$queryRaw<Array<{ count: bigint }>>`
+      SELECT COUNT(*)::int as count
+      FROM messages m
+      JOIN chat_sessions cs ON m.session_id = cs.id
+      WHERE cs.agent_id = ${agentId}
+    `;
+    return Number(result[0]?.count || 0);
+  }
+
+  async getTokenCount(agentId: number): Promise<number> {
+    // Get agent's userId to approximate token count
+    const agent = await this.findById(agentId);
+    if (!agent) {
+      return 0;
+    }
+
+    // Sum tokens from AiRequestLog for the agent's user
+    // Note: This is an approximation since tokens aren't directly linked to agents
+    const result = await this.prisma.$queryRaw<Array<{ sum: bigint | null }>>`
+      SELECT COALESCE(SUM(total_tokens), 0)::int as sum
+      FROM ai_request_logs
+      WHERE user_id = ${agent.userId}
+    `;
+    return Number(result[0]?.sum || 0);
+  }
 }

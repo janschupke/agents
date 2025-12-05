@@ -1,14 +1,12 @@
 import { Agent } from '../../../../../../types/chat.types';
 import { useAgent } from '../../../../../../hooks/queries/use-agents';
-import { useAgentMemories as useAgentMemoriesQuery } from '../../../../../../hooks/queries/use-agents';
 import { useAgentForm } from '../../../../hooks/agent/use-agent-form';
-import { useAgentMemories as useAgentMemoryOperations } from '../../../../hooks/agent/use-agent-memories';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { FormContainer } from '@openai/ui';
 import { TemperatureField, BehaviorRulesField } from './AgentConfigFormFields';
 import AgentConfigFormSkeleton from './AgentConfigFormSkeleton';
 import AgentNameAndAvatar from './AgentNameAndAvatar';
-import MemoriesSection from './MemoriesSection';
+import MemorySummary from './MemorySummary';
 import AgentTypeField from './AgentTypeField';
 import LanguageField from './LanguageField';
 import ResponseLengthField from './ResponseLengthField';
@@ -57,8 +55,6 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
     const { data: agentData, isLoading: loadingAgent } = useAgent(
       agent?.id || null
     );
-    const { data: memories = [], isLoading: loadingMemories } =
-      useAgentMemoriesQuery(agent?.id || null);
 
     // Form management hook
     const {
@@ -117,13 +113,6 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
         setValue('availability', configs.availability as Availability);
     };
 
-    // Memory operations hook
-    const {
-      deletingId,
-      handleDeleteMemory,
-      handleRefreshMemories,
-      ConfirmDialog: MemoryConfirmDialog,
-    } = useAgentMemoryOperations({ agentId: agent?.id || null });
 
     const loadingConfig = loadingAgent && agent !== null && agent.id > 0;
     const formRef = useRef<HTMLFormElement>(null);
@@ -286,18 +275,13 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
                 onChange={(rules) => setValue('behaviorRules', rules)}
               />
 
-              <MemoriesSection
-                agentId={agent.id}
-                memories={memories}
-                loading={loadingMemories}
-                deletingId={deletingId}
-                onDelete={handleDeleteMemory}
-                onRefresh={handleRefreshMemories}
+              <MemorySummary
+                summary={agentData?.memorySummary}
+                loading={loadingAgent}
               />
             </form>
           )}
         </FormContainer>
-        {MemoryConfirmDialog}
       </>
     );
   }

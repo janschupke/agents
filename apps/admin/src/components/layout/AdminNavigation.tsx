@@ -56,6 +56,17 @@ export default function AdminNavigation() {
           <IconFileText className="w-4 h-4" />
           {t('navigation.aiRequestLogs')}
         </Link>
+        <Link
+          to={ROUTES.AGENTS}
+          className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 ${
+            isActive(ROUTES.AGENTS) || location.pathname.startsWith('/agents/')
+              ? 'text-primary border-b-2 border-primary'
+              : 'text-text-tertiary hover:text-text-secondary'
+          }`}
+        >
+          <IconUsers className="w-4 h-4" />
+          {t('navigation.agents')}
+        </Link>
       </div>
     </nav>
   );

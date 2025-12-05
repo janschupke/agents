@@ -97,6 +97,15 @@ Return ONLY the summarized memory, no additional text.
 Memories:
 ${memoriesText}`,
     },
+    SUMMARY: {
+      SYSTEM:
+        'You are a memory analysis assistant. Analyze the agent\'s memories and summarize how they affect the agent\'s feelings and behavioral tendencies towards the user. Focus on emotional patterns and behavioral changes, not factual lists.',
+      USER: (memoriesText: string) =>
+        `Based on these memories, write a short paragraph (max 5 sentences) describing how these memories affect the agent's feelings and behavioral tendencies towards the user. Focus on emotional patterns, relationship dynamics, and behavioral changes. Do not list facts or memories directly. Write in a natural, flowing paragraph format.
+
+Memories:
+${memoriesText}`,
+    },
   },
 
   BEHAVIOR_RULES: {

@@ -80,6 +80,7 @@ export interface Agent {
   agentType: AgentType | null;
   language: string | null;
   createdAt: string;
+  memorySummary?: string | null;
   configs?: {
     temperature?: number;
     system_prompt?: string;

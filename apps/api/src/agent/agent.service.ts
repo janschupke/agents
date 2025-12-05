@@ -35,6 +35,7 @@ export class AgentService {
       agentType: agent.agentType as AgentType | null,
       language: agent.language,
       createdAt: agent.createdAt,
+      memorySummary: agent.memorySummary,
     }));
   }
 
@@ -61,6 +62,7 @@ export class AgentService {
       language: agentRecord.language,
       createdAt: agentRecord.createdAt,
       configs: agent.configs,
+      memorySummary: agentRecord.memorySummary,
     };
   }
 
@@ -122,6 +124,7 @@ export class AgentService {
       agentType: agent.agentType as AgentType | null,
       language: agent.language,
       createdAt: agent.createdAt,
+      memorySummary: agent.memorySummary,
     };
   }
 

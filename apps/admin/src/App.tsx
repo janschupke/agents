@@ -7,6 +7,9 @@ import UsersPage from './pages/UsersPage';
 import SystemRulesPage from './pages/SystemRulesPage';
 import AgentArchetypesPage from './pages/AgentArchetypesPage';
 import AiRequestLogsPage from './pages/AiRequestLogsPage';
+import AgentsPage from './pages/AgentsPage';
+import AgentDetailPage from './pages/AgentDetailPage';
+import AgentEditPage from './pages/AgentEditPage';
 import { ROUTES } from './constants/routes.constants';
 
 function App() {
@@ -106,6 +109,15 @@ function App() {
           <Route
             path={ROUTES.AI_REQUEST_LOGS}
             element={<AiRequestLogsPage />}
+          />
+          <Route path={ROUTES.AGENTS} element={<AgentsPage />} />
+          <Route
+            path={ROUTES.AGENT_DETAIL(':id')}
+            element={<AgentDetailPage />}
+          />
+          <Route
+            path={ROUTES.AGENT_EDIT(':id')}
+            element={<AgentEditPage />}
           />
         </Routes>
       </Layout>

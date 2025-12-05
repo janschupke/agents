@@ -200,6 +200,13 @@
     "pinyin": "Pinyin",
     "translation": "Translation"
   },
+  "agentConfig": {
+    "memorySummary": {
+      "title": "Memory Summary",
+      "empty": "No memory summary available yet",
+      "loading": "Loading memory summary..."
+    }
+  },
   "common": {
     "confirm": "Confirm",
     "cancel": "Cancel",

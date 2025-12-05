@@ -69,6 +69,7 @@ describe('SessionService', () => {
         sentiment: null,
         interests: null,
         availability: null,
+        memorySummary: null,
         configs: {},
       };
       const mockSessions = [
@@ -153,6 +154,7 @@ describe('SessionService', () => {
         sentiment: null,
         interests: null,
         availability: null,
+        memorySummary: null,
         configs: {},
       };
       const mockSession = {
@@ -220,6 +222,7 @@ describe('SessionService', () => {
         sentiment: null,
         interests: null,
         availability: null,
+        memorySummary: null,
       };
       const mockSession = {
         id: sessionId,
@@ -298,6 +301,7 @@ describe('SessionService', () => {
         sentiment: null,
         interests: null,
         availability: null,
+        memorySummary: null,
       };
 
       agentRepository.findByIdAndUserId.mockResolvedValue(mockAgent);
@@ -336,6 +340,7 @@ describe('SessionService', () => {
         sentiment: null,
         interests: null,
         availability: null,
+        memorySummary: null,
       };
       const mockSession = {
         id: sessionId,
@@ -385,6 +390,7 @@ describe('SessionService', () => {
         sentiment: null,
         interests: null,
         availability: null,
+        memorySummary: null,
       };
       const mockSession = {
         id: sessionId,
@@ -445,6 +451,7 @@ describe('SessionService', () => {
         sentiment: null,
         interests: null,
         availability: null,
+        memorySummary: null,
       };
 
       agentRepository.findByIdAndUserId.mockResolvedValue(mockAgent);
@@ -483,6 +490,7 @@ describe('SessionService', () => {
         sentiment: null,
         interests: null,
         availability: null,
+        memorySummary: null,
       };
       const mockSession = {
         id: sessionId,

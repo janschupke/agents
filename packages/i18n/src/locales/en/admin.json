@@ -15,7 +15,8 @@
     "users": "Users",
     "systemRules": "System Rules",
     "archetypes": "Agent Archetypes",
-    "aiRequestLogs": "AI Request Logs"
+    "aiRequestLogs": "AI Request Logs",
+    "agents": "Agents"
   },
   "users": {
     "title": "All Users",
@@ -121,6 +122,81 @@
       "page": "Page {{current}} of {{total}}",
       "previous": "Previous",
       "next": "Next"
+    }
+  },
+  "agents": {
+    "title": "Agents",
+    "list": {
+      "title": "All Agents",
+      "empty": "No agents found",
+      "error": "Failed to load agents",
+      "total": "Total: {{count}} agent",
+      "total_plural": "Total: {{count}} agents",
+      "name": "Name",
+      "type": "Type",
+      "messages": "{{count}} message",
+      "messages_plural": "{{count}} messages",
+      "tokens": "{{count}} token",
+      "tokens_plural": "{{count}} tokens",
+      "actions": "Actions",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "detail": {
+      "title": "Agent Details",
+      "edit": "Edit Agent",
+      "delete": "Delete Agent",
+      "memories": "Memories",
+      "basicInfo": "Basic Information",
+      "configuration": "Configuration",
+      "demographics": "Demographics",
+      "loading": "Loading agent...",
+      "error": "Failed to load agent",
+      "notFound": "Agent not found",
+      "back": "Back",
+      "type": "Type",
+      "language": "Language",
+      "userId": "User ID",
+      "createdAt": "Created At",
+      "temperature": "Temperature",
+      "model": "Model",
+      "maxTokens": "Max Tokens",
+      "responseLength": "Response Length",
+      "systemPrompt": "System Prompt",
+      "age": "Age",
+      "gender": "Gender",
+      "personality": "Personality",
+      "sentiment": "Sentiment",
+      "availability": "Availability",
+      "interests": "Interests"
+    },
+    "edit": {
+      "title": "Edit Agent",
+      "save": "Save",
+      "cancel": "Cancel",
+      "loading": "Loading agent...",
+      "error": "Failed to load agent",
+      "notFound": "Agent not found",
+      "back": "Back",
+      "name": "Name",
+      "description": "Description",
+      "avatarUrl": "Avatar URL",
+      "agentType": "Agent Type",
+      "language": "Language"
+    },
+    "delete": {
+      "confirm": "Are you sure you want to delete this agent?",
+      "success": "Agent deleted successfully"
+    },
+    "memories": {
+      "empty": "No memories found for this agent",
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel",
+      "deleteConfirm": "Are you sure you want to delete this memory?",
+      "session": "Session"
     }
   }
 }

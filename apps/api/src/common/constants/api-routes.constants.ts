@@ -83,4 +83,14 @@ export const API_ROUTES = {
   AI_REQUEST_LOGS: {
     BASE: 'api/ai-request-logs',
   },
+
+  ADMIN: {
+    AGENTS: {
+      BASE: 'api/admin/agents',
+      BY_ID: (id: number) => `api/admin/agents/${id}`,
+      MEMORIES: (id: number) => `api/admin/agents/${id}/memories`,
+      MEMORY: (id: number, memoryId: number) =>
+        `api/admin/agents/${id}/memories/${memoryId}`,
+    },
+  },
 } as const;
