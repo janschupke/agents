@@ -150,7 +150,9 @@ export class MessagePreparationService {
       );
       this.addMemoryContext(messagesForAPI, relevantMemories);
     } else {
-      this.logger.debug('No memory contexts to add (relevantMemories is empty)');
+      this.logger.debug(
+        'No memory contexts to add (relevantMemories is empty)'
+      );
     }
 
     // 6. Conversation history (user/assistant messages)
@@ -233,9 +235,7 @@ export class MessagePreparationService {
           content: finalPrompt.trim(),
         });
       } else {
-        this.logger.debug(
-          'System prompt is empty, not adding to messages'
-        );
+        this.logger.debug('System prompt is empty, not adding to messages');
       }
     } catch (error) {
       this.logger.error('Error loading system prompt:', error);
@@ -386,7 +386,6 @@ export class MessagePreparationService {
       }
     }
   }
-
 
   /**
    * Add instruction for assistant to include translations in response (required)

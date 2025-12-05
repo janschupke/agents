@@ -13,7 +13,12 @@ import { AgentModule } from '../agent/agent.module';
 import { AiRequestLogModule } from '../ai-request-log/ai-request-log.module';
 
 @Module({
-  imports: [PrismaModule, ApiCredentialsModule, AgentModule, AiRequestLogModule],
+  imports: [
+    PrismaModule,
+    ApiCredentialsModule,
+    AgentModule,
+    AiRequestLogModule,
+  ],
   controllers: [AgentMemoryController],
   providers: [
     AgentMemoryService,

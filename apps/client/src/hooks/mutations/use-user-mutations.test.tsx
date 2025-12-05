@@ -34,7 +34,7 @@ describe('use-user-mutations', () => {
 
       await waitFor(() => {
         expect(mockShowToast).toHaveBeenCalledWith(
-          'API key updated successfully',
+          'profile.apiKey.updated',
           'success'
         );
       });
@@ -69,7 +69,7 @@ describe('use-user-mutations', () => {
 
       await waitFor(() => {
         expect(mockShowToast).toHaveBeenCalledWith(
-          'API key deleted successfully',
+          'profile.apiKey.deleted',
           'success'
         );
       });

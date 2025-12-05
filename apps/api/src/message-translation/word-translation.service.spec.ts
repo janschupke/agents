@@ -116,7 +116,13 @@ describe('WordTranslationService', () => {
 
       expect(
         wordTranslationOpenAIService.translateWordsWithOpenAI
-      ).toHaveBeenCalledWith(messageContent, sentences, apiKey, undefined);
+      ).toHaveBeenCalledWith(
+        messageContent,
+        sentences,
+        apiKey,
+        undefined,
+        undefined
+      );
       // updateWordsWithTranslations is called instead of saveExtractedTranslations
       expect(
         wordTranslationStorageService.updateWordsWithTranslations

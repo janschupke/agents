@@ -121,10 +121,7 @@ function App() {
                 path={ROUTES.USER_EDIT(':id')}
                 element={<UserEditPage />}
               />
-              <Route
-                path={ROUTES.SYSTEM_RULES}
-                element={<SystemRulesPage />}
-              />
+              <Route path={ROUTES.SYSTEM_RULES} element={<SystemRulesPage />} />
               <Route
                 path={ROUTES.AGENT_ARCHETYPES}
                 element={<AgentArchetypesPage />}

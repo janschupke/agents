@@ -330,7 +330,9 @@ describe('ChatService', () => {
 
       const result = await service.getChatHistory(agentId, userId);
 
-      expect(mockWordTranslationService.getWordTranslationsForMessages).not.toHaveBeenCalled();
+      expect(
+        mockWordTranslationService.getWordTranslationsForMessages
+      ).not.toHaveBeenCalled();
       expect(mockSavedWordService.findMatchingWords).not.toHaveBeenCalled();
       expect(result.savedWordMatches).toEqual([]);
       expect(result.messages[1].wordTranslations).toBeUndefined();
@@ -359,7 +361,11 @@ describe('ChatService', () => {
         [
           2,
           [
-            { originalWord: '你好', translation: 'hello', sentenceContext: undefined },
+            {
+              originalWord: '你好',
+              translation: 'hello',
+              sentenceContext: undefined,
+            },
           ],
         ],
       ]);
@@ -388,14 +394,20 @@ describe('ChatService', () => {
 
       const result = await service.getChatHistory(agentId, userId);
 
-      expect(mockWordTranslationService.getWordTranslationsForMessages).toHaveBeenCalledWith([2]);
+      expect(
+        mockWordTranslationService.getWordTranslationsForMessages
+      ).toHaveBeenCalledWith([2]);
       expect(mockSavedWordService.findMatchingWords).toHaveBeenCalledWith(
         userId,
         ['你好']
       );
       expect(result.savedWordMatches).toEqual(mockSavedWordMatches);
       expect(result.messages[1].wordTranslations).toEqual([
-        { originalWord: '你好', translation: 'hello', sentenceContext: undefined },
+        {
+          originalWord: '你好',
+          translation: 'hello',
+          sentenceContext: undefined,
+        },
       ]);
     });
 
@@ -436,10 +448,9 @@ describe('ChatService', () => {
 
       expect(result.messages.length).toBe(20);
       expect(result.hasMore).toBe(true);
-      expect(mockMessageRepository.findRecentMessagesBySessionId).toHaveBeenCalledWith(
-        1,
-        20
-      );
+      expect(
+        mockMessageRepository.findRecentMessagesBySessionId
+      ).toHaveBeenCalledWith(1, 20);
     });
 
     it('should return all messages and set hasMore to false when there are 20 or fewer messages', async () => {

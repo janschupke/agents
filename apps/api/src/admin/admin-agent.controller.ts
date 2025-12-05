@@ -190,9 +190,7 @@ export class AdminAgentController {
     @Param('memoryId', ParseIntPipe) memoryId: number,
     @Body() body: UpdateMemoryDto
   ): Promise<AgentMemoryResponse> {
-    this.logger.log(
-      `Updating memory ${memoryId} for agent ${agentId} (admin)`
-    );
+    this.logger.log(`Updating memory ${memoryId} for agent ${agentId} (admin)`);
     const agent = await this.agentRepository.findById(agentId);
     if (!agent) {
       throw new AgentNotFoundException(agentId);
@@ -231,9 +229,7 @@ export class AdminAgentController {
     @Param('id', ParseIntPipe) agentId: number,
     @Param('memoryId', ParseIntPipe) memoryId: number
   ): Promise<void> {
-    this.logger.log(
-      `Deleting memory ${memoryId} for agent ${agentId} (admin)`
-    );
+    this.logger.log(`Deleting memory ${memoryId} for agent ${agentId} (admin)`);
     const agent = await this.agentRepository.findById(agentId);
     if (!agent) {
       throw new AgentNotFoundException(agentId);

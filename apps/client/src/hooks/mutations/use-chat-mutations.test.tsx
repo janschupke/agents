@@ -108,7 +108,7 @@ describe('use-chat-mutations', () => {
 
       await waitFor(() => {
         expect(mockShowToast).toHaveBeenCalledWith(
-          'Failed to send message',
+          'chat.errors.sendMessageError',
           'error'
         );
       });

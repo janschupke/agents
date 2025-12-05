@@ -97,7 +97,13 @@ describe('OnDemandTranslationStrategy', () => {
 
       expect(
         wordTranslationService.translateWordsInMessage
-      ).toHaveBeenCalledWith(messageId, messageContent, apiKey, undefined);
+      ).toHaveBeenCalledWith(
+        messageId,
+        messageContent,
+        apiKey,
+        undefined,
+        undefined
+      );
       expect(
         wordTranslationService.getWordTranslationsForMessage
       ).toHaveBeenCalledWith(messageId);

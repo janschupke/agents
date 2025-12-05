@@ -11,6 +11,8 @@ describe('SystemConfigController', () => {
     getAllConfigs: jest.fn(),
     updateBehaviorRules: jest.fn(),
     updateConfigs: jest.fn(),
+    getSystemPrompt: jest.fn(),
+    updateSystemPrompt: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -33,29 +35,39 @@ describe('SystemConfigController', () => {
   describe('getBehaviorRules', () => {
     it('should return behavior rules', async () => {
       const rules = ['Rule 1', 'Rule 2'];
+      const systemPrompt = 'System prompt';
 
       systemConfigService.getBehaviorRules.mockResolvedValue(rules);
+      systemConfigService.getSystemPrompt.mockResolvedValue(systemPrompt);
 
       const result = await controller.getBehaviorRules();
 
-      expect(result).toEqual({ rules });
+      expect(result).toEqual({ rules, system_prompt: systemPrompt });
       expect(systemConfigService.getBehaviorRules).toHaveBeenCalled();
+      expect(systemConfigService.getSystemPrompt).toHaveBeenCalled();
     });
   });
 
   describe('updateBehaviorRules', () => {
     it('should update behavior rules', async () => {
       const rules = ['Rule 1', 'Rule 2'];
-      const dto = { rules };
+      const systemPrompt = 'System prompt';
+      const dto = { rules, system_prompt: systemPrompt };
 
       systemConfigService.updateBehaviorRules.mockResolvedValue(undefined);
+      systemConfigService.updateSystemPrompt.mockResolvedValue(undefined);
+      systemConfigService.getSystemPrompt.mockResolvedValue(systemPrompt);
 
       const result = await controller.updateBehaviorRules(dto);
 
-      expect(result).toEqual({ rules });
+      expect(result).toEqual({ rules, system_prompt: systemPrompt });
       expect(systemConfigService.updateBehaviorRules).toHaveBeenCalledWith(
         rules
       );
+      expect(systemConfigService.updateSystemPrompt).toHaveBeenCalledWith(
+        systemPrompt
+      );
+      expect(systemConfigService.getSystemPrompt).toHaveBeenCalled();
     });
   });
 

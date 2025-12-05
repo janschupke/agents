@@ -17,15 +17,13 @@ export class ConfigurationRulesService {
    * NOTE: This service is deprecated. Datetime and language rules have been moved:
    * - Datetime: Now embedded in system prompt via PromptTransformationService
    * - Language: Now in client agent config rules via MessagePreparationService
-   * 
+   *
    * This service now only handles config-based rules (response_length, age, etc.)
    * which will eventually be moved to AgentConfigService.generateBehaviorRulesFromConfig()
    *
    * @deprecated Use AgentConfigService.generateBehaviorRulesFromConfig() instead
    */
-  generateConfigurationRules(
-    agent: AgentWithConfig
-  ): ConfigurationRule[] {
+  generateConfigurationRules(agent: AgentWithConfig): ConfigurationRule[] {
     const rules: ConfigurationRule[] = [];
 
     // NOTE: Datetime and language rules removed - handled elsewhere now

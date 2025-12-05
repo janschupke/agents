@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MemoryExtractionService } from './memory-extraction.service';
 import { OpenAIService } from '../../openai/openai.service';
+import { AiRequestLogService } from '../../ai-request-log/ai-request-log.service';
 import { OPENAI_MODELS } from '../../common/constants/api.constants';
 import type OpenAI from 'openai';
 
@@ -9,6 +10,10 @@ describe('MemoryExtractionService', () => {
 
   const mockOpenAIService = {
     getClient: jest.fn(),
+  };
+
+  const mockAiRequestLogService = {
+    logRequest: jest.fn().mockResolvedValue(undefined),
   };
 
   const mockOpenAIClient = {
@@ -26,6 +31,10 @@ describe('MemoryExtractionService', () => {
         {
           provide: OpenAIService,
           useValue: mockOpenAIService,
+        },
+        {
+          provide: AiRequestLogService,
+          useValue: mockAiRequestLogService,
         },
       ],
     }).compile();

@@ -3,6 +3,7 @@ import { HttpException } from '@nestjs/common';
 import { AgentMemoryController } from './agent-memory.controller';
 import { AgentMemoryService } from './agent-memory.service';
 import { AgentMemoryRepository } from './agent-memory.repository';
+import { MemorySummaryService } from './services/memory-summary.service';
 import { ApiCredentialsService } from '../api-credentials/api-credentials.service';
 import {
   ERROR_MESSAGES,
@@ -29,6 +30,10 @@ describe('AgentMemoryController', () => {
     getApiKey: jest.fn(),
   };
 
+  const mockMemorySummaryService = {
+    generateSummary: jest.fn().mockResolvedValue(undefined),
+  };
+
   const mockUser = {
     id: 'user-1',
     email: 'test@example.com',
@@ -53,6 +58,10 @@ describe('AgentMemoryController', () => {
         {
           provide: ApiCredentialsService,
           useValue: mockApiCredentialsService,
+        },
+        {
+          provide: MemorySummaryService,
+          useValue: mockMemorySummaryService,
         },
       ],
     }).compile();

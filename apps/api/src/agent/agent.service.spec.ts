@@ -255,7 +255,15 @@ describe('AgentService', () => {
         lastMessageAt: null,
       });
 
-      await service.create(userId, name, undefined, undefined, undefined, undefined, configs);
+      await service.create(
+        userId,
+        name,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        configs
+      );
 
       // Verify that empty array is passed through without merging
       expect(mockAgentRepository.updateConfigs).toHaveBeenCalledWith(
@@ -299,7 +307,15 @@ describe('AgentService', () => {
         lastMessageAt: null,
       });
 
-      await service.create(userId, name, undefined, undefined, undefined, undefined, configs);
+      await service.create(
+        userId,
+        name,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        configs
+      );
 
       // Verify that only user-provided rules are passed, not merged
       expect(mockAgentRepository.updateConfigs).toHaveBeenCalledWith(
@@ -586,7 +602,10 @@ describe('AgentService', () => {
       // Verify that the rules array does NOT contain auto-generated rules
       const updateCall = mockAgentRepository.updateConfigs.mock.calls[0];
       const passedConfigs = updateCall[1] as Record<string, unknown>;
-      expect(passedConfigs.behavior_rules).toEqual(['User rule 1', 'User rule 2']);
+      expect(passedConfigs.behavior_rules).toEqual([
+        'User rule 1',
+        'User rule 2',
+      ]);
       expect(Array.isArray(passedConfigs.behavior_rules)).toBe(true);
       expect((passedConfigs.behavior_rules as string[]).length).toBe(2);
     });

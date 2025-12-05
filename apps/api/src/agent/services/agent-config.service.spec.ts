@@ -42,11 +42,13 @@ describe('AgentConfigService', () => {
       const result = service.generateBehaviorRulesFromConfig(configs);
 
       expect(result.length).toBe(1);
-      expect(result[0]).toContain("Adapt your response length");
+      expect(result[0]).toContain('Adapt your response length');
     });
 
     it('should reject invalid response_length values', () => {
-      const loggerSpy = jest.spyOn(service['logger'], 'warn').mockImplementation();
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'warn')
+        .mockImplementation();
       const configs = {
         response_length: 'invalid-length',
       };
@@ -90,7 +92,9 @@ describe('AgentConfigService', () => {
     });
 
     it('should reject invalid age values (out of range)', () => {
-      const loggerSpy = jest.spyOn(service['logger'], 'warn').mockImplementation();
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'warn')
+        .mockImplementation();
       const configs = {
         age: 150, // Invalid: > 100
       };
@@ -105,7 +109,9 @@ describe('AgentConfigService', () => {
     });
 
     it('should reject invalid age values (negative)', () => {
-      const loggerSpy = jest.spyOn(service['logger'], 'warn').mockImplementation();
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'warn')
+        .mockImplementation();
       const configs = {
         age: -5,
       };
@@ -131,7 +137,9 @@ describe('AgentConfigService', () => {
     });
 
     it('should reject invalid gender values', () => {
-      const loggerSpy = jest.spyOn(service['logger'], 'warn').mockImplementation();
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'warn')
+        .mockImplementation();
       const configs = {
         gender: 'invalid-gender',
       };
@@ -158,7 +166,9 @@ describe('AgentConfigService', () => {
     });
 
     it('should reject invalid personality values', () => {
-      const loggerSpy = jest.spyOn(service['logger'], 'warn').mockImplementation();
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'warn')
+        .mockImplementation();
       const configs = {
         personality: 'invalid-personality',
       };
@@ -184,7 +194,9 @@ describe('AgentConfigService', () => {
     });
 
     it('should reject invalid sentiment values', () => {
-      const loggerSpy = jest.spyOn(service['logger'], 'warn').mockImplementation();
+      const loggerSpy = jest
+        .spyOn(service['logger'], 'warn')
+        .mockImplementation();
       const configs = {
         sentiment: 'invalid-sentiment',
       };

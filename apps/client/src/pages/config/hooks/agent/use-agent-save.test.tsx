@@ -219,7 +219,7 @@ describe('useAgentSave', () => {
     expect(mockCreateAgent).toHaveBeenCalledWith(
       expect.objectContaining({
         configs: expect.objectContaining({
-          behavior_rules: undefined,
+          behavior_rules: [],
         }),
       })
     );

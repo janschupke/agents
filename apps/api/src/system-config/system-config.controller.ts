@@ -96,7 +96,9 @@ export class SystemConfigController {
       agentTypeParam === 'null' || agentTypeParam === 'main'
         ? null
         : (agentTypeParam.toUpperCase() as AgentType);
-    this.logger.log(`Getting system prompt for agent type: ${agentType || 'main'}`);
+    this.logger.log(
+      `Getting system prompt for agent type: ${agentType || 'main'}`
+    );
     const systemPrompt =
       await this.systemConfigService.getSystemPromptByAgentType(agentType);
     return { system_prompt: systemPrompt || undefined };

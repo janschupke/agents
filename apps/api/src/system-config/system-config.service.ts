@@ -28,8 +28,7 @@ export class SystemConfigService {
 
   async getSystemPrompt(): Promise<string | null> {
     this.logger.debug('Getting system prompt');
-    const config =
-      await this.systemConfigRepository.findByKey('system_prompt');
+    const config = await this.systemConfigRepository.findByKey('system_prompt');
     if (!config) {
       this.logger.debug('No system prompt configured');
       return null;
@@ -82,10 +81,11 @@ export class SystemConfigService {
     if (prompt === null || prompt.trim() === '') {
       // Delete the config if prompt is empty
       try {
-        const existing = await this.systemConfigRepository.findByKeyAndAgentType(
-          'system_prompt',
-          agentType
-        );
+        const existing =
+          await this.systemConfigRepository.findByKeyAndAgentType(
+            'system_prompt',
+            agentType
+          );
         if (existing) {
           await this.systemConfigRepository.delete(existing.configKey);
         }

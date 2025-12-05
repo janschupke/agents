@@ -5,6 +5,7 @@ import { OpenAIService } from '../openai/openai.service';
 import { MemoryExtractionService } from './services/memory-extraction.service';
 import { MemoryRetrievalService } from './services/memory-retrieval.service';
 import { MemorySummarizationService } from './services/memory-summarization.service';
+import { MemorySummaryService } from './services/memory-summary.service';
 import { MEMORY_CONFIG } from '../common/constants/api.constants.js';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 import { AgentMemory } from '@prisma/client';
@@ -41,6 +42,10 @@ describe('AgentMemoryService', () => {
     summarizeMemoryGroup: jest.fn(),
   };
 
+  const mockMemorySummaryService = {
+    generateSummary: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -65,6 +70,10 @@ describe('AgentMemoryService', () => {
           provide: MemorySummarizationService,
           useValue: mockMemorySummarizationService,
         },
+        {
+          provide: MemorySummaryService,
+          useValue: mockMemorySummaryService,
+        },
       ],
     }).compile();
 
@@ -78,7 +87,12 @@ describe('AgentMemoryService', () => {
   describe('extractKeyInsights', () => {
     it('should return empty array for empty messages', async () => {
       mockMemoryExtractionService.extractKeyInsights.mockResolvedValue([]);
-      const result = await service.extractKeyInsights([], 'api-key', 1, 'user-1');
+      const result = await service.extractKeyInsights(
+        [],
+        'api-key',
+        1,
+        'user-1'
+      );
       expect(result).toEqual([]);
       expect(
         mockMemoryExtractionService.extractKeyInsights
@@ -99,7 +113,12 @@ describe('AgentMemoryService', () => {
         expectedInsights
       );
 
-      const result = await service.extractKeyInsights(messages, 'api-key', 1, 'user-1');
+      const result = await service.extractKeyInsights(
+        messages,
+        'api-key',
+        1,
+        'user-1'
+      );
 
       expect(result).toHaveLength(2);
       expect(result[0]).toBe('User likes programming');
@@ -117,7 +136,12 @@ describe('AgentMemoryService', () => {
         expectedInsights
       );
 
-      const result = await service.extractKeyInsights(messages, 'api-key', 1, 'user-1');
+      const result = await service.extractKeyInsights(
+        messages,
+        'api-key',
+        1,
+        'user-1'
+      );
 
       // Numbered lines are filtered out, only bullet points remain after processing
       expect(result).toHaveLength(2);
@@ -136,7 +160,12 @@ describe('AgentMemoryService', () => {
         limitedInsights
       );
 
-      const result = await service.extractKeyInsights(messages, 'api-key', 1, 'user-1');
+      const result = await service.extractKeyInsights(
+        messages,
+        'api-key',
+        1,
+        'user-1'
+      );
 
       expect(result.length).toBeLessThanOrEqual(
         MEMORY_CONFIG.MAX_KEY_INSIGHTS_PER_UPDATE
@@ -148,7 +177,12 @@ describe('AgentMemoryService', () => {
 
       mockMemoryExtractionService.extractKeyInsights.mockResolvedValue([]);
 
-      const result = await service.extractKeyInsights(messages, 'api-key', 1, 'user-1');
+      const result = await service.extractKeyInsights(
+        messages,
+        'api-key',
+        1,
+        'user-1'
+      );
 
       expect(result).toEqual([]);
     });
@@ -158,7 +192,12 @@ describe('AgentMemoryService', () => {
 
       mockMemoryExtractionService.extractKeyInsights.mockResolvedValue([]);
 
-      const result = await service.extractKeyInsights(messages, 'api-key', 1, 'user-1');
+      const result = await service.extractKeyInsights(
+        messages,
+        'api-key',
+        1,
+        'user-1'
+      );
 
       expect(result).toEqual([]);
     });

@@ -10,9 +10,7 @@ export interface RulesTransformOptions {
 
 @Injectable()
 export class BehaviorRulesTransformationService {
-  private readonly logger = new Logger(
-    BehaviorRulesTransformationService.name
-  );
+  private readonly logger = new Logger(BehaviorRulesTransformationService.name);
 
   /**
    * Transform array of behavior rules into a single message content
@@ -34,9 +32,7 @@ export class BehaviorRulesTransformationService {
     const header = options?.header;
 
     // Filter out empty rules
-    const validRules = rules.filter(
-      (rule) => rule && rule.trim().length > 0
-    );
+    const validRules = rules.filter((rule) => rule && rule.trim().length > 0);
 
     if (validRules.length === 0) {
       return '';
@@ -88,9 +84,9 @@ export class BehaviorRulesTransformationService {
     }
 
     // Flatten all rules into a single array
-    const allRules = ruleArrays.flat().filter(
-      (rule) => rule && rule.trim().length > 0
-    );
+    const allRules = ruleArrays
+      .flat()
+      .filter((rule) => rule && rule.trim().length > 0);
 
     if (allRules.length === 0) {
       return '';

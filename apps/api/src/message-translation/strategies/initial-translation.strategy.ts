@@ -55,7 +55,12 @@ export class InitialTranslationStrategy implements TranslationStrategy {
     const userId = context?.userId;
     const agentId = context?.agentId;
     // Call to OpenAI for translation with context
-    const result = await this.translateWithContext(prompt, apiKey, userId, agentId);
+    const result = await this.translateWithContext(
+      prompt,
+      apiKey,
+      userId,
+      agentId
+    );
 
     // Save translations
     await this.saveTranslations(messageId, result, messageContent);

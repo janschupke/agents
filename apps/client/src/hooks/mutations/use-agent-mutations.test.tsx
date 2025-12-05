@@ -53,7 +53,7 @@ describe('use-agent-mutations', () => {
 
       await waitFor(() => {
         expect(mockShowToast).toHaveBeenCalledWith(
-          'Agent created successfully',
+          'agents.createSuccess',
           'success'
         );
       });
@@ -106,7 +106,7 @@ describe('use-agent-mutations', () => {
 
       await waitFor(() => {
         expect(mockShowToast).toHaveBeenCalledWith(
-          'Agent updated successfully',
+          'agents.updateSuccess',
           'success'
         );
       });
@@ -144,7 +144,7 @@ describe('use-agent-mutations', () => {
 
       await waitFor(() => {
         expect(mockShowToast).toHaveBeenCalledWith(
-          'Agent deleted successfully',
+          'agents.deleteSuccess',
           'success'
         );
       });
@@ -190,7 +190,7 @@ describe('use-agent-mutations', () => {
 
       await waitFor(() => {
         expect(mockShowToast).toHaveBeenCalledWith(
-          'Memory updated successfully',
+          'memories.updateSuccess',
           'success'
         );
       });
@@ -232,7 +232,7 @@ describe('use-agent-mutations', () => {
 
       await waitFor(() => {
         expect(mockShowToast).toHaveBeenCalledWith(
-          'Memory deleted successfully',
+          'memories.deleteSuccess',
           'success'
         );
       });

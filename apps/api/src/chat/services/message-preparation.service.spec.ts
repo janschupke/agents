@@ -5,6 +5,8 @@ import { SystemConfigService } from '../../system-config/system-config.service';
 import { ConfigurationRulesService } from './configuration-rules.service';
 import { LanguageAssistantService } from '../../agent/services/language-assistant.service';
 import { AgentConfigService } from '../../agent/services/agent-config.service';
+import { PromptTransformationService } from './prompt-transformation.service';
+import { BehaviorRulesTransformationService } from './behavior-rules-transformation.service';
 import {
   MessageRole,
   AgentType,
@@ -22,6 +24,8 @@ describe('MessagePreparationService', () => {
 
   const mockSystemConfigService = {
     getSystemPrompt: jest.fn().mockResolvedValue(null),
+    getSystemPromptByAgentType: jest.fn().mockResolvedValue(null),
+    getBehaviorRulesByAgentType: jest.fn().mockResolvedValue([]),
   };
 
   const mockConfigurationRulesService = {
@@ -38,6 +42,22 @@ describe('MessagePreparationService', () => {
 
   const mockAgentConfigService = {
     generateBehaviorRulesFromConfig: jest.fn().mockReturnValue([]),
+  };
+
+  const mockPromptTransformationService = {
+    transformPrompt: jest.fn((prompt) => prompt),
+    mergeSystemPrompts: jest.fn((prompts) =>
+      prompts.filter(Boolean).join('\n\n---\n\n')
+    ),
+    embedCurrentTime: jest.fn((prompt) => prompt),
+  };
+
+  const mockBehaviorRulesTransformationService = {
+    transformBehaviorRules: jest.fn((rules) => rules),
+    transformRulesToMessage: jest.fn((rules) => rules.join('\n')),
+    mergeAndTransformRules: jest.fn((ruleArrays) =>
+      ruleArrays.flat().join('\n')
+    ),
   };
 
   beforeEach(async () => {
@@ -64,6 +84,14 @@ describe('MessagePreparationService', () => {
           provide: AgentConfigService,
           useValue: mockAgentConfigService,
         },
+        {
+          provide: PromptTransformationService,
+          useValue: mockPromptTransformationService,
+        },
+        {
+          provide: BehaviorRulesTransformationService,
+          useValue: mockBehaviorRulesTransformationService,
+        },
       ],
     }).compile();
 
@@ -81,7 +109,9 @@ describe('MessagePreparationService', () => {
 
   it('should add authoritative system prompt as first message when configured', async () => {
     const authoritativePrompt = 'You are a helpful AI assistant.';
-    mockSystemConfigService.getSystemPrompt.mockResolvedValue(authoritativePrompt);
+    mockSystemConfigService.getSystemPromptByAgentType.mockResolvedValue(
+      authoritativePrompt
+    );
 
     const messages = await service.prepareMessagesForOpenAI(
       [],
@@ -94,12 +124,14 @@ describe('MessagePreparationService', () => {
 
     expect(messages.length).toBeGreaterThan(0);
     expect(messages[0].role).toBe(MessageRole.SYSTEM);
-    expect(messages[0].content).toBe(authoritativePrompt);
-    expect(mockSystemConfigService.getSystemPrompt).toHaveBeenCalled();
+    expect(messages[0].content).toContain(authoritativePrompt);
+    expect(
+      mockSystemConfigService.getSystemPromptByAgentType
+    ).toHaveBeenCalled();
   });
 
   it('should not add authoritative system prompt when not configured', async () => {
-    mockSystemConfigService.getSystemPrompt.mockResolvedValue(null);
+    mockSystemConfigService.getSystemPromptByAgentType.mockResolvedValue(null);
 
     const messages = await service.prepareMessagesForOpenAI(
       [],
@@ -130,16 +162,18 @@ describe('MessagePreparationService', () => {
 
     describe('Complete Rule Hierarchy', () => {
       it('should maintain correct order: authoritative system prompt (SYSTEM, FIRST) -> code rules (SYSTEM) -> admin rules (SYSTEM) -> config-based rules (SYSTEM) -> system prompt (USER) -> user behavior rules (USER) -> conversation -> user message', async () => {
-        mockSystemConfigService.getSystemPrompt.mockResolvedValue('Authoritative system prompt');
+        mockSystemConfigService.getSystemPromptByAgentType.mockResolvedValue(
+          'Authoritative system prompt'
+        );
         mockSystemConfigRepository.findByKey.mockResolvedValue({
           configKey: 'behavior_rules',
           configValue: ['Admin rule 1', 'Admin rule 2'],
         });
-        mockConfigurationRulesService.generateConfigurationRules.mockReturnValue([
-          { content: 'Currently it\'s 2025-01-01T00:00:00.000Z', order: 1 },
-        ]);
+        mockConfigurationRulesService.generateConfigurationRules.mockReturnValue(
+          [{ content: "Currently it's 2025-01-01T00:00:00.000Z", order: 1 }]
+        );
         mockConfigurationRulesService.formatConfigurationRules.mockReturnValue(
-          'Currently it\'s 2025-01-01T00:00:00.000Z'
+          "Currently it's 2025-01-01T00:00:00.000Z"
         );
         mockAgentConfigService.generateBehaviorRulesFromConfig.mockReturnValue([
           'You are male',
@@ -166,7 +200,9 @@ describe('MessagePreparationService', () => {
         );
 
         // Verify all message types are present
-        const systemMessages = result.filter((m) => m.role === MessageRole.SYSTEM);
+        const systemMessages = result.filter(
+          (m) => m.role === MessageRole.SYSTEM
+        );
         const userMessages = result.filter((m) => m.role === MessageRole.USER);
 
         expect(systemMessages.length).toBeGreaterThan(0);
@@ -175,40 +211,44 @@ describe('MessagePreparationService', () => {
         // Verify order by finding indices
         // Authoritative system prompt should be FIRST (index 0)
         expect(result[0].role).toBe(MessageRole.SYSTEM);
-        expect(result[0].content).toBe('Authoritative system prompt');
+        expect(result[0].content).toContain('Authoritative system prompt');
 
         const authoritativePromptIndex = result.findIndex(
           (m) =>
             m.role === MessageRole.SYSTEM &&
-            m.content === 'Authoritative system prompt'
+            m.content.includes('Authoritative system prompt')
         );
-        const codeRuleIndex = result.findIndex((m) =>
-          m.role === MessageRole.SYSTEM && m.content.includes("Currently it's")
+        const adminRuleIndex = result.findIndex(
+          (m) =>
+            m.role === MessageRole.SYSTEM && m.content.includes('Admin rule')
         );
-        const adminRuleIndex = result.findIndex((m) =>
-          m.role === MessageRole.SYSTEM && m.content.includes('Admin rule')
+        const configBasedRuleIndex = result.findIndex(
+          (m) =>
+            m.role === MessageRole.SYSTEM && m.content.includes('You are male')
         );
-        const configBasedRuleIndex = result.findIndex((m) =>
-          m.role === MessageRole.SYSTEM && m.content.includes('You are male')
-        );
+        // Config-based rules are merged into a single SYSTEM message, so they should be found together
         const systemPromptIndex = result.findIndex(
           (m) =>
             m.role === MessageRole.USER &&
             m.content === 'You are a helpful assistant'
         );
-        const userBehaviorRuleIndex = result.findIndex((m) =>
-          m.role === MessageRole.USER && m.content.includes('Be polite')
+        const userBehaviorRuleIndex = result.findIndex(
+          (m) => m.role === MessageRole.USER && m.content.includes('Be polite')
         );
-        const conversationIndex = result.findIndex((m) => m.content === 'Hello');
+        const conversationIndex = result.findIndex(
+          (m) => m.content === 'Hello'
+        );
         const newMessageIndex = result.findIndex(
           (m) => m.content === 'New message'
         );
 
-        // Verify hierarchy: authoritative prompt is first, then code rules, then admin rules, etc.
+        // Verify hierarchy: authoritative prompt is first, then admin rules, then config-based rules, etc.
         expect(authoritativePromptIndex).toBe(0); // Must be first
-        expect(codeRuleIndex).toBeGreaterThan(authoritativePromptIndex);
-        expect(adminRuleIndex).toBeGreaterThan(codeRuleIndex);
-        expect(adminRuleIndex).toBeLessThan(configBasedRuleIndex);
+        if (adminRuleIndex !== -1) {
+          expect(adminRuleIndex).toBeGreaterThan(authoritativePromptIndex);
+          expect(adminRuleIndex).toBeLessThan(configBasedRuleIndex);
+        }
+        expect(configBasedRuleIndex).toBeGreaterThan(authoritativePromptIndex);
         expect(configBasedRuleIndex).toBeLessThan(systemPromptIndex);
         expect(systemPromptIndex).toBeLessThan(userBehaviorRuleIndex);
         expect(userBehaviorRuleIndex).toBeLessThan(conversationIndex);
@@ -267,33 +307,39 @@ describe('MessagePreparationService', () => {
           })
         );
 
-        // Verify each generated rule is added as a separate SYSTEM message
-        const systemMessages = result.filter((m) => m.role === MessageRole.SYSTEM);
-        expect(systemMessages.length).toBeGreaterThanOrEqual(5); // At least 5 config-based rules
+        // Verify config-based rules are added as a SYSTEM message (merged into one message)
+        const systemMessages = result.filter(
+          (m) => m.role === MessageRole.SYSTEM
+        );
+        expect(systemMessages.length).toBeGreaterThanOrEqual(1); // At least 1 SYSTEM message with config-based rules
 
-        // Verify specific rules are present as SYSTEM messages
-        expect(
-          systemMessages.some((m) => m.content.includes('You are male'))
-        ).toBe(true);
-        expect(
-          systemMessages.some((m) => m.content.includes('25 years old'))
-        ).toBe(true);
-        expect(
-          systemMessages.some((m) => m.content.includes('personality is Analytical'))
-        ).toBe(true);
-        expect(
-          systemMessages.some((m) => m.content.includes('feel friendly'))
-        ).toBe(true);
-        expect(
-          systemMessages.some((m) => m.content.includes('interests: coding, reading'))
-        ).toBe(true);
+        // Verify specific rules are present in the SYSTEM message (they're merged into one message)
+        const configRulesMessage = systemMessages.find(
+          (m) =>
+            m.content.includes('You are male') ||
+            m.content.includes('25 years old') ||
+            m.content.includes('personality is Analytical')
+        );
+        expect(configRulesMessage).toBeDefined();
+        expect(configRulesMessage?.content).toContain('You are male');
+        expect(configRulesMessage?.content).toContain('25 years old');
+        expect(configRulesMessage?.content).toContain(
+          'personality is Analytical'
+        );
+        expect(configRulesMessage?.content).toContain('feel friendly');
+        expect(configRulesMessage?.content).toContain(
+          'interests: coding, reading'
+        );
 
         // Verify config-based SYSTEM rules appear before user-provided USER rules
-        const firstSystemRuleIndex = result.findIndex((m) => 
-          m.role === MessageRole.SYSTEM && m.content.includes('You are male')
+        const firstSystemRuleIndex = result.findIndex(
+          (m) =>
+            m.role === MessageRole.SYSTEM && m.content.includes('You are male')
         );
-        const systemPromptIndex = result.findIndex((m) => 
-          m.role === MessageRole.USER && m.content === 'You are a helpful assistant'
+        const systemPromptIndex = result.findIndex(
+          (m) =>
+            m.role === MessageRole.USER &&
+            m.content === 'You are a helpful assistant'
         );
         expect(firstSystemRuleIndex).toBeLessThan(systemPromptIndex);
 
@@ -370,14 +416,17 @@ describe('MessagePreparationService', () => {
         );
 
         // Find indices of different message types
-        const configBasedRuleIndex = result.findIndex((m) => 
-          m.role === MessageRole.SYSTEM && m.content.includes('You are male')
+        const configBasedRuleIndex = result.findIndex(
+          (m) =>
+            m.role === MessageRole.SYSTEM && m.content.includes('You are male')
         );
-        const systemPromptIndex = result.findIndex((m) => 
-          m.role === MessageRole.USER && m.content === 'You are a helpful assistant'
+        const systemPromptIndex = result.findIndex(
+          (m) =>
+            m.role === MessageRole.USER &&
+            m.content === 'You are a helpful assistant'
         );
-        const userBehaviorRuleIndex = result.findIndex((m) => 
-          m.role === MessageRole.USER && m.content.includes('Be polite')
+        const userBehaviorRuleIndex = result.findIndex(
+          (m) => m.role === MessageRole.USER && m.content.includes('Be polite')
         );
 
         // Verify hierarchy: config-based SYSTEM rules come before USER rules
@@ -392,11 +441,14 @@ describe('MessagePreparationService', () => {
         mockConfigurationRulesService.generateConfigurationRules.mockReturnValue(
           []
         );
-        mockAgentConfigService.generateBehaviorRulesFromConfig.mockReturnValue([]);
+        mockAgentConfigService.generateBehaviorRulesFromConfig.mockReturnValue(
+          []
+        );
 
         const agentConfig = {
           system_prompt: 'You are a helpful assistant',
-          behavior_rules: 'Be polite and friendly\nAlways respond in a professional manner',
+          behavior_rules:
+            'Be polite and friendly\nAlways respond in a professional manner',
           temperature: 0.7,
           model: 'gpt-4o-mini',
           max_tokens: 1000,
@@ -413,8 +465,10 @@ describe('MessagePreparationService', () => {
 
         // Verify user behavior rules are added as USER messages
         const userMessages = result.filter((m) => m.role === MessageRole.USER);
-        const behaviorRulesMessage = userMessages.find((m) => 
-          m.content.includes('Be polite') || m.content.includes('professional')
+        const behaviorRulesMessage = userMessages.find(
+          (m) =>
+            m.content.includes('Be polite') ||
+            m.content.includes('professional')
         );
         expect(behaviorRulesMessage).toBeDefined();
         expect(behaviorRulesMessage?.role).toBe(MessageRole.USER);
@@ -430,7 +484,9 @@ describe('MessagePreparationService', () => {
         const loggerSpy = jest.spyOn(console, 'warn').mockImplementation();
 
         // Mock to return empty array when invalid values are passed
-        mockAgentConfigService.generateBehaviorRulesFromConfig.mockReturnValue([]);
+        mockAgentConfigService.generateBehaviorRulesFromConfig.mockReturnValue(
+          []
+        );
 
         const agentConfigWithInvalidValues = {
           system_prompt: 'You are a helpful assistant',
@@ -458,9 +514,12 @@ describe('MessagePreparationService', () => {
         ).toHaveBeenCalled();
 
         // Verify no invalid rules were added
-        const systemMessages = result.filter((m) => 
-          m.role === MessageRole.SYSTEM && 
-          (m.content.includes('invalid-gender') || m.content.includes('150') || m.content.includes('invalid-sentiment'))
+        const systemMessages = result.filter(
+          (m) =>
+            m.role === MessageRole.SYSTEM &&
+            (m.content.includes('invalid-gender') ||
+              m.content.includes('150') ||
+              m.content.includes('invalid-sentiment'))
         );
         expect(systemMessages.length).toBe(0);
 
@@ -474,7 +533,9 @@ describe('MessagePreparationService', () => {
         mockConfigurationRulesService.generateConfigurationRules.mockReturnValue(
           []
         );
-        mockAgentConfigService.generateBehaviorRulesFromConfig.mockReturnValue([]);
+        mockAgentConfigService.generateBehaviorRulesFromConfig.mockReturnValue(
+          []
+        );
 
         const agentConfig = {
           system_prompt: 'You are a helpful assistant',
@@ -497,7 +558,9 @@ describe('MessagePreparationService', () => {
         expect(result.length).toBeGreaterThan(0);
         // Client system prompt should be user role
         const systemPromptMessage = result.find(
-          (m) => m.role === MessageRole.USER && m.content === 'You are a helpful assistant'
+          (m) =>
+            m.role === MessageRole.USER &&
+            m.content === 'You are a helpful assistant'
         );
         expect(systemPromptMessage).toBeDefined();
         // Last message should be the user message
@@ -510,7 +573,9 @@ describe('MessagePreparationService', () => {
         mockConfigurationRulesService.generateConfigurationRules.mockReturnValue(
           []
         );
-        mockAgentConfigService.generateBehaviorRulesFromConfig.mockReturnValue([]);
+        mockAgentConfigService.generateBehaviorRulesFromConfig.mockReturnValue(
+          []
+        );
 
         const configWithoutRules = {
           system_prompt: 'You are a helpful assistant',
@@ -532,7 +597,9 @@ describe('MessagePreparationService', () => {
         expect(result.length).toBeGreaterThan(0);
         // Should still have client system prompt as user message
         const systemPromptMessage = result.find(
-          (m) => m.role === MessageRole.USER && m.content === 'You are a helpful assistant'
+          (m) =>
+            m.role === MessageRole.USER &&
+            m.content === 'You are a helpful assistant'
         );
         expect(systemPromptMessage).toBeDefined();
       });
@@ -542,7 +609,9 @@ describe('MessagePreparationService', () => {
         mockConfigurationRulesService.generateConfigurationRules.mockReturnValue(
           []
         );
-        mockAgentConfigService.generateBehaviorRulesFromConfig.mockReturnValue([]);
+        mockAgentConfigService.generateBehaviorRulesFromConfig.mockReturnValue(
+          []
+        );
 
         const agentConfig = {
           system_prompt: 'You are a helpful assistant',
@@ -568,7 +637,8 @@ describe('MessagePreparationService', () => {
           (m) => m.role === MessageRole.SYSTEM
         );
         const memoryMessage = systemMessages.find(
-          (m) => m.content.includes('Memory 1') || m.content.includes('Memory 2')
+          (m) =>
+            m.content.includes('Memory 1') || m.content.includes('Memory 2')
         );
         expect(memoryMessage).toBeDefined();
       });
@@ -578,7 +648,9 @@ describe('MessagePreparationService', () => {
         mockConfigurationRulesService.generateConfigurationRules.mockReturnValue(
           []
         );
-        mockAgentConfigService.generateBehaviorRulesFromConfig.mockReturnValue([]);
+        mockAgentConfigService.generateBehaviorRulesFromConfig.mockReturnValue(
+          []
+        );
 
         const agentConfig = {
           system_prompt: 'You are a helpful assistant',

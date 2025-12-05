@@ -198,7 +198,11 @@ describe('OpenAIChatService', () => {
       expect(mockAiRequestLogService.logRequest).toHaveBeenCalledWith(
         'user-id',
         expect.any(Object),
-        mockCompletion
+        mockCompletion,
+        {
+          agentId: undefined,
+          logType: 'MESSAGE',
+        }
       );
     });
 

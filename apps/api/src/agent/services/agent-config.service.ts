@@ -1,7 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DEFAULT_AGENT_CONFIG } from '../../common/constants/api.constants';
 import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants';
-import { ResponseLength, Gender, Sentiment, NUMERIC_CONSTANTS } from '@openai/shared-types';
+import {
+  ResponseLength,
+  Gender,
+  Sentiment,
+  NUMERIC_CONSTANTS,
+} from '@openai/shared-types';
 import { PERSONALITY_TYPES, PersonalityType } from '@openai/shared-types';
 
 /**
@@ -38,17 +43,18 @@ export class AgentConfigService {
    * Generate behavior rules from agent config values with validation
    * Includes: gender, age, personality, sentiment, interests, response length
    * These rules use preset prompts and only accept legal enum values
-   * 
+   *
    * @param configs - Configuration object with validated enum values
    * @returns Array of rule strings (preset prompts)
    */
-  generateBehaviorRulesFromConfig(
-    configs: Record<string, unknown>
-  ): string[] {
+  generateBehaviorRulesFromConfig(configs: Record<string, unknown>): string[] {
     const rules: string[] = [];
 
     // Response length - validate against enum
-    if (configs.response_length !== undefined && configs.response_length !== null) {
+    if (
+      configs.response_length !== undefined &&
+      configs.response_length !== null
+    ) {
       const responseLength = configs.response_length as string;
       const validValues = Object.values(ResponseLength);
       if (validValues.includes(responseLength as ResponseLength)) {
@@ -72,7 +78,11 @@ export class AgentConfigService {
     // Age - validate range (0-100)
     if (configs.age !== undefined && configs.age !== null) {
       const age = Number(configs.age);
-      if (!isNaN(age) && age >= NUMERIC_CONSTANTS.AGE_MIN && age <= NUMERIC_CONSTANTS.AGE_MAX) {
+      if (
+        !isNaN(age) &&
+        age >= NUMERIC_CONSTANTS.AGE_MIN &&
+        age <= NUMERIC_CONSTANTS.AGE_MAX
+      ) {
         if (age < 13) {
           rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.CHILD(age));
         } else if (age < 18) {
@@ -87,7 +97,9 @@ export class AgentConfigService {
           rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.ELDER(age));
         }
       } else {
-        this.logger.warn(`Invalid age value: ${configs.age}. Must be a number between ${NUMERIC_CONSTANTS.AGE_MIN} and ${NUMERIC_CONSTANTS.AGE_MAX}`);
+        this.logger.warn(
+          `Invalid age value: ${configs.age}. Must be a number between ${NUMERIC_CONSTANTS.AGE_MIN} and ${NUMERIC_CONSTANTS.AGE_MAX}`
+        );
       }
     }
 
@@ -109,9 +121,7 @@ export class AgentConfigService {
     if (configs.personality !== undefined && configs.personality !== null) {
       const personality = configs.personality as string;
       if (PERSONALITY_TYPES.includes(personality as PersonalityType)) {
-        rules.push(
-          OPENAI_PROMPTS.CONFIG_BASED_RULES.PERSONALITY(personality)
-        );
+        rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.PERSONALITY(personality));
       } else {
         this.logger.warn(
           `Invalid personality value: ${personality}. Valid values: ${PERSONALITY_TYPES.join(', ')}`
@@ -136,8 +146,14 @@ export class AgentConfigService {
     }
 
     // Interests - validate array of strings
-    if (configs.interests && Array.isArray(configs.interests) && configs.interests.length > 0) {
-      const interests = configs.interests.filter((i): i is string => typeof i === 'string');
+    if (
+      configs.interests &&
+      Array.isArray(configs.interests) &&
+      configs.interests.length > 0
+    ) {
+      const interests = configs.interests.filter(
+        (i): i is string => typeof i === 'string'
+      );
       if (interests.length > 0) {
         const interestsList = interests.join(', ');
         rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.INTERESTS(interestsList));

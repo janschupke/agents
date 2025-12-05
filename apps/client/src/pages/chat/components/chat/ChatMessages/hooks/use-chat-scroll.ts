@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
 interface UseChatScrollOptions {
   messages: unknown[];
@@ -35,52 +35,58 @@ export function useChatScroll({
   /**
    * Scroll to bottom using the most reliable method available
    */
-  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
-    const container = messagesContainerRef?.current;
-    const endElement = messagesEndRef.current;
+  const scrollToBottom = useCallback(
+    (behavior: ScrollBehavior = 'smooth') => {
+      const container = messagesContainerRef?.current;
+      const endElement = messagesEndRef.current;
 
-    if (container) {
-      // Use container's scrollTo for more reliable scrolling
-      // Use a small offset to ensure we're truly at the bottom
-      const targetScroll = container.scrollHeight;
-      container.scrollTo({
-        top: targetScroll,
-        behavior,
-      });
-      // Also set scrollTop directly as a fallback (for instant scroll)
-      if (behavior === 'auto') {
-        container.scrollTop = targetScroll;
+      if (container) {
+        // Use container's scrollTo for more reliable scrolling
+        // Use a small offset to ensure we're truly at the bottom
+        const targetScroll = container.scrollHeight;
+        container.scrollTo({
+          top: targetScroll,
+          behavior,
+        });
+        // Also set scrollTop directly as a fallback (for instant scroll)
+        if (behavior === 'auto') {
+          container.scrollTop = targetScroll;
+        }
+      } else if (endElement) {
+        // Fallback to scrollIntoView
+        endElement.scrollIntoView({ behavior });
       }
-    } else if (endElement) {
-      // Fallback to scrollIntoView
-      endElement.scrollIntoView({ behavior });
-    }
-  };
+    },
+    [messagesContainerRef]
+  );
 
   /**
    * Schedule multiple scroll attempts with increasing delays
    * This handles cases where content is still rendering/expanding
    */
-  const scheduleScrollAttempts = (behavior: ScrollBehavior = 'smooth') => {
-    // Clear any existing timeouts
-    scrollTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout));
-    scrollTimeoutsRef.current = [];
+  const scheduleScrollAttempts = useCallback(
+    (behavior: ScrollBehavior = 'smooth') => {
+      // Clear any existing timeouts
+      scrollTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout));
+      scrollTimeoutsRef.current = [];
 
-    // Immediate scroll
-    requestAnimationFrame(() => {
-      scrollToBottom(behavior);
-    });
-
-    // Additional attempts with increasing delays to catch late-rendering content
-    // Longer delays to account for markdown rendering, image loading, etc.
-    const delays = [150, 300, 600, 1000];
-    delays.forEach((delay) => {
-      const timeout = setTimeout(() => {
+      // Immediate scroll
+      requestAnimationFrame(() => {
         scrollToBottom(behavior);
-      }, delay);
-      scrollTimeoutsRef.current.push(timeout);
-    });
-  };
+      });
+
+      // Additional attempts with increasing delays to catch late-rendering content
+      // Longer delays to account for markdown rendering, image loading, etc.
+      const delays = [150, 300, 600, 1000];
+      delays.forEach((delay) => {
+        const timeout = setTimeout(() => {
+          scrollToBottom(behavior);
+        }, delay);
+        scrollTimeoutsRef.current.push(timeout);
+      });
+    },
+    [scrollToBottom]
+  );
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -110,7 +116,7 @@ export function useChatScroll({
     }
 
     previousMessageCountRef.current = messageCount;
-  }, [messages]);
+  }, [messages, scheduleScrollAttempts, scrollToBottom]);
 
   // Use ResizeObserver and MutationObserver to detect content changes and scroll accordingly
   useEffect(() => {
@@ -173,7 +179,7 @@ export function useChatScroll({
       scrollTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout));
       scrollTimeoutsRef.current = [];
     };
-  }, [messagesContainerRef, messages.length]);
+  }, [messagesContainerRef, messages.length, scrollToBottom]);
 
   // Scroll to bottom when typing indicator appears
   useEffect(() => {
@@ -186,7 +192,7 @@ export function useChatScroll({
       scheduleScrollAttempts('smooth');
     }
     previousTypingIndicatorRef.current = showTypingIndicator;
-  }, [showTypingIndicator]);
+  }, [showTypingIndicator, scheduleScrollAttempts]);
 
   // Reset initial load flag when session changes
   useEffect(() => {

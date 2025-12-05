@@ -106,7 +106,10 @@ export class ChatService {
 
     // Load only the 20 most recent messages for initial chat load
     const { messages: messageRecords, hasMore } =
-      await this.messageRepository.findRecentMessagesBySessionId(session.id, 20);
+      await this.messageRepository.findRecentMessagesBySessionId(
+        session.id,
+        20
+      );
 
     this.logger.debug(
       `Loaded ${messageRecords.length} messages for session ${session.id}${hasMore ? ' (more available)' : ''}`
@@ -126,11 +129,14 @@ export class ChatService {
       .filter((m) => m.role === MessageRole.ASSISTANT)
       .map((m) => m.id);
 
-    let wordTranslations = new Map<number, Array<{
-      originalWord: string;
-      translation: string;
-      sentenceContext?: string;
-    }>>();
+    let wordTranslations = new Map<
+      number,
+      Array<{
+        originalWord: string;
+        translation: string;
+        sentenceContext?: string;
+      }>
+    >();
     let savedWordMatches: Array<{
       originalWord: string;
       savedWordId: number;

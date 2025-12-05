@@ -97,7 +97,7 @@ describe('useChatScroll', () => {
 
     await waitFor(
       () => {
-        expect(mockScrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth' });
+        expect(mockScrollIntoView).toHaveBeenCalledWith({ behavior: 'auto' });
       },
       { timeout: 200 }
     );

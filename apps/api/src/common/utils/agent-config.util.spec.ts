@@ -71,7 +71,7 @@ describe('mapAgentConfigs', () => {
       response_length: ResponseLength.SHORT,
       age: 25,
       gender: Gender.MALE,
-      personality: PERSONALITY_TYPES[0] as typeof PERSONALITY_TYPES[number],
+      personality: PERSONALITY_TYPES[0] as (typeof PERSONALITY_TYPES)[number],
       sentiment: Sentiment.NEUTRAL,
       interests: ['coding', 'reading'],
       availability: Availability.AVAILABLE,

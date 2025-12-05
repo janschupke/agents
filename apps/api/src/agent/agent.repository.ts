@@ -219,7 +219,8 @@ export class AgentRepository {
       ) {
         updateData.behaviorRules = Prisma.JsonNull;
       } else {
-        updateData.behaviorRules = configs.behavior_rules as Prisma.InputJsonValue;
+        updateData.behaviorRules =
+          configs.behavior_rules as Prisma.InputJsonValue;
       }
     }
     if (configs.model !== undefined) {

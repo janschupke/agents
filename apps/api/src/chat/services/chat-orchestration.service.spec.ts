@@ -224,29 +224,35 @@ describe('ChatOrchestrationService', () => {
         message,
       });
 
-      expect(mockWordTranslationService.saveExtractedTranslations).not.toHaveBeenCalled();
+      expect(
+        mockWordTranslationService.saveExtractedTranslations
+      ).not.toHaveBeenCalled();
       expect(mockWordTranslationService.saveParsedWords).not.toHaveBeenCalled();
-      expect(mockWordTranslationService.parseWordsInMessage).not.toHaveBeenCalled();
-      expect(mockWordTranslationService.getWordTranslationsForMessage).not.toHaveBeenCalled();
+      expect(
+        mockWordTranslationService.parseWordsInMessage
+      ).not.toHaveBeenCalled();
+      expect(
+        mockWordTranslationService.getWordTranslationsForMessage
+      ).not.toHaveBeenCalled();
       expect(mockSavedWordService.findMatchingWords).not.toHaveBeenCalled();
     });
 
     it('should save translations and retrieve words for language assistant agents', async () => {
-      const extractedWords = [
-        { originalWord: '你好', translation: 'hello' },
-      ];
+      const extractedWords = [{ originalWord: '你好', translation: 'hello' }];
       const extractedTranslation = 'Hello';
 
       mockLanguageAssistantService.isLanguageAssistant.mockReturnValue(true);
-      mockTranslationExtractionService.extractTranslationsFromResponse.mockReturnValue({
-        words: extractedWords,
-        fullTranslation: extractedTranslation,
-        cleanedResponse: '你好',
-        extracted: true,
-      });
-      mockWordTranslationService.getWordTranslationsForMessage.mockResolvedValue([
-        { originalWord: '你好', translation: 'hello' },
-      ]);
+      mockTranslationExtractionService.extractTranslationsFromResponse.mockReturnValue(
+        {
+          words: extractedWords,
+          fullTranslation: extractedTranslation,
+          cleanedResponse: '你好',
+          extracted: true,
+        }
+      );
+      mockWordTranslationService.getWordTranslationsForMessage.mockResolvedValue(
+        [{ originalWord: '你好', translation: 'hello' }]
+      );
       mockSavedWordService.findMatchingWords.mockResolvedValue([
         {
           originalWord: '你好',
@@ -262,7 +268,9 @@ describe('ChatOrchestrationService', () => {
         message,
       });
 
-      expect(mockWordTranslationService.saveExtractedTranslations).toHaveBeenCalled();
+      expect(
+        mockWordTranslationService.saveExtractedTranslations
+      ).toHaveBeenCalled();
       // When translations are extracted, getWordTranslationsForMessage is not called
       // Instead, extracted words are used directly
       expect(mockSavedWordService.findMatchingWords).toHaveBeenCalledWith(
