@@ -19,7 +19,7 @@ import { MessagePreparationService } from './services/message-preparation.servic
 import { OpenAIChatService } from './services/openai-chat.service';
 import { ChatOrchestrationService } from './services/chat-orchestration.service';
 import { LanguageAssistantService } from '../agent/services/language-assistant.service';
-import { AgentType } from '../common/enums/agent-type.enum';
+import { AgentType } from '@openai/shared-types';
 
 describe('ChatService', () => {
   let service: ChatService;

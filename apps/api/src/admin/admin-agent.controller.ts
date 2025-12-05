@@ -16,7 +16,7 @@ import { UseGuards } from '@nestjs/common';
 import { RolesGuard } from '../auth/roles.guard';
 import { UpdateAgentDto } from '../common/dto/agent.dto';
 import { AgentResponse } from '../common/interfaces/agent.interface';
-import { AgentType } from '../common/enums/agent-type.enum';
+import { AgentType } from '@openai/shared-types';
 import { API_ROUTES } from '../common/constants/api-routes.constants.js';
 import { UpdateMemoryDto } from '../common/dto/message-translation.dto';
 import {

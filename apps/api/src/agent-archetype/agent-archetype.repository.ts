@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { SortOrder } from '@openai/shared-types';
 import { AgentArchetype, AgentType } from '@prisma/client';
 import {
   CreateAgentArchetypeDto,
@@ -12,7 +13,7 @@ export class AgentArchetypeRepository {
 
   async findAll(): Promise<AgentArchetype[]> {
     return this.prisma.agentArchetype.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: SortOrder.DESC },
     });
   }
 

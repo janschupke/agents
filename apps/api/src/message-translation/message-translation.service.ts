@@ -7,7 +7,7 @@ import { ApiCredentialsService } from '../api-credentials/api-credentials.servic
 import { WordTranslationService } from './word-translation.service';
 import { TranslationStrategyFactory } from './translation-strategy.factory';
 import { TranslationContext } from './translation-strategy.interface';
-import { MessageRole } from '../common/enums/message-role.enum';
+import { MessageRole, messageRoleToOpenAI } from '@openai/shared-types';
 import { OPENAI_PROMPTS } from '../common/constants/openai-prompts.constants.js';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
 import { MAGIC_STRINGS } from '../common/constants/error-messages.constants.js';
@@ -158,11 +158,11 @@ export class MessageTranslationService {
       model: OPENAI_MODELS.TRANSLATION,
       messages: [
         {
-          role: 'system',
+          role: messageRoleToOpenAI(MessageRole.SYSTEM),
           content: OPENAI_PROMPTS.TRANSLATION.SYSTEM,
         },
         {
-          role: 'user',
+          role: messageRoleToOpenAI(MessageRole.USER),
           content: prompt,
         },
       ],
@@ -183,11 +183,11 @@ export class MessageTranslationService {
         model: OPENAI_MODELS.TRANSLATION,
         messages: [
           {
-            role: 'system',
+            role: messageRoleToOpenAI(MessageRole.SYSTEM),
             content: OPENAI_PROMPTS.TRANSLATION.SYSTEM,
           },
           {
-            role: 'user',
+            role: messageRoleToOpenAI(MessageRole.USER),
             content: prompt,
           },
         ],

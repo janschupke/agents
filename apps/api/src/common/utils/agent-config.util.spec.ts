@@ -1,9 +1,9 @@
 import { mapAgentConfigs } from './agent-config.util';
 import { AgentConfigDto } from '../dto/agent.dto';
-import { ResponseLength } from '../enums/response-length.enum';
-import { Gender } from '../enums/gender.enum';
-import { Sentiment } from '../enums/sentiment.enum';
-import { Availability } from '../enums/availability.enum';
+import { ResponseLength } from '@openai/shared-types';
+import { Gender } from '@openai/shared-types';
+import { Sentiment } from '@openai/shared-types';
+import { Availability } from '@openai/shared-types';
 import { PERSONALITY_TYPES } from '@openai/shared-types';
 
 describe('mapAgentConfigs', () => {

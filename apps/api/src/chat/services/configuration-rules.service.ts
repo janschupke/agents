@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AgentWithConfig } from '../../common/interfaces/agent.interface';
 import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants';
-import { ResponseLength } from '../../common/enums/response-length.enum';
-import { Gender } from '../../common/enums/gender.enum';
-import { Sentiment } from '../../common/enums/sentiment.enum';
+import { ResponseLength, Gender, Sentiment } from '@openai/shared-types';
 
 interface ConfigurationRule {
   content: string;

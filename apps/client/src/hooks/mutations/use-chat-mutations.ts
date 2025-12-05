@@ -2,10 +2,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { MessageService } from '../../services/chat/message/message.service';
 import { queryKeys } from '../queries/query-keys';
 import { useToast } from '../../contexts/ToastContext';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 export function useSendMessage() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return useMutation({
     mutationFn: ({
@@ -40,7 +42,7 @@ export function useSendMessage() {
       });
     },
     onError: (error: { message?: string }) => {
-      showToast(error.message || 'Failed to send message', 'error');
+      showToast(error.message || t('chat.errors.sendMessageError'), 'error');
     },
   });
 }

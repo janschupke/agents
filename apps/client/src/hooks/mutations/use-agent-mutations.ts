@@ -5,22 +5,24 @@ import { MemoryService } from '../../services/memory/memory.service';
 import { CreateAgentRequest, UpdateAgentRequest } from '../../types/chat.types';
 import { queryKeys } from '../queries/query-keys';
 import { useToast } from '../../contexts/ToastContext';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 export function useCreateAgent() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return useMutation({
     mutationFn: (data: CreateAgentRequest) => AgentService.createAgent(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.all });
-      showToast('Agent created successfully', 'success');
+      showToast(t('agents.createSuccess'), 'success');
     },
     onError: (error: unknown) => {
       const errorMessage =
         (error && typeof error === 'object' && 'message' in error
           ? String(error.message)
-          : null) || 'Failed to create agent';
+          : null) || t('agents.createError');
       showToast(errorMessage, 'error');
     },
   });
@@ -29,6 +31,7 @@ export function useCreateAgent() {
 export function useUpdateAgent() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return useMutation({
     mutationFn: ({
@@ -43,13 +46,13 @@ export function useUpdateAgent() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.agents.detail(data.id),
       });
-      showToast('Agent updated successfully', 'success');
+      showToast(t('agents.updateSuccess'), 'success');
     },
     onError: (error: unknown) => {
       const errorMessage =
         (error && typeof error === 'object' && 'message' in error
           ? String(error.message)
-          : null) || 'Failed to update agent';
+          : null) || t('agents.updateError');
       showToast(errorMessage, 'error');
     },
   });
@@ -58,18 +61,19 @@ export function useUpdateAgent() {
 export function useDeleteAgent() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return useMutation({
     mutationFn: (agentId: number) => AgentService.deleteAgent(agentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.all });
-      showToast('Agent deleted successfully', 'success');
+      showToast(t('agents.deleteSuccess'), 'success');
     },
     onError: (error: unknown) => {
       const errorMessage =
         (error && typeof error === 'object' && 'message' in error
           ? String(error.message)
-          : null) || 'Failed to delete agent';
+          : null) || t('agents.deleteError');
       showToast(errorMessage, 'error');
     },
   });
@@ -78,6 +82,7 @@ export function useDeleteAgent() {
 export function useCreateSession() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return useMutation({
     mutationFn: (agentId: number) => SessionService.createSession(agentId),
@@ -88,10 +93,10 @@ export function useCreateSession() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.chat.sessions(agentId),
       });
-      showToast('Session created successfully', 'success');
+      showToast(t('sessions.createSuccess'), 'success');
     },
     onError: (error: { message?: string }) => {
-      showToast(error.message || 'Failed to create session', 'error');
+      showToast(error.message || t('sessions.createError'), 'error');
     },
   });
 }
@@ -99,6 +104,7 @@ export function useCreateSession() {
 export function useUpdateSession() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return useMutation({
     mutationFn: ({
@@ -123,10 +129,10 @@ export function useUpdateSession() {
           variables.sessionId
         ),
       });
-      showToast('Session updated successfully', 'success');
+      showToast(t('sessions.updateSuccess'), 'success');
     },
     onError: (error: { message?: string }) => {
-      showToast(error.message || 'Failed to update session', 'error');
+      showToast(error.message || t('sessions.updateError'), 'error');
     },
   });
 }
@@ -134,6 +140,7 @@ export function useUpdateSession() {
 export function useDeleteSession() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return useMutation({
     mutationFn: ({
@@ -156,10 +163,10 @@ export function useDeleteSession() {
           variables.sessionId
         ),
       });
-      showToast('Session deleted successfully', 'success');
+      showToast(t('sessions.deleteSuccess'), 'success');
     },
     onError: (error: { message?: string }) => {
-      showToast(error.message || 'Failed to delete session', 'error');
+      showToast(error.message || t('sessions.deleteError'), 'error');
     },
   });
 }
@@ -167,6 +174,7 @@ export function useDeleteSession() {
 export function useUpdateMemory() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return useMutation({
     mutationFn: ({
@@ -182,10 +190,10 @@ export function useUpdateMemory() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.agents.memories(variables.agentId),
       });
-      showToast('Memory updated successfully', 'success');
+      showToast(t('memories.updateSuccess'), 'success');
     },
     onError: (error: { message?: string }) => {
-      showToast(error.message || 'Failed to update memory', 'error');
+      showToast(error.message || t('memories.updateError'), 'error');
     },
   });
 }
@@ -193,6 +201,7 @@ export function useUpdateMemory() {
 export function useDeleteMemory() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return useMutation({
     mutationFn: ({
@@ -206,10 +215,10 @@ export function useDeleteMemory() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.agents.memories(variables.agentId),
       });
-      showToast('Memory deleted successfully', 'success');
+      showToast(t('memories.deleteSuccess'), 'success');
     },
     onError: (error: { message?: string }) => {
-      showToast(error.message || 'Failed to delete memory', 'error');
+      showToast(error.message || t('memories.deleteError'), 'error');
     },
   });
 }

@@ -1,9 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AgentConfigService } from './agent-config.service';
-import { ResponseLength } from '../../common/enums/response-length.enum';
-import { Gender } from '../../common/enums/gender.enum';
-import { Sentiment } from '../../common/enums/sentiment.enum';
-import { PERSONALITY_TYPES } from '@openai/shared-types';
+import {
+  ResponseLength,
+  Gender,
+  Sentiment,
+  PERSONALITY_TYPES,
+} from '@openai/shared-types';
 
 describe('AgentConfigService', () => {
   let service: AgentConfigService;

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { MessageRole } from '../common/enums/message-role.enum';
+import { MessageRole } from '@openai/shared-types';
 import { TranslationStrategy } from './translation-strategy.interface';
 import { InitialTranslationStrategy } from './strategies/initial-translation.strategy';
 import { OnDemandTranslationStrategy } from './strategies/on-demand-translation.strategy';

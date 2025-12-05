@@ -11,6 +11,7 @@ import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants.
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants.js';
 import { OPENAI_MODELS } from '../../common/constants/api.constants.js';
 import { AiRequestLogService } from '../../ai-request-log/ai-request-log.service';
+import { MessageRole, messageRoleToOpenAI } from '@openai/shared-types';
 
 /**
  * Strategy for translating assistant messages with conversation context
@@ -115,11 +116,11 @@ Return ONLY the JSON object, no additional text.`;
         model: OPENAI_MODELS.TRANSLATION,
         messages: [
           {
-            role: 'system',
+            role: messageRoleToOpenAI(MessageRole.SYSTEM),
             content: OPENAI_PROMPTS.WORD_TRANSLATION.SYSTEM,
           },
           {
-            role: 'user',
+            role: messageRoleToOpenAI(MessageRole.USER),
             content: prompt,
           },
         ],

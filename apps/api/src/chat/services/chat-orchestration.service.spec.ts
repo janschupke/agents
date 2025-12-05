@@ -12,8 +12,7 @@ import { SavedWordService } from '../../saved-word/saved-word.service';
 import { MessagePreparationService } from './message-preparation.service';
 import { OpenAIChatService } from './openai-chat.service';
 import { TranslationExtractionService } from './translation-extraction.service';
-import { AgentType } from '../../common/enums/agent-type.enum';
-import { MessageRole } from '../../common/enums/message-role.enum';
+import { AgentType, MessageRole } from '@openai/shared-types';
 import { ApiKeyRequiredException } from '../../common/exceptions';
 import type OpenAI from 'openai';
 

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MessageRole } from '../../common/enums/message-role.enum';
+import { MessageRole } from '@openai/shared-types';
 
 export interface RulesTransformOptions {
   role?: MessageRole; // 'system' | 'user' - affects formatting

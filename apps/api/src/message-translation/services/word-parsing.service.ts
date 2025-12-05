@@ -4,6 +4,7 @@ import { OPENAI_MODELS } from '../../common/constants/api.constants.js';
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants.js';
 import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants.js';
 import { WordTranslation } from '../message-word-translation.repository';
+import { MessageRole, messageRoleToOpenAI } from '@openai/shared-types';
 
 /**
  * Service responsible for parsing words from messages
@@ -89,11 +90,11 @@ Return ONLY the JSON object, no additional text.`;
         model: OPENAI_MODELS.TRANSLATION,
         messages: [
           {
-            role: 'system',
+            role: messageRoleToOpenAI(MessageRole.SYSTEM),
             content: OPENAI_PROMPTS.WORD_PARSING.SYSTEM,
           },
           {
-            role: 'user',
+            role: messageRoleToOpenAI(MessageRole.USER),
             content: prompt,
           },
         ],

@@ -1,5 +1,5 @@
 import { IsOptional, IsArray, IsString, IsEnum } from 'class-validator';
-import { AgentType } from '../enums/agent-type.enum';
+import { AgentType } from '@openai/shared-types';
 
 export class UpdateSystemConfigDto {
   @IsOptional()

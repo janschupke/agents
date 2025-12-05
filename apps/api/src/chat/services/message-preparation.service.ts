@@ -1,16 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MessageRole } from '../../common/enums/message-role.enum';
+import {
+  MessageRole,
+  AgentType,
+  ResponseLength,
+  Gender,
+  Sentiment,
+  PersonalityType,
+} from '@openai/shared-types';
 import { BehaviorRulesUtil } from '../../common/utils/behavior-rules.util';
 import { SystemConfigService } from '../../system-config/system-config.service';
 import { LanguageAssistantService } from '../../agent/services/language-assistant.service';
 import { AgentConfigService } from '../../agent/services/agent-config.service';
-import { AgentType } from '../../common/enums/agent-type.enum';
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants';
 import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants';
-import { ResponseLength } from '../../common/enums/response-length.enum';
-import { Gender } from '../../common/enums/gender.enum';
-import { Sentiment } from '../../common/enums/sentiment.enum';
-import { PersonalityType } from '@openai/shared-types';
 import { PromptTransformationService } from './prompt-transformation.service';
 import { BehaviorRulesTransformationService } from './behavior-rules-transformation.service';
 import type { AgentArchetype } from '@prisma/client';

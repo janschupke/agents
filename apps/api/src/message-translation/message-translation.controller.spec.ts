@@ -5,7 +5,7 @@ import { MessageTranslationService } from './message-translation.service';
 import { WordTranslationService } from './word-translation.service';
 import { MessageRepository } from '../message/message.repository';
 import { SessionRepository } from '../session/session.repository';
-import { MessageRole } from '../common/enums/message-role.enum';
+import { MessageRole } from '@openai/shared-types';
 
 describe('MessageTranslationController', () => {
   let controller: MessageTranslationController;

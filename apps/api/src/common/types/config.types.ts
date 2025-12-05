@@ -1,9 +1,11 @@
-import { AgentType } from '../enums/agent-type.enum';
-import { ResponseLength } from '../enums/response-length.enum';
-import { Gender } from '../enums/gender.enum';
-import { Sentiment } from '../enums/sentiment.enum';
-import { Availability } from '../enums/availability.enum';
-import { PersonalityType } from '@openai/shared-types';
+import {
+  AgentType,
+  ResponseLength,
+  Gender,
+  Sentiment,
+  Availability,
+  PersonalityType,
+} from '@openai/shared-types';
 
 /**
  * Agent configuration interface

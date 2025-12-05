@@ -5,11 +5,13 @@ import { SystemConfigService } from '../../system-config/system-config.service';
 import { ConfigurationRulesService } from './configuration-rules.service';
 import { LanguageAssistantService } from '../../agent/services/language-assistant.service';
 import { AgentConfigService } from '../../agent/services/agent-config.service';
-import { MessageRole } from '../../common/enums/message-role.enum';
-import { AgentType } from '../../common/enums/agent-type.enum';
-import { ResponseLength } from '../../common/enums/response-length.enum';
-import { Gender } from '../../common/enums/gender.enum';
-import { Sentiment } from '../../common/enums/sentiment.enum';
+import {
+  MessageRole,
+  AgentType,
+  ResponseLength,
+  Gender,
+  Sentiment,
+} from '@openai/shared-types';
 
 describe('MessagePreparationService', () => {
   let service: MessagePreparationService;

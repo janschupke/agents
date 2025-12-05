@@ -1,8 +1,5 @@
-export enum MessageRole {
-  USER = 'USER',
-  ASSISTANT = 'ASSISTANT',
-  SYSTEM = 'SYSTEM',
-}
+// MessageRole is now imported from @openai/shared-types
+export type { MessageRole } from '@openai/shared-types';
 
 export interface WordTranslation {
   originalWord: string;
@@ -70,7 +67,7 @@ export interface SendMessageResponse {
   }>; // Saved word matches for highlighting
 }
 
-import { AgentType } from './agent.types';
+import { AgentType } from '@openai/shared-types';
 
 export interface Agent {
   id: number;

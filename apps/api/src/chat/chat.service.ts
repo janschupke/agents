@@ -4,7 +4,7 @@ import { MessageRepository } from '../message/message.repository';
 import { MessageTranslationService } from '../message-translation/message-translation.service';
 import { WordTranslationService } from '../message-translation/word-translation.service';
 import { SavedWordService } from '../saved-word/saved-word.service';
-import { MessageRole } from '../common/enums/message-role.enum';
+import { MessageRole } from '@openai/shared-types';
 import {
   SessionResponseDto,
   ChatHistoryResponseDto,

@@ -11,18 +11,21 @@ import {
   IsArray,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { AgentType } from '../enums/agent-type.enum';
-import { ResponseLength } from '../enums/response-length.enum';
-import { Gender } from '../enums/gender.enum';
-import { Sentiment } from '../enums/sentiment.enum';
-import { Availability } from '../enums/availability.enum';
-import { PersonalityType } from '@openai/shared-types';
+import {
+  AgentType,
+  ResponseLength,
+  Gender,
+  Sentiment,
+  Availability,
+  PersonalityType,
+  NUMERIC_CONSTANTS,
+} from '@openai/shared-types';
 
 export class AgentConfigDto {
   @IsOptional()
   @IsNumber()
-  @Min(0)
-  @Max(2)
+  @Min(NUMERIC_CONSTANTS.TEMPERATURE_MIN)
+  @Max(NUMERIC_CONSTANTS.TEMPERATURE_MAX)
   temperature?: number;
 
   @IsOptional()
@@ -47,8 +50,8 @@ export class AgentConfigDto {
 
   @IsOptional()
   @IsNumber()
-  @Min(0)
-  @Max(100)
+  @Min(NUMERIC_CONSTANTS.AGE_MIN)
+  @Max(NUMERIC_CONSTANTS.AGE_MAX)
   age?: number;
 
   @IsOptional()

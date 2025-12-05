@@ -3,7 +3,7 @@ import { HttpException } from '@nestjs/common';
 import { OpenAIChatService } from './openai-chat.service';
 import { OpenAIService } from '../../openai/openai.service';
 import { AiRequestLogService } from '../../ai-request-log/ai-request-log.service';
-import { MessageRole } from '../../common/enums/message-role.enum';
+import { MessageRole } from '@openai/shared-types';
 import { OPENAI_MODELS } from '../../common/constants/api.constants';
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants';
 import type OpenAI from 'openai';

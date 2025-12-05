@@ -13,17 +13,19 @@ import { AgentMemoryService } from '../../memory/agent-memory.service';
 import { ApiCredentialsService } from '../../api-credentials/api-credentials.service';
 import { WordTranslationService } from '../../message-translation/word-translation.service';
 import { SavedWordService } from '../../saved-word/saved-word.service';
-import { MessageRole } from '../../common/enums/message-role.enum';
+import {
+  MessageRole,
+  ResponseLength,
+  Gender,
+  Sentiment,
+  PersonalityType,
+} from '@openai/shared-types';
 import { MEMORY_CONFIG } from '../../common/constants/api.constants.js';
 import { MAGIC_STRINGS } from '../../common/constants/error-messages.constants.js';
 import {
   MessagePreparationService,
   AgentConfig,
 } from './message-preparation.service';
-import { ResponseLength } from '../../common/enums/response-length.enum';
-import { Gender } from '../../common/enums/gender.enum';
-import { Sentiment } from '../../common/enums/sentiment.enum';
-import { PersonalityType } from '@openai/shared-types';
 import { OpenAIChatService } from './openai-chat.service';
 import { TranslationExtractionService } from './translation-extraction.service';
 import { AgentWithConfig } from '../../common/interfaces/agent.interface';

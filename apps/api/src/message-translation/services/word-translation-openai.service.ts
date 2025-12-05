@@ -5,6 +5,7 @@ import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants.
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants.js';
 import { AiRequestLogService } from '../../ai-request-log/ai-request-log.service';
 import { WordTranslation } from '../message-word-translation.repository';
+import { MessageRole, messageRoleToOpenAI } from '@openai/shared-types';
 
 /**
  * Service responsible for translating words using OpenAI
@@ -61,11 +62,11 @@ Return ONLY the JSON object, no additional text.`;
         model: OPENAI_MODELS.TRANSLATION,
         messages: [
           {
-            role: 'system',
+            role: messageRoleToOpenAI(MessageRole.SYSTEM),
             content: OPENAI_PROMPTS.WORD_TRANSLATION.SYSTEM,
           },
           {
-            role: 'user',
+            role: messageRoleToOpenAI(MessageRole.USER),
             content: prompt,
           },
         ],
@@ -168,11 +169,11 @@ Return ONLY the JSON object, no additional text.`;
         model: OPENAI_MODELS.TRANSLATION,
         messages: [
           {
-            role: 'system',
+            role: messageRoleToOpenAI(MessageRole.SYSTEM),
             content: OPENAI_PROMPTS.WORD_TRANSLATION.SYSTEM,
           },
           {
-            role: 'user',
+            role: messageRoleToOpenAI(MessageRole.USER),
             content: prompt,
           },
         ],

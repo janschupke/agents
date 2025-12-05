@@ -8,6 +8,7 @@ import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants.
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants.js';
 import { AiRequestLogService } from '../../ai-request-log/ai-request-log.service';
 import { LogType } from '@prisma/client';
+import { MessageRole, messageRoleToOpenAI } from '@openai/shared-types';
 
 /**
  * Service responsible for extracting key insights from conversation messages
@@ -57,11 +58,11 @@ export class MemoryExtractionService {
         model: OPENAI_MODELS.MEMORY,
         messages: [
           {
-            role: 'system',
+            role: messageRoleToOpenAI(MessageRole.SYSTEM),
             content: OPENAI_PROMPTS.MEMORY.EXTRACTION.SYSTEM,
           },
           {
-            role: 'user',
+            role: messageRoleToOpenAI(MessageRole.USER),
             content: prompt,
           },
         ],
@@ -82,11 +83,11 @@ export class MemoryExtractionService {
           model: OPENAI_MODELS.MEMORY,
           messages: [
             {
-              role: 'system',
+              role: messageRoleToOpenAI(MessageRole.SYSTEM),
               content: OPENAI_PROMPTS.MEMORY.EXTRACTION.SYSTEM,
             },
             {
-              role: 'user',
+              role: messageRoleToOpenAI(MessageRole.USER),
               content: prompt,
             },
           ],

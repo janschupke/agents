@@ -16,7 +16,7 @@ import {
 } from '../common/constants/error-messages.constants.js';
 import OpenAI from 'openai';
 import { Message } from '@prisma/client';
-import { MessageRole } from '../common/enums/message-role.enum';
+import { MessageRole } from '@openai/shared-types';
 
 describe('MessageTranslationService', () => {
   let service: MessageTranslationService;

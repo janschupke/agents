@@ -1,4 +1,4 @@
-import { MessageRole } from '../../common/enums/message-role.enum';
+import { MessageRole } from '@openai/shared-types';
 import {
   SystemPromptSource,
   BehaviorRulesSource,

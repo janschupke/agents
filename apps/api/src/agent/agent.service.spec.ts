@@ -4,7 +4,7 @@ import { AgentService } from './agent.service';
 import { AgentRepository } from './agent.repository';
 import { SessionRepository } from '../session/session.repository';
 import { AgentArchetypeService } from '../agent-archetype/agent-archetype.service';
-import { AgentType } from '../common/enums/agent-type.enum';
+import { AgentType } from '@openai/shared-types';
 
 describe('AgentService', () => {
   let service: AgentService;

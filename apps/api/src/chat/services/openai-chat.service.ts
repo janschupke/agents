@@ -1,6 +1,6 @@
 import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { OpenAIService } from '../../openai/openai.service';
-import { MessageRole } from '../../common/enums/message-role.enum';
+import { MessageRole } from '@openai/shared-types';
 import { OPENAI_MODELS } from '../../common/constants/api.constants';
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants';
 import { ERROR_MESSAGES } from '../../common/constants/error-messages.constants';

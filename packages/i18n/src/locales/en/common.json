@@ -128,6 +128,14 @@
     "previous": "common.previous",
     "save": "common.save"
   },
+  "buttons": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "save": "Save",
+    "close": "Close",
+    "back": "Back"
+  },
   "config": {
     "addRule": "config.addRule",
     "age": "config.age",

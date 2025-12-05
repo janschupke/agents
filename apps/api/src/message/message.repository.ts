@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Message, Prisma } from '@prisma/client';
-import { MessageRole } from '../common/enums/message-role.enum';
+import { MessageRole, SortOrder } from '@openai/shared-types';
 import { MessageMetadata } from '../common/types/config.types';
 
 interface MessageForOpenAI {
@@ -57,7 +57,7 @@ export class MessageRepository {
   ): Promise<Message[]> {
     const messages = await this.prisma.message.findMany({
       where: { sessionId },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: SortOrder.ASC },
       take: limit,
     });
 
@@ -85,7 +85,7 @@ export class MessageRepository {
 
     return this.prisma.message.findMany({
       where: { sessionId },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: SortOrder.ASC },
       take: effectiveLimit,
       // Select only needed fields to reduce data transfer
       select: {
@@ -115,7 +115,7 @@ export class MessageRepository {
     // Get one extra message to check if there are more
     const messages = await this.prisma.message.findMany({
       where: { sessionId },
-      orderBy: { id: 'desc' }, // Newest first (highest ID first)
+      orderBy: { id: SortOrder.DESC }, // Newest first (highest ID first)
       take: limit + 1, // Get one extra to check hasMore
       // Select only needed fields to reduce data transfer
       select: {
@@ -167,7 +167,7 @@ export class MessageRepository {
     // Since IDs are auto-incrementing, id DESC gives us newest first
     const messages = await this.prisma.message.findMany({
       where: whereClause,
-      orderBy: { id: 'desc' }, // Newest first (highest ID first)
+      orderBy: { id: SortOrder.DESC }, // Newest first (highest ID first)
       take: limit + 1, // Get one extra to check hasMore
       select: {
         id: true,

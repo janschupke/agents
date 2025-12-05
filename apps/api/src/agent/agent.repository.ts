@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import type { Agent } from '@prisma/client';
 import { Prisma } from '@prisma/client';
 import { AgentWithConfig } from '../common/interfaces/agent.interface';
-import { AgentType } from '../common/enums/agent-type.enum';
+import { AgentType, SortOrder } from '@openai/shared-types';
 
 @Injectable()
 export class AgentRepository {
@@ -143,7 +143,7 @@ export class AgentRepository {
   async findAll(userId: string): Promise<Agent[]> {
     return this.prisma.agent.findMany({
       where: { userId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: SortOrder.DESC },
     });
   }
 
@@ -340,7 +340,7 @@ export class AgentRepository {
 
   async findAllForAdmin(): Promise<Agent[]> {
     return this.prisma.agent.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: SortOrder.DESC },
     });
   }
 

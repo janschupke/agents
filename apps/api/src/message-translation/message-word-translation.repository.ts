@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { SortOrder } from '../common/enums/sort-order.enum';
+import { SortOrder } from '@openai/shared-types';
 
 export interface WordTranslation {
   originalWord: string;

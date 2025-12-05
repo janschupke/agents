@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AgentWithConfig } from '../../common/interfaces/agent.interface';
-import { AgentType } from '../../common/enums/agent-type.enum';
+import { AgentType } from '@openai/shared-types';
 
 @Injectable()
 export class LanguageAssistantService {

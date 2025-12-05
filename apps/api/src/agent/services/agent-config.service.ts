@@ -1,9 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DEFAULT_AGENT_CONFIG } from '../../common/constants/api.constants';
 import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants';
-import { ResponseLength } from '../../common/enums/response-length.enum';
-import { Gender } from '../../common/enums/gender.enum';
-import { Sentiment } from '../../common/enums/sentiment.enum';
+import { ResponseLength, Gender, Sentiment, NUMERIC_CONSTANTS } from '@openai/shared-types';
 import { PERSONALITY_TYPES, PersonalityType } from '@openai/shared-types';
 
 /**
@@ -74,12 +72,12 @@ export class AgentConfigService {
     // Age - validate range (0-100)
     if (configs.age !== undefined && configs.age !== null) {
       const age = Number(configs.age);
-      if (!isNaN(age) && age >= 0 && age <= 100) {
+      if (!isNaN(age) && age >= NUMERIC_CONSTANTS.AGE_MIN && age <= NUMERIC_CONSTANTS.AGE_MAX) {
         if (age < 13) {
           rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.CHILD(age));
         } else if (age < 18) {
           rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.TEENAGER(age));
-        } else if (age < 30) {
+        } else if (age < NUMERIC_CONSTANTS.AGE_YOUNG_THRESHOLD) {
           rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.YOUNG_ADULT(age));
         } else if (age < 50) {
           rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.MATURE_ADULT(age));
@@ -89,7 +87,7 @@ export class AgentConfigService {
           rules.push(OPENAI_PROMPTS.CONFIG_BASED_RULES.AGE.ELDER(age));
         }
       } else {
-        this.logger.warn(`Invalid age value: ${configs.age}. Must be a number between 0 and 100`);
+        this.logger.warn(`Invalid age value: ${configs.age}. Must be a number between ${NUMERIC_CONSTANTS.AGE_MIN} and ${NUMERIC_CONSTANTS.AGE_MAX}`);
       }
     }
 

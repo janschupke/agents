@@ -9,7 +9,7 @@ import { AgentRepository } from './agent.repository';
 import { AgentResponse } from '../common/interfaces/agent.interface';
 import { AgentNotFoundException } from '../common/exceptions';
 import { ERROR_MESSAGES } from '../common/constants/error-messages.constants.js';
-import { AgentType } from '../common/enums/agent-type.enum';
+import { AgentType } from '@openai/shared-types';
 import { SessionRepository } from '../session/session.repository';
 import { AgentArchetypeService } from '../agent-archetype/agent-archetype.service';
 

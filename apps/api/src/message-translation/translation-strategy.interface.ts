@@ -1,4 +1,4 @@
-import { MessageRole } from '../common/enums/message-role.enum';
+import { MessageRole } from '@openai/shared-types';
 
 export interface WordTranslation {
   originalWord: string;

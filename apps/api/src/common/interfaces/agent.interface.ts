@@ -1,4 +1,4 @@
-import { AgentType } from '../enums/agent-type.enum';
+import { AgentType } from '@openai/shared-types';
 import { AgentConfig } from '../types/config.types';
 
 export interface AgentWithConfig {

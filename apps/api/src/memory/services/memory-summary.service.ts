@@ -5,6 +5,7 @@ import { AgentRepository } from '../../agent/agent.repository';
 import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants.js';
 import { OPENAI_MODELS } from '../../common/constants/api.constants.js';
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants.js';
+import { MessageRole, messageRoleToOpenAI } from '@openai/shared-types';
 
 /**
  * Service responsible for generating memory summaries for client display
@@ -61,11 +62,11 @@ export class MemorySummaryService {
         model: OPENAI_MODELS.MEMORY,
         messages: [
           {
-            role: 'system',
+            role: messageRoleToOpenAI(MessageRole.SYSTEM),
             content: OPENAI_PROMPTS.MEMORY.SUMMARY.SYSTEM,
           },
           {
-            role: 'user',
+            role: messageRoleToOpenAI(MessageRole.USER),
             content: OPENAI_PROMPTS.MEMORY.SUMMARY.USER(memoriesText),
           },
         ],

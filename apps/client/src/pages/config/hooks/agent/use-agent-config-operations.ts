@@ -8,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../../hooks/queries/query-keys';
 import { useConfirm } from '../../../../hooks/ui/useConfirm';
 import { AgentFormValues } from './use-agent-form';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 // Temporary agent ID for new agents (negative to indicate not saved)
 let tempAgentIdCounter = -1;
@@ -39,6 +40,7 @@ export function useAgentConfigOperations({
 }: UseAgentConfigOperationsOptions): UseAgentConfigOperationsReturn {
   const { confirm } = useConfirm();
   const queryClient = useQueryClient();
+  const { t } = useTranslation(I18nNamespace.CLIENT);
   const createAgentMutation = useCreateAgent();
   const updateAgentMutation = useUpdateAgent();
   const deleteAgentMutation = useDeleteAgent();
@@ -118,8 +120,8 @@ export function useAgentConfigOperations({
     const confirmed = await confirm({
       title: 'Delete Agent',
       message: `Are you sure you want to delete "${agent.name}"? This will delete all related data: sessions, messages, configs, and memories.`,
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
+      confirmText: t('buttons.delete'),
+      cancelText: t('buttons.cancel'),
       confirmVariant: 'danger',
     });
 

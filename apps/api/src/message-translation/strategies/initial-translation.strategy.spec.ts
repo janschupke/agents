@@ -6,7 +6,7 @@ import { MessageWordTranslationRepository } from '../message-word-translation.re
 import { MessageTranslationRepository } from '../message-translation.repository';
 import { AiRequestLogService } from '../../ai-request-log/ai-request-log.service';
 import { TranslationContext } from '../translation-strategy.interface';
-import { MessageRole } from '../../common/enums/message-role.enum';
+import { MessageRole } from '@openai/shared-types';
 import OpenAI from 'openai';
 
 describe('InitialTranslationStrategy', () => {

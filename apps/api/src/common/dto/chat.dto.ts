@@ -1,5 +1,5 @@
 import { SendMessageDto } from './send-message.dto';
-import { MessageRole } from '../enums/message-role.enum';
+import { MessageRole } from '@openai/shared-types';
 
 export class SessionResponseDto {
   id!: number;

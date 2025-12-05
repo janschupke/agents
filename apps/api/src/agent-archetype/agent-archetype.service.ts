@@ -5,7 +5,7 @@ import {
   UpdateAgentArchetypeDto,
   AgentArchetypeResponse,
 } from '../common/dto/agent-archetype.dto';
-import { AgentType } from '../common/enums/agent-type.enum';
+import { AgentType } from '@openai/shared-types';
 
 @Injectable()
 export class AgentArchetypeService {

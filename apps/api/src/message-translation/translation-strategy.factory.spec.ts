@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TranslationStrategyFactory } from './translation-strategy.factory';
 import { InitialTranslationStrategy } from './strategies/initial-translation.strategy';
 import { OnDemandTranslationStrategy } from './strategies/on-demand-translation.strategy';
-import { MessageRole } from '../common/enums/message-role.enum';
+import { MessageRole } from '@openai/shared-types';
 
 describe('TranslationStrategyFactory', () => {
   let factory: TranslationStrategyFactory;

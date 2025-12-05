@@ -16,7 +16,7 @@ import {
   UpdateSystemConfigDto,
 } from '../common/dto/system-config.dto';
 import { API_ROUTES } from '../common/constants/api-routes.constants.js';
-import { AgentType } from '../common/enums/agent-type.enum';
+import { AgentType } from '@openai/shared-types';
 
 @Controller(API_ROUTES.SYSTEM_CONFIG.BASE)
 export class SystemConfigController {

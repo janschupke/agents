@@ -23,7 +23,8 @@
     "openaiResponse": "OpenAI Response",
     "errors": {
       "sessionNotFound": "Session not found",
-      "fetchSessionFailed": "Failed to fetch session"
+      "fetchSessionFailed": "Failed to fetch session",
+      "sendMessageError": "Failed to send message"
     },
     "translation": {
       "title": "Translation",
@@ -36,6 +37,28 @@
       "viewRequestJson": "View request JSON",
       "viewResponseJson": "View response JSON"
     }
+  },
+  "agents": {
+    "createSuccess": "Agent created successfully",
+    "createError": "Failed to create agent",
+    "updateSuccess": "Agent updated successfully",
+    "updateError": "Failed to update agent",
+    "deleteSuccess": "Agent deleted successfully",
+    "deleteError": "Failed to delete agent"
+  },
+  "sessions": {
+    "createSuccess": "Session created successfully",
+    "createError": "Failed to create session",
+    "updateSuccess": "Session updated successfully",
+    "updateError": "Failed to update session",
+    "deleteSuccess": "Session deleted successfully",
+    "deleteError": "Failed to delete session"
+  },
+  "memories": {
+    "updateSuccess": "Memory updated successfully",
+    "updateError": "Failed to update memory",
+    "deleteSuccess": "Memory deleted successfully",
+    "deleteError": "Failed to delete memory"
   },
   "config": {
     "title": "Agent Configuration",

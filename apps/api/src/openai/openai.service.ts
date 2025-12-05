@@ -7,7 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import { NUMERIC_CONSTANTS } from '../common/constants/numeric.constants.js';
-import { MessageRole } from '../common/enums/message-role.enum';
+import { MessageRole } from '@openai/shared-types';
 import { OpenAIErrorHandler } from '../common/utils/openai-error-handler.util';
 import { convertMessageRoleToOpenAI } from '../common/utils/message-role.util';
 import { PerformanceLogger } from '../common/utils/performance-logger.util';

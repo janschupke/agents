@@ -6,6 +6,7 @@ import type {
   AgentType,
 } from '@prisma/client';
 import { SystemConfig } from '../common/types/config.types';
+import { SortOrder } from '@openai/shared-types';
 
 @Injectable()
 export class SystemConfigRepository {
@@ -47,7 +48,7 @@ export class SystemConfigRepository {
 
   async findAll(): Promise<PrismaSystemConfig[]> {
     return this.prisma.systemConfig.findMany({
-      orderBy: { configKey: 'asc' },
+      orderBy: { configKey: SortOrder.ASC },
     });
   }
 
