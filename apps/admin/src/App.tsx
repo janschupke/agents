@@ -2,22 +2,22 @@ import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useUser, SignInButton, SignOutButton } from '@clerk/clerk-react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { useCurrentUser } from './hooks/queries/use-user';
+import { useCurrentUser } from './pages/users/hooks/use-users';
 import Layout from './components/Layout';
 import { ToastProvider } from './contexts/ToastContext';
 import { LoadingState } from './components/shared';
 import { ROUTES } from './constants/routes.constants';
 
 // Lazy load page components for code splitting
-const UsersPage = lazy(() => import('./pages/UsersPage'));
-const UserDetailPage = lazy(() => import('./pages/UserDetailPage'));
-const UserEditPage = lazy(() => import('./pages/UserEditPage'));
-const SystemRulesPage = lazy(() => import('./pages/SystemRulesPage'));
-const AgentArchetypesPage = lazy(() => import('./pages/AgentArchetypesPage'));
-const AiRequestLogsPage = lazy(() => import('./pages/AiRequestLogsPage'));
-const AgentsPage = lazy(() => import('./pages/AgentsPage'));
-const AgentDetailPage = lazy(() => import('./pages/AgentDetailPage'));
-const AgentEditPage = lazy(() => import('./pages/AgentEditPage'));
+const UsersPage = lazy(() => import('./pages/users/UsersPage'));
+const UserDetailPage = lazy(() => import('./pages/users/UserDetailPage'));
+const UserEditPage = lazy(() => import('./pages/users/UserEditPage'));
+const SystemRulesPage = lazy(() => import('./pages/rules/SystemRulesPage'));
+const AgentArchetypesPage = lazy(() => import('./pages/agents/AgentArchetypesPage'));
+const AiRequestLogsPage = lazy(() => import('./pages/ai-request-logs/AiRequestLogsPage'));
+const AgentsPage = lazy(() => import('./pages/agents/AgentsPage'));
+const AgentDetailPage = lazy(() => import('./pages/agents/AgentDetailPage'));
+const AgentEditPage = lazy(() => import('./pages/agents/AgentEditPage'));
 
 function App() {
   const { t } = useTranslation(I18nNamespace.ADMIN);

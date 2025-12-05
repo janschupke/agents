@@ -1,7 +1,7 @@
 import { useUser, SignOutButton } from '@clerk/clerk-react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Avatar, Button } from '@openai/ui';
-import { useCurrentUser } from '../../hooks/queries/use-user';
+import { useCurrentUser } from '../../pages/users/hooks/use-users';
 
 interface AdminHeaderProps {
   title: string;
