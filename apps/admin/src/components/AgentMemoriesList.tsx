@@ -3,7 +3,7 @@ import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AgentMemory } from '../types/agent.types';
 import { AgentService } from '../services/agent.service';
-import { Button, Card } from '@openai/ui';
+import { Button, Card, Skeleton } from '@openai/ui';
 import { IconEdit, IconTrash } from './ui/Icons';
 import { formatRelativeDate } from '@openai/utils';
 import { queryKeys } from '../hooks/queries/query-keys';
@@ -86,10 +86,7 @@ export default function AgentMemoriesList({
     return (
       <div className="space-y-2">
         {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="h-20 w-full bg-background-secondary animate-pulse rounded-lg"
-          />
+          <Skeleton key={i} className="h-20 w-full" />
         ))}
       </div>
     );

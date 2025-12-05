@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -9,9 +9,12 @@ import { queryKeys } from '../hooks/queries/query-keys';
 import { AdminPageHeader } from '../components/shared';
 import { useDeleteAgent } from '../hooks/use-delete-agent';
 import { ConfirmModal } from '@openai/ui';
+import { useToast } from '../contexts/ToastContext';
+import { extractErrorMessage } from '../utils/extract-error-message';
 
 export default function AgentsPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -32,6 +35,17 @@ export default function AgentsPage() {
     },
   });
 
+  // Show error toast if there's an error
+  useEffect(() => {
+    if (error) {
+      const errorMessage = extractErrorMessage(
+        error,
+        t('agents.list.error')
+      );
+      showToast(errorMessage, 'error');
+    }
+  }, [error, showToast, t]);
+
   const handleView = (id: number) => {
     navigate(ROUTES.AGENT_DETAIL(id));
   };
@@ -50,16 +64,6 @@ export default function AgentsPage() {
       deleteMutation.mutate(deletingId);
     }
   };
-
-  if (error) {
-    return (
-      <div>
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
-          {t('agents.list.error')}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div>
