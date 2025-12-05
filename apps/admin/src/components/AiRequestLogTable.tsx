@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useNavigate } from 'react-router-dom';
 import type { AiRequestLog } from '../types/ai-request-log.types';
@@ -107,7 +106,7 @@ export default function AiRequestLogTable({
           {getSortIcon(AiRequestLogOrderBy.CREATED_AT)}
         </button>
       ),
-      cell: ({ row }) => (
+      cell: ({ row }: { row: { original: AiRequestLog } }) => (
         <div className="text-sm text-text-primary">
           {formatDate(row.original.createdAt)}
         </div>
@@ -117,7 +116,7 @@ export default function AiRequestLogTable({
     {
       accessorKey: 'user',
       header: t('aiRequestLogs.table.user'),
-      cell: ({ row }) => {
+      cell: ({ row }: { row: { original: AiRequestLog } }) => {
         const log = row.original;
         return (
           <div className="text-sm text-text-primary">
@@ -133,7 +132,7 @@ export default function AiRequestLogTable({
     {
       accessorKey: 'agent',
       header: t('aiRequestLogs.table.agent'),
-      cell: ({ row }) => {
+      cell: ({ row }: { row: { original: AiRequestLog } }) => {
         const log = row.original;
         return log.agent ? (
           <button
@@ -150,7 +149,7 @@ export default function AiRequestLogTable({
     {
       accessorKey: 'logType',
       header: t('aiRequestLogs.table.logType'),
-      cell: ({ row }) => (
+      cell: ({ row }: { row: { original: AiRequestLog } }) => (
         <span className="inline-flex items-center px-2 py-1 rounded text-xs bg-background-tertiary text-text-secondary">
           {t(`aiRequestLogs.logTypes.${row.original.logType.toLowerCase()}`)}
         </span>
@@ -159,7 +158,7 @@ export default function AiRequestLogTable({
     {
       accessorKey: 'model',
       header: t('aiRequestLogs.table.model'),
-      cell: ({ row }) => (
+      cell: ({ row }: { row: { original: AiRequestLog } }) => (
         <div className="text-sm text-text-primary">{row.original.model}</div>
       ),
     },
@@ -175,7 +174,7 @@ export default function AiRequestLogTable({
           {getSortIcon(AiRequestLogOrderBy.TOTAL_TOKENS)}
         </button>
       ),
-      cell: ({ row }) => {
+      cell: ({ row }: { row: { original: AiRequestLog } }) => {
         const log = row.original;
         return (
           <div className="text-sm text-text-primary">
@@ -200,7 +199,7 @@ export default function AiRequestLogTable({
           {getSortIcon(AiRequestLogOrderBy.ESTIMATED_PRICE)}
         </button>
       ),
-      cell: ({ row }) => (
+      cell: ({ row }: { row: { original: AiRequestLog } }) => (
         <div className="text-sm text-text-primary font-mono">
           {formatPrice(row.original.estimatedPrice)}
         </div>
@@ -210,7 +209,7 @@ export default function AiRequestLogTable({
     {
       accessorKey: 'request',
       header: t('aiRequestLogs.table.request'),
-      cell: ({ row }) => (
+      cell: ({ row }: { row: { original: AiRequestLog } }) => (
         <div className="text-sm text-text-primary">
           {formatRequest(row.original.requestJson)}
         </div>
@@ -219,7 +218,7 @@ export default function AiRequestLogTable({
     {
       accessorKey: 'response',
       header: t('aiRequestLogs.table.response'),
-      cell: ({ row }) => (
+      cell: ({ row }: { row: { original: AiRequestLog } }) => (
         <div className="text-sm text-text-primary">
           {formatResponse(row.original.responseJson)}
         </div>
@@ -228,13 +227,23 @@ export default function AiRequestLogTable({
     {
       id: 'actions',
       header: t('aiRequestLogs.table.actions'),
-      cell: (info) => {
+      cell: (info: {
+        row: { original: AiRequestLog };
+        table: {
+          options: {
+            meta?: {
+              expandedRows?: Set<string | number>;
+              toggleExpand?: (id: string | number) => void;
+            };
+          };
+        };
+      }) => {
         const log = info.row.original;
         const table = info.table;
-        const rowId = log.id;
+        const rowId = String(log.id);
         const meta = table.options.meta as {
-          expandedRows?: Set<string | number>;
-          toggleExpand?: (id: string | number) => void;
+          expandedRows?: Set<string>;
+          toggleExpand?: (id: string) => void;
         };
         const isExpanded = meta?.expandedRows?.has(rowId) || false;
         const toggleExpand = () => meta?.toggleExpand?.(rowId);
@@ -265,8 +274,8 @@ export default function AiRequestLogTable({
         onPageChange,
       }}
       expandable={{
-        getRowId: (log) => log.id,
-        renderExpanded: (log) => (
+        getRowId: (log: AiRequestLog) => String(log.id),
+        renderExpanded: (log: AiRequestLog) => (
           <div className="grid grid-cols-2 gap-4">
             <div>
               <h4 className="font-medium text-text-secondary mb-2">

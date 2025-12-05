@@ -6,7 +6,6 @@ import {
   flexRender,
   type ColumnDef,
   type SortingState,
-  type Table as TanStackTableType,
 } from '@tanstack/react-table';
 
 export interface TableProps<T> {
@@ -25,14 +24,14 @@ export interface TableProps<T> {
   };
   expandable?: {
     renderExpanded: (row: T) => React.ReactNode;
-    getRowId?: (row: T) => string | number;
+    getRowId?: (row: T) => string;
   };
   loading?: boolean;
   emptyMessage?: string;
   className?: string;
 }
 
-export default function Table<T>({
+function Table<T>({
   data,
   columns,
   pagination,
@@ -42,12 +41,12 @@ export default function Table<T>({
   emptyMessage = 'No data available',
   className = '',
 }: TableProps<T>) {
-  const [expandedRows, setExpandedRows] = React.useState<Set<string | number>>(new Set());
+  const [expandedRows, setExpandedRows] = React.useState<Set<string>>(new Set());
   const [sortingState, setSortingState] = React.useState<SortingState>([]);
 
   const getRowId = expandable?.getRowId;
 
-  const toggleRow = React.useCallback((rowId: string | number) => {
+  const toggleRow = React.useCallback((rowId: string) => {
     setExpandedRows((prev) => {
       const newExpanded = new Set(prev);
       if (newExpanded.has(rowId)) {
@@ -132,7 +131,7 @@ export default function Table<T>({
               </tr>
             ) : (
               table.getRowModel().rows.map((row) => {
-                const rowId = getRowId ? getRowId(row.original) : row.id;
+                const rowId = getRowId ? getRowId(row.original) : String(row.id);
                 const isExpanded = expandedRows.has(rowId);
                 return (
                   <React.Fragment key={row.id}>
@@ -164,34 +163,39 @@ export default function Table<T>({
         </table>
       </div>
 
-      {pagination && pagination.totalPages > 1 && (
-        <div className="px-4 py-3 border-t border-border flex items-center justify-between">
-          <div className="text-sm text-text-tertiary">
-            Showing {pagination.page * pagination.pageSize - pagination.pageSize + 1} to{' '}
-            {Math.min(pagination.page * pagination.pageSize, pagination.total)} of{' '}
-            {pagination.total}
+      {pagination && (() => {
+        const totalPages = Math.ceil(pagination.total / pagination.pageSize);
+        return totalPages > 1 && (
+          <div className="px-4 py-3 border-t border-border flex items-center justify-between">
+            <div className="text-sm text-text-tertiary">
+              Showing {pagination.page * pagination.pageSize - pagination.pageSize + 1} to{' '}
+              {Math.min(pagination.page * pagination.pageSize, pagination.total)} of{' '}
+              {pagination.total}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => pagination.onPageChange(pagination.page - 1)}
+                disabled={pagination.page === 1}
+                className="px-3 py-1 text-sm border border-border rounded hover:bg-background-tertiary disabled:opacity-50 disabled:cursor-not-allowed text-text-primary"
+              >
+                Previous
+              </button>
+              <span className="px-3 py-1 text-sm text-text-secondary">
+                Page {pagination.page} of {totalPages}
+              </span>
+              <button
+                onClick={() => pagination.onPageChange(pagination.page + 1)}
+                disabled={pagination.page >= totalPages}
+                className="px-3 py-1 text-sm border border-border rounded hover:bg-background-tertiary disabled:opacity-50 disabled:cursor-not-allowed text-text-primary"
+              >
+                Next
+              </button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => pagination.onPageChange(pagination.page - 1)}
-              disabled={pagination.page === 1}
-              className="px-3 py-1 text-sm border border-border rounded hover:bg-background-tertiary disabled:opacity-50 disabled:cursor-not-allowed text-text-primary"
-            >
-              Previous
-            </button>
-            <span className="px-3 py-1 text-sm text-text-secondary">
-              Page {pagination.page} of {pagination.totalPages}
-            </span>
-            <button
-              onClick={() => pagination.onPageChange(pagination.page + 1)}
-              disabled={pagination.page >= pagination.totalPages}
-              className="px-3 py-1 text-sm border border-border rounded hover:bg-background-tertiary disabled:opacity-50 disabled:cursor-not-allowed text-text-primary"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
+
+export default Table;

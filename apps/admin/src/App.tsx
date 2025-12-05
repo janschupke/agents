@@ -103,7 +103,10 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to={ROUTES.USERS} replace />} />
           <Route path={ROUTES.USERS} element={<UsersPage />} />
-          <Route path={ROUTES.USER_DETAIL(':id')} element={<UserDetailPage />} />
+          <Route
+            path={ROUTES.USER_DETAIL(':id')}
+            element={<UserDetailPage />}
+          />
           <Route path={ROUTES.USER_EDIT(':id')} element={<UserEditPage />} />
           <Route path={ROUTES.SYSTEM_RULES} element={<SystemRulesPage />} />
           <Route
@@ -116,11 +119,11 @@ function App() {
           />
           <Route path={ROUTES.AGENTS} element={<AgentsPage />} />
           <Route
-            path={ROUTES.AGENT_DETAIL(':id')}
+            path={ROUTES.AGENT_DETAIL(0).replace('0', ':id')}
             element={<AgentDetailPage />}
           />
           <Route
-            path={ROUTES.AGENT_EDIT(':id')}
+            path={ROUTES.AGENT_EDIT(0).replace('0', ':id')}
             element={<AgentEditPage />}
           />
         </Routes>

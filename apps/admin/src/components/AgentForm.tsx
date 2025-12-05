@@ -189,17 +189,22 @@ export default function AgentForm({
       avatarUrl: formValues.avatarUrl.trim() || undefined,
       agentType: formValues.agentType || undefined,
       language: formValues.language.trim() || undefined,
-      temperature: formValues.temperature ? Number(formValues.temperature) : undefined,
+      temperature: formValues.temperature
+        ? Number(formValues.temperature)
+        : undefined,
       systemPrompt: formValues.systemPrompt || undefined,
       behaviorRules: isArchetype ? formValues.behaviorRules : undefined,
       model: formValues.model || undefined,
-      maxTokens: formValues.maxTokens ? Number(formValues.maxTokens) : undefined,
+      maxTokens: formValues.maxTokens
+        ? Number(formValues.maxTokens)
+        : undefined,
       responseLength: formValues.responseLength || undefined,
       age: formValues.age ? Number(formValues.age) : undefined,
       gender: formValues.gender || undefined,
       personality: formValues.personality || undefined,
       sentiment: formValues.sentiment || undefined,
-      interests: formValues.interests.length > 0 ? formValues.interests : undefined,
+      interests:
+        formValues.interests.length > 0 ? formValues.interests : undefined,
       availability: formValues.availability || undefined,
     };
 
@@ -354,17 +359,13 @@ export default function AgentForm({
         {/* Configuration */}
         <div className="space-y-4">
           <h4 className="text-sm font-medium text-text-secondary">
-            {isArchetype
-              ? t('archetypes.form.configuration')
-              : 'Configuration'}
+            {isArchetype ? t('archetypes.form.configuration') : 'Configuration'}
           </h4>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1">
-                {isArchetype
-                  ? t('archetypes.form.temperature')
-                  : 'Temperature'}{' '}
+                {isArchetype ? t('archetypes.form.temperature') : 'Temperature'}{' '}
                 (0-2)
               </label>
               <Input
@@ -387,9 +388,7 @@ export default function AgentForm({
 
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1">
-                {isArchetype
-                  ? t('archetypes.form.maxTokens')
-                  : 'Max Tokens'}
+                {isArchetype ? t('archetypes.form.maxTokens') : 'Max Tokens'}
               </label>
               <Input
                 type="number"
@@ -582,9 +581,7 @@ export default function AgentForm({
 
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1">
-                {isArchetype
-                  ? t('archetypes.form.personality')
-                  : 'Personality'}
+                {isArchetype ? t('archetypes.form.personality') : 'Personality'}
               </label>
               <select
                 value={formValues.personality}

@@ -1,11 +1,9 @@
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useUsers } from '../hooks/queries/use-user';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import UserList from '../components/UserList';
 import { UserService } from '../services/user.service';
 import { useState } from 'react';
-import { ROUTES } from '../constants/routes.constants';
 import { queryKeys } from '../hooks/queries/query-keys';
 import {
   Dialog,
@@ -20,7 +18,6 @@ export default function UsersPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
   const { data: users = [], isLoading: loading, error } = useUsers();
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -77,13 +74,7 @@ export default function UsersPage() {
           {t('users.total', { count: users.length })}
         </p>
       </div>
-      <UserList
-        users={users}
-        loading={false}
-        onView={(id) => navigate(ROUTES.USER_DETAIL(id))}
-        onEdit={(id) => navigate(ROUTES.USER_EDIT(id))}
-        onDelete={handleDelete}
-      />
+      <UserList users={users} loading={false} onDelete={handleDelete} />
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
           <DialogHeader onClose={() => setShowDeleteDialog(false)}>

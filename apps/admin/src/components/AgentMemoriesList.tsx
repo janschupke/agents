@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AgentMemory } from '../types/agent.types';
 import { AgentService } from '../services/agent.service';
 import { Button, Card } from '@openai/ui';
-import { IconEdit, IconTrash, IconClose } from './ui/Icons';
+import { IconEdit, IconTrash } from './ui/Icons';
 import { formatRelativeDate } from '@openai/utils';
 import { queryKeys } from '../hooks/queries/query-keys';
 
@@ -26,10 +26,17 @@ export default function AgentMemoriesList({
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const updateMutation = useMutation({
-    mutationFn: ({ memoryId, keyPoint }: { memoryId: number; keyPoint: string }) =>
-      AgentService.updateMemory(agentId, memoryId, { keyPoint }),
+    mutationFn: ({
+      memoryId,
+      keyPoint,
+    }: {
+      memoryId: number;
+      keyPoint: string;
+    }) => AgentService.updateMemory(agentId, memoryId, { keyPoint }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.agent.memories(agentId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.agent.memories(agentId),
+      });
       setEditingId(null);
       setEditValue('');
     },
@@ -39,8 +46,12 @@ export default function AgentMemoriesList({
     mutationFn: (memoryId: number) =>
       AgentService.deleteMemory(agentId, memoryId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.agent.memories(agentId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.agent.detail(agentId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.agent.memories(agentId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.agent.detail(agentId),
+      });
       setDeletingId(null);
     },
   });
@@ -101,10 +112,18 @@ export default function AgentMemoriesList({
               <div className="text-xs text-text-tertiary mb-1">
                 {formatRelativeDate(memory.createdAt)}
                 {memory.context?.sessionName && (
-                  <> • {t('agents.memories.session')}: {memory.context.sessionName}</>
+                  <>
+                    {' '}
+                    • {t('agents.memories.session')}:{' '}
+                    {memory.context.sessionName}
+                  </>
                 )}
                 {memory.context?.sessionId && !memory.context?.sessionName && (
-                  <> • {t('agents.memories.session')}: #{memory.context.sessionId}</>
+                  <>
+                    {' '}
+                    • {t('agents.memories.session')}: #
+                    {memory.context.sessionId}
+                  </>
                 )}
               </div>
               {editingId === memory.id ? (
@@ -155,7 +174,9 @@ export default function AgentMemoriesList({
                 </Button>
                 <Button
                   onClick={() => handleDelete(memory.id)}
-                  disabled={deletingId === memory.id || updateMutation.isPending}
+                  disabled={
+                    deletingId === memory.id || updateMutation.isPending
+                  }
                   variant="danger"
                   size="sm"
                   className="w-7 p-0"

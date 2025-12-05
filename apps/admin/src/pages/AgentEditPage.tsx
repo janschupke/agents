@@ -1,5 +1,4 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@openai/ui';
@@ -10,7 +9,13 @@ import { IconArrowLeft } from '../components/ui/Icons';
 import { queryKeys } from '../hooks/queries/query-keys';
 import AgentForm from '../components/AgentForm';
 import { AgentFormMode, AgentFormData } from '../types/agent-form.types';
-import { ResponseLength, Gender, Sentiment, Availability } from '../types/agent.types';
+import {
+  ResponseLength,
+  Gender,
+  Sentiment,
+  Availability,
+} from '../types/agent.types';
+import { PersonalityType } from '@openai/shared-types';
 
 export default function AgentEditPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
@@ -33,13 +38,17 @@ export default function AgentEditPage() {
     mutationFn: (data: UpdateAgentRequest) =>
       AgentService.updateAgent(agentId!, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.agent.detail(agentId!) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.agent.detail(agentId!),
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.agent.list() });
       navigate(ROUTES.AGENTS);
     },
   });
 
-  const mapAgentToFormData = (agent: Agent | undefined): AgentFormData | null => {
+  const mapAgentToFormData = (
+    agent: Agent | undefined
+  ): AgentFormData | null => {
     if (!agent) return null;
 
     const configs = agent.configs || {};
@@ -56,7 +65,7 @@ export default function AgentEditPage() {
       responseLength: (configs.response_length as ResponseLength) || undefined,
       age: configs.age as number | undefined,
       gender: (configs.gender as Gender) || undefined,
-      personality: (configs.personality as string) || undefined,
+      personality: (configs.personality as PersonalityType) || undefined,
       sentiment: (configs.sentiment as Sentiment) || undefined,
       interests: (configs.interests as string[]) || undefined,
       availability: (configs.availability as Availability) || undefined,

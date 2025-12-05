@@ -25,6 +25,7 @@
     "@openai/ui": "workspace:*",
     "@openai/utils": "workspace:*",
     "@tanstack/react-query": "^5.90.11",
+    "@tanstack/react-table": "^8.21.3",
     "msw": "^2.12.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

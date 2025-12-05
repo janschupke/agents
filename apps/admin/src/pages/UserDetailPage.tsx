@@ -1,13 +1,7 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import {
-  Button,
-  Avatar,
-  Badge,
-  Card,
-  Skeleton,
-} from '@openai/ui';
+import { Button, Avatar, Badge, Card, Skeleton } from '@openai/ui';
 import { IconEdit, IconTrash, IconArrowLeft } from '../components/ui/Icons';
 import { UserService } from '../services/user.service';
 import { User } from '../types/user.types';
@@ -123,12 +117,7 @@ export default function UserDetailPage() {
           <div className="flex items-center gap-4">
             <Avatar
               src={user.imageUrl || undefined}
-              name={
-                user.firstName ||
-                user.lastName ||
-                user.email ||
-                user.id
-              }
+              name={user.firstName || user.lastName || user.email || user.id}
               size="lg"
               borderWidth="none"
               className="w-16 h-16"
@@ -146,9 +135,7 @@ export default function UserDetailPage() {
             <div className="text-sm text-text-tertiary mb-1">
               {t('users.columns.email')}
             </div>
-            <div className="text-sm text-text-primary">
-              {user.email || '-'}
-            </div>
+            <div className="text-sm text-text-primary">{user.email || '-'}</div>
           </div>
           <div>
             <div className="text-sm text-text-tertiary mb-1">
@@ -202,10 +189,7 @@ export default function UserDetailPage() {
             </p>
           </div>
           <DialogFooter>
-            <Button
-              variant="ghost"
-              onClick={() => setShowDeleteDialog(false)}
-            >
+            <Button variant="ghost" onClick={() => setShowDeleteDialog(false)}>
               {t('users.delete.cancel')}
             </Button>
             <Button

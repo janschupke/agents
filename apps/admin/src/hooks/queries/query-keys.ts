@@ -26,13 +26,12 @@ export const queryKeys = {
   },
   system: {
     all: [QueryKey.SYSTEM] as const,
-    behaviorRules: () =>
-      (agentType?: string | null) =>
-        [
-          ...queryKeys.system.all,
-          QueryKey.BEHAVIOR_RULES,
-          agentType || 'main',
-        ] as const,
+    behaviorRules: () => (agentType?: string | null) =>
+      [
+        ...queryKeys.system.all,
+        QueryKey.BEHAVIOR_RULES,
+        agentType || 'main',
+      ] as const,
   },
   aiRequestLogs: {
     all: [QueryKey.AI_REQUEST_LOGS] as const,
@@ -45,7 +44,8 @@ export const queryKeys = {
     lists: () => [...queryKeys.agent.all, QueryKey.AGENTS] as const,
     list: () => [...queryKeys.agent.lists(), QueryKey.ALL] as const,
     detail: (id: number) => [...queryKeys.agent.all, id] as const,
-    memories: (id: number) => [...queryKeys.agent.detail(id), QueryKey.MEMORIES] as const,
+    memories: (id: number) =>
+      [...queryKeys.agent.detail(id), QueryKey.MEMORIES] as const,
   },
   archetype: {
     all: [QueryKey.ARCHETYPE] as const,

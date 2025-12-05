@@ -8,7 +8,9 @@ interface SystemBehaviorRules {
 }
 
 class SystemConfigService {
-  async getBehaviorRules(agentType: AgentType | null = null): Promise<SystemBehaviorRules> {
+  async getBehaviorRules(
+    agentType: AgentType | null = null
+  ): Promise<SystemBehaviorRules> {
     if (agentType === null) {
       return apiManager.get<SystemBehaviorRules>(
         API_ENDPOINTS.SYSTEM_CONFIG_BEHAVIOR_RULES
@@ -36,7 +38,9 @@ class SystemConfigService {
     );
   }
 
-  async getSystemPrompt(agentType: AgentType | null = null): Promise<{ system_prompt?: string }> {
+  async getSystemPrompt(
+    agentType: AgentType | null = null
+  ): Promise<{ system_prompt?: string }> {
     if (agentType === null) {
       return apiManager.get<{ system_prompt?: string }>(
         API_ENDPOINTS.SYSTEM_CONFIG_SYSTEM_PROMPT

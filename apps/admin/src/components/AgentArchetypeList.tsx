@@ -23,7 +23,7 @@ export default function AgentArchetypeList({
     {
       accessorKey: 'name',
       header: t('archetypes.form.name') || 'Name',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: { original: AgentArchetype } }) => {
         const archetype = row.original;
         return (
           <div className="flex items-center gap-3">
@@ -51,7 +51,7 @@ export default function AgentArchetypeList({
     {
       accessorKey: 'agentType',
       header: t('archetypes.form.agentType') || 'Type',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: { original: AgentArchetype } }) => {
         const archetype = row.original;
         return (
           <div className="flex flex-wrap gap-2">
@@ -68,7 +68,7 @@ export default function AgentArchetypeList({
     {
       id: 'actions',
       header: t('users.columns.actions') || 'Actions',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: { original: AgentArchetype } }) => {
         const archetype = row.original;
         return (
           <div className="flex justify-end gap-2">

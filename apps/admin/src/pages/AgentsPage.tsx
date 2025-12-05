@@ -3,7 +3,6 @@ import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { AgentService } from '../services/agent.service';
-import { AgentWithStats } from '../types/agent.types';
 import AgentList from '../components/AgentList';
 import { ROUTES } from '../constants/routes.constants';
 import { queryKeys } from '../hooks/queries/query-keys';

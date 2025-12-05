@@ -1,12 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import {
-  Button,
-  Card,
-  Skeleton,
-  Input,
-} from '@openai/ui';
+import { Button, Card, Skeleton, Input } from '@openai/ui';
 import { IconArrowLeft } from '../components/ui/Icons';
 import { UserService, UpdateUserRequest } from '../services/user.service';
 import { User } from '../types/user.types';
@@ -51,8 +46,7 @@ export default function UserEditPage() {
   }, [user]);
 
   const updateMutation = useMutation({
-    mutationFn: (data: UpdateUserRequest) =>
-      UserService.updateUser(id!, data),
+    mutationFn: (data: UpdateUserRequest) => UserService.updateUser(id!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.user.detail(id!) });
       queryClient.invalidateQueries({ queryKey: queryKeys.user.list() });
@@ -121,7 +115,12 @@ export default function UserEditPage() {
           <Button
             variant="primary"
             size="sm"
-            onClick={handleSubmit}
+            onClick={(e) => {
+              e?.preventDefault();
+              if (e) {
+                handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
+              }
+            }}
             disabled={updateMutation.isPending}
             loading={updateMutation.isPending}
           >

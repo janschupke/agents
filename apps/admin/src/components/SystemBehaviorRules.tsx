@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { NUMERIC_CONSTANTS, HTTP_STATUS } from '@openai/shared-types';
-import { Button, Tabs, TabPanel } from '@openai/ui';
+import { Button, Tabs } from '@openai/ui';
 import {
   useSystemRules,
   useUpdateSystemRules,
@@ -20,7 +20,7 @@ export default function SystemBehaviorRules() {
   const { t: tAdmin } = useTranslation(I18nNamespace.ADMIN);
   const { t: tCommon } = useTranslation(I18nNamespace.COMMON);
   const [activeTab, setActiveTab] = useState<TabType>(AgentType.GENERAL);
-  
+
   // Separate form data for each agent type
   const [formData, setFormData] = useState<Record<TabType, AgentTypeFormData>>({
     [AgentType.GENERAL]: { rules: [], systemPrompt: '' },
@@ -31,7 +31,7 @@ export default function SystemBehaviorRules() {
   const mainData = useSystemRules(null);
   const generalData = useSystemRules(AgentType.GENERAL);
   const languageAssistantData = useSystemRules(AgentType.LANGUAGE_ASSISTANT);
-  
+
   const updateMutation = useUpdateSystemRules();
   const [success, setSuccess] = useState<Record<TabType, boolean>>({
     [AgentType.GENERAL]: false,
@@ -40,7 +40,9 @@ export default function SystemBehaviorRules() {
 
   // Sync rules and system prompt from query data for each tab
   useEffect(() => {
-    const data = mainData.data as { rules: string[]; system_prompt?: string } | undefined;
+    const data = mainData.data as
+      | { rules: string[]; system_prompt?: string }
+      | undefined;
     if (data) {
       setFormData((prev) => ({
         ...prev,
@@ -59,7 +61,9 @@ export default function SystemBehaviorRules() {
   }, [mainData.data, mainData.isLoading, mainData.isError]);
 
   useEffect(() => {
-    const data = generalData.data as { rules: string[]; system_prompt?: string } | undefined;
+    const data = generalData.data as
+      | { rules: string[]; system_prompt?: string }
+      | undefined;
     if (data) {
       setFormData((prev) => ({
         ...prev,
@@ -78,7 +82,9 @@ export default function SystemBehaviorRules() {
   }, [generalData.data, generalData.isLoading, generalData.isError]);
 
   useEffect(() => {
-    const data = languageAssistantData.data as { rules: string[]; system_prompt?: string } | undefined;
+    const data = languageAssistantData.data as
+      | { rules: string[]; system_prompt?: string }
+      | undefined;
     if (data) {
       setFormData((prev) => ({
         ...prev,
@@ -87,14 +93,21 @@ export default function SystemBehaviorRules() {
           systemPrompt: data.system_prompt || '',
         },
       }));
-    } else if (!languageAssistantData.isLoading && !languageAssistantData.isError) {
+    } else if (
+      !languageAssistantData.isLoading &&
+      !languageAssistantData.isError
+    ) {
       // No data and not loading/erroring means empty state
       setFormData((prev) => ({
         ...prev,
         [AgentType.LANGUAGE_ASSISTANT]: { rules: [], systemPrompt: '' },
       }));
     }
-  }, [languageAssistantData.data, languageAssistantData.isLoading, languageAssistantData.isError]);
+  }, [
+    languageAssistantData.data,
+    languageAssistantData.isLoading,
+    languageAssistantData.isError,
+  ]);
 
   // Show success message after successful save
   useEffect(() => {
@@ -112,7 +125,7 @@ export default function SystemBehaviorRules() {
 
   const handleSave = async (tab: TabType) => {
     const currentFormData = formData[tab];
-    
+
     updateMutation.mutate(
       {
         rules: currentFormData.rules,
@@ -129,12 +142,12 @@ export default function SystemBehaviorRules() {
 
   const getError = (tab: TabType) => {
     const queryData =
-      tab === AgentType.GENERAL
-        ? generalData
-        : languageAssistantData;
-    
+      tab === AgentType.GENERAL ? generalData : languageAssistantData;
+
     const queryError = queryData.error;
-    return queryError && typeof queryError === 'object' && 'status' in queryError
+    return queryError &&
+      typeof queryError === 'object' &&
+      'status' in queryError
       ? queryError.status === HTTP_STATUS.NOT_FOUND
         ? null // 404 is expected when no rules are set
         : ('message' in queryError && queryError.message) ||
@@ -259,9 +272,7 @@ export default function SystemBehaviorRules() {
                 <input
                   type="text"
                   value={rule}
-                  onChange={(e) =>
-                    handleRuleChange(tab, index, e.target.value)
-                  }
+                  onChange={(e) => handleRuleChange(tab, index, e.target.value)}
                   className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus"
                   placeholder={tAdmin('systemRules.rulePlaceholder', {
                     index: (index + 1).toString(),
@@ -323,16 +334,16 @@ export default function SystemBehaviorRules() {
       </div>
 
       <Tabs
-        tabs={tabs}
+        tabs={tabs.map((tab) => ({ id: tab.id, label: tab.label }))}
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={(tabId) => setActiveTab(tabId as AgentType)}
       >
-        <TabPanel id={AgentType.GENERAL} activeTab={activeTab}>
-          {renderForm(AgentType.GENERAL)}
-        </TabPanel>
-        <TabPanel id={AgentType.LANGUAGE_ASSISTANT} activeTab={activeTab}>
-          {renderForm(AgentType.LANGUAGE_ASSISTANT)}
-        </TabPanel>
+        {activeTab === AgentType.GENERAL && (
+          <div>{renderForm(AgentType.GENERAL)}</div>
+        )}
+        {activeTab === AgentType.LANGUAGE_ASSISTANT && (
+          <div>{renderForm(AgentType.LANGUAGE_ASSISTANT)}</div>
+        )}
       </Tabs>
     </div>
   );

@@ -3,7 +3,6 @@ import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button, Card, Avatar, Badge } from '@openai/ui';
 import { AgentService } from '../services/agent.service';
-import { Agent, AgentMemory } from '../types/agent.types';
 import AgentMemoriesList from '../components/AgentMemoriesList';
 import { ROUTES } from '../constants/routes.constants';
 import { IconEdit, IconTrash, IconArrowLeft } from '../components/ui/Icons';
@@ -27,10 +26,7 @@ export default function AgentDetailPage() {
     enabled: !!agentId,
   });
 
-  const {
-    data: memories = [],
-    isLoading: loadingMemories,
-  } = useQuery({
+  const { data: memories = [], isLoading: loadingMemories } = useQuery({
     queryKey: queryKeys.agent.memories(agentId!),
     queryFn: () => AgentService.getAgentMemories(agentId!),
     enabled: !!agentId,
@@ -136,7 +132,9 @@ export default function AgentDetailPage() {
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <div className="text-text-tertiary">{t('agents.detail.type')}</div>
+                <div className="text-text-tertiary">
+                  {t('agents.detail.type')}
+                </div>
                 <div className="text-text-primary mt-1">
                   {agent.agentType ? (
                     <Badge variant="primary">{agent.agentType}</Badge>

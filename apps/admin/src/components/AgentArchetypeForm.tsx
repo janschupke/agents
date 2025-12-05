@@ -1,10 +1,16 @@
-import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AgentArchetypeService } from '../services/agent-archetype.service';
 import { AgentArchetype } from '../types/agent-archetype.types';
 import { queryKeys } from '../hooks/queries/query-keys';
 import AgentForm from './AgentForm';
 import { AgentFormMode, AgentFormData } from '../types/agent-form.types';
+import {
+  ResponseLength,
+  Gender,
+  Sentiment,
+  Availability,
+} from '../types/agent.types';
+import { PersonalityType } from '@openai/shared-types';
 
 interface AgentArchetypeFormProps {
   archetype: AgentArchetype | null;
@@ -17,7 +23,6 @@ export default function AgentArchetypeForm({
   onSave,
   onCancel,
 }: AgentArchetypeFormProps) {
-  const { t } = useTranslation(I18nNamespace.ADMIN);
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
@@ -66,13 +71,13 @@ export default function AgentArchetypeForm({
           : [],
       model: (configs.model as string) || undefined,
       maxTokens: configs.max_tokens as number | undefined,
-      responseLength: (configs.response_length as any) || undefined,
+      responseLength: (configs.response_length as ResponseLength) || undefined,
       age: configs.age as number | undefined,
-      gender: (configs.gender as any) || undefined,
-      personality: (configs.personality as any) || undefined,
-      sentiment: (configs.sentiment as any) || undefined,
+      gender: (configs.gender as Gender) || undefined,
+      personality: (configs.personality as PersonalityType) || undefined,
+      sentiment: (configs.sentiment as Sentiment) || undefined,
       interests: (configs.interests as string[]) || undefined,
-      availability: (configs.availability as any) || undefined,
+      availability: (configs.availability as Availability) || undefined,
     };
   };
 

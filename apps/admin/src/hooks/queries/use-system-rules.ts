@@ -50,11 +50,7 @@ export function useSystemRules(agentType: AgentType | null = null) {
 export function useUpdateSystemRules() {
   const queryClient = useQueryClient();
 
-  return useMutation<
-    SystemBehaviorRules,
-    Error,
-    UpdateSystemRulesParams
-  >({
+  return useMutation<SystemBehaviorRules, Error, UpdateSystemRulesParams>({
     mutationFn: ({ rules, systemPrompt, agentType }) =>
       systemConfigService.updateBehaviorRules(rules, systemPrompt, agentType),
     onSuccess: (_data, variables) => {

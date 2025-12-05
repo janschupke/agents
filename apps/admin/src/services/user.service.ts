@@ -23,10 +23,7 @@ export class UserService {
     return apiManager.get<User>(API_ENDPOINTS.USER_BY_ID(id));
   }
 
-  static async updateUser(
-    id: string,
-    data: UpdateUserRequest
-  ): Promise<User> {
+  static async updateUser(id: string, data: UpdateUserRequest): Promise<User> {
     return apiManager.put<User>(API_ENDPOINTS.USER_BY_ID(id), data);
   }
 

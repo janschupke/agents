@@ -27,7 +27,7 @@ export default function AgentList({
     {
       accessorKey: 'name',
       header: t('agents.list.name') || 'Name',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: { original: AgentWithStats } }) => {
         const agent = row.original;
         return (
           <div className="flex items-center gap-3">
@@ -55,7 +55,7 @@ export default function AgentList({
     {
       accessorKey: 'agentType',
       header: t('agents.detail.type') || 'Type',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: { original: AgentWithStats } }) => {
         const agent = row.original;
         return (
           <div className="flex flex-wrap gap-2">
@@ -72,7 +72,7 @@ export default function AgentList({
     {
       accessorKey: 'totalMessages',
       header: t('agents.list.messages', { count: 0 }) || 'Messages',
-      cell: ({ row }) => (
+      cell: ({ row }: { row: { original: AgentWithStats } }) => (
         <div className="text-sm text-text-primary">
           {row.original.totalMessages.toLocaleString()}
         </div>
@@ -81,7 +81,7 @@ export default function AgentList({
     {
       accessorKey: 'totalTokens',
       header: t('agents.list.tokens', { count: 0 }) || 'Tokens',
-      cell: ({ row }) => (
+      cell: ({ row }: { row: { original: AgentWithStats } }) => (
         <div className="text-sm text-text-primary">
           {row.original.totalTokens.toLocaleString()}
         </div>
@@ -90,7 +90,7 @@ export default function AgentList({
     {
       id: 'actions',
       header: t('users.columns.actions') || 'Actions',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: { original: AgentWithStats } }) => {
         const agent = row.original;
         return (
           <div className="flex justify-end gap-2">

@@ -10,25 +10,17 @@ import { ColumnDef } from '@tanstack/react-table';
 interface UserListProps {
   users: User[];
   loading: boolean;
-  onView?: (id: string) => void;
-  onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
 }
 
-export default function UserList({
-  users,
-  loading,
-  onView,
-  onEdit,
-  onDelete,
-}: UserListProps) {
+export default function UserList({ users, loading, onDelete }: UserListProps) {
   const { t } = useTranslation(I18nNamespace.ADMIN);
 
   const columns: ColumnDef<User>[] = [
     {
       accessorKey: 'user',
       header: t('users.columns.user'),
-      cell: ({ row }) => {
+      cell: ({ row }: { row: { original: User } }) => {
         const user = row.original;
         return (
           <div className="flex items-center gap-3">
@@ -61,7 +53,7 @@ export default function UserList({
     {
       accessorKey: 'email',
       header: t('users.columns.email'),
-      cell: ({ row }) => (
+      cell: ({ row }: { row: { original: User } }) => (
         <div className="text-sm text-text-primary">
           {row.original.email || '-'}
         </div>
@@ -70,12 +62,12 @@ export default function UserList({
     {
       accessorKey: 'roles',
       header: t('users.columns.roles'),
-      cell: ({ row }) => {
+      cell: ({ row }: { row: { original: User } }) => {
         const user = row.original;
         return (
           <div className="flex flex-wrap gap-2">
             {user.roles && user.roles.length > 0 ? (
-              user.roles.map((role, index) => (
+              user.roles.map((role: string, index: number) => (
                 <Badge
                   key={index}
                   variant={role === 'admin' ? 'primary' : 'secondary'}
@@ -95,7 +87,7 @@ export default function UserList({
     {
       accessorKey: 'createdAt',
       header: t('users.columns.created'),
-      cell: ({ row }) => (
+      cell: ({ row }: { row: { original: User } }) => (
         <div className="text-sm text-text-secondary">
           {formatDate(row.original.createdAt)}
         </div>
@@ -104,25 +96,17 @@ export default function UserList({
     {
       id: 'actions',
       header: t('users.columns.actions'),
-      cell: ({ row }) => {
+      cell: ({ row }: { row: { original: User } }) => {
         const user = row.original;
         return (
           <div className="flex justify-end gap-2">
             <Link to={ROUTES.USER_DETAIL(user.id)}>
-              <Button
-                variant="icon"
-                size="sm"
-                tooltip={t('users.list.view')}
-              >
+              <Button variant="icon" size="sm" tooltip={t('users.list.view')}>
                 <IconEye className="w-5 h-5" />
               </Button>
             </Link>
             <Link to={ROUTES.USER_EDIT(user.id)}>
-              <Button
-                variant="icon"
-                size="sm"
-                tooltip={t('users.list.edit')}
-              >
+              <Button variant="icon" size="sm" tooltip={t('users.list.edit')}>
                 <IconEdit className="w-5 h-5" />
               </Button>
             </Link>
