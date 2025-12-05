@@ -6,6 +6,7 @@ import { AgentService } from '../services/agent.service';
 import { Button, Card } from '@openai/ui';
 import { IconEdit, IconTrash, IconClose } from './ui/Icons';
 import { formatRelativeDate } from '@openai/utils';
+import { queryKeys } from '../hooks/queries/query-keys';
 
 interface AgentMemoriesListProps {
   agentId: number;
@@ -28,7 +29,7 @@ export default function AgentMemoriesList({
     mutationFn: ({ memoryId, keyPoint }: { memoryId: number; keyPoint: string }) =>
       AgentService.updateMemory(agentId, memoryId, { keyPoint }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-agent-memories', agentId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agent.memories(agentId) });
       setEditingId(null);
       setEditValue('');
     },
@@ -38,8 +39,8 @@ export default function AgentMemoriesList({
     mutationFn: (memoryId: number) =>
       AgentService.deleteMemory(agentId, memoryId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-agent-memories', agentId] });
-      queryClient.invalidateQueries({ queryKey: ['admin-agent', agentId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agent.memories(agentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agent.detail(agentId) });
       setDeletingId(null);
     },
   });

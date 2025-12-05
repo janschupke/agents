@@ -1,12 +1,16 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, Card, Input, Textarea } from '@openai/ui';
+import { Button } from '@openai/ui';
 import { AgentService } from '../services/agent.service';
 import { Agent, UpdateAgentRequest } from '../types/agent.types';
 import { ROUTES } from '../constants/routes.constants';
 import { IconArrowLeft } from '../components/ui/Icons';
+import { queryKeys } from '../hooks/queries/query-keys';
+import AgentForm from '../components/AgentForm';
+import { AgentFormMode, AgentFormData } from '../types/agent-form.types';
+import { ResponseLength, Gender, Sentiment, Availability } from '../types/agent.types';
 
 export default function AgentEditPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
@@ -15,59 +19,106 @@ export default function AgentEditPage() {
   const queryClient = useQueryClient();
   const agentId = id ? parseInt(id, 10) : null;
 
-  const [formData, setFormData] = useState<UpdateAgentRequest>({
-    name: '',
-    description: '',
-    avatarUrl: '',
-    agentType: 'GENERAL',
-    language: '',
-    configs: {},
-  });
-
   const {
     data: agent,
     isLoading: loadingAgent,
     error: agentError,
   } = useQuery({
-    queryKey: ['admin-agent', agentId],
+    queryKey: queryKeys.agent.detail(agentId!),
     queryFn: () => AgentService.getAgent(agentId!),
     enabled: !!agentId,
   });
-
-  useEffect(() => {
-    if (agent) {
-      setFormData({
-        name: agent.name,
-        description: agent.description || '',
-        avatarUrl: agent.avatarUrl || '',
-        agentType: agent.agentType || 'GENERAL',
-        language: agent.language || '',
-        configs: agent.configs || {},
-      });
-    }
-  }, [agent]);
 
   const updateMutation = useMutation({
     mutationFn: (data: UpdateAgentRequest) =>
       AgentService.updateAgent(agentId!, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-agent', agentId] });
-      queryClient.invalidateQueries({ queryKey: ['admin-agents'] });
-      navigate(ROUTES.AGENT_DETAIL(agentId!));
+      queryClient.invalidateQueries({ queryKey: queryKeys.agent.detail(agentId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agent.list() });
+      navigate(ROUTES.AGENTS);
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateMutation.mutate(formData);
+  const mapAgentToFormData = (agent: Agent | undefined): AgentFormData | null => {
+    if (!agent) return null;
+
+    const configs = agent.configs || {};
+    return {
+      name: agent.name || '',
+      description: agent.description || undefined,
+      avatarUrl: agent.avatarUrl || undefined,
+      agentType: agent.agentType || undefined,
+      language: agent.language || undefined,
+      temperature: configs.temperature as number | undefined,
+      systemPrompt: (configs.system_prompt as string) || undefined,
+      model: (configs.model as string) || undefined,
+      maxTokens: configs.max_tokens as number | undefined,
+      responseLength: (configs.response_length as ResponseLength) || undefined,
+      age: configs.age as number | undefined,
+      gender: (configs.gender as Gender) || undefined,
+      personality: (configs.personality as string) || undefined,
+      sentiment: (configs.sentiment as Sentiment) || undefined,
+      interests: (configs.interests as string[]) || undefined,
+      availability: (configs.availability as Availability) || undefined,
+    };
+  };
+
+  const mapFormDataToUpdateRequest = (
+    data: AgentFormData
+  ): UpdateAgentRequest => {
+    const configs: Record<string, unknown> = {};
+
+    if (data.temperature !== undefined) {
+      configs.temperature = data.temperature;
+    }
+    if (data.systemPrompt) {
+      configs.system_prompt = data.systemPrompt;
+    }
+    if (data.model) {
+      configs.model = data.model;
+    }
+    if (data.maxTokens !== undefined) {
+      configs.max_tokens = data.maxTokens;
+    }
+    if (data.responseLength) {
+      configs.response_length = data.responseLength;
+    }
+    if (data.age !== undefined) {
+      configs.age = data.age;
+    }
+    if (data.gender) {
+      configs.gender = data.gender;
+    }
+    if (data.personality) {
+      configs.personality = data.personality;
+    }
+    if (data.sentiment) {
+      configs.sentiment = data.sentiment;
+    }
+    if (data.interests && data.interests.length > 0) {
+      configs.interests = data.interests;
+    }
+    if (data.availability) {
+      configs.availability = data.availability;
+    }
+
+    return {
+      name: data.name.trim(),
+      description: data.description?.trim() || undefined,
+      avatarUrl: data.avatarUrl?.trim() || undefined,
+      agentType: data.agentType || undefined,
+      language: data.language?.trim() || undefined,
+      configs: Object.keys(configs).length > 0 ? configs : undefined,
+    };
+  };
+
+  const handleSubmit = async (data: AgentFormData) => {
+    const requestData = mapFormDataToUpdateRequest(data);
+    updateMutation.mutate(requestData);
   };
 
   const handleCancel = () => {
-    if (agentId) {
-      navigate(ROUTES.AGENT_DETAIL(agentId));
-    } else {
-      navigate(ROUTES.AGENTS);
-    }
+    navigate(ROUTES.AGENTS);
   };
 
   if (!agentId) {
@@ -110,98 +161,13 @@ export default function AgentEditPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <Card title={t('agents.detail.basicInfo')} padding="md">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1">
-                {t('agents.edit.name')}
-              </label>
-              <Input
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1">
-                {t('agents.edit.description')}
-              </label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                rows={3}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1">
-                {t('agents.edit.avatarUrl')}
-              </label>
-              <Input
-                value={formData.avatarUrl}
-                onChange={(e) =>
-                  setFormData({ ...formData, avatarUrl: e.target.value })
-                }
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1">
-                  {t('agents.edit.agentType')}
-                </label>
-                <select
-                  value={formData.agentType || 'GENERAL'}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      agentType: e.target.value as 'GENERAL' | 'LANGUAGE_ASSISTANT',
-                    })
-                  }
-                  className="w-full p-2 border border-border rounded bg-background text-text-primary"
-                >
-                  <option value="GENERAL">GENERAL</option>
-                  <option value="LANGUAGE_ASSISTANT">LANGUAGE_ASSISTANT</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1">
-                  {t('agents.edit.language')}
-                </label>
-                <Input
-                  value={formData.language}
-                  onChange={(e) =>
-                    setFormData({ ...formData, language: e.target.value })
-                  }
-                  placeholder="en, zh, ja, etc."
-                />
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        <div className="flex justify-end gap-3">
-          <Button
-            type="button"
-            onClick={handleCancel}
-            variant="secondary"
-            disabled={updateMutation.isPending}
-          >
-            {t('agents.edit.cancel')}
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={updateMutation.isPending || !formData.name.trim()}
-            loading={updateMutation.isPending}
-          >
-            {t('agents.edit.save')}
-          </Button>
-        </div>
-      </form>
+      <AgentForm
+        mode={AgentFormMode.AGENT}
+        initialData={mapAgentToFormData(agent)}
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+        isLoading={updateMutation.isPending}
+      />
     </div>
   );
 }

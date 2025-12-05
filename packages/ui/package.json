@@ -30,7 +30,8 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "react": "^18.2.0"
+    "react": "^18.2.0",
+    "@tanstack/react-table": "^8.20.5"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^4.1.3",

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { NUMERIC_CONSTANTS, HTTP_STATUS } from '@openai/shared-types';
-import { Button } from '@openai/ui';
+import { Button, Tabs, TabPanel } from '@openai/ui';
 import {
   useSystemRules,
   useUpdateSystemRules,
@@ -322,28 +322,18 @@ export default function SystemBehaviorRules() {
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-border">
-        <div className="flex gap-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
-                activeTab === tab.id
-                  ? 'text-primary border-primary'
-                  : 'text-text-tertiary border-transparent hover:text-text-secondary hover:border-border'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Tab Content */}
-      <div>{renderForm(activeTab)}</div>
+      <Tabs
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      >
+        <TabPanel id={AgentType.GENERAL} activeTab={activeTab}>
+          {renderForm(AgentType.GENERAL)}
+        </TabPanel>
+        <TabPanel id={AgentType.LANGUAGE_ASSISTANT} activeTab={activeTab}>
+          {renderForm(AgentType.LANGUAGE_ASSISTANT)}
+        </TabPanel>
+      </Tabs>
     </div>
   );
 }

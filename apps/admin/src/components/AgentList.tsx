@@ -1,7 +1,8 @@
 import { AgentWithStats } from '../types/agent.types';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { Button, Avatar, Badge } from '@openai/ui';
+import { Button, Avatar, Badge, Table } from '@openai/ui';
 import { IconEdit, IconTrash, IconEye } from './ui/Icons';
+import { ColumnDef } from '@tanstack/react-table';
 
 interface AgentListProps {
   agents: AgentWithStats[];
@@ -22,64 +23,77 @@ export default function AgentList({
 }: AgentListProps) {
   const { t } = useTranslation(I18nNamespace.ADMIN);
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="h-20 w-full bg-background-secondary animate-pulse rounded-lg"
-          />
-        ))}
-      </div>
-    );
-  }
-
-  if (agents.length === 0) {
-    return (
-      <div className="text-center py-12 text-text-secondary">
-        {t('agents.list.empty')}
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {agents.map((agent) => (
-        <div
-          key={agent.id}
-          className="flex items-center gap-4 p-4 bg-background-secondary rounded-lg border border-border"
-        >
-          <Avatar
-            src={agent.avatarUrl || undefined}
-            name={agent.name}
-            size="md"
-            borderWidth="none"
-            className="w-12 h-12"
-          />
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-text-primary">{agent.name}</h3>
-            {agent.description && (
-              <p className="text-sm text-text-secondary mt-1 line-clamp-1">
-                {agent.description}
-              </p>
-            )}
-            <div className="flex gap-2 mt-2 flex-wrap">
-              {agent.agentType && (
-                <Badge variant="primary">{agent.agentType}</Badge>
+  const columns: ColumnDef<AgentWithStats>[] = [
+    {
+      accessorKey: 'name',
+      header: t('agents.list.name') || 'Name',
+      cell: ({ row }) => {
+        const agent = row.original;
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar
+              src={agent.avatarUrl || undefined}
+              name={agent.name}
+              size="md"
+              borderWidth="none"
+              className="w-10 h-10"
+            />
+            <div>
+              <div className="text-sm font-medium text-text-primary">
+                {agent.name}
+              </div>
+              {agent.description && (
+                <div className="text-xs text-text-secondary line-clamp-1">
+                  {agent.description}
+                </div>
               )}
-              {agent.language && (
-                <Badge variant="secondary">{agent.language}</Badge>
-              )}
-              <span className="text-xs text-text-tertiary">
-                {t('agents.list.messages', { count: agent.totalMessages })}
-              </span>
-              <span className="text-xs text-text-tertiary">
-                {t('agents.list.tokens', { count: agent.totalTokens })}
-              </span>
             </div>
           </div>
-          <div className="flex gap-2">
+        );
+      },
+    },
+    {
+      accessorKey: 'agentType',
+      header: t('agents.detail.type') || 'Type',
+      cell: ({ row }) => {
+        const agent = row.original;
+        return (
+          <div className="flex flex-wrap gap-2">
+            {agent.agentType && (
+              <Badge variant="primary">{agent.agentType}</Badge>
+            )}
+            {agent.language && (
+              <Badge variant="secondary">{agent.language}</Badge>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: 'totalMessages',
+      header: t('agents.list.messages', { count: 0 }) || 'Messages',
+      cell: ({ row }) => (
+        <div className="text-sm text-text-primary">
+          {row.original.totalMessages.toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'totalTokens',
+      header: t('agents.list.tokens', { count: 0 }) || 'Tokens',
+      cell: ({ row }) => (
+        <div className="text-sm text-text-primary">
+          {row.original.totalTokens.toLocaleString()}
+        </div>
+      ),
+    },
+    {
+      id: 'actions',
+      header: t('users.columns.actions') || 'Actions',
+      cell: ({ row }) => {
+        const agent = row.original;
+        return (
+          <div className="flex justify-end gap-2">
             <Button
               variant="icon"
               size="sm"
@@ -107,8 +121,17 @@ export default function AgentList({
               <IconTrash className="w-5 h-5" />
             </Button>
           </div>
-        </div>
-      ))}
-    </div>
+        );
+      },
+    },
+  ];
+
+  return (
+    <Table
+      data={agents}
+      columns={columns}
+      loading={loading}
+      emptyMessage={t('agents.list.empty')}
+    />
   );
 }

@@ -1,7 +1,8 @@
 import { AgentArchetype } from '../types/agent-archetype.types';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { Button, Avatar, Badge } from '@openai/ui';
+import { Button, Avatar, Badge, Table } from '@openai/ui';
 import { IconEdit, IconTrash } from './ui/Icons';
+import { ColumnDef } from '@tanstack/react-table';
 
 interface AgentArchetypeListProps {
   archetypes: AgentArchetype[];
@@ -18,60 +19,59 @@ export default function AgentArchetypeList({
 }: AgentArchetypeListProps) {
   const { t } = useTranslation(I18nNamespace.ADMIN);
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="h-20 w-full bg-background-secondary animate-pulse rounded-lg"
-          />
-        ))}
-      </div>
-    );
-  }
-
-  if (archetypes.length === 0) {
-    return (
-      <div className="text-center py-12 text-text-secondary">
-        {t('archetypes.empty')}
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {archetypes.map((archetype) => (
-        <div
-          key={archetype.id}
-          className="flex items-center gap-4 p-4 bg-background-secondary rounded-lg border border-border"
-        >
-          <Avatar
-            src={archetype.avatarUrl || undefined}
-            name={archetype.name}
-            size="md"
-            borderWidth="none"
-            className="w-12 h-12"
-          />
-          <div className="flex-1">
-            <h3 className="font-semibold text-text-primary">
-              {archetype.name}
-            </h3>
-            {archetype.description && (
-              <p className="text-sm text-text-secondary mt-1">
-                {archetype.description}
-              </p>
-            )}
-            <div className="flex gap-2 mt-2">
-              {archetype.agentType && (
-                <Badge variant="primary">{archetype.agentType}</Badge>
-              )}
-              {archetype.language && (
-                <Badge variant="secondary">{archetype.language}</Badge>
+  const columns: ColumnDef<AgentArchetype>[] = [
+    {
+      accessorKey: 'name',
+      header: t('archetypes.form.name') || 'Name',
+      cell: ({ row }) => {
+        const archetype = row.original;
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar
+              src={archetype.avatarUrl || undefined}
+              name={archetype.name}
+              size="md"
+              borderWidth="none"
+              className="w-10 h-10"
+            />
+            <div>
+              <div className="text-sm font-medium text-text-primary">
+                {archetype.name}
+              </div>
+              {archetype.description && (
+                <div className="text-xs text-text-secondary line-clamp-1">
+                  {archetype.description}
+                </div>
               )}
             </div>
           </div>
-          <div className="flex gap-2">
+        );
+      },
+    },
+    {
+      accessorKey: 'agentType',
+      header: t('archetypes.form.agentType') || 'Type',
+      cell: ({ row }) => {
+        const archetype = row.original;
+        return (
+          <div className="flex flex-wrap gap-2">
+            {archetype.agentType && (
+              <Badge variant="primary">{archetype.agentType}</Badge>
+            )}
+            {archetype.language && (
+              <Badge variant="secondary">{archetype.language}</Badge>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      id: 'actions',
+      header: t('users.columns.actions') || 'Actions',
+      cell: ({ row }) => {
+        const archetype = row.original;
+        return (
+          <div className="flex justify-end gap-2">
             <Button
               variant="icon"
               size="sm"
@@ -90,8 +90,17 @@ export default function AgentArchetypeList({
               <IconTrash className="w-5 h-5" />
             </Button>
           </div>
-        </div>
-      ))}
-    </div>
+        );
+      },
+    },
+  ];
+
+  return (
+    <Table
+      data={archetypes}
+      columns={columns}
+      loading={loading}
+      emptyMessage={t('archetypes.empty')}
+    />
   );
 }

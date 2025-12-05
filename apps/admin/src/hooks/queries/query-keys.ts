@@ -8,6 +8,12 @@ enum QueryKey {
   ME = 'me',
   ALL = 'all',
   AI_REQUEST_LOGS = 'aiRequestLogs',
+  AGENT = 'admin-agent',
+  AGENTS = 'admin-agents',
+  AGENT_MEMORIES = 'admin-agent-memories',
+  ARCHETYPE = 'agent-archetype',
+  ARCHETYPES = 'agent-archetypes',
+  MEMORIES = 'memories',
 }
 
 export const queryKeys = {
@@ -16,6 +22,7 @@ export const queryKeys = {
     me: () => [...queryKeys.user.all, QueryKey.ME] as const,
     lists: () => [...queryKeys.user.all, QueryKey.USERS] as const,
     list: () => [...queryKeys.user.lists(), QueryKey.ALL] as const,
+    detail: (id: string) => [...queryKeys.user.all, id] as const,
   },
   system: {
     all: [QueryKey.SYSTEM] as const,
@@ -32,5 +39,18 @@ export const queryKeys = {
     lists: () => [...queryKeys.aiRequestLogs.all, QueryKey.ALL] as const,
     list: (params?: GetAiRequestLogsParams) =>
       [...queryKeys.aiRequestLogs.lists(), params] as const,
+  },
+  agent: {
+    all: [QueryKey.AGENT] as const,
+    lists: () => [...queryKeys.agent.all, QueryKey.AGENTS] as const,
+    list: () => [...queryKeys.agent.lists(), QueryKey.ALL] as const,
+    detail: (id: number) => [...queryKeys.agent.all, id] as const,
+    memories: (id: number) => [...queryKeys.agent.detail(id), QueryKey.MEMORIES] as const,
+  },
+  archetype: {
+    all: [QueryKey.ARCHETYPE] as const,
+    lists: () => [...queryKeys.archetype.all, QueryKey.ARCHETYPES] as const,
+    list: () => [...queryKeys.archetype.lists(), QueryKey.ALL] as const,
+    detail: (id: number) => [...queryKeys.archetype.all, id] as const,
   },
 } as const;

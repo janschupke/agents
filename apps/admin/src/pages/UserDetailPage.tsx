@@ -2,9 +2,6 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import {
-  PageHeader,
-  PageContent,
-  Container,
   Button,
   Avatar,
   Badge,
@@ -39,7 +36,7 @@ export default function UserDetailPage() {
     isLoading,
     error,
   } = useQuery<User>({
-    queryKey: ['user', id],
+    queryKey: queryKeys.user.detail(id!),
     queryFn: () => UserService.getUserById(id!),
     enabled: !!id,
   });
@@ -64,141 +61,136 @@ export default function UserDetailPage() {
 
   if (isLoading) {
     return (
-      <Container>
+      <div className="space-y-6">
         <Skeleton className="h-8 w-64 mb-4" />
         <Skeleton className="h-64 w-full" />
-      </Container>
+      </div>
     );
   }
 
   if (error || !user) {
     return (
-      <Container>
+      <div className="space-y-6">
         <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
           {t('users.detail.error')}
         </div>
-      </Container>
+      </div>
     );
   }
 
   return (
-    <Container>
-      <PageHeader
-        leftContent={
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
           <Button
-            variant="ghost"
+            variant="icon"
             size="sm"
             onClick={() => navigate(ROUTES.USERS)}
             tooltip={t('users.detail.back')}
           >
             <IconArrowLeft className="w-5 h-5" />
           </Button>
-        }
-        title={
-          user.firstName || user.lastName
-            ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
-            : user.email || user.id
-        }
-        actions={
-          <div className="flex gap-2">
-            <Link to={ROUTES.USER_EDIT(user.id)}>
-              <Button variant="secondary" size="sm">
-                <IconEdit className="w-4 h-4" />
-                {t('users.detail.edit')}
-              </Button>
-            </Link>
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={handleDelete}
-              tooltip={t('users.detail.delete')}
-            >
-              <IconTrash className="w-4 h-4" />
-              {t('users.detail.delete')}
+          <h2 className="text-xl font-semibold text-text-secondary">
+            {user.firstName || user.lastName
+              ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+              : user.email || user.id}
+          </h2>
+        </div>
+        <div className="flex gap-2">
+          <Link to={ROUTES.USER_EDIT(user.id)}>
+            <Button variant="secondary" size="sm">
+              <IconEdit className="w-4 h-4" />
+              {t('users.detail.edit')}
             </Button>
-          </div>
-        }
-      />
-      <PageContent>
-        <div className="space-y-6">
-          <Card padding="md" variant="outlined">
-            <h3 className="text-lg font-semibold text-text-secondary mb-4">
-              {t('users.detail.basicInfo')}
-            </h3>
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <Avatar
-                  src={user.imageUrl || undefined}
-                  name={
-                    user.firstName ||
-                    user.lastName ||
-                    user.email ||
-                    user.id
-                  }
-                  size="lg"
-                  borderWidth="none"
-                  className="w-16 h-16"
-                />
-                <div>
-                  <div className="text-sm text-text-tertiary">
-                    {t('users.detail.userId')}
-                  </div>
-                  <div className="text-sm font-mono text-text-primary">
-                    {user.id}
-                  </div>
-                </div>
+          </Link>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={handleDelete}
+            tooltip={t('users.detail.delete')}
+          >
+            <IconTrash className="w-4 h-4" />
+            {t('users.detail.delete')}
+          </Button>
+        </div>
+      </div>
+
+      <Card padding="md" variant="outlined">
+        <h3 className="text-lg font-semibold text-text-secondary mb-4">
+          {t('users.detail.basicInfo')}
+        </h3>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <Avatar
+              src={user.imageUrl || undefined}
+              name={
+                user.firstName ||
+                user.lastName ||
+                user.email ||
+                user.id
+              }
+              size="lg"
+              borderWidth="none"
+              className="w-16 h-16"
+            />
+            <div>
+              <div className="text-sm text-text-tertiary">
+                {t('users.detail.userId')}
               </div>
-              <div>
-                <div className="text-sm text-text-tertiary mb-1">
-                  {t('users.columns.email')}
-                </div>
-                <div className="text-sm text-text-primary">
-                  {user.email || '-'}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-text-tertiary mb-1">
-                  {t('users.columns.name')}
-                </div>
-                <div className="text-sm text-text-primary">
-                  {user.firstName || user.lastName
-                    ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
-                    : '-'}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-text-tertiary mb-1">
-                  {t('users.columns.roles')}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {user.roles && user.roles.length > 0 ? (
-                    user.roles.map((role, index) => (
-                      <Badge
-                        key={index}
-                        variant={role === 'admin' ? 'primary' : 'secondary'}
-                      >
-                        {role}
-                      </Badge>
-                    ))
-                  ) : (
-                    <span className="text-xs text-text-tertiary">
-                      {t('users.noRoles')}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-text-tertiary mb-1">
-                  {t('users.columns.created')}
-                </div>
-                <div className="text-sm text-text-primary">
-                  {formatDate(user.createdAt)}
-                </div>
+              <div className="text-sm font-mono text-text-primary">
+                {user.id}
               </div>
             </div>
-          </Card>
+          </div>
+          <div>
+            <div className="text-sm text-text-tertiary mb-1">
+              {t('users.columns.email')}
+            </div>
+            <div className="text-sm text-text-primary">
+              {user.email || '-'}
+            </div>
+          </div>
+          <div>
+            <div className="text-sm text-text-tertiary mb-1">
+              {t('users.columns.name')}
+            </div>
+            <div className="text-sm text-text-primary">
+              {user.firstName || user.lastName
+                ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                : '-'}
+            </div>
+          </div>
+          <div>
+            <div className="text-sm text-text-tertiary mb-1">
+              {t('users.columns.roles')}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {user.roles && user.roles.length > 0 ? (
+                user.roles.map((role, index) => (
+                  <Badge
+                    key={index}
+                    variant={role === 'admin' ? 'primary' : 'secondary'}
+                  >
+                    {role}
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-xs text-text-tertiary">
+                  {t('users.noRoles')}
+                </span>
+              )}
+            </div>
+          </div>
+          <div>
+            <div className="text-sm text-text-tertiary mb-1">
+              {t('users.columns.created')}
+            </div>
+            <div className="text-sm text-text-primary">
+              {formatDate(user.createdAt)}
+            </div>
+          </div>
         </div>
-      </PageContent>
+      </Card>
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
           <DialogHeader onClose={() => setShowDeleteDialog(false)}>
@@ -228,6 +220,6 @@ export default function UserDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Container>
+    </div>
   );
 }

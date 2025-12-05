@@ -14,3 +14,5 @@ export { default as MainTitle } from './MainTitle';
 export { default as PageTitle } from './PageTitle';
 export { default as Container } from './Container';
 export { default as PageContent } from './PageContent';
+export * from './Tabs';
+export * from './Table';

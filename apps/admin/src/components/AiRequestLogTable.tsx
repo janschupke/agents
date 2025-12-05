@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useNavigate } from 'react-router-dom';
 import type { AiRequestLog } from '../types/ai-request-log.types';
@@ -7,6 +7,8 @@ import {
   OrderDirection,
 } from '../types/ai-request-log.enums';
 import { ROUTES } from '../constants/routes.constants';
+import { Table, Button } from '@openai/ui';
+import { ColumnDef } from '@tanstack/react-table';
 
 interface AiRequestLogTableProps {
   logs: AiRequestLog[];
@@ -34,17 +36,6 @@ export default function AiRequestLogTable({
 }: AiRequestLogTableProps) {
   const { t } = useTranslation(I18nNamespace.ADMIN);
   const navigate = useNavigate();
-  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
-
-  const toggleRow = (id: number) => {
-    const newExpanded = new Set(expandedRows);
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id);
-    } else {
-      newExpanded.add(id);
-    }
-    setExpandedRows(newExpanded);
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
@@ -66,13 +57,28 @@ export default function AiRequestLogTable({
     return text.substring(0, maxLength) + '...';
   };
 
+  const formatRequest = (requestJson: Record<string, unknown>): string => {
+    const requestStr = JSON.stringify(requestJson, null, 2);
+    return truncateText(requestStr, 100);
+  };
+
+  const formatResponse = (responseJson: Record<string, unknown>): string => {
+    const responseContent =
+      (
+        responseJson as {
+          choices?: Array<{ message?: { content?: string } }>;
+        }
+      )?.choices?.[0]?.message?.content || '';
+    return truncateText(responseContent, 100);
+  };
+
   const formatJson = (json: Record<string, unknown>) => {
     return JSON.stringify(json, null, 2);
   };
 
   const getSortIcon = (column: AiRequestLogOrderBy) => {
     if (currentOrderBy !== column) return null;
-    return currentOrderDirection === OrderDirection.ASC ? '↑' : '↓';
+    return currentOrderDirection === OrderDirection.ASC ? ' ↑' : ' ↓';
   };
 
   const handleSort = (column: AiRequestLogOrderBy) => {
@@ -88,203 +94,200 @@ export default function AiRequestLogTable({
     }
   };
 
-  return (
-    <div className="bg-background-secondary rounded-lg border border-border overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-background-tertiary">
-            <tr>
-              <th
-                className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase cursor-pointer hover:bg-background-secondary"
-                onClick={() => handleSort(AiRequestLogOrderBy.CREATED_AT)}
-              >
-                {t('aiRequestLogs.table.datetime')}{' '}
-                {getSortIcon(AiRequestLogOrderBy.CREATED_AT)}
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">
-                {t('aiRequestLogs.table.user')}
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">
-                {t('aiRequestLogs.table.agent')}
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">
-                {t('aiRequestLogs.table.logType')}
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">
-                {t('aiRequestLogs.table.model')}
-              </th>
-              <th
-                className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase cursor-pointer hover:bg-background-secondary"
-                onClick={() => handleSort(AiRequestLogOrderBy.TOTAL_TOKENS)}
-              >
-                {t('aiRequestLogs.table.tokens')}{' '}
-                {getSortIcon(AiRequestLogOrderBy.TOTAL_TOKENS)}
-              </th>
-              <th
-                className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase cursor-pointer hover:bg-background-secondary"
-                onClick={() => handleSort(AiRequestLogOrderBy.ESTIMATED_PRICE)}
-              >
-                {t('aiRequestLogs.table.price')}{' '}
-                {getSortIcon(AiRequestLogOrderBy.ESTIMATED_PRICE)}
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">
-                {t('aiRequestLogs.table.response')}
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase">
-                {t('aiRequestLogs.table.actions')}
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {logs.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={9}
-                  className="px-4 py-8 text-center text-text-tertiary"
-                >
-                  {t('aiRequestLogs.noLogs')}
-                </td>
-              </tr>
-            ) : (
-              logs.map((log) => {
-                const isExpanded = expandedRows.has(log.id);
-                const responseContent =
-                  (
-                    log.responseJson as {
-                      choices?: Array<{ message?: { content?: string } }>;
-                    }
-                  )?.choices?.[0]?.message?.content || '';
-
-                return (
-                  <tr key={log.id} className="hover:bg-background-tertiary">
-                    <td className="px-4 py-3 text-sm text-text-primary">
-                      {formatDate(log.createdAt)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-text-primary">
-                      {log.user
-                        ? `${log.user.firstName || ''} ${log.user.lastName || ''}`.trim() ||
-                          log.user.email ||
-                          log.userId
-                        : log.userId || t('aiRequestLogs.deletedUser')}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-text-primary">
-                      {log.agent ? (
-                        <button
-                          onClick={() => navigate(ROUTES.AGENT_DETAIL(log.agent!.id))}
-                          className="text-primary hover:text-primary-hover hover:underline"
-                        >
-                          {log.agent.name}
-                        </button>
-                      ) : (
-                        <span className="text-text-tertiary">-</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-text-primary">
-                      <span className="inline-flex items-center px-2 py-1 rounded text-xs bg-background-tertiary text-text-secondary">
-                        {t(`aiRequestLogs.logTypes.${log.logType.toLowerCase()}`)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-text-primary">
-                      {log.model}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-text-primary">
-                      {log.totalTokens.toLocaleString()}
-                      <span className="text-text-tertiary text-xs ml-1">
-                        ({log.promptTokens}/{log.completionTokens})
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-text-primary font-mono">
-                      {formatPrice(log.estimatedPrice)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-text-primary">
-                      {truncateText(responseContent, 100)}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <button
-                        onClick={() => toggleRow(log.id)}
-                        className="text-primary hover:text-primary-hover"
-                      >
-                        {isExpanded
-                          ? t('aiRequestLogs.collapse')
-                          : t('aiRequestLogs.expand')}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Expanded row details */}
-      {logs.map((log) => {
-        if (!expandedRows.has(log.id)) return null;
-
+  const columns: ColumnDef<AiRequestLog>[] = [
+    {
+      accessorKey: 'createdAt',
+      header: () => (
+        <button
+          type="button"
+          onClick={() => handleSort(AiRequestLogOrderBy.CREATED_AT)}
+          className="flex items-center gap-1"
+        >
+          {t('aiRequestLogs.table.datetime')}
+          {getSortIcon(AiRequestLogOrderBy.CREATED_AT)}
+        </button>
+      ),
+      cell: ({ row }) => (
+        <div className="text-sm text-text-primary">
+          {formatDate(row.original.createdAt)}
+        </div>
+      ),
+      enableSorting: false,
+    },
+    {
+      accessorKey: 'user',
+      header: t('aiRequestLogs.table.user'),
+      cell: ({ row }) => {
+        const log = row.original;
         return (
-          <div
-            key={`expanded-${log.id}`}
-            className="border-t border-border bg-background p-4"
-          >
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="font-medium text-text-secondary mb-2">
-                  {t('aiRequestLogs.request')}
-                </h4>
-                <pre className="bg-background-tertiary p-3 rounded text-xs overflow-auto max-h-64">
-                  {formatJson(log.requestJson)}
-                </pre>
-              </div>
-              <div>
-                <h4 className="font-medium text-text-secondary mb-2">
-                  {t('aiRequestLogs.response')}
-                </h4>
-                <pre className="bg-background-tertiary p-3 rounded text-xs overflow-auto max-h-64">
-                  {formatJson(log.responseJson)}
-                </pre>
-              </div>
-            </div>
+          <div className="text-sm text-text-primary">
+            {log.user
+              ? `${log.user.firstName || ''} ${log.user.lastName || ''}`.trim() ||
+                log.user.email ||
+                log.userId
+              : log.userId || t('aiRequestLogs.deletedUser')}
           </div>
         );
-      })}
-
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="px-4 py-3 border-t border-border flex items-center justify-between">
-          <div className="text-sm text-text-tertiary">
-            {t('aiRequestLogs.pagination.showing', {
-              start: (pagination.page - 1) * pagination.pageSize + 1,
-              end: Math.min(
-                pagination.page * pagination.pageSize,
-                pagination.total
-              ),
-              total: pagination.total,
-            })}
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => onPageChange(pagination.page - 1)}
-              disabled={pagination.page === 1}
-              className="px-3 py-1 text-sm border border-border rounded hover:bg-background-tertiary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {t('aiRequestLogs.pagination.previous')}
-            </button>
-            <span className="px-3 py-1 text-sm text-text-secondary">
-              {t('aiRequestLogs.pagination.page', {
-                current: pagination.page,
-                total: pagination.totalPages,
-              })}
+      },
+    },
+    {
+      accessorKey: 'agent',
+      header: t('aiRequestLogs.table.agent'),
+      cell: ({ row }) => {
+        const log = row.original;
+        return log.agent ? (
+          <button
+            onClick={() => navigate(ROUTES.AGENT_DETAIL(log.agent!.id))}
+            className="text-primary hover:text-primary-hover hover:underline text-sm"
+          >
+            {log.agent.name}
+          </button>
+        ) : (
+          <span className="text-text-tertiary text-sm">-</span>
+        );
+      },
+    },
+    {
+      accessorKey: 'logType',
+      header: t('aiRequestLogs.table.logType'),
+      cell: ({ row }) => (
+        <span className="inline-flex items-center px-2 py-1 rounded text-xs bg-background-tertiary text-text-secondary">
+          {t(`aiRequestLogs.logTypes.${row.original.logType.toLowerCase()}`)}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'model',
+      header: t('aiRequestLogs.table.model'),
+      cell: ({ row }) => (
+        <div className="text-sm text-text-primary">{row.original.model}</div>
+      ),
+    },
+    {
+      accessorKey: 'totalTokens',
+      header: () => (
+        <button
+          type="button"
+          onClick={() => handleSort(AiRequestLogOrderBy.TOTAL_TOKENS)}
+          className="flex items-center gap-1"
+        >
+          {t('aiRequestLogs.table.tokens')}
+          {getSortIcon(AiRequestLogOrderBy.TOTAL_TOKENS)}
+        </button>
+      ),
+      cell: ({ row }) => {
+        const log = row.original;
+        return (
+          <div className="text-sm text-text-primary">
+            {log.totalTokens.toLocaleString()}
+            <span className="text-text-tertiary text-xs ml-1">
+              ({log.promptTokens}/{log.completionTokens})
             </span>
-            <button
-              onClick={() => onPageChange(pagination.page + 1)}
-              disabled={pagination.page >= pagination.totalPages}
-              className="px-3 py-1 text-sm border border-border rounded hover:bg-background-tertiary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {t('aiRequestLogs.pagination.next')}
-            </button>
           </div>
+        );
+      },
+      enableSorting: false,
+    },
+    {
+      accessorKey: 'estimatedPrice',
+      header: () => (
+        <button
+          type="button"
+          onClick={() => handleSort(AiRequestLogOrderBy.ESTIMATED_PRICE)}
+          className="flex items-center gap-1"
+        >
+          {t('aiRequestLogs.table.price')}
+          {getSortIcon(AiRequestLogOrderBy.ESTIMATED_PRICE)}
+        </button>
+      ),
+      cell: ({ row }) => (
+        <div className="text-sm text-text-primary font-mono">
+          {formatPrice(row.original.estimatedPrice)}
         </div>
-      )}
-    </div>
+      ),
+      enableSorting: false,
+    },
+    {
+      accessorKey: 'request',
+      header: t('aiRequestLogs.table.request'),
+      cell: ({ row }) => (
+        <div className="text-sm text-text-primary">
+          {formatRequest(row.original.requestJson)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'response',
+      header: t('aiRequestLogs.table.response'),
+      cell: ({ row }) => (
+        <div className="text-sm text-text-primary">
+          {formatResponse(row.original.responseJson)}
+        </div>
+      ),
+    },
+    {
+      id: 'actions',
+      header: t('aiRequestLogs.table.actions'),
+      cell: (info) => {
+        const log = info.row.original;
+        const table = info.table;
+        const rowId = log.id;
+        const meta = table.options.meta as {
+          expandedRows?: Set<string | number>;
+          toggleExpand?: (id: string | number) => void;
+        };
+        const isExpanded = meta?.expandedRows?.has(rowId) || false;
+        const toggleExpand = () => meta?.toggleExpand?.(rowId);
+        return (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleExpand}
+            className="text-primary hover:text-primary-hover"
+          >
+            {isExpanded
+              ? t('aiRequestLogs.collapse')
+              : t('aiRequestLogs.expand')}
+          </Button>
+        );
+      },
+    },
+  ];
+
+  return (
+    <Table
+      data={logs}
+      columns={columns}
+      pagination={{
+        page: pagination.page,
+        pageSize: pagination.pageSize,
+        total: pagination.total,
+        onPageChange,
+      }}
+      expandable={{
+        getRowId: (log) => log.id,
+        renderExpanded: (log) => (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <h4 className="font-medium text-text-secondary mb-2">
+                {t('aiRequestLogs.request')}
+              </h4>
+              <pre className="bg-background-tertiary p-3 rounded text-xs overflow-auto max-h-96">
+                {formatJson(log.requestJson)}
+              </pre>
+            </div>
+            <div>
+              <h4 className="font-medium text-text-secondary mb-2">
+                {t('aiRequestLogs.response')}
+              </h4>
+              <pre className="bg-background-tertiary p-3 rounded text-xs overflow-auto max-h-96">
+                {formatJson(log.responseJson)}
+              </pre>
+            </div>
+          </div>
+        ),
+      }}
+      emptyMessage={t('aiRequestLogs.noLogs')}
+    />
   );
 }

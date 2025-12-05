@@ -8,6 +8,7 @@ import AgentMemoriesList from '../components/AgentMemoriesList';
 import { ROUTES } from '../constants/routes.constants';
 import { IconEdit, IconTrash, IconArrowLeft } from '../components/ui/Icons';
 import { formatDate } from '@openai/utils';
+import { queryKeys } from '../hooks/queries/query-keys';
 
 export default function AgentDetailPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
@@ -21,7 +22,7 @@ export default function AgentDetailPage() {
     isLoading: loadingAgent,
     error: agentError,
   } = useQuery({
-    queryKey: ['admin-agent', agentId],
+    queryKey: queryKeys.agent.detail(agentId!),
     queryFn: () => AgentService.getAgent(agentId!),
     enabled: !!agentId,
   });
@@ -30,7 +31,7 @@ export default function AgentDetailPage() {
     data: memories = [],
     isLoading: loadingMemories,
   } = useQuery({
-    queryKey: ['admin-agent-memories', agentId],
+    queryKey: queryKeys.agent.memories(agentId!),
     queryFn: () => AgentService.getAgentMemories(agentId!),
     enabled: !!agentId,
   });
@@ -38,7 +39,7 @@ export default function AgentDetailPage() {
   const deleteMutation = useMutation({
     mutationFn: () => AgentService.deleteAgent(agentId!),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-agents'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agent.list() });
       navigate(ROUTES.AGENTS);
     },
   });

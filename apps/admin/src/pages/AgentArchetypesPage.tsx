@@ -7,6 +7,7 @@ import { AgentArchetype } from '../types/agent-archetype.types';
 import AgentArchetypeList from '../components/AgentArchetypeList';
 import AgentArchetypeForm from '../components/AgentArchetypeForm';
 import { IconPlus } from '../components/ui/Icons';
+import { queryKeys } from '../hooks/queries/query-keys';
 
 export default function AgentArchetypesPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
@@ -20,14 +21,14 @@ export default function AgentArchetypesPage() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['agent-archetypes'],
+    queryKey: queryKeys.archetype.list(),
     queryFn: () => AgentArchetypeService.getAllArchetypes(),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => AgentArchetypeService.deleteArchetype(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['agent-archetypes'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.archetype.list() });
     },
   });
 
@@ -47,7 +48,7 @@ export default function AgentArchetypesPage() {
   };
 
   const handleSave = () => {
-    queryClient.invalidateQueries({ queryKey: ['agent-archetypes'] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.archetype.list() });
     setIsCreating(false);
     setEditingArchetype(null);
   };

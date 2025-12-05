@@ -6,6 +6,7 @@ import { AgentService } from '../services/agent.service';
 import { AgentWithStats } from '../types/agent.types';
 import AgentList from '../components/AgentList';
 import { ROUTES } from '../constants/routes.constants';
+import { queryKeys } from '../hooks/queries/query-keys';
 
 export default function AgentsPage() {
   const { t } = useTranslation(I18nNamespace.ADMIN);
@@ -18,14 +19,14 @@ export default function AgentsPage() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['admin-agents'],
+    queryKey: queryKeys.agent.list(),
     queryFn: () => AgentService.getAllAgents(),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => AgentService.deleteAgent(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-agents'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agent.list() });
       setDeletingId(null);
     },
   });
