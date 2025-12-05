@@ -9,7 +9,7 @@ import {
 import { IconTrash, IconPlus } from './ui/Icons';
 import { AgentType } from '../types/agent.types';
 
-type TabType = 'main' | AgentType;
+type TabType = AgentType;
 
 interface AgentTypeFormData {
   rules: string[];
@@ -19,11 +19,10 @@ interface AgentTypeFormData {
 export default function SystemBehaviorRules() {
   const { t: tAdmin } = useTranslation(I18nNamespace.ADMIN);
   const { t: tCommon } = useTranslation(I18nNamespace.COMMON);
-  const [activeTab, setActiveTab] = useState<TabType>('main');
+  const [activeTab, setActiveTab] = useState<TabType>(AgentType.GENERAL);
   
   // Separate form data for each agent type
   const [formData, setFormData] = useState<Record<TabType, AgentTypeFormData>>({
-    main: { rules: [], systemPrompt: '' },
     [AgentType.GENERAL]: { rules: [], systemPrompt: '' },
     [AgentType.LANGUAGE_ASSISTANT]: { rules: [], systemPrompt: '' },
   });
@@ -35,7 +34,6 @@ export default function SystemBehaviorRules() {
   
   const updateMutation = useUpdateSystemRules();
   const [success, setSuccess] = useState<Record<TabType, boolean>>({
-    main: false,
     [AgentType.GENERAL]: false,
     [AgentType.LANGUAGE_ASSISTANT]: false,
   });
@@ -101,10 +99,7 @@ export default function SystemBehaviorRules() {
   // Show success message after successful save
   useEffect(() => {
     if (updateMutation.isSuccess && updateMutation.variables) {
-      const savedTab: TabType =
-        updateMutation.variables.agentType === null
-          ? 'main'
-          : (updateMutation.variables.agentType as AgentType);
+      const savedTab: TabType = updateMutation.variables.agentType as AgentType;
       setSuccess((prev) => ({ ...prev, [savedTab]: true }));
       const timer = setTimeout(
         () => setSuccess((prev) => ({ ...prev, [savedTab]: false })),
@@ -116,14 +111,13 @@ export default function SystemBehaviorRules() {
   }, [updateMutation.isSuccess, updateMutation.variables]);
 
   const handleSave = async (tab: TabType) => {
-    const agentType = tab === 'main' ? null : tab;
     const currentFormData = formData[tab];
     
     updateMutation.mutate(
       {
         rules: currentFormData.rules,
         systemPrompt: currentFormData.systemPrompt.trim() || undefined,
-        agentType,
+        agentType: tab,
       },
       {
         onError: () => {
@@ -135,11 +129,9 @@ export default function SystemBehaviorRules() {
 
   const getError = (tab: TabType) => {
     const queryData =
-      tab === 'main'
-        ? mainData
-        : tab === AgentType.GENERAL
-          ? generalData
-          : languageAssistantData;
+      tab === AgentType.GENERAL
+        ? generalData
+        : languageAssistantData;
     
     const queryError = queryData.error;
     return queryError && typeof queryError === 'object' && 'status' in queryError
@@ -214,8 +206,7 @@ export default function SystemBehaviorRules() {
   }
 
   const tabs: Array<{ id: TabType; label: string }> = [
-    { id: 'main', label: 'Main (Default)' },
-    { id: AgentType.GENERAL, label: AgentType.GENERAL },
+    { id: AgentType.GENERAL, label: tAdmin('systemRules.general') },
     { id: AgentType.LANGUAGE_ASSISTANT, label: AgentType.LANGUAGE_ASSISTANT },
   ];
 
