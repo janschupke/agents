@@ -14,7 +14,7 @@ module.exports = {
   sort: true,
   keepRemoved: false,
   defaultValue: (locale, namespace, key) => {
-    return key;
+    return '';
   },
   lexers: {
     ts: ['JavascriptLexer'],
@@ -25,7 +25,7 @@ module.exports = {
   createOldCatalogs: false,
   indentation: 2,
   skipDefaultValues: false,
-  useKeysAsDefaultValue: true,
+  useKeysAsDefaultValue: false,
   // Context function to determine namespace from useTranslation calls
   contextSeparator: '_',
   contextDefaultValues: [],
