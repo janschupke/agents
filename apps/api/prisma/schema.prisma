@@ -59,8 +59,6 @@ model Agent {
 
   // Config fields (moved from AgentConfig)
   temperature    Float? // 0-2
-  systemPrompt   String? @map("system_prompt") @db.Text
-  behaviorRules  Json?   @map("behavior_rules")
   model          String?
   maxTokens      Int?    @map("max_tokens")
   responseLength String? @map("response_length") // 'short' | 'standard' | 'long' | 'adapt'
@@ -257,8 +255,6 @@ model AgentArchetype {
 
   // Config fields (same structure as Agent)
   temperature    Float? // 0-2
-  systemPrompt   String? @map("system_prompt") @db.Text
-  behaviorRules  Json?   @map("behavior_rules")
   model          String?
   maxTokens      Int?    @map("max_tokens")
   responseLength String? @map("response_length") // 'short' | 'standard' | 'long' | 'adapt'

@@ -22,8 +22,6 @@ export interface AgentFormData {
 
   // Configuration fields
   temperature?: number;
-  systemPrompt?: string; // Only for archetype mode
-  behaviorRules?: string[]; // Only for archetype mode
   model?: string;
   maxTokens?: number;
   responseLength?: ResponseLength;

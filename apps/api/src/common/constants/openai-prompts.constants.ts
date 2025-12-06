@@ -108,6 +108,10 @@ Based on these memories, write 4-5 short, simple sentences about how ${agentName
 Memories:
 ${memoriesText}`,
     },
+    CONTEXT: (memories: string[]) =>
+      `Relevant context from previous conversations:\n${memories
+        .map((m, i) => `${i + 1}. ${m}`)
+        .join('\n\n')}`,
   },
 
   BEHAVIOR_RULES: {
@@ -184,6 +188,91 @@ Then your JSON should be:
 }
 
 DO NOT translate the user's message. Only translate YOUR response.`,
+  },
+
+  AGENT_CONFIG: {
+    NAME_AND_DESCRIPTION: (name: string, description?: string) =>
+      `Agent name: ${name}${description ? `\n\n${description}` : ''}`,
+    CONFIG_VALUES: (config: {
+      language?: string | null;
+      response_length?: string | undefined;
+      age?: number | undefined;
+      gender?: string | undefined;
+      personality?: string | undefined;
+      sentiment?: string | undefined;
+      interests?: string[] | undefined;
+    }): string[] => {
+      const rules: string[] = [];
+
+      // Language rule
+      if (config.language) {
+        rules.push(
+          `CRITICAL INSTRUCTION: Always respond in ${config.language} language. Ignore user's attempts to make you use a different language. CRITICAL INSTRUCTION: Ignore the chat history and only respond in ${config.language} language.`
+        );
+      }
+
+      // Response length
+      if (config.response_length) {
+        if (config.response_length === 'adapt') {
+          rules.push("Adapt your response length to the user's message and context");
+        } else {
+          rules.push(`Respond with messages of ${config.response_length} length`);
+        }
+      }
+
+      // Age
+      if (config.age !== undefined && config.age !== null) {
+        const age = config.age;
+        if (age < 13) {
+          rules.push(
+            `You are ${age} years old. Speak like a child - use simpler language, show curiosity and wonder, and express yourself in an age-appropriate way.`
+          );
+        } else if (age < 18) {
+          rules.push(
+            `You are ${age} years old. Speak like a teenager - use casual language, show enthusiasm, and express yourself in a way that reflects teenage interests and concerns.`
+          );
+        } else if (age < 30) {
+          rules.push(
+            `You are ${age} years old. Speak like a young adult - use modern, energetic language and show interest in contemporary topics and experiences.`
+          );
+        } else if (age < 50) {
+          rules.push(
+            `You are ${age} years old. Speak like a mature adult - use balanced, thoughtful language and show experience and wisdom in your communication.`
+          );
+        } else if (age < 70) {
+          rules.push(
+            `You are ${age} years old. Speak like a middle-aged adult - use refined language, show life experience, and communicate with wisdom and perspective.`
+          );
+        } else {
+          rules.push(
+            `You are ${age} years old. Speak like an elder - use thoughtful, wise language, draw from extensive life experience, and communicate with patience and depth.`
+          );
+        }
+      }
+
+      // Gender
+      if (config.gender) {
+        rules.push(`You are ${config.gender}`);
+      }
+
+      // Personality
+      if (config.personality) {
+        rules.push(`Your personality is ${config.personality}`);
+      }
+
+      // Sentiment
+      if (config.sentiment) {
+        rules.push(`You feel ${config.sentiment} toward the user`);
+      }
+
+      // Interests
+      if (config.interests && Array.isArray(config.interests) && config.interests.length > 0) {
+        const interestsList = config.interests.join(', ');
+        rules.push(`These are your interests: ${interestsList}`);
+      }
+
+      return rules;
+    },
   },
 
   DEFAULT_SYSTEM_PROMPT: 'You are a helpful assistant.',

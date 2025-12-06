@@ -32,14 +32,6 @@ export class AgentArchetypeRepository {
         agentType: data.agentType || AgentType.GENERAL,
         language: data.language || null,
         temperature: data.configs?.temperature ?? null,
-        systemPrompt: data.configs?.system_prompt || null,
-        behaviorRules: data.configs?.behavior_rules
-          ? typeof data.configs.behavior_rules === 'string'
-            ? { rules: [data.configs.behavior_rules] }
-            : Array.isArray(data.configs.behavior_rules)
-              ? { rules: data.configs.behavior_rules }
-              : data.configs.behavior_rules
-          : undefined,
         model: data.configs?.model || null,
         maxTokens: data.configs?.max_tokens ?? null,
         responseLength: data.configs?.response_length || null,
@@ -66,14 +58,6 @@ export class AgentArchetypeRepository {
         agentType: data.agentType ?? null,
         language: data.language ?? null,
         temperature: data.configs?.temperature ?? null,
-        systemPrompt: data.configs?.system_prompt ?? null,
-        behaviorRules: data.configs?.behavior_rules
-          ? typeof data.configs.behavior_rules === 'string'
-            ? { rules: [data.configs.behavior_rules] }
-            : Array.isArray(data.configs.behavior_rules)
-              ? { rules: data.configs.behavior_rules }
-              : data.configs.behavior_rules
-          : undefined,
         model: data.configs?.model ?? null,
         maxTokens: data.configs?.max_tokens ?? null,
         responseLength: data.configs?.response_length ?? null,

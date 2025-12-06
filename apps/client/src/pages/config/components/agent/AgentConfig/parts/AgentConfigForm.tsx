@@ -86,8 +86,6 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
       const configs = archetype.configs || {};
       if (configs.temperature !== undefined)
         setValue('temperature', configs.temperature as number);
-      if (configs.system_prompt)
-        setValue('description', configs.system_prompt as string);
       if (configs.age !== undefined) setValue('age', configs.age as number);
       if (configs.gender) setValue('gender', configs.gender as Gender);
       if (configs.personality)

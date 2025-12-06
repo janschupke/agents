@@ -1,6 +1,5 @@
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { Button, Tabs } from '@openai/ui';
-import { IconTrash, IconPlus } from '../../../components/ui/Icons';
+import { Button, Tabs, BehaviorRulesEditor } from '@openai/ui';
 import { AgentType } from '../../../types/agent.types';
 import { useSystemRulesForm } from '../hooks/use-system-rules-form';
 import { LoadingState } from '../../../components/shared';
@@ -16,9 +15,7 @@ export default function SystemBehaviorRules() {
     setActiveTab,
     formData,
     updateMutation,
-    handleRuleChange,
-    handleAddRule,
-    handleRemoveRule,
+    handleRulesChange,
     handleSystemPromptChange,
     handleSave,
     getError,
@@ -78,43 +75,12 @@ export default function SystemBehaviorRules() {
           </p>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-text-secondary mb-1.5">
-            {tAdmin('systemRules.label')}
-          </label>
-          <div className="space-y-2">
-            {currentFormData.rules.map((rule: string, index: number) => (
-              <div key={index} className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={rule}
-                  onChange={(e) => handleRuleChange(tab, index, e.target.value)}
-                  className="flex-1 h-8 px-3 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus"
-                  placeholder={tAdmin('systemRules.rulePlaceholder', {
-                    index: (index + 1).toString(),
-                  })}
-                />
-                <Button
-                  variant="icon"
-                  size="sm"
-                  onClick={() => handleRemoveRule(tab, index)}
-                  className="text-text-tertiary hover:text-text-primary"
-                >
-                  <IconTrash className="w-4 h-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => handleAddRule(tab)}
-            className="mt-2"
-          >
-            <IconPlus className="w-4 h-4" />
-            {tAdmin('systemRules.addRule')}
-          </Button>
-        </div>
+        <BehaviorRulesEditor
+          rules={currentFormData.rules}
+          onChange={(rules) => handleRulesChange(tab, rules)}
+          namespace={I18nNamespace.ADMIN}
+          label={tAdmin('systemRules.label')}
+        />
 
         <div className="flex justify-end">
           <Button

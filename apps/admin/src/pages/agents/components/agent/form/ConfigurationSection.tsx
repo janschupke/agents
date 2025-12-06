@@ -1,12 +1,11 @@
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { Input, Textarea, Slider } from '@openai/ui';
+import { Input, Slider } from '@openai/ui';
 
 interface ConfigurationSectionProps {
   formValues: {
     temperature: string;
     maxTokens: string;
     model: string;
-    systemPrompt: string;
   };
   errors: Record<string, string>;
   isArchetype: boolean;
@@ -63,19 +62,6 @@ export default function ConfigurationSection({
           error={errors.maxTokens}
         />
       </div>
-
-      {isArchetype && (
-        <div>
-          <label className="block text-sm font-medium text-text-primary mb-1">
-            {t('archetypes.form.systemPrompt')}
-          </label>
-          <Textarea
-            value={formValues.systemPrompt}
-            onChange={(e) => onFieldChange('systemPrompt', e.target.value)}
-            rows={4}
-          />
-        </div>
-      )}
 
       <div>
         <label className="block text-sm font-medium text-text-primary mb-1">

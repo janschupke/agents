@@ -1,6 +1,5 @@
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Input, Textarea, Select, AvatarInput, FormField } from '@openai/ui';
-import { Language } from '@openai/shared-types';
 import { AgentType } from '../../../../../types/agent.types';
 import { getLanguageOptions } from '../../../../../constants/language.constants';
 import { ChangeEvent } from 'react';

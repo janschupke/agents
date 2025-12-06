@@ -37,7 +37,6 @@ export class AgentRepository {
       where: { id: agentId },
       select: {
         temperature: true,
-        systemPrompt: true,
         model: true,
         maxTokens: true,
         responseLength: true,
@@ -58,9 +57,6 @@ export class AgentRepository {
     const configs: Record<string, unknown> = {};
     if (agent.temperature !== null && agent.temperature !== undefined) {
       configs.temperature = agent.temperature;
-    }
-    if (agent.systemPrompt !== null && agent.systemPrompt !== undefined) {
-      configs.system_prompt = agent.systemPrompt;
     }
     if (agent.model !== null && agent.model !== undefined) {
       configs.model = agent.model;
@@ -218,9 +214,6 @@ export class AgentRepository {
     if (configs.temperature !== undefined) {
       updateData.temperature = configs.temperature as number | null;
     }
-    if (configs.system_prompt !== undefined) {
-      updateData.systemPrompt = (configs.system_prompt as string) || null;
-    }
     if (configs.model !== undefined) {
       updateData.model = (configs.model as string) || null;
     }
@@ -260,40 +253,7 @@ export class AgentRepository {
     // Also update AgentConfig for backward compatibility during transition
     // This can be removed in a future migration
     for (const [key, value] of Object.entries(configs)) {
-      // Handle behavior_rules specially - delete if null/undefined/empty array
-      if (key === 'behavior_rules') {
-        if (
-          value === null ||
-          value === undefined ||
-          (Array.isArray(value) && value.length === 0)
-        ) {
-          // Delete the behavior_rules entry from AgentConfig
-          await this.prisma.agentConfig.deleteMany({
-            where: {
-              agentId,
-              configKey: key,
-            },
-          });
-        } else {
-          // Update or create behavior_rules entry
-          await this.prisma.agentConfig.upsert({
-            where: {
-              agentId_configKey: {
-                agentId,
-                configKey: key,
-              },
-            },
-            update: {
-              configValue: value as Prisma.InputJsonValue,
-            },
-            create: {
-              agentId,
-              configKey: key,
-              configValue: value as Prisma.InputJsonValue,
-            },
-          });
-        }
-      } else if (value !== undefined && value !== null) {
+      if (value !== undefined && value !== null) {
         await this.prisma.agentConfig.upsert({
           where: {
             agentId_configKey: {

@@ -31,8 +31,6 @@ export function useAgentConfigState({
         createdAt: new Date().toISOString(),
         configs: formData.configs || {
           temperature: 1,
-          system_prompt: '',
-          behavior_rules: [],
         },
       }
     : null;

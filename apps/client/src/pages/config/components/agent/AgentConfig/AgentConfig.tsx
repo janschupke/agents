@@ -82,7 +82,16 @@ export default function AgentConfig({
     if (currentAgent) {
       setFormName(currentAgent.name || '');
     }
-  }, [currentAgent?.id, currentAgent?.name]);
+  }, [currentAgent]);
+
+  // If there's an error (agent not found), redirect to /config
+  // This ensures we don't stay on invalid URL and sidebar always renders
+  // Note: This is a fallback - Config.tsx should handle redirect before rendering this component
+  useEffect(() => {
+    if ((propError || error) && agentId !== null && !isNewAgent) {
+      navigate(ROUTES.CONFIG, { replace: true });
+    }
+  }, [propError, error, agentId, navigate, isNewAgent]);
 
   // Agent save logic
   const { handleSave, isSaving } = useAgentSave({
@@ -127,15 +136,6 @@ export default function AgentConfig({
   if (shouldShowFullPageLoading && !isNewAgent) {
     return <AgentConfigLoadingState />;
   }
-
-  // If there's an error (agent not found), redirect to /config
-  // This ensures we don't stay on invalid URL and sidebar always renders
-  // Note: This is a fallback - Config.tsx should handle redirect before rendering this component
-  useEffect(() => {
-    if ((propError || error) && agentId !== null && !isNewAgent) {
-      navigate(ROUTES.CONFIG, { replace: true });
-    }
-  }, [propError, error, agentId, navigate, isNewAgent]);
 
   return (
     <>

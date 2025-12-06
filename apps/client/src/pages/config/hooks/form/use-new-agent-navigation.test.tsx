@@ -48,8 +48,6 @@ describe('useNewAgentNavigation', () => {
     avatarUrl: null,
     configs: {
       temperature: 0.7,
-      system_prompt: 'Test prompt',
-      behavior_rules: [],
     },
   };
 
@@ -126,7 +124,6 @@ describe('useNewAgentNavigation', () => {
       configs: {
         temperature: 1,
         system_prompt: '',
-        behavior_rules: [],
       },
     };
 

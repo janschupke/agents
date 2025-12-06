@@ -30,13 +30,6 @@ export class AgentArchetypeConfigDto {
 
   @IsOptional()
   @IsString()
-  system_prompt?: string;
-
-  @IsOptional()
-  behavior_rules?: string | string[] | { rules: string[] };
-
-  @IsOptional()
-  @IsString()
   model?: string;
 
   @IsOptional()

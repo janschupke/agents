@@ -55,10 +55,7 @@ export function useNewAgentNavigation({
     const hasChanges = Boolean(
       formData.name?.trim() ||
         formData.description?.trim() ||
-        formData.avatarUrl ||
-        formData.configs?.system_prompt?.trim() ||
-        (Array.isArray(formData.configs?.behavior_rules) &&
-          formData.configs.behavior_rules.length > 0)
+        formData.avatarUrl
     );
 
     if (hasChanges) {

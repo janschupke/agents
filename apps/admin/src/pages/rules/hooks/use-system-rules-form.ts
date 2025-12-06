@@ -120,41 +120,14 @@ export function useSystemRulesForm() {
     }
   }, [updateMutation.isSuccess, updateMutation.variables, showToast, tAdmin]);
 
-  const handleRuleChange = (tab: TabType, index: number, value: string) => {
-    setFormData((prev) => {
-      const newRules = [...prev[tab].rules];
-      newRules[index] = value;
-      return {
-        ...prev,
-        [tab]: {
-          ...prev[tab],
-          rules: newRules,
-        },
-      };
-    });
-  };
-
-  const handleAddRule = (tab: TabType) => {
+  const handleRulesChange = (tab: TabType, rules: string[]) => {
     setFormData((prev) => ({
       ...prev,
       [tab]: {
         ...prev[tab],
-        rules: [...prev[tab].rules, ''],
+        rules,
       },
     }));
-  };
-
-  const handleRemoveRule = (tab: TabType, index: number) => {
-    setFormData((prev) => {
-      const newRules = prev[tab].rules.filter((_, i) => i !== index);
-      return {
-        ...prev,
-        [tab]: {
-          ...prev[tab],
-          rules: newRules,
-        },
-      };
-    });
   };
 
   const handleSystemPromptChange = (tab: TabType, value: string) => {
@@ -249,9 +222,7 @@ export function useSystemRulesForm() {
     setActiveTab,
     formData,
     updateMutation,
-    handleRuleChange,
-    handleAddRule,
-    handleRemoveRule,
+    handleRulesChange,
     handleSystemPromptChange,
     handleSave,
     getError,

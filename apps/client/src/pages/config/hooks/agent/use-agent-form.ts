@@ -63,8 +63,7 @@ export function useAgentForm({
       const config = agentData.configs || {};
       return {
         name: agent.name,
-        description:
-          typeof config.system_prompt === 'string' ? config.system_prompt : '',
+        description: agent.description || '',
         avatarUrl: agent.avatarUrl || null,
         agentType: agent.agentType || AgentType.GENERAL,
         language: agent.language || null,

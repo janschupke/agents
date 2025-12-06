@@ -14,8 +14,6 @@ import {
  */
 export interface AgentConfig {
   temperature?: number;
-  system_prompt?: string;
-  behavior_rules?: string | string[] | { rules: string[] };
   model?: string;
   max_tokens?: number;
   response_length?: ResponseLength;
@@ -46,11 +44,10 @@ export interface SystemConfigValues {
 
 /**
  * System configuration record
- * Type-safe version of Record<string, unknown> for system configs
+ * Type-safe version for system configs
+ * Only contains known system configuration keys
  */
-export type SystemConfig = Partial<SystemConfigValues> & {
-  [key: string]: unknown; // Allow additional unknown keys for flexibility
-};
+export type SystemConfig = Partial<SystemConfigValues>;
 
 /**
  * Message metadata interface
@@ -59,5 +56,4 @@ export type SystemConfig = Partial<SystemConfigValues> & {
 export interface MessageMetadata {
   model?: string;
   temperature?: number;
-  [key: string]: unknown; // Allow additional unknown keys for flexibility
 }

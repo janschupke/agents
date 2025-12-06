@@ -83,7 +83,6 @@ describe('AgentSidebarItem', () => {
       render(<AgentSidebarItem {...defaultProps} />);
 
       // For general agents, the icon container should not have the translate icon
-      const nameContainer = screen.getByText('Test Agent').closest('div');
       // The icon should not be present (or if it is, it's not the translate icon)
       // We can check by ensuring the name is visible and not replaced
       expect(screen.getByText('Test Agent')).toBeInTheDocument();

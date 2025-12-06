@@ -67,8 +67,6 @@ describe('useAgentForm', () => {
       ...mockAgent,
       configs: {
         temperature: 0.8,
-        system_prompt: 'You are helpful',
-        behavior_rules: ['Rule 1', 'Rule 2'],
       },
     };
 

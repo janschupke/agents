@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { Button, BehaviorRulesEditor } from '@openai/ui';
+import { Button } from '@openai/ui';
 import {
   AgentFormMode,
   AgentFormData,
@@ -35,8 +35,6 @@ interface FormValues {
   agentType: AgentType | '';
   language: string;
   temperature: string;
-  systemPrompt: string;
-  behaviorRules: string[];
   model: string;
   maxTokens: string;
   responseLength: ResponseLength | '';
@@ -65,8 +63,6 @@ export default function AgentForm({
     agentType: '',
     language: '',
     temperature: '',
-    systemPrompt: '',
-    behaviorRules: [],
     model: '',
     maxTokens: '',
     responseLength: '',
@@ -77,8 +73,6 @@ export default function AgentForm({
     interests: [],
     availability: '',
   });
-
-  const [newBehaviorRule, setNewBehaviorRule] = useState('');
 
   const { validate, errors } = useAgentFormValidation({
     isArchetype,
@@ -93,8 +87,6 @@ export default function AgentForm({
         agentType: initialData.agentType || '',
         language: initialData.language || '',
         temperature: initialData.temperature?.toString() || '',
-        systemPrompt: initialData.systemPrompt || '',
-        behaviorRules: initialData.behaviorRules || [],
         model: initialData.model || '',
         maxTokens: initialData.maxTokens?.toString() || '',
         responseLength: initialData.responseLength || '',
@@ -126,12 +118,6 @@ export default function AgentForm({
 
     if (formValues.temperature) {
       configs.temperature = Number(formValues.temperature);
-    }
-    if (formValues.systemPrompt) {
-      configs.system_prompt = formValues.systemPrompt;
-    }
-    if (isArchetype && formValues.behaviorRules.length > 0) {
-      configs.behavior_rules = formValues.behaviorRules;
     }
     if (formValues.model) {
       configs.model = formValues.model;
@@ -170,8 +156,6 @@ export default function AgentForm({
       temperature: formValues.temperature
         ? Number(formValues.temperature)
         : undefined,
-      systemPrompt: formValues.systemPrompt || undefined,
-      behaviorRules: isArchetype ? formValues.behaviorRules : undefined,
       model: formValues.model || undefined,
       maxTokens: formValues.maxTokens
         ? Number(formValues.maxTokens)
@@ -226,7 +210,6 @@ export default function AgentForm({
             temperature: formValues.temperature,
             maxTokens: formValues.maxTokens,
             model: formValues.model,
-            systemPrompt: formValues.systemPrompt,
           }}
           errors={errors}
           isArchetype={isArchetype}
@@ -234,16 +217,6 @@ export default function AgentForm({
             setFormValues({ ...formValues, [field]: value })
           }
         />
-
-        {isArchetype && (
-          <BehaviorRulesEditor
-            rules={formValues.behaviorRules}
-            onChange={(rules) =>
-              setFormValues({ ...formValues, behaviorRules: rules })
-            }
-            namespace={I18nNamespace.ADMIN}
-          />
-        )}
 
         {/* Personality & Behavior */}
         <PersonalitySection

@@ -72,8 +72,6 @@ export class AgentArchetypeService {
     createdAt: Date;
     updatedAt: Date;
     temperature: number | null;
-    systemPrompt: string | null;
-    behaviorRules: unknown;
     model: string | null;
     maxTokens: number | null;
     responseLength: string | null;
@@ -99,8 +97,6 @@ export class AgentArchetypeService {
       updatedAt: archetype.updatedAt,
       configs: {
         temperature: archetype.temperature ?? undefined,
-        system_prompt: archetype.systemPrompt || undefined,
-        behavior_rules: archetype.behaviorRules || undefined,
         model: archetype.model || undefined,
         max_tokens: archetype.maxTokens ?? undefined,
         response_length: archetype.responseLength || undefined,

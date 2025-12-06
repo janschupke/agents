@@ -147,8 +147,6 @@ export class ChatOrchestrationService {
       agent.configs as Record<string, unknown>
     );
     const agentConfig: AgentConfig = {
-      system_prompt: mergedConfig.system_prompt as string | undefined,
-      behavior_rules: mergedConfig.behavior_rules as string | undefined,
       temperature: mergedConfig.temperature as number | undefined,
       model: mergedConfig.model as string | undefined,
       max_tokens: mergedConfig.max_tokens as number | undefined,
@@ -163,6 +161,7 @@ export class ChatOrchestrationService {
       sentiment: mergedConfig.sentiment as Sentiment | undefined,
       interests: mergedConfig.interests as string[] | undefined,
       agentName: agent.name,
+      agentDescription: agent.description || undefined,
     };
     this.logger.debug(`Loaded agent ${context.agentId} with config`);
 
@@ -187,15 +186,12 @@ export class ChatOrchestrationService {
     );
 
     // Prepare messages for OpenAI using MessagePreparationService
-    // Note: Agent archetype is not currently linked to agents, so passing null
-    // TODO: Add archetypeId to Agent model or load archetype separately if needed
     const messagesForAPI =
       await this.messagePreparationService.prepareMessagesForOpenAI(
         existingMessages,
         agentConfig,
         context.message,
         relevantMemories,
-        null, // agentArchetype - not currently linked
         new Date() // currentDateTime
       );
 

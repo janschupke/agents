@@ -44,9 +44,7 @@ export function useAgentSave({
           avatarUrl: values.avatarUrl || null,
           agentType: values.agentType,
           language: values.language || null,
-          configs: {
-            system_prompt: values.description,
-          },
+          configs: {},
         });
 
         // Create new agent
@@ -55,9 +53,8 @@ export function useAgentSave({
           description: values.description.trim() || undefined,
           avatarUrl: values.avatarUrl || undefined,
           agentType: values.agentType,
-          language: values.language === null ? null : values.language || undefined,
+          language: values.language || undefined,
           configs: {
-            system_prompt: values.description.trim() || undefined,
             // Mandatory fields - always send (API will use defaults if not provided, but we always provide them)
             personality: values.personality,
             sentiment: values.sentiment,
@@ -79,9 +76,8 @@ export function useAgentSave({
             description: values.description.trim() || undefined,
             avatarUrl: values.avatarUrl || undefined,
             agentType: values.agentType,
-            language: values.language === null ? null : values.language || undefined,
+            language: values.language || undefined,
             configs: {
-              system_prompt: values.description.trim() || undefined,
               // Mandatory fields - always send
               personality: values.personality,
               sentiment: values.sentiment,

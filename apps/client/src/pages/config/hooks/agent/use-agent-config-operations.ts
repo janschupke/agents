@@ -52,10 +52,6 @@ export function useAgentConfigOperations({
     if (!agent) return null;
 
     const configs = {
-      system_prompt:
-        (typeof values.description === 'string'
-          ? values.description.trim()
-          : '') || undefined,
     };
 
     try {

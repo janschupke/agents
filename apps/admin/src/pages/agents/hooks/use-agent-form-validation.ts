@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { ValidationSchema, validateField } from '@openai/utils';
 
-interface FormValues {
+interface FormValues extends Record<string, unknown> {
   name: string;
   temperature: string;
   age: string;
@@ -20,7 +20,7 @@ export function useAgentFormValidation({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Create validation schema using centralized validation patterns
-  const validationSchema: ValidationSchema<FormValues> = {
+  const validationSchema = {
     name: [
       {
         validate: (value: string) => {
@@ -71,7 +71,7 @@ export function useAgentFormValidation({
           : 'Max tokens must be at least 1',
       },
     ],
-  };
+  } as ValidationSchema<FormValues>;
 
   const validate = (formValues: FormValues): boolean => {
     const newErrors: Record<string, string> = {};

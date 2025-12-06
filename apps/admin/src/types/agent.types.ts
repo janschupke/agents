@@ -21,8 +21,6 @@ export interface Agent {
   memorySummary?: string | null;
   configs?: {
     temperature?: number;
-    system_prompt?: string;
-    behavior_rules?: string | unknown;
     model?: string;
     max_tokens?: number;
     response_length?: ResponseLength;

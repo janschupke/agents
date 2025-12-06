@@ -14,18 +14,13 @@ export function useNewAgentForm() {
     language: null,
     configs: {
       temperature: 1,
-      system_prompt: '',
-      behavior_rules: [],
     },
   });
 
   const hasUnsavedChanges = Boolean(
     formData.name?.trim() ||
       formData.description?.trim() ||
-      formData.avatarUrl ||
-      formData.configs?.system_prompt?.trim() ||
-      (Array.isArray(formData.configs?.behavior_rules) &&
-        formData.configs.behavior_rules.length > 0)
+      formData.avatarUrl
   );
 
   return {

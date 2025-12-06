@@ -7,15 +7,12 @@ import {
   Sentiment,
   PersonalityType,
 } from '@openai/shared-types';
-import { BehaviorRulesUtil } from '../../common/utils/behavior-rules.util';
 import { SystemConfigService } from '../../system-config/system-config.service';
 import { LanguageAssistantService } from '../../agent/services/language-assistant.service';
-import { AgentConfigService } from '../../agent/services/agent-config.service';
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants';
 import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants';
 import { PromptTransformationService } from './prompt-transformation.service';
 import { BehaviorRulesTransformationService } from './behavior-rules-transformation.service';
-import type { AgentArchetype } from '@prisma/client';
 
 interface MessageForOpenAI {
   role: MessageRole;
@@ -23,8 +20,6 @@ interface MessageForOpenAI {
 }
 
 export interface AgentConfig {
-  system_prompt?: string;
-  behavior_rules?: string;
   temperature?: number;
   model?: string;
   max_tokens?: number;
@@ -37,6 +32,7 @@ export interface AgentConfig {
   sentiment?: Sentiment;
   interests?: string[];
   agentName?: string;
+  agentDescription?: string;
 }
 
 @Injectable()
@@ -46,7 +42,6 @@ export class MessagePreparationService {
   constructor(
     private readonly systemConfigService: SystemConfigService,
     private readonly languageAssistantService: LanguageAssistantService,
-    private readonly agentConfigService: AgentConfigService,
     private readonly promptTransformationService: PromptTransformationService,
     private readonly behaviorRulesTransformationService: BehaviorRulesTransformationService
   ) {}
@@ -56,32 +51,28 @@ export class MessagePreparationService {
    * Handles: system prompts, behavior rules, memory context, and user messages
    *
    * Message Order:
-   * 1. System prompt (by agent type) - SYSTEM role
-   *    - Merged from: Main system prompt + Agent type-specific system prompt + Agent archetype system prompt
+   * 1. Global system prompt (per agent type) - SYSTEM role
+   *    - From: SystemConfig.system_prompt (filtered by agentType)
    *    - Includes current time embedded in the prompt
-   * 2. System behavior rules (by agent type) - SYSTEM role
-   *    - Merged from: Main system behavior rules + Agent type-specific behavior rules
+   * 2. Global behavior rules (per agent type) - SYSTEM role
+   *    - From: SystemConfig.behavior_rules (filtered by agentType)
    *    - Transformed from array to single message
-   * 3. Client agent config rules (system) - SYSTEM role
+   * 3. User agent config (system) - SYSTEM role
    *    - Generated from agent config values (response_length, age, gender, personality, sentiment, interests)
    *    - Includes language rule if set
    *    - Transformed from array to single message
-   * 4. Client agent description (user prompt) - USER role
-   *    - Agent's system_prompt field
-   * 5. Client agent config rules (user) - USER role
-   *    - Agent's behavior_rules field
-   *    - Transformed from array to single message
-   * 6. Word parsing instruction (language assistants only) - SYSTEM role
-   * 7. Memory context - SYSTEM role
-   * 8. Conversation history (user/assistant messages)
-   * 9. Current user message - USER role
+   * 4. User agent config (user) - USER role
+   *    - Agent name and description
+   * 5. Word parsing instruction (language assistants only) - SYSTEM role
+   * 6. Memory context - SYSTEM role
+   * 7. Conversation history (user/assistant messages)
+   * 8. Current user message - USER role
    */
   async prepareMessagesForOpenAI(
     existingMessages: MessageForOpenAI[],
     agentConfig: AgentConfig,
     userMessage: string,
     relevantMemories: string[],
-    agentArchetype: AgentArchetype | null = null,
     currentDateTime: Date = new Date()
   ): Promise<MessageForOpenAI[]> {
     this.logger.debug(
@@ -103,44 +94,23 @@ export class MessagePreparationService {
     // Build messages array in the correct order
     const messagesForAPI: MessageForOpenAI[] = [];
 
-    // 1. System prompt (by agent type) - merged and with current time
+    // 1. Global system prompt (per agent type) - from SystemConfig
     await this.addSystemPrompt(
       messagesForAPI,
       agentConfig,
-      agentArchetype,
       currentDateTime
     );
 
-    // 2. System behavior rules (by agent type) - merged and transformed
+    // 2. Global behavior rules (per agent type) - from SystemConfig
     await this.addSystemBehaviorRules(messagesForAPI, agentConfig);
 
-    // 3. Client agent config rules (system) - generated from config values
-    this.addClientAgentConfigRules(messagesForAPI, agentConfig);
+    // 3. User agent config (system) - generated from config values
+    this.addUserAgentConfigRules(messagesForAPI, agentConfig);
 
-    // 4. Client agent description (user prompt) - merged with agent name
-    if (agentConfig.system_prompt) {
-      this.logger.debug('Adding client system prompt as user message');
-      let descriptionContent = String(agentConfig.system_prompt);
-      
-      // Merge agent name with description if name is provided
-      if (agentConfig.agentName) {
-        descriptionContent = `Agent name: ${agentConfig.agentName}\n\n${descriptionContent}`;
-        this.logger.debug(`Merged agent name "${agentConfig.agentName}" with description`);
-      }
-      
-      messagesForAPI.push({
-        role: MessageRole.USER,
-        content: descriptionContent,
-      });
-    }
+    // 4. User agent config (user) - agent name and description
+    this.addUserAgentNameAndDescription(messagesForAPI, agentConfig);
 
-    // 5. Client agent config rules (user) - transformed
-    if (agentConfig.behavior_rules) {
-      this.logger.debug('Adding client behavior rules as user message');
-      this.addClientBehaviorRules(messagesForAPI, agentConfig);
-    }
-
-    // 6. Word parsing instruction (only for language assistants) - SYSTEM role
+    // 5. Word parsing instruction (only for language assistants) - SYSTEM role
     const isLanguageAssistant =
       this.languageAssistantService.isLanguageAssistant({
         agentType: agentConfig.agentType,
@@ -184,61 +154,53 @@ export class MessagePreparationService {
     messagesForAPI: MessageForOpenAI[],
     relevantMemories: string[]
   ): void {
-    const memoryContext = `Relevant context from previous conversations:\n${relevantMemories
-      .map((m, i) => `${i + 1}. ${m}`)
-      .join('\n\n')}`;
+    if (relevantMemories.length > 0) {
+      const memoryContext = OPENAI_PROMPTS.MEMORY.CONTEXT(relevantMemories);
 
-    // Add memory context as a system message after rules but before conversation history
-    messagesForAPI.push({
-      role: MessageRole.SYSTEM,
-      content: memoryContext,
-    });
+      // Add memory context as a system message after rules but before conversation history
+      messagesForAPI.push({
+        role: MessageRole.SYSTEM,
+        content: memoryContext,
+      });
+    }
   }
 
   /**
-   * Add system prompt (by agent type) - SYSTEM role
-   * Merged from: Main system prompt + Agent type-specific system prompt + Agent archetype system prompt
+   * Add global system prompt (per agent type) - SYSTEM role
+   * From: SystemConfig.system_prompt (filtered by agentType)
    * Includes current time embedded in the prompt
    */
   private async addSystemPrompt(
     messagesForAPI: MessageForOpenAI[],
     agentConfig: AgentConfig,
-    agentArchetype: AgentArchetype | null,
     currentDateTime: Date
   ): Promise<void> {
     try {
-      // 1. Get main system prompt (by agent type, falls back to main)
-      const mainPrompt =
+      // Get system prompt (by agent type, falls back to main)
+      const systemPrompt =
         await this.systemConfigService.getSystemPromptByAgentType(
           agentConfig.agentType || null
         );
 
       this.logger.debug(
-        `Retrieved system prompt for agent type: ${agentConfig.agentType || 'main'} (length: ${mainPrompt?.length || 0})`
+        `Retrieved system prompt for agent type: ${agentConfig.agentType || 'main'} (length: ${systemPrompt?.length || 0})`
       );
 
-      // 2. Get agent archetype system prompt (if exists)
-      const archetypePrompt = agentArchetype?.systemPrompt || null;
-
-      // 3. Merge prompts
-      const mergedPrompt = this.promptTransformationService.mergeSystemPrompts([
-        mainPrompt,
-        archetypePrompt,
-      ]);
-
-      // 4. Embed current time
-      const finalPrompt = this.promptTransformationService.embedCurrentTime(
-        mergedPrompt,
-        currentDateTime
-      );
+      // Embed current time
+      const finalPrompt = systemPrompt
+        ? this.promptTransformationService.embedCurrentTime(
+            systemPrompt,
+            currentDateTime
+          )
+        : null;
 
       this.logger.debug(
-        `Merged system prompt (length: ${finalPrompt.trim().length})`
+        `Final system prompt (length: ${finalPrompt?.trim().length || 0})`
       );
 
-      // 5. Add as first SYSTEM message
-      if (finalPrompt.trim().length > 0) {
-        this.logger.debug('Adding merged system prompt as first message');
+      // Add as first SYSTEM message
+      if (finalPrompt && finalPrompt.trim().length > 0) {
+        this.logger.debug('Adding system prompt as first message');
         messagesForAPI.unshift({
           role: MessageRole.SYSTEM,
           content: finalPrompt.trim(),
@@ -305,78 +267,51 @@ export class MessagePreparationService {
   }
 
   /**
-   * Add client behavior rules (user) - USER role
-   * Transformed from array to single message
+   * Add user agent config (user) - USER role
+   * Agent name and description
    */
-  private addClientBehaviorRules(
+  private addUserAgentNameAndDescription(
     messagesForAPI: MessageForOpenAI[],
     agentConfig: AgentConfig
   ): void {
-    const behaviorRules = BehaviorRulesUtil.parse(agentConfig.behavior_rules!);
+    if (agentConfig.agentName || agentConfig.agentDescription) {
+      const content = OPENAI_PROMPTS.AGENT_CONFIG.NAME_AND_DESCRIPTION(
+        agentConfig.agentName || 'Agent',
+        agentConfig.agentDescription
+      );
 
-    if (behaviorRules.length > 0) {
-      const rulesMessage =
-        this.behaviorRulesTransformationService.transformRulesToMessage(
-          behaviorRules,
-          { role: MessageRole.USER }
-        );
-
-      if (rulesMessage.trim().length > 0) {
-        this.logger.debug('Adding client behavior rules as user message');
+      if (content.trim().length > 0) {
+        this.logger.debug('Adding agent name and description as user message');
         messagesForAPI.push({
           role: MessageRole.USER,
-          content: rulesMessage.trim(),
+          content: content.trim(),
         });
       }
     }
   }
 
   /**
-   * Add client agent config rules (system) - SYSTEM role
+   * Add user agent config rules (system) - SYSTEM role
    * Generated from agent config values (response_length, age, gender, personality, sentiment, interests)
    * Includes language rule if set
    * Transformed from array to single message
    */
-  private addClientAgentConfigRules(
+  private addUserAgentConfigRules(
     messagesForAPI: MessageForOpenAI[],
     agentConfig: AgentConfig
   ): void {
-    // 1. Generate rules from config values
-    const configRules: string[] = [];
+    // Generate rules from config values using centralized prompt function
+    const configRules = OPENAI_PROMPTS.AGENT_CONFIG.CONFIG_VALUES({
+      language: agentConfig.language,
+      response_length: agentConfig.response_length,
+      age: agentConfig.age,
+      gender: agentConfig.gender,
+      personality: agentConfig.personality,
+      sentiment: agentConfig.sentiment,
+      interests: agentConfig.interests,
+    });
 
-    // Language rule (moved from ConfigurationRulesService)
-    if (agentConfig.language) {
-      configRules.push(
-        OPENAI_PROMPTS.CONFIGURATION_RULES.LANGUAGE(agentConfig.language)
-      );
-    }
-
-    // Other config-based rules (response_length, age, gender, etc.)
-    const configs: Record<string, unknown> = {};
-    if (agentConfig.response_length !== undefined) {
-      configs.response_length = agentConfig.response_length;
-    }
-    if (agentConfig.age !== undefined) {
-      configs.age = agentConfig.age;
-    }
-    if (agentConfig.gender !== undefined) {
-      configs.gender = agentConfig.gender;
-    }
-    if (agentConfig.personality !== undefined) {
-      configs.personality = agentConfig.personality;
-    }
-    if (agentConfig.sentiment !== undefined) {
-      configs.sentiment = agentConfig.sentiment;
-    }
-    if (agentConfig.interests !== undefined) {
-      configs.interests = agentConfig.interests;
-    }
-
-    const generatedRules =
-      this.agentConfigService.generateBehaviorRulesFromConfig(configs);
-    configRules.push(...generatedRules);
-
-    // 2. Transform to single SYSTEM message
+    // Transform to single SYSTEM message
     if (configRules.length > 0) {
       const rulesMessage =
         this.behaviorRulesTransformationService.transformRulesToMessage(
@@ -386,7 +321,7 @@ export class MessagePreparationService {
 
       if (rulesMessage.trim().length > 0) {
         this.logger.debug(
-          `Adding ${configRules.length} client agent config rules as system message`
+          `Adding ${configRules.length} user agent config rules as system message`
         );
         messagesForAPI.push({
           role: MessageRole.SYSTEM,

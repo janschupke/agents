@@ -48,16 +48,6 @@ export default function AgentConfiguration({ agent }: AgentConfigurationProps) {
             </div>
           </div>
         )}
-        {agent.configs?.system_prompt && (
-          <div>
-            <div className="text-text-tertiary">
-              {t('agents.detail.systemPrompt')}
-            </div>
-            <div className="text-text-primary mt-1 text-xs bg-background-secondary p-2 rounded">
-              {agent.configs.system_prompt}
-            </div>
-          </div>
-        )}
       </div>
     </DetailCard>
   );

@@ -64,8 +64,6 @@ describe('AgentService', () => {
         description: 'New Description',
         configs: {
           temperature: 0.7,
-          system_prompt: 'You are a helpful assistant',
-          behavior_rules: ['Be polite', 'Be concise'],
         },
       };
 

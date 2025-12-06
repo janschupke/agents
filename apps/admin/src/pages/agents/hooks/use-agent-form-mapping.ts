@@ -27,13 +27,6 @@ export function mapToFormData(
     agentType: agent.agentType || undefined,
     language: agent.language || undefined,
     temperature: configs.temperature as number | undefined,
-    systemPrompt: (configs.system_prompt as string) || undefined,
-    behaviorRules: Array.isArray(configs.behavior_rules)
-      ? configs.behavior_rules
-      : typeof configs.behavior_rules === 'object' &&
-          'rules' in (configs.behavior_rules || {})
-        ? (configs.behavior_rules as { rules: string[] })?.rules || []
-        : [],
     model: (configs.model as string) || undefined,
     maxTokens: configs.max_tokens as number | undefined,
     responseLength: (configs.response_length as ResponseLength) || undefined,
@@ -56,9 +49,6 @@ export function mapFormDataToUpdateRequest(
 
   if (data.temperature !== undefined) {
     configs.temperature = data.temperature;
-  }
-  if (data.systemPrompt) {
-    configs.system_prompt = data.systemPrompt;
   }
   if (data.model) {
     configs.model = data.model;
@@ -108,12 +98,6 @@ export function mapFormDataToArchetypeRequest(
 
   if (data.temperature !== undefined) {
     configs.temperature = data.temperature;
-  }
-  if (data.systemPrompt) {
-    configs.system_prompt = data.systemPrompt;
-  }
-  if (data.behaviorRules && data.behaviorRules.length > 0) {
-    configs.behavior_rules = data.behaviorRules;
   }
   if (data.model) {
     configs.model = data.model;

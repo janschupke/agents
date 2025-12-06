@@ -11,8 +11,6 @@ const mockFormData: Partial<Agent> = {
   avatarUrl: null,
   configs: {
     temperature: 0.8,
-    system_prompt: 'Test prompt',
-    behavior_rules: ['Rule 1'],
   },
 };
 
@@ -95,8 +93,6 @@ describe('useAgentConfigState', () => {
 
     expect(result.current.currentAgent?.configs).toEqual({
       temperature: 1,
-      system_prompt: '',
-      behavior_rules: [],
     });
   });
 });

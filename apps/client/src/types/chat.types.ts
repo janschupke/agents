@@ -112,7 +112,6 @@ export interface CreateAgentRequest {
   language?: string;
   configs?: {
     temperature?: number;
-    system_prompt?: string;
     age?: number;
     gender?: string;
     personality?: string;
@@ -129,7 +128,6 @@ export interface UpdateAgentRequest {
   language?: string;
   configs?: {
     temperature?: number;
-    system_prompt?: string;
     age?: number;
     gender?: string;
     personality?: string;

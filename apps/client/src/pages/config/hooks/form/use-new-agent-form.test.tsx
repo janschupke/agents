@@ -14,8 +14,6 @@ describe('useNewAgentForm', () => {
       language: null,
       configs: {
         temperature: 1,
-        system_prompt: '',
-        behavior_rules: [],
       },
     });
   });
@@ -58,31 +56,13 @@ describe('useNewAgentForm', () => {
     expect(result.current.hasUnsavedChanges).toBe(true);
   });
 
-  it('should return hasUnsavedChanges as true when system_prompt is set', () => {
+  it('should return hasUnsavedChanges as true when configs are set', () => {
     const { result } = renderHook(() => useNewAgentForm());
 
     act(() => {
       result.current.setFormData({
         configs: {
           temperature: 1,
-          system_prompt: 'Test prompt',
-          behavior_rules: [],
-        },
-      });
-    });
-
-    expect(result.current.hasUnsavedChanges).toBe(true);
-  });
-
-  it('should return hasUnsavedChanges as true when behavior_rules are set', () => {
-    const { result } = renderHook(() => useNewAgentForm());
-
-    act(() => {
-      result.current.setFormData({
-        configs: {
-          temperature: 1,
-          system_prompt: '',
-          behavior_rules: ['Rule 1'],
         },
       });
     });
