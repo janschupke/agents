@@ -1,11 +1,10 @@
 import { useParams, Navigate, useLocation } from 'react-router-dom';
 import { ROUTES } from '../../constants/routes.constants';
 import AgentConfig from './components/agent/AgentConfig/AgentConfig';
-import { useConfigRoute } from './hooks/route/use-config-route';
-import AgentConfigErrorState from './components/agent/AgentConfig/parts/AgentConfigErrorState';
-import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useAgents } from '../../hooks/queries/use-agents';
+import { LocalStorageManager } from '../../utils/localStorage';
 import { useSidebarLoadingState } from '../../hooks/utils/use-sidebar-loading-state';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 import {
   Sidebar,
   Container,
@@ -39,9 +38,7 @@ function AgentConfigLoadingState() {
 export default function Config() {
   const { agentId } = useParams<{ agentId?: string }>();
   const location = useLocation();
-  const { t } = useTranslation(I18nNamespace.CLIENT);
-  const { error, lastSelectedAgentId } = useConfigRoute(agentId);
-  const { isLoading: loadingAgents } = useAgents();
+  const { data: agents = [], isLoading: loadingAgents } = useAgents();
 
   // Use universal sidebar loading state - only show full page loading if agents aren't cached
   // If agents are cached, always render AgentConfig (even if loading specific agent)
@@ -63,10 +60,16 @@ export default function Config() {
     return <AgentConfig isNewAgent={true} />;
   }
 
-  // If no agentId, redirect to last selected or show empty state
+  // If no agentId, show empty state or redirect to last selected
   if (!agentId) {
-    if (lastSelectedAgentId) {
-      return <Navigate to={ROUTES.CONFIG_AGENT(lastSelectedAgentId)} replace />;
+    const lastSelectedAgentId = LocalStorageManager.getSelectedAgentIdConfig();
+    
+    // Check if last selected agent still exists
+    if (lastSelectedAgentId !== null) {
+      const agentExists = agents.some((a) => a.id === lastSelectedAgentId);
+      if (agentExists) {
+        return <Navigate to={ROUTES.CONFIG_AGENT(lastSelectedAgentId)} replace />;
+      }
     }
     return <AgentConfig />; // Handles empty state internally
   }
@@ -76,12 +79,13 @@ export default function Config() {
     return <Navigate to={ROUTES.CONFIG} replace />;
   }
 
-  if (error) {
-    return (
-      <AgentConfigErrorState
-        message={error || t('config.errors.agentNotFound')}
-      />
-    );
+  // Check if agent exists in agents list BEFORE rendering AgentConfig
+  // This prevents useAgent from being called with invalid ID
+  if (!loadingAgents && parsedAgentId !== null) {
+    const agentExists = agents.some((a) => a.id === parsedAgentId);
+    if (!agentExists) {
+      return <Navigate to={ROUTES.CONFIG} replace />;
+    }
   }
 
   return <AgentConfig agentId={parsedAgentId} />;

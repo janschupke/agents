@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useChatInput } from '../ChatInput/hooks/use-chat-input';
 import { useChatMessages } from '../ChatMessages/hooks/use-chat-messages';
 import { useChatScroll } from '../ChatMessages/hooks/use-chat-scroll';
@@ -50,6 +50,13 @@ function ChatAgentContent({
 
   const { data: agents = [], isLoading: agentsLoading } = useAgents();
   const agent = agentId ? agents.find((a) => a.id === agentId) || null : null;
+
+  // If agentId is provided but agent is not found (after agents have loaded), redirect
+  useEffect(() => {
+    if (agentId !== null && !agentsLoading && !agent) {
+      navigate(ROUTES.CHAT, { replace: true });
+    }
+  }, [agentId, agentsLoading, agent, navigate]);
 
   // Backend automatically returns first session for agent
   // UI is completely agnostic to sessions - backend handles multiple sessions internally
@@ -183,15 +190,8 @@ function ChatAgentContent({
           />
         </Sidebar>
         <Container>
-          <PageHeader
-            actions={
-              <Button variant="icon" disabled={true}>
-                <IconSettings size="md" />
-              </Button>
-            }
-          />
           <PageContent>
-            <div className="flex flex-col items-center justify-center h-full">
+            <div className="flex flex-col items-center justify-center h-full min-h-[calc(100vh-4rem)]">
               <p className="text-text-secondary">{t('chat.noChatSelected')}</p>
             </div>
           </PageContent>
@@ -216,9 +216,10 @@ function ChatAgentContent({
           <ContainerSkeleton />
         ) : (
           <>
-            <PageHeader
-              leftContent={
-                agent ? (
+            {/* Only render header if agent exists */}
+            {agent && (
+              <PageHeader
+                leftContent={
                   <div className="flex items-center gap-3">
                     <Avatar
                       src={agent.avatarUrl || undefined}
@@ -229,19 +230,18 @@ function ChatAgentContent({
                       {agent.name}
                     </h2>
                   </div>
-                ) : null
-              }
-              actions={
-                <Button
-                  variant="icon"
-                  onClick={() => navigate(ROUTES.CONFIG_AGENT(agentId!))}
-                  disabled={!agentId}
-                  tooltip={agentId ? t('chat.configureAgent') : undefined}
-                >
-                  <IconSettings size="md" />
-                </Button>
-              }
-            />
+                }
+                actions={
+                  <Button
+                    variant="icon"
+                    onClick={() => navigate(ROUTES.CONFIG_AGENT(agentId!))}
+                    tooltip={t('chat.configureAgent')}
+                  >
+                    <IconSettings size="md" />
+                  </Button>
+                }
+              />
+            )}
             <PageContent
               animateOnChange={sessionId}
               enableAnimation={true}

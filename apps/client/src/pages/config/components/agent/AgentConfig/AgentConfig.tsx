@@ -128,6 +128,15 @@ export default function AgentConfig({
     return <AgentConfigLoadingState />;
   }
 
+  // If there's an error (agent not found), redirect to /config
+  // This ensures we don't stay on invalid URL and sidebar always renders
+  // Note: This is a fallback - Config.tsx should handle redirect before rendering this component
+  useEffect(() => {
+    if ((propError || error) && agentId !== null && !isNewAgent) {
+      navigate(ROUTES.CONFIG, { replace: true });
+    }
+  }, [propError, error, agentId, navigate, isNewAgent]);
+
   return (
     <>
       <Sidebar>
@@ -142,7 +151,7 @@ export default function AgentConfig({
         />
       </Sidebar>
       <Container>
-        {/* Error state - show in page content */}
+        {/* Error state - show in page content (will redirect via useEffect) */}
         {propError || error ? (
           <AgentConfigErrorState
             message={propError || error || t('config.errors.agentNotFound')}
