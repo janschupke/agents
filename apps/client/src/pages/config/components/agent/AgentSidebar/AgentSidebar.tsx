@@ -1,7 +1,6 @@
 import { Agent } from '../../../../../types/chat.types';
 import {
   IconPlus,
-  IconTrash,
   SkeletonList,
   Sidebar,
   SidebarHeader,
@@ -9,6 +8,7 @@ import {
   SidebarItem,
 } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
+import AgentSidebarItem from '../shared/AgentSidebarItem';
 
 interface AgentSidebarProps {
   agents: Agent[];
@@ -63,31 +63,13 @@ export default function AgentSidebar({
             />
           )}
           {agents.map((agent) => (
-            <SidebarItem
+            <AgentSidebarItem
               key={agent.id}
+              agent={agent}
               isSelected={currentAgentId === agent.id && !isNewAgentSelected}
-              title={
-                <>
-                  {agent.name}
-                  {agent.id < 0 && (
-                    <span className="ml-1.5 text-xs opacity-70">(New)</span>
-                  )}
-                </>
-              }
-              description={agent.description}
               onClick={() => onAgentSelect(agent.id)}
-              actions={
-                onAgentDelete
-                  ? [
-                      {
-                        icon: <IconTrash size="xs" />,
-                        onClick: () => onAgentDelete(agent.id),
-                        variant: 'danger' as const,
-                        tooltip: agent.id < 0 ? 'Cancel' : 'Delete agent',
-                      },
-                    ]
-                  : undefined
-              }
+              onDelete={onAgentDelete}
+              showDelete={!!onAgentDelete}
             />
           ))}
         </div>

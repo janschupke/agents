@@ -3,8 +3,8 @@ import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Availability } from '../../../../../../types/agent.types';
 
 interface AvailabilityFieldProps {
-  value: Availability | null;
-  onChange: (value: Availability | null) => void;
+  value: Availability;
+  onChange: (value: Availability) => void;
 }
 
 export default function AvailabilityField({
@@ -14,16 +14,17 @@ export default function AvailabilityField({
   const { t } = useTranslation(I18nNamespace.CLIENT);
 
   return (
-    <FormField label={t('config.availability')} labelFor="agent-availability">
+    <FormField
+      label={t('config.availability')}
+      labelFor="agent-availability"
+      hint={t('config.availabilityDescription')}
+    >
       <select
         id="agent-availability"
-        value={value || ''}
-        onChange={(e) =>
-          onChange(e.target.value ? (e.target.value as Availability) : null)
-        }
+        value={value}
+        onChange={(e) => onChange(e.target.value as Availability)}
         className="w-full px-3 py-2 border border-border-input rounded-md text-text-primary bg-background focus:outline-none focus:border-border-focus"
       >
-        <option value="">{t('config.selectAvailability')}</option>
         {Object.values(Availability).map((availability) => (
           <option key={availability} value={availability}>
             {t(

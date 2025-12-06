@@ -85,7 +85,7 @@ export default function ChipSelector({
               type="button"
               onClick={() => toggleOption(option)}
               disabled={disabled}
-              className={`px-3 py-2 text-sm rounded-md border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`px-3 py-2 text-sm rounded-md border transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-[80px] ${
                 isSelected
                   ? 'bg-primary text-text-inverse border-primary hover:bg-primary-hover'
                   : 'bg-background-secondary text-text-primary border-border hover:border-border-focus'

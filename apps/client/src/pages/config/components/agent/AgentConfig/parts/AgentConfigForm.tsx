@@ -4,7 +4,7 @@ import { useAgentForm } from '../../../../hooks/agent/use-agent-form';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Language } from '@openai/shared-types';
 import { FormContainer } from '@openai/ui';
-import { TemperatureField, BehaviorRulesField } from './AgentConfigFormFields';
+import { BehaviorRulesField } from './AgentConfigFormFields';
 import AgentConfigFormSkeleton from './AgentConfigFormSkeleton';
 import AgentNameAndAvatar from './AgentNameAndAvatar';
 import MemorySummary from './MemorySummary';
@@ -227,8 +227,8 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
                 onDescriptionChange={(val) => setValue('description', val)}
               />
 
-              {/* 2-column layout for language, agent type, temperature */}
-              <div className="grid grid-cols-2 gap-5">
+              {/* 2-column layout for language and agent type */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <AgentTypeField
                   value={values.agentType}
                   onChange={(val) => setValue('agentType', val)}
@@ -238,14 +238,10 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
                   agentType={values.agentType}
                   onChange={(val) => setValue('language', val as string | null)}
                 />
-                <TemperatureField
-                  value={values.temperature}
-                  onChange={(val) => setValue('temperature', val)}
-                />
               </div>
 
               {/* 2-column layout for new simple fields */}
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <ResponseLengthField
                   value={values.responseLength}
                   onChange={(val) => setValue('responseLength', val)}

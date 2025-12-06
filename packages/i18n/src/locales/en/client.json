@@ -84,11 +84,14 @@
     "genderMale": "Male",
     "genderFemale": "Female",
     "genderNonBinary": "Non-binary",
+    "genderOther": "Other",
     "genderPreferNotToSay": "Prefer not to say",
     "personality": "Personality",
     "selectPersonality": "Select personality type",
+    "personalityDescription": "Defines the agent's core personality traits and communication style",
     "sentiment": "Sentiment",
     "selectSentiment": "Select sentiment",
+    "sentimentDescription": "Sets the emotional tone and attitude of the agent's responses",
     "sentimentNeutral": "Neutral",
     "sentimentEngaged": "Engaged",
     "sentimentFriendly": "Friendly",
@@ -100,6 +103,7 @@
     "interestsDescription": "Click to toggle interests",
     "availability": "Availability",
     "selectAvailability": "Select availability",
+    "availabilityDescription": "Determines how available and responsive the agent appears to be",
     "availabilityAvailable": "Available",
     "availabilityStandard": "Standard",
     "availabilityBusy": "Busy",
@@ -155,7 +159,9 @@
       "unsavedChangesTitle": "Unsaved Changes",
       "unsavedChangesMessage": "You have unsaved changes. Are you sure you want to leave?"
     },
-    "untitledAgent": "Untitled Agent"
+    "untitledAgent": "Untitled Agent",
+    "chat": "Chat",
+    "chatWithAgent": "Open chat with this agent"
   },
   "profile": {
     "title": "Profile",

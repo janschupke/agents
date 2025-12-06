@@ -45,7 +45,6 @@ export function useAgentSave({
           agentType: values.agentType,
           language: values.language || null,
           configs: {
-            temperature: values.temperature,
             system_prompt: values.description,
             behavior_rules:
               values.behaviorRules.filter((r) => r.trim()).length > 0

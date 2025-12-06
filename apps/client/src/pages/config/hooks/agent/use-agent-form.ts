@@ -21,16 +21,15 @@ export interface AgentFormValues extends Record<string, unknown> {
   avatarUrl: string | null;
   agentType: AgentType;
   language: string | null;
-  temperature: number;
   behaviorRules: string[];
   // New fields
-  responseLength: ResponseLength | null;
+  responseLength: ResponseLength;
   age: number | null;
   gender: Gender | null;
-  personality: PersonalityType | null;
-  sentiment: Sentiment | null;
+  personality: PersonalityType;
+  sentiment: Sentiment;
   interests: string[];
-  availability: Availability | null;
+  availability: Availability;
 }
 
 interface UseAgentFormOptions {
@@ -72,8 +71,6 @@ export function useAgentForm({
         avatarUrl: agent.avatarUrl || null,
         agentType: agent.agentType || AgentType.GENERAL,
         language: agent.language || null,
-        temperature:
-          typeof config.temperature === 'number' ? config.temperature : 0.7,
         behaviorRules: parseBehaviorRules(config.behavior_rules),
         // New fields
         responseLength:
@@ -82,7 +79,7 @@ export function useAgentForm({
             config.response_length as ResponseLength
           )
             ? (config.response_length as ResponseLength)
-            : null,
+            : ResponseLength.SHORT,
         age: typeof config.age === 'number' ? config.age : null,
         gender:
           config.gender &&
@@ -93,12 +90,12 @@ export function useAgentForm({
           config.personality &&
           PERSONALITY_TYPES.includes(config.personality as PersonalityType)
             ? (config.personality as PersonalityType)
-            : null,
+            : 'Empathetic',
         sentiment:
           config.sentiment &&
           Object.values(Sentiment).includes(config.sentiment as Sentiment)
             ? (config.sentiment as Sentiment)
-            : null,
+            : Sentiment.NEUTRAL,
         interests: Array.isArray(config.interests) ? config.interests : [],
         availability:
           config.availability &&
@@ -106,7 +103,7 @@ export function useAgentForm({
             config.availability as Availability
           )
             ? (config.availability as Availability)
-            : null,
+            : Availability.AVAILABLE,
       };
     } else if (agent && agent.id < 0) {
       // New agent
@@ -116,16 +113,15 @@ export function useAgentForm({
         avatarUrl: agent.avatarUrl || null,
         agentType: agent.agentType || AgentType.GENERAL,
         language: agent.language || null,
-        temperature: 0.7,
         behaviorRules: [],
         // New fields
-        responseLength: null,
+        responseLength: ResponseLength.SHORT,
         age: null,
         gender: null,
-        personality: null,
-        sentiment: null,
+        personality: 'Empathetic',
+        sentiment: Sentiment.NEUTRAL,
         interests: [],
-        availability: null,
+        availability: Availability.AVAILABLE,
       };
     }
     return {
@@ -134,16 +130,15 @@ export function useAgentForm({
       avatarUrl: null,
       agentType: AgentType.GENERAL,
       language: null,
-      temperature: 0.7,
       behaviorRules: [],
       // New fields
-      responseLength: null,
+      responseLength: ResponseLength.SHORT,
       age: null,
       gender: null,
-      personality: null,
-      sentiment: null,
+      personality: 'Empathetic',
+      sentiment: Sentiment.NEUTRAL,
       interests: [],
-      availability: null,
+      availability: Availability.AVAILABLE,
     };
   }, [agent, agentData]);
 
@@ -225,10 +220,6 @@ export function useAgentForm({
       setValue('avatarUrl', agent.avatarUrl || null);
       setValue('agentType', agent.agentType || AgentType.GENERAL);
       setValue('language', agent.language || null);
-      setValue(
-        'temperature',
-        typeof config.temperature === 'number' ? config.temperature : 0.7
-      );
       setValue('behaviorRules', parseBehaviorRules(config.behavior_rules));
       // New fields
       setValue(
@@ -238,7 +229,7 @@ export function useAgentForm({
             config.response_length as ResponseLength
           )
           ? (config.response_length as ResponseLength)
-          : null
+          : ResponseLength.SHORT
       );
       setValue('age', typeof config.age === 'number' ? config.age : null);
       setValue(
@@ -252,14 +243,14 @@ export function useAgentForm({
         config.personality &&
           PERSONALITY_TYPES.includes(config.personality as PersonalityType)
           ? (config.personality as PersonalityType)
-          : null
+          : 'Empathetic'
       );
       setValue(
         'sentiment',
         config.sentiment &&
           Object.values(Sentiment).includes(config.sentiment as Sentiment)
           ? (config.sentiment as Sentiment)
-          : null
+          : Sentiment.NEUTRAL
       );
       setValue(
         'interests',
@@ -272,7 +263,7 @@ export function useAgentForm({
             config.availability as Availability
           )
           ? (config.availability as Availability)
-          : null
+          : Availability.AVAILABLE
       );
     } else if (agent && agent.id < 0) {
       setValue('name', agent.name || '');
@@ -280,16 +271,15 @@ export function useAgentForm({
       setValue('avatarUrl', agent.avatarUrl || null);
       setValue('agentType', agent.agentType || AgentType.GENERAL);
       setValue('language', agent.language || null);
-      setValue('temperature', 0.7);
       setValue('behaviorRules', []);
       // New fields
-      setValue('responseLength', null);
+      setValue('responseLength', ResponseLength.SHORT);
       setValue('age', null);
       setValue('gender', null);
-      setValue('personality', null);
-      setValue('sentiment', null);
+      setValue('personality', 'Empathetic');
+      setValue('sentiment', Sentiment.NEUTRAL);
       setValue('interests', []);
-      setValue('availability', null);
+      setValue('availability', Availability.AVAILABLE);
     } else {
       reset();
     }

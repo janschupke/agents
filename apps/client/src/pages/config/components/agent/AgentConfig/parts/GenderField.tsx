@@ -7,37 +7,58 @@ interface GenderFieldProps {
   onChange: (value: Gender | null) => void;
 }
 
+/**
+ * 3-state gender toggle: Male, Female, Other
+ * Clicking the same button again deselects it (returns to null)
+ */
 export default function GenderField({ value, onChange }: GenderFieldProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
 
+  const handleToggle = (gender: Gender) => {
+    // If clicking the same gender, deselect it (set to null)
+    if (value === gender) {
+      onChange(null);
+    } else {
+      onChange(gender);
+    }
+  };
+
   return (
     <FormField label={t('config.gender')} labelFor="agent-gender">
-      <div className="flex gap-4">
-        {Object.values(Gender).map((gender) => (
-          <label
-            key={gender}
-            className="flex items-center gap-2 cursor-pointer"
-          >
-            <input
-              type="radio"
-              name="gender"
-              value={gender}
-              checked={value === gender}
-              onChange={(e) =>
-                onChange(e.target.checked ? (gender as Gender) : null)
-              }
-              className="accent-primary"
-            />
-            <span>
-              {t(
-                `config.gender${gender
-                  .split('-')
-                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                  .join('')}`
-              )}
-            </span>
-          </label>
-        ))}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => handleToggle(Gender.MALE)}
+          className={`px-4 py-2 text-sm rounded-md border transition-colors ${
+            value === Gender.MALE
+              ? 'bg-primary text-text-inverse border-primary hover:bg-primary-hover'
+              : 'bg-background-secondary text-text-primary border-border hover:border-border-focus'
+          }`}
+        >
+          {t('config.genderMale')}
+        </button>
+        <button
+          type="button"
+          onClick={() => handleToggle(Gender.FEMALE)}
+          className={`px-4 py-2 text-sm rounded-md border transition-colors ${
+            value === Gender.FEMALE
+              ? 'bg-primary text-text-inverse border-primary hover:bg-primary-hover'
+              : 'bg-background-secondary text-text-primary border-border hover:border-border-focus'
+          }`}
+        >
+          {t('config.genderFemale')}
+        </button>
+        <button
+          type="button"
+          onClick={() => handleToggle(Gender.NON_BINARY)}
+          className={`px-4 py-2 text-sm rounded-md border transition-colors ${
+            value === Gender.NON_BINARY
+              ? 'bg-primary text-text-inverse border-primary hover:bg-primary-hover'
+              : 'bg-background-secondary text-text-primary border-border hover:border-border-focus'
+          }`}
+        >
+          {t('config.genderOther')}
+        </button>
       </div>
     </FormField>
   );

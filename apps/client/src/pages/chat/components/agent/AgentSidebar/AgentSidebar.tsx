@@ -5,10 +5,9 @@ import {
   Sidebar,
   SidebarHeader,
   SidebarContent,
-  SidebarItem,
-  Avatar,
 } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
+import AgentSidebarItem from '../../../../config/components/agent/shared/AgentSidebarItem';
 
 interface AgentSidebarProps {
   agents: Agent[];
@@ -55,32 +54,12 @@ export default function AgentSidebar({
       >
         <div className="flex flex-col">
           {agents.map((agent) => (
-            <SidebarItem
+            <AgentSidebarItem
               key={agent.id}
+              agent={agent}
               isSelected={currentAgentId === agent.id}
               onClick={() => onAgentSelect(agent.id)}
-            >
-              <button
-                onClick={() => onAgentSelect(agent.id)}
-                className="flex items-center gap-3 px-3 py-2 w-full text-left"
-              >
-                <Avatar
-                  src={agent.avatarUrl || undefined}
-                  name={agent.name}
-                  size="sm"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">
-                    {agent.name}
-                  </div>
-                  {agent.description && (
-                    <div className="text-xs text-text-tertiary truncate mt-0.5">
-                      {agent.description}
-                    </div>
-                  )}
-                </div>
-              </button>
-            </SidebarItem>
+            />
           ))}
         </div>
       </SidebarContent>

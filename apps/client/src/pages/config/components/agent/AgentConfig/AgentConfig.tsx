@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useRef, useState, useEffect } from 'react';
+import { ROUTES } from '../../../../../constants/routes.constants';
 import AgentSidebar from '../AgentSidebar/AgentSidebar';
 import AgentConfigForm, { AgentConfigFormRef } from './parts/AgentConfigForm';
 import AgentConfigErrorState from './parts/AgentConfigErrorState';
@@ -168,24 +169,36 @@ export default function AgentConfig({
               title={currentAgent ? undefined : t('config.title')}
               actions={
                 currentAgent ? (
-                  <FormButton
-                    type="button"
-                    onClick={handleSaveClick}
-                    loading={isSaving}
-                    disabled={!canSave}
-                    variant="primary"
-                    tooltip={
-                      isSaving
-                        ? t('config.saving')
-                        : isNewAgent || currentAgent.id < 0
-                          ? t('config.createAgent')
-                          : t('config.saveButton')
-                    }
-                  >
-                    {isNewAgent || currentAgent.id < 0
-                      ? t('config.createAgent')
-                      : t('config.saveButton')}
-                  </FormButton>
+                  <div className="flex gap-2">
+                    {!isNewAgent && currentAgent.id > 0 && (
+                      <FormButton
+                        type="button"
+                        onClick={() => navigate(ROUTES.CHAT_AGENT(currentAgent.id))}
+                        variant="secondary"
+                        tooltip={t('config.chatWithAgent')}
+                      >
+                        {t('config.chat')}
+                      </FormButton>
+                    )}
+                    <FormButton
+                      type="button"
+                      onClick={handleSaveClick}
+                      loading={isSaving}
+                      disabled={!canSave}
+                      variant="primary"
+                      tooltip={
+                        isSaving
+                          ? t('config.saving')
+                          : isNewAgent || currentAgent.id < 0
+                            ? t('config.createAgent')
+                            : t('config.saveButton')
+                      }
+                    >
+                      {isNewAgent || currentAgent.id < 0
+                        ? t('config.createAgent')
+                        : t('config.saveButton')}
+                    </FormButton>
+                  </div>
                 ) : undefined
               }
             />
