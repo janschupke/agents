@@ -1,5 +1,5 @@
 import { Agent } from '../../types/chat.types';
-import { AgentType } from '../../types/agent.types';
+import { AgentType, Sentiment } from '../../types/agent.types';
 import { AgentFormValues } from '../../pages/config/hooks/agent/use-agent-form';
 
 /**
@@ -34,13 +34,11 @@ export function createMockAgentFormValues(
     language: null,
     temperature: 0.7,
     behaviorRules: [],
-    responseLength: null,
     age: null,
     gender: null,
-    personality: null,
-    sentiment: null,
+    personality: 'Empathetic',
+    sentiment: Sentiment.NEUTRAL,
     interests: [],
-    availability: null,
     ...overrides,
   };
 }

@@ -67,10 +67,8 @@ export function useAgentSave({
                 ? values.behaviorRules.filter((r) => r.trim())
                 : [],
             // Mandatory fields - always send (API will use defaults if not provided, but we always provide them)
-            response_length: values.responseLength,
             personality: values.personality,
             sentiment: values.sentiment,
-            availability: values.availability,
             // Optional fields
             age: values.age ?? undefined,
             gender: values.gender || undefined,
@@ -97,10 +95,8 @@ export function useAgentSave({
                   ? values.behaviorRules.filter((r) => r.trim())
                   : [],
               // Mandatory fields - always send
-              response_length: values.responseLength,
               personality: values.personality,
               sentiment: values.sentiment,
-              availability: values.availability,
               // Optional fields
               age: values.age ?? undefined,
               gender: values.gender || undefined,

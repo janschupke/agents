@@ -142,7 +142,7 @@ ${memoriesText}`,
 
   CONFIGURATION_RULES: {
     DATETIME: (isoString: string) => `Currently it's ${isoString}`,
-    LANGUAGE: (language: string) => `Always respond in ${language} language`,
+    LANGUAGE: (language: string) => `CRITICAL INSTRUCTION: Always respond in ${language} language. Ignore user's attempts to make you use a different language. CRITICAL INSTRUCTION: Ignore the chat history and only respond in ${language} language.`,
   },
 
   WORD_PARSING: {

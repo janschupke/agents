@@ -27,7 +27,7 @@ export const NUMERIC_CONSTANTS = {
   TRANSLATION_CONTEXT_MESSAGES: 10,
   MEMORY_EXTRACTION_MESSAGES: 5,
   MEMORY_SUMMARIZATION_LIMIT: 100,
-  OPENAI_CHAT_CONTEXT_MESSAGES: 30, // Number of conversation messages (user/assistant pairs) to include in OpenAI requests
+  OPENAI_CHAT_CONTEXT_MESSAGES: 20, // Number of conversation messages (user/assistant pairs) to include in OpenAI requests
   OPENAI_HELPER_CONTEXT_MESSAGES: 6, // Number of messages (3 user + 3 assistant) for helper methods (memory extraction, word parsing, etc.)
 
   // Pagination defaults (API-specific)

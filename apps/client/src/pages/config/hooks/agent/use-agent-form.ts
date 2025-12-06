@@ -8,10 +8,8 @@ import {
 import { parseBehaviorRules } from '../../utils/agent.utils';
 import {
   AgentType,
-  ResponseLength,
   Gender,
   Sentiment,
-  Availability,
 } from '../../../../types/agent.types';
 import { PersonalityType, PERSONALITY_TYPES } from '@openai/shared-types';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
@@ -24,13 +22,11 @@ export interface AgentFormValues extends Record<string, unknown> {
   language: string | null;
   behaviorRules: string[];
   // New fields
-  responseLength: ResponseLength;
   age: number | null;
   gender: Gender | null;
   personality: PersonalityType;
   sentiment: Sentiment;
   interests: string[];
-  availability: Availability;
 }
 
 interface UseAgentFormOptions {
@@ -76,13 +72,6 @@ export function useAgentForm({
         language: agent.language || null,
         behaviorRules: parseBehaviorRules(config.behavior_rules),
         // New fields
-        responseLength:
-          config.response_length &&
-          Object.values(ResponseLength).includes(
-            config.response_length as ResponseLength
-          )
-            ? (config.response_length as ResponseLength)
-            : ResponseLength.SHORT,
         age: typeof config.age === 'number' ? config.age : null,
         gender:
           config.gender &&
@@ -100,13 +89,6 @@ export function useAgentForm({
             ? (config.sentiment as Sentiment)
             : Sentiment.NEUTRAL,
         interests: Array.isArray(config.interests) ? config.interests : [],
-        availability:
-          config.availability &&
-          Object.values(Availability).includes(
-            config.availability as Availability
-          )
-            ? (config.availability as Availability)
-            : Availability.AVAILABLE,
       };
     } else if (agent && agent.id < 0) {
       // New agent
@@ -118,13 +100,11 @@ export function useAgentForm({
         language: agent.language || null,
         behaviorRules: [],
         // New fields
-        responseLength: ResponseLength.SHORT,
         age: null,
         gender: null,
         personality: 'Empathetic',
         sentiment: Sentiment.NEUTRAL,
         interests: [],
-        availability: Availability.AVAILABLE,
       };
     }
     return {
@@ -135,13 +115,11 @@ export function useAgentForm({
       language: null,
       behaviorRules: [],
       // New fields
-      responseLength: ResponseLength.SHORT,
       age: null,
       gender: null,
       personality: 'Empathetic',
       sentiment: Sentiment.NEUTRAL,
       interests: [],
-      availability: Availability.AVAILABLE,
     };
   }, [agent, agentData]);
 
@@ -174,10 +152,8 @@ export function useAgentForm({
           },
         ],
         agentType: [validationRules.required(t('config.errors.validation.agentTypeRequired'))],
-        responseLength: [validationRules.required(t('config.errors.validation.responseLengthRequired'))],
         personality: [validationRules.required(t('config.errors.validation.personalityRequired'))],
         sentiment: [validationRules.required(t('config.errors.validation.sentimentRequired'))],
-        availability: [validationRules.required(t('config.errors.validation.availabilityRequired'))],
         age: [
           {
             validate: (value) => {
@@ -244,15 +220,6 @@ export function useAgentForm({
       setValue('language', agent.language || null);
       setValue('behaviorRules', parseBehaviorRules(config.behavior_rules));
       // New fields
-      setValue(
-        'responseLength',
-        config.response_length &&
-          Object.values(ResponseLength).includes(
-            config.response_length as ResponseLength
-          )
-          ? (config.response_length as ResponseLength)
-          : ResponseLength.SHORT
-      );
       setValue('age', typeof config.age === 'number' ? config.age : null);
       setValue(
         'gender',
@@ -278,15 +245,6 @@ export function useAgentForm({
         'interests',
         Array.isArray(config.interests) ? config.interests : []
       );
-      setValue(
-        'availability',
-        config.availability &&
-          Object.values(Availability).includes(
-            config.availability as Availability
-          )
-          ? (config.availability as Availability)
-          : Availability.AVAILABLE
-      );
     } else if (agent && agent.id < 0) {
       setValue('name', agent.name || '');
       setValue('description', '');
@@ -295,13 +253,11 @@ export function useAgentForm({
       setValue('language', agent.language || null);
       setValue('behaviorRules', []);
       // New fields
-      setValue('responseLength', ResponseLength.SHORT);
       setValue('age', null);
       setValue('gender', null);
       setValue('personality', 'Empathetic');
       setValue('sentiment', Sentiment.NEUTRAL);
       setValue('interests', []);
-      setValue('availability', Availability.AVAILABLE);
     } else {
       reset();
     }

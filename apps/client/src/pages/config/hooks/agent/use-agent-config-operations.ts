@@ -55,7 +55,6 @@ export function useAgentConfigOperations({
       (rule) => rule.trim().length > 0
     );
     const configs = {
-      temperature: values.temperature,
       system_prompt:
         (typeof values.description === 'string'
           ? values.description.trim()

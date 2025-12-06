@@ -10,12 +10,10 @@ import AgentNameAndAvatar from './AgentNameAndAvatar';
 import MemorySummary from './MemorySummary';
 import AgentTypeField from './AgentTypeField';
 import LanguageField from './LanguageField';
-import ResponseLengthField from './ResponseLengthField';
 import AgeField from './AgeField';
 import GenderField from './GenderField';
 import PersonalityField from './PersonalityField';
 import SentimentField from './SentimentField';
-import AvailabilityField from './AvailabilityField';
 import InterestsDashboard from './InterestsDashboard';
 import ArchetypeSelector from './ArchetypeSelector';
 import {
@@ -27,10 +25,8 @@ import {
 } from 'react';
 import { AgentArchetype } from '../../../../../../types/agent-archetype.types';
 import {
-  ResponseLength,
   Gender,
   Sentiment,
-  Availability,
 } from '../../../../../../types/agent.types';
 import { PersonalityType } from '@openai/shared-types';
 
@@ -102,8 +98,6 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
             : [];
         setValue('behaviorRules', rules);
       }
-      if (configs.response_length)
-        setValue('responseLength', configs.response_length as ResponseLength);
       if (configs.age !== undefined) setValue('age', configs.age as number);
       if (configs.gender) setValue('gender', configs.gender as Gender);
       if (configs.personality)
@@ -112,8 +106,6 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
         setValue('sentiment', configs.sentiment as Sentiment);
       if (configs.interests)
         setValue('interests', configs.interests as string[]);
-      if (configs.availability)
-        setValue('availability', configs.availability as Availability);
     };
 
     const loadingConfig = loadingAgent && agent !== null && agent.id > 0;
@@ -242,10 +234,6 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
 
               {/* 2-column layout for new simple fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <ResponseLengthField
-                  value={values.responseLength}
-                  onChange={(val) => setValue('responseLength', val)}
-                />
                 <AgeField
                   value={values.age}
                   onChange={(val) => setValue('age', val)}
@@ -263,10 +251,6 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
                 <SentimentField
                   value={values.sentiment}
                   onChange={(val) => setValue('sentiment', val)}
-                />
-                <AvailabilityField
-                  value={values.availability}
-                  onChange={(val) => setValue('availability', val)}
                 />
               </div>
 
