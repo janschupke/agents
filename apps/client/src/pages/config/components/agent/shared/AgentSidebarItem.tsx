@@ -1,5 +1,5 @@
 import { Agent } from '../../../../../types/chat.types';
-import { SidebarItem, Avatar, IconTrash } from '@openai/ui';
+import { SidebarItem, Avatar, IconTrash, IconTranslate, Button } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { AgentType } from '@openai/shared-types';
 import { Gender } from '../../../../../types/agent.types';
@@ -25,28 +25,30 @@ export default function AgentSidebarItem({
 }: AgentSidebarItemProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
 
-  // Build metadata string: agent type, age, gender (if not other)
+  // Build metadata string: age and gender (always show if available)
   const metadataParts: string[] = [];
 
-  if (agent.agentType) {
-    const agentTypeLabel =
-      agent.agentType === AgentType.GENERAL
-        ? t('config.agentType.general')
-        : t('config.agentType.languageAssistant');
-    metadataParts.push(agentTypeLabel);
-  }
-
-  if (agent.configs?.age) {
+  // Check age - must be a valid positive number (not 0, undefined, or null)
+  if (
+    agent.configs?.age !== undefined &&
+    agent.configs?.age !== null &&
+    typeof agent.configs.age === 'number' &&
+    !isNaN(agent.configs.age) &&
+    agent.configs.age > 0
+  ) {
     metadataParts.push(`${agent.configs.age}`);
   }
 
-  if (agent.configs?.gender && agent.configs.gender !== Gender.NON_BINARY) {
-    const genderValue = agent.configs.gender as Gender;
+  // Check gender - must be a valid gender value
+  if (agent.configs?.gender) {
+    const genderValue = agent.configs.gender as string;
     let genderLabel = '';
     if (genderValue === Gender.MALE) {
       genderLabel = t('config.genderMale');
     } else if (genderValue === Gender.FEMALE) {
       genderLabel = t('config.genderFemale');
+    } else if (genderValue === Gender.NON_BINARY) {
+      genderLabel = t('config.genderOther');
     }
     if (genderLabel) {
       metadataParts.push(genderLabel);
@@ -54,42 +56,64 @@ export default function AgentSidebarItem({
   }
 
   const metadata = metadataParts.length > 0 ? metadataParts.join(' • ') : null;
+  const isLanguageAssistant = agent.agentType === AgentType.LANGUAGE_ASSISTANT;
+
+  const showDeleteButton = showDelete && onDelete;
 
   return (
     <SidebarItem
       isSelected={isSelected}
       onClick={onClick}
-      actions={
-        showDelete && onDelete
-          ? [
-              {
-                icon: <IconTrash size="xs" />,
-                onClick: () => onDelete(agent.id),
-                variant: 'danger' as const,
-                tooltip: agent.id < 0 ? t('common.cancel') : t('common.delete'),
-              },
-            ]
-          : undefined
-      }
     >
-      <button
-        onClick={onClick}
-        className="flex items-center gap-3 px-3 py-2 w-full text-left"
-      >
-        <Avatar
-          src={agent.avatarUrl || undefined}
-          name={agent.name}
-          size="md"
-        />
-        <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium truncate">{agent.name}</div>
-          {metadata && (
-            <div className="text-xs text-text-tertiary truncate mt-0.5">
-              {metadata}
+      <div className="flex items-center group">
+        <button
+          onClick={onClick}
+          className="flex items-center gap-3 px-3 py-2 flex-1 text-left min-w-0"
+        >
+          <Avatar
+            src={agent.avatarUrl || undefined}
+            name={agent.name}
+            size="md"
+          />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-sm font-medium truncate flex-1 min-w-0">
+                {agent.name}
+              </span>
+              {isLanguageAssistant && (
+                <IconTranslate
+                  className="flex-shrink-0 w-3.5 h-3.5 text-text-secondary opacity-70"
+                />
+              )}
             </div>
-          )}
-        </div>
-      </button>
+            {metadata && (
+              <div className="text-xs text-text-tertiary truncate mt-0.5">
+                {metadata}
+              </div>
+            )}
+          </div>
+        </button>
+        {showDeleteButton && (
+          <div className="flex items-center gap-0.5 pr-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              onClick={(e) => {
+                e?.stopPropagation();
+                onDelete(agent.id);
+              }}
+              variant={isSelected ? 'ghost-inverse' : 'ghost'}
+              size="xs"
+              className={`p-1 ${
+                isSelected
+                  ? 'text-text-inverse hover:opacity-100'
+                  : 'text-text-primary hover:text-red-500'
+              }`}
+              tooltip={agent.id < 0 ? t('common.cancel') : t('common.delete')}
+            >
+              <IconTrash size="xs" />
+            </Button>
+          </div>
+        )}
+      </div>
     </SidebarItem>
   );
 }

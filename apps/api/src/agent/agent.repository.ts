@@ -147,6 +147,24 @@ export class AgentRepository {
     });
   }
 
+  async findAllWithConfig(userId: string): Promise<AgentWithConfig[]> {
+    const agents = await this.findAll(userId);
+    return Promise.all(
+      agents.map(async (agent) => {
+        const configs = await this.findConfigsByAgentId(agent.id);
+        return {
+          id: agent.id,
+          name: agent.name,
+          description: agent.description,
+          avatarUrl: agent.avatarUrl,
+          agentType: agent.agentType as AgentType | null,
+          language: agent.language,
+          configs,
+        };
+      })
+    );
+  }
+
   async create(
     userId: string,
     name: string,

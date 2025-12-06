@@ -25,18 +25,27 @@ export class AgentService {
 
   async findAll(userId: string): Promise<AgentResponse[]> {
     this.logger.debug(`Finding all agents for user ${userId}`);
-    const agents = await this.agentRepository.findAll(userId);
-    return agents.map((agent) => ({
-      id: agent.id,
-      userId: agent.userId,
-      name: agent.name,
-      description: agent.description,
-      avatarUrl: agent.avatarUrl,
-      agentType: agent.agentType as AgentType | null,
-      language: agent.language,
-      createdAt: agent.createdAt,
-      memorySummary: agent.memorySummary,
-    }));
+    const agents = await this.agentRepository.findAllWithConfig(userId);
+    const agentRecords = await this.agentRepository.findAll(userId);
+    
+    // Create a map for quick lookup
+    const agentMap = new Map(agentRecords.map((a) => [a.id, a]));
+    
+    return agents.map((agent) => {
+      const agentRecord = agentMap.get(agent.id);
+      return {
+        id: agent.id,
+        userId: agentRecord?.userId || userId,
+        name: agent.name,
+        description: agent.description,
+        avatarUrl: agent.avatarUrl,
+        agentType: agent.agentType as AgentType | null,
+        language: agent.language,
+        createdAt: agentRecord?.createdAt || new Date(),
+        configs: agent.configs,
+        memorySummary: agentRecord?.memorySummary || null,
+      };
+    });
   }
 
   async findById(id: number, userId: string): Promise<AgentResponse> {
