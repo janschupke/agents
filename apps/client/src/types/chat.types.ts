@@ -82,7 +82,6 @@ export interface Agent {
   configs?: {
     temperature?: number;
     system_prompt?: string;
-    behavior_rules?: string | unknown;
     age?: number;
     gender?: string;
     personality?: string;
@@ -114,7 +113,6 @@ export interface CreateAgentRequest {
   configs?: {
     temperature?: number;
     system_prompt?: string;
-    behavior_rules?: string | unknown;
     age?: number;
     gender?: string;
     personality?: string;
@@ -132,7 +130,6 @@ export interface UpdateAgentRequest {
   configs?: {
     temperature?: number;
     system_prompt?: string;
-    behavior_rules?: string | unknown;
     age?: number;
     gender?: string;
     personality?: string;

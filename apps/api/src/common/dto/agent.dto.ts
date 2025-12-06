@@ -32,8 +32,6 @@ export class AgentConfigDto {
   @IsString()
   system_prompt?: string;
 
-  @IsOptional()
-  behavior_rules?: string | string[] | { rules: string[] };
 
   @IsOptional()
   @IsString()

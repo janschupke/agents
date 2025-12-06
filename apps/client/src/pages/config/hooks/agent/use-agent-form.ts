@@ -5,7 +5,6 @@ import {
   ValidationSchema,
   validationRules,
 } from '@openai/utils';
-import { parseBehaviorRules } from '@openai/utils';
 import {
   AgentType,
   Gender,
@@ -20,7 +19,6 @@ export interface AgentFormValues extends Record<string, unknown> {
   avatarUrl: string | null;
   agentType: AgentType;
   language: string | null;
-  behaviorRules: string[];
   // New fields
   age: number | null;
   gender: Gender | null;
@@ -70,7 +68,6 @@ export function useAgentForm({
         avatarUrl: agent.avatarUrl || null,
         agentType: agent.agentType || AgentType.GENERAL,
         language: agent.language || null,
-        behaviorRules: parseBehaviorRules(config.behavior_rules),
         // New fields
         age: typeof config.age === 'number' ? config.age : null,
         gender:
@@ -98,7 +95,6 @@ export function useAgentForm({
         avatarUrl: agent.avatarUrl || null,
         agentType: agent.agentType || AgentType.GENERAL,
         language: agent.language || null,
-        behaviorRules: [],
         // New fields
         age: null,
         gender: null,
@@ -113,7 +109,6 @@ export function useAgentForm({
       avatarUrl: null,
       agentType: AgentType.GENERAL,
       language: null,
-      behaviorRules: [],
       // New fields
       age: null,
       gender: null,
@@ -218,7 +213,6 @@ export function useAgentForm({
       setValue('avatarUrl', agent.avatarUrl || null);
       setValue('agentType', agent.agentType || AgentType.GENERAL);
       setValue('language', agent.language || null);
-      setValue('behaviorRules', parseBehaviorRules(config.behavior_rules));
       // New fields
       setValue('age', typeof config.age === 'number' ? config.age : null);
       setValue(
@@ -251,7 +245,6 @@ export function useAgentForm({
       setValue('avatarUrl', agent.avatarUrl || null);
       setValue('agentType', agent.agentType || AgentType.GENERAL);
       setValue('language', agent.language || null);
-      setValue('behaviorRules', []);
       // New fields
       setValue('age', null);
       setValue('gender', null);

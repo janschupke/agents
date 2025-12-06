@@ -13,13 +13,7 @@ export function mapAgentConfigs(
 
   const mapped: Record<string, unknown> = {};
 
-  // Always include behavior_rules if it exists in the DTO (even if undefined)
-  // This allows us to clear it when user deletes all rules
-  if ('behavior_rules' in configs) {
-    mapped.behavior_rules = configs.behavior_rules;
-  }
-
-  // Include other fields only if they're defined
+  // Include fields only if they're defined
   if (configs.temperature !== undefined) {
     mapped.temperature = configs.temperature;
   }

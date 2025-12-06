@@ -4,7 +4,6 @@ import { useAgentForm } from '../../../../hooks/agent/use-agent-form';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Language } from '@openai/shared-types';
 import { FormContainer } from '@openai/ui';
-import { BehaviorRulesField } from './AgentConfigFormFields';
 import AgentConfigFormSkeleton from './AgentConfigFormSkeleton';
 import AgentNameAndAvatar from './AgentNameAndAvatar';
 import MemorySummary from './MemorySummary';
@@ -89,15 +88,6 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
         setValue('temperature', configs.temperature as number);
       if (configs.system_prompt)
         setValue('description', configs.system_prompt as string);
-      if (configs.behavior_rules) {
-        const rules = Array.isArray(configs.behavior_rules)
-          ? configs.behavior_rules
-          : typeof configs.behavior_rules === 'object' &&
-              'rules' in configs.behavior_rules
-            ? (configs.behavior_rules as { rules: string[] }).rules
-            : [];
-        setValue('behaviorRules', rules);
-      }
       if (configs.age !== undefined) setValue('age', configs.age as number);
       if (configs.gender) setValue('gender', configs.gender as Gender);
       if (configs.personality)
@@ -258,11 +248,6 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
               <InterestsDashboard
                 selectedInterests={values.interests}
                 onChange={(interests) => setValue('interests', interests)}
-              />
-
-              <BehaviorRulesField
-                rules={values.behaviorRules}
-                onChange={(rules: string[]) => setValue('behaviorRules', rules)}
               />
 
               <MemorySummary

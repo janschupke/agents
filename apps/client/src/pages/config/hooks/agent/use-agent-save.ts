@@ -46,10 +46,6 @@ export function useAgentSave({
           language: values.language || null,
           configs: {
             system_prompt: values.description,
-            behavior_rules:
-              values.behaviorRules.filter((r) => r.trim()).length > 0
-                ? values.behaviorRules.filter((r) => r.trim())
-                : [],
           },
         });
 
@@ -62,10 +58,6 @@ export function useAgentSave({
           language: values.language || undefined,
           configs: {
             system_prompt: values.description.trim() || undefined,
-            behavior_rules:
-              values.behaviorRules.filter((r) => r.trim()).length > 0
-                ? values.behaviorRules.filter((r) => r.trim())
-                : [],
             // Mandatory fields - always send (API will use defaults if not provided, but we always provide them)
             personality: values.personality,
             sentiment: values.sentiment,

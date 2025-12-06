@@ -38,7 +38,6 @@ export class AgentRepository {
       select: {
         temperature: true,
         systemPrompt: true,
-        behaviorRules: true,
         model: true,
         maxTokens: true,
         responseLength: true,
@@ -62,9 +61,6 @@ export class AgentRepository {
     }
     if (agent.systemPrompt !== null && agent.systemPrompt !== undefined) {
       configs.system_prompt = agent.systemPrompt;
-    }
-    if (agent.behaviorRules !== null && agent.behaviorRules !== undefined) {
-      configs.behavior_rules = agent.behaviorRules;
     }
     if (agent.model !== null && agent.model !== undefined) {
       configs.model = agent.model;
@@ -224,22 +220,6 @@ export class AgentRepository {
     }
     if (configs.system_prompt !== undefined) {
       updateData.systemPrompt = (configs.system_prompt as string) || null;
-    }
-    // Always update behavior_rules if it's in the configs object (even if undefined)
-    // This ensures we can clear it when user deletes all rules
-    if ('behavior_rules' in configs) {
-      // If behavior_rules is null, undefined, or empty array, set to Prisma.JsonNull to clear it
-      if (
-        configs.behavior_rules === null ||
-        configs.behavior_rules === undefined ||
-        (Array.isArray(configs.behavior_rules) &&
-          configs.behavior_rules.length === 0)
-      ) {
-        updateData.behaviorRules = Prisma.JsonNull;
-      } else {
-        updateData.behaviorRules =
-          configs.behavior_rules as Prisma.InputJsonValue;
-      }
     }
     if (configs.model !== undefined) {
       updateData.model = (configs.model as string) || null;

@@ -51,15 +51,11 @@ export function useAgentConfigOperations({
   ): Promise<Agent | null> => {
     if (!agent) return null;
 
-    const validRules = values.behaviorRules.filter(
-      (rule) => rule.trim().length > 0
-    );
     const configs = {
       system_prompt:
         (typeof values.description === 'string'
           ? values.description.trim()
           : '') || undefined,
-      behavior_rules: validRules.length > 0 ? validRules : [],
     };
 
     try {

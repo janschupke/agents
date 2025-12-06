@@ -12,55 +12,6 @@ describe('mapAgentConfigs', () => {
     expect(result).toBeUndefined();
   });
 
-  it('should include behavior_rules even if undefined', () => {
-    const configs: AgentConfigDto = {
-      behavior_rules: undefined,
-      temperature: 0.7,
-    };
-
-    const result = mapAgentConfigs(configs);
-
-    expect(result).toBeDefined();
-    expect(result?.behavior_rules).toBeUndefined();
-    expect('behavior_rules' in result!).toBe(true);
-  });
-
-  it('should include behavior_rules as empty array', () => {
-    const configs: AgentConfigDto = {
-      behavior_rules: [],
-      temperature: 0.7,
-    };
-
-    const result = mapAgentConfigs(configs);
-
-    expect(result).toBeDefined();
-    expect(result?.behavior_rules).toEqual([]);
-    expect(Array.isArray(result?.behavior_rules)).toBe(true);
-  });
-
-  it('should include behavior_rules as array of strings', () => {
-    const configs: AgentConfigDto = {
-      behavior_rules: ['Rule 1', 'Rule 2'],
-      temperature: 0.7,
-    };
-
-    const result = mapAgentConfigs(configs);
-
-    expect(result).toBeDefined();
-    expect(result?.behavior_rules).toEqual(['Rule 1', 'Rule 2']);
-  });
-
-  it('should not include behavior_rules if not in configs object', () => {
-    const configs: AgentConfigDto = {
-      temperature: 0.7,
-      // behavior_rules is not included
-    };
-
-    const result = mapAgentConfigs(configs);
-
-    expect(result).toBeDefined();
-    expect('behavior_rules' in result!).toBe(false);
-  });
 
   it('should include all other config fields when defined', () => {
     const configs: AgentConfigDto = {
@@ -94,9 +45,8 @@ describe('mapAgentConfigs', () => {
     });
   });
 
-  it('should exclude undefined fields except behavior_rules', () => {
+  it('should exclude undefined fields', () => {
     const configs: AgentConfigDto = {
-      behavior_rules: [],
       temperature: undefined,
       system_prompt: undefined,
       model: undefined,
@@ -105,7 +55,6 @@ describe('mapAgentConfigs', () => {
     const result = mapAgentConfigs(configs);
 
     expect(result).toBeDefined();
-    expect(result?.behavior_rules).toEqual([]);
     expect('temperature' in result!).toBe(false);
     expect('system_prompt' in result!).toBe(false);
     expect('model' in result!).toBe(false);
