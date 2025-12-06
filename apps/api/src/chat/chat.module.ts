@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 import { MessagePreparationService } from './services/message-preparation.service';
-import { ConfigurationRulesService } from './services/configuration-rules.service';
 import { PromptTransformationService } from './services/prompt-transformation.service';
 import { BehaviorRulesTransformationService } from './services/behavior-rules-transformation.service';
 import { OpenAIChatService } from './services/openai-chat.service';
@@ -40,7 +39,6 @@ import { AgentConfigService } from '../agent/services/agent-config.service';
     ChatOrchestrationService,
     TranslationExtractionService,
     MessagePreparationService,
-    ConfigurationRulesService,
     PromptTransformationService,
     BehaviorRulesTransformationService,
     OpenAIChatService,
