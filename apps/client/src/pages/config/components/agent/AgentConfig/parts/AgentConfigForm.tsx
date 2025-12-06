@@ -234,14 +234,6 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
 
               {/* 2-column layout for new simple fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <AgeField
-                  value={values.age}
-                  onChange={(val) => setValue('age', val)}
-                />
-                <GenderField
-                  value={values.gender}
-                  onChange={(val) => setValue('gender', val)}
-                />
                 <PersonalityField
                   value={values.personality}
                   onChange={(val) =>
@@ -251,6 +243,14 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
                 <SentimentField
                   value={values.sentiment}
                   onChange={(val) => setValue('sentiment', val)}
+                />
+                <AgeField
+                  value={values.age}
+                  onChange={(val) => setValue('age', val)}
+                />
+                <GenderField
+                  value={values.gender}
+                  onChange={(val) => setValue('gender', val)}
                 />
               </div>
 
