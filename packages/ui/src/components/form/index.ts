@@ -13,6 +13,8 @@ export { default as ChipSelector } from './ChipSelector';
 export type { ChipSelectorProps } from './ChipSelector';
 export { default as AvatarInput } from './AvatarInput';
 export type { AvatarInputProps } from './AvatarInput';
+export { BehaviorRulesEditor } from './BehaviorRulesEditor';
+export type { BehaviorRulesEditorProps } from './BehaviorRulesEditor';
 export type { ButtonType, ButtonVariant } from './form-types';
 export { VALID_BUTTON_VARIANTS, isValidButtonVariant } from './form-types';
 export type { ComponentSize } from './size-system';

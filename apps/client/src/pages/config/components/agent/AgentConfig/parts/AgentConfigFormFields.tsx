@@ -1,6 +1,5 @@
-import { FormField, Textarea, Slider } from '@openai/ui';
+import { FormField, Textarea, Slider, BehaviorRulesEditor } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { BehaviorRulesField } from './BehaviorRulesField';
 
 interface DescriptionFieldProps {
   value: string;
@@ -76,5 +75,5 @@ export function SystemPromptField({ value, onChange }: SystemPromptFieldProps) {
   );
 }
 
-// BehaviorRulesField is exported from its own file
-export { BehaviorRulesField };
+// Re-export BehaviorRulesEditor as BehaviorRulesField for backward compatibility
+export const BehaviorRulesField = BehaviorRulesEditor;

@@ -1,4 +1,4 @@
-import { SectionHeader, Card, Button } from '@openai/ui';
+import { Card, Button } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useGenerateMemorySummary } from '../../../../../../hooks/mutations/use-agent-mutations';
 

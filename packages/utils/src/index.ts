@@ -10,3 +10,6 @@ export * from './auth';
 
 // Hooks exports
 export * from './hooks/use-form-validation';
+
+// Agent exports
+export * from './agent';

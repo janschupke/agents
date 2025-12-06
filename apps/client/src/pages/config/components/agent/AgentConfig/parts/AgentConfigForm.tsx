@@ -262,7 +262,7 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
 
               <BehaviorRulesField
                 rules={values.behaviorRules}
-                onChange={(rules) => setValue('behaviorRules', rules)}
+                onChange={(rules: string[]) => setValue('behaviorRules', rules)}
               />
 
               <MemorySummary

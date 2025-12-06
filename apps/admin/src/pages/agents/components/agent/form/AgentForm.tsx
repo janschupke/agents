@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import { Button } from '@openai/ui';
+import { Button, BehaviorRulesEditor } from '@openai/ui';
 import {
   AgentFormMode,
   AgentFormData,
@@ -9,7 +9,6 @@ import { useAgentFormValidation } from '../../../hooks/use-agent-form-validation
 import {
   BasicInfoSection,
   ConfigurationSection,
-  BehaviorRulesSection,
   PersonalitySection,
 } from './index';
 import {
@@ -190,22 +189,6 @@ export default function AgentForm({
     await onSubmit(data);
   };
 
-  const addBehaviorRule = () => {
-    if (newBehaviorRule.trim()) {
-      setFormValues({
-        ...formValues,
-        behaviorRules: [...formValues.behaviorRules, newBehaviorRule.trim()],
-      });
-      setNewBehaviorRule('');
-    }
-  };
-
-  const removeBehaviorRule = (index: number) => {
-    setFormValues({
-      ...formValues,
-      behaviorRules: formValues.behaviorRules.filter((_, i) => i !== index),
-    });
-  };
 
   return (
     <form
@@ -253,12 +236,12 @@ export default function AgentForm({
         />
 
         {isArchetype && (
-          <BehaviorRulesSection
-            behaviorRules={formValues.behaviorRules}
-            newBehaviorRule={newBehaviorRule}
-            onNewRuleChange={setNewBehaviorRule}
-            onAddRule={addBehaviorRule}
-            onRemoveRule={removeBehaviorRule}
+          <BehaviorRulesEditor
+            rules={formValues.behaviorRules}
+            onChange={(rules) =>
+              setFormValues({ ...formValues, behaviorRules: rules })
+            }
+            namespace={I18nNamespace.ADMIN}
           />
         )}
 

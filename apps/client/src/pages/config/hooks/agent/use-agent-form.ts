@@ -5,7 +5,7 @@ import {
   ValidationSchema,
   validationRules,
 } from '@openai/utils';
-import { parseBehaviorRules } from '../../utils/agent.utils';
+import { parseBehaviorRules } from '@openai/utils';
 import {
   AgentType,
   Gender,
