@@ -162,6 +162,7 @@ export class ChatOrchestrationService {
       personality: mergedConfig.personality as PersonalityType | undefined,
       sentiment: mergedConfig.sentiment as Sentiment | undefined,
       interests: mergedConfig.interests as string[] | undefined,
+      agentName: agent.name,
     };
     this.logger.debug(`Loaded agent ${context.agentId} with config`);
 

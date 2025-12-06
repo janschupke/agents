@@ -55,7 +55,7 @@ export function useAgentSave({
           description: values.description.trim() || undefined,
           avatarUrl: values.avatarUrl || undefined,
           agentType: values.agentType,
-          language: values.language || undefined,
+          language: values.language === null ? null : values.language || undefined,
           configs: {
             system_prompt: values.description.trim() || undefined,
             // Mandatory fields - always send (API will use defaults if not provided, but we always provide them)
@@ -79,13 +79,9 @@ export function useAgentSave({
             description: values.description.trim() || undefined,
             avatarUrl: values.avatarUrl || undefined,
             agentType: values.agentType,
-            language: values.language || undefined,
+            language: values.language === null ? null : values.language || undefined,
             configs: {
               system_prompt: values.description.trim() || undefined,
-              behavior_rules:
-                values.behaviorRules.filter((r) => r.trim()).length > 0
-                  ? values.behaviorRules.filter((r) => r.trim())
-                  : [],
               // Mandatory fields - always send
               personality: values.personality,
               sentiment: values.sentiment,

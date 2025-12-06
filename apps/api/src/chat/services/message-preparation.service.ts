@@ -36,6 +36,7 @@ export interface AgentConfig {
   personality?: PersonalityType;
   sentiment?: Sentiment;
   interests?: string[];
+  agentName?: string;
 }
 
 @Injectable()
@@ -116,12 +117,20 @@ export class MessagePreparationService {
     // 3. Client agent config rules (system) - generated from config values
     this.addClientAgentConfigRules(messagesForAPI, agentConfig);
 
-    // 4. Client agent description (user prompt)
+    // 4. Client agent description (user prompt) - merged with agent name
     if (agentConfig.system_prompt) {
       this.logger.debug('Adding client system prompt as user message');
+      let descriptionContent = String(agentConfig.system_prompt);
+      
+      // Merge agent name with description if name is provided
+      if (agentConfig.agentName) {
+        descriptionContent = `Agent name: ${agentConfig.agentName}\n\n${descriptionContent}`;
+        this.logger.debug(`Merged agent name "${agentConfig.agentName}" with description`);
+      }
+      
       messagesForAPI.push({
         role: MessageRole.USER,
-        content: String(agentConfig.system_prompt),
+        content: descriptionContent,
       });
     }
 
