@@ -45,7 +45,7 @@ export default function ChipSelector({
     }
   };
 
-  const getGridColsClass = () => {
+  const getLayoutClass = () => {
     if (columns) {
       const colsMap: Record<number, string> = {
         1: 'grid-cols-1',
@@ -61,9 +61,20 @@ export default function ChipSelector({
         11: 'grid-cols-11',
         12: 'grid-cols-12',
       };
-      return colsMap[columns] || 'grid-cols-4';
+      return `grid ${colsMap[columns] || 'grid-cols-4'} gap-2`;
     }
-    return 'grid-cols-4 sm:grid-cols-5 md:grid-cols-10';
+    // Use CSS Grid with auto-fit for responsive layout that adapts to available space
+    // Automatically adjusts number of columns based on container width
+    return 'grid gap-2';
+  };
+
+  const getGridStyle = () => {
+    if (!columns) {
+      // Use auto-fit with minmax to create responsive columns
+      // minmax(120px, 1fr) ensures minimum width of 120px and allows growth
+      return { gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))' };
+    }
+    return undefined;
   };
 
   return (
@@ -76,7 +87,7 @@ export default function ChipSelector({
           {label}
         </label>
       )}
-      <div className={`grid ${getGridColsClass()} gap-2`}>
+      <div className={getLayoutClass()} style={getGridStyle()}>
         {options.map((option) => {
           const isSelected = selected.includes(option);
           return (
@@ -85,7 +96,9 @@ export default function ChipSelector({
               type="button"
               onClick={() => toggleOption(option)}
               disabled={disabled}
-              className={`px-3 py-2 text-sm rounded-md border transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-[80px] ${
+              className={`px-3 py-2 text-sm rounded-md border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                columns ? '' : 'min-w-[120px]'
+              } ${
                 isSelected
                   ? 'bg-primary text-text-inverse border-primary hover:bg-primary-hover'
                   : 'bg-background-secondary text-text-primary border-border hover:border-border-focus'
