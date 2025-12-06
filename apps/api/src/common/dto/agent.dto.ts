@@ -18,6 +18,7 @@ import {
   Sentiment,
   Availability,
   PersonalityType,
+  Language,
   NUMERIC_CONSTANTS,
 } from '@openai/shared-types';
 
@@ -94,9 +95,8 @@ export class CreateAgentDto {
   agentType?: AgentType;
 
   @IsOptional()
-  @IsString()
-  @Length(2, 10)
-  language?: string; // ISO 639-1 language code (e.g., 'zh', 'en', 'ja')
+  @IsEnum(Language)
+  language?: Language;
 
   @IsOptional()
   @ValidateNested()
@@ -122,9 +122,8 @@ export class UpdateAgentDto {
   agentType?: AgentType;
 
   @IsOptional()
-  @IsString()
-  @Length(2, 10)
-  language?: string;
+  @IsEnum(Language)
+  language?: Language;
 
   @IsOptional()
   @ValidateNested()

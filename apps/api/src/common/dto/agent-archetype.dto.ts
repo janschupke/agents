@@ -18,6 +18,7 @@ import {
   Sentiment,
   Availability,
   PersonalityType,
+  Language,
   NUMERIC_CONSTANTS,
 } from '@openai/shared-types';
 
@@ -94,9 +95,8 @@ export class CreateAgentArchetypeDto {
   agentType?: AgentType;
 
   @IsOptional()
-  @IsString()
-  @Length(2, 10)
-  language?: string;
+  @IsEnum(Language)
+  language?: Language;
 
   @IsOptional()
   @ValidateNested()
@@ -122,9 +122,8 @@ export class UpdateAgentArchetypeDto {
   agentType?: AgentType;
 
   @IsOptional()
-  @IsString()
-  @Length(2, 10)
-  language?: string;
+  @IsEnum(Language)
+  language?: Language;
 
   @IsOptional()
   @ValidateNested()
@@ -138,7 +137,7 @@ export class AgentArchetypeResponse {
   description?: string;
   avatarUrl?: string;
   agentType?: AgentType;
-  language?: string;
+  language?: Language;
   createdAt!: Date;
   updatedAt!: Date;
   configs?: Record<string, unknown>;

@@ -119,7 +119,17 @@
     "language": {
       "label": "Language",
       "none": "None (Default)",
-      "description": "Optional language setting. If set, the agent will always respond in this language."
+      "description": "Optional language setting. If set, the agent will always respond in this language.",
+      "chineseSimplified": "Chinese (Simplified)",
+      "chineseTraditional": "Chinese (Traditional)",
+      "japanese": "Japanese",
+      "korean": "Korean",
+      "spanish": "Spanish",
+      "french": "French",
+      "german": "German",
+      "italian": "Italian",
+      "portuguese": "Portuguese",
+      "russian": "Russian"
     },
     "archetypes": {
       "title": "Start from a template",

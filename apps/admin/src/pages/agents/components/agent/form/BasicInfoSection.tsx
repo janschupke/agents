@@ -1,6 +1,8 @@
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Input, Textarea, Select, AvatarInput, FormField } from '@openai/ui';
+import { Language } from '@openai/shared-types';
 import { AgentType } from '../../../../../types/agent.types';
+import { getLanguageOptions } from '../../../../../constants/language.constants';
 import { ChangeEvent } from 'react';
 
 interface BasicInfoSectionProps {
@@ -103,12 +105,19 @@ export default function BasicInfoSection({
               ? t('archetypes.form.language')
               : t('agents.edit.language')}
           </label>
-          <Input
-            type="text"
+          <Select
             value={formValues.language}
-            onChange={(e) => onFieldChange('language', e.target.value)}
-            placeholder="en, zh, ja, etc."
-          />
+            onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+              onFieldChange('language', e.target.value)
+            }
+          >
+            <option value="">{t('archetypes.form.languageNone')}</option>
+            {getLanguageOptions(t).map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Select>
         </div>
       </div>
     </div>

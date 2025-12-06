@@ -34,7 +34,7 @@ export const NUMERIC_CONSTANTS = {
   DEFAULT_DB_POOLER_PORT: 6543,
 
   // Age limits
-  AGE_MIN: 0,
+  AGE_MIN: 6,
   AGE_MAX: 100,
   AGE_YOUNG_THRESHOLD: 30,
 

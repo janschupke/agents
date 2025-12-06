@@ -142,7 +142,7 @@ ${memoriesText}`,
 
   CONFIGURATION_RULES: {
     DATETIME: (isoString: string) => `Currently it's ${isoString}`,
-    LANGUAGE: (language: string) => `Always respond in ${language}`,
+    LANGUAGE: (language: string) => `Always respond in ${language} language`,
   },
 
   WORD_PARSING: {

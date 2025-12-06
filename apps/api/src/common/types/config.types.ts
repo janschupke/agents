@@ -5,6 +5,7 @@ import {
   Sentiment,
   Availability,
   PersonalityType,
+  Language,
 } from '@openai/shared-types';
 
 /**
@@ -25,7 +26,7 @@ export interface AgentConfig {
   interests?: string[];
   availability?: Availability;
   agentType?: AgentType | null;
-  language?: string | null;
+  language?: Language | null;
 }
 
 /**

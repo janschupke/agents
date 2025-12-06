@@ -38,11 +38,11 @@ export function useAgentFormValidation({
 
     if (
       formValues.age &&
-      (Number(formValues.age) < 0 || Number(formValues.age) > 100)
+      (Number(formValues.age) < 6 || Number(formValues.age) > 100)
     ) {
       newErrors.age = isArchetype
         ? t('archetypes.form.errors.ageRange')
-        : 'Age must be between 0 and 100';
+        : 'Age must be between 6 and 100';
     }
 
     if (formValues.maxTokens && Number(formValues.maxTokens) < 1) {

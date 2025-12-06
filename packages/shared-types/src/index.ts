@@ -17,3 +17,4 @@ export * from './sentiment';
 export * from './availability';
 export * from './sort-order';
 export * from './log-type';
+export * from './language';

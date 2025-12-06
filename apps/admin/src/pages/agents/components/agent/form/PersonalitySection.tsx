@@ -10,6 +10,7 @@ import {
   PersonalityType,
   PERSONALITY_TYPES,
   INTERESTS,
+  NUMERIC_CONSTANTS,
 } from '@openai/shared-types';
 import { ChangeEvent } from 'react';
 
@@ -73,10 +74,14 @@ export default function PersonalitySection({
 
         <Slider
           id="agent-age"
-          value={formValues.age ? parseInt(formValues.age, 10) : 25}
+          value={
+            formValues.age
+              ? parseInt(formValues.age, 10)
+              : Math.max(NUMERIC_CONSTANTS.AGE_MIN, 25)
+          }
           onChange={(val) => onFieldChange('age', val.toString())}
-          min={0}
-          max={100}
+          min={NUMERIC_CONSTANTS.AGE_MIN}
+          max={NUMERIC_CONSTANTS.AGE_MAX}
           step={1}
           label={isArchetype ? t('archetypes.form.age') : 'Age'}
           error={errors.age}

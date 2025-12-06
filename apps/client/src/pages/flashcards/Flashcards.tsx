@@ -10,7 +10,7 @@ import {
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useSavedWords } from '../../hooks/queries/use-saved-words';
 import { LanguageFormattingService } from '../../services/language-formatting/language-formatting.service';
-import { LANGUAGE_OPTIONS } from '../../constants/language.constants';
+import { getLanguageOptions } from '../../constants/language.constants';
 
 const FLIP_ANIMATION_DURATION_MS = 600;
 
@@ -18,6 +18,7 @@ export default function Flashcards() {
   const { t } = useTranslation(I18nNamespace.CLIENT);
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const { data: savedWords = [], isLoading } = useSavedWords(selectedLanguage);
+  const languageOptions = getLanguageOptions(t);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -165,7 +166,7 @@ export default function Flashcards() {
               className="w-full px-3 py-2 border border-border-input rounded-md text-text-primary bg-background focus:outline-none focus:border-border-focus disabled:bg-disabled-bg disabled:cursor-not-allowed"
             >
               <option value="">{t('flashcards.allLanguages')}</option>
-              {LANGUAGE_OPTIONS.map((option) => (
+              {languageOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>

@@ -109,6 +109,17 @@
       "avatarUrl": "Avatar URL",
       "agentType": "Agent Type",
       "language": "Language",
+      "languageNone": "None (Default)",
+      "languageChineseSimplified": "Chinese (Simplified)",
+      "languageChineseTraditional": "Chinese (Traditional)",
+      "languageJapanese": "Japanese",
+      "languageKorean": "Korean",
+      "languageSpanish": "Spanish",
+      "languageFrench": "French",
+      "languageGerman": "German",
+      "languageItalian": "Italian",
+      "languagePortuguese": "Portuguese",
+      "languageRussian": "Russian",
       "temperature": "Temperature",
       "systemPrompt": "System Prompt",
       "model": "Model",
@@ -133,7 +144,7 @@
       "errors": {
         "nameRequired": "Name is required",
         "temperatureRange": "Temperature must be between 0 and 2",
-        "ageRange": "Age must be between 0 and 100",
+        "ageRange": "Age must be between 6 and 100",
         "maxTokensMin": "Max tokens must be at least 1"
       }
     }
