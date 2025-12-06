@@ -1,5 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import { Tooltip } from '@openai/ui';
 import { LanguageFormattingService } from '../../../../../services/language-formatting/language-formatting.service';
 
 interface WordTooltipProps {
@@ -21,20 +20,6 @@ export default function WordTooltip({
   children,
   language,
 }: WordTooltipProps) {
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
-  const wordRef = useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    if (showTooltip && wordRef.current) {
-      const rect = wordRef.current.getBoundingClientRect();
-      setTooltipPosition({
-        x: rect.left + rect.width / 2,
-        y: rect.top - 10,
-      });
-    }
-  }, [showTooltip]);
-
   // Only show pinyin if language formatting config says so
   const shouldShowPinyin = LanguageFormattingService.shouldShowPinyin(
     language ?? null
@@ -49,59 +34,59 @@ export default function WordTooltip({
     return <>{children}</>;
   }
 
-  // Render tooltip in a portal to avoid DOM nesting issues (div inside p)
-  const tooltipElement =
-    showTooltip && hasContent ? (
-      <div
-        className="fixed z-50 px-3 py-2 text-xs bg-background-inverse text-text-inverse rounded shadow-lg pointer-events-none min-w-[120px]"
-        style={{
-          left: `${tooltipPosition.x}px`,
-          top: `${tooltipPosition.y}px`,
-          transform: 'translate(-50%, -100%)',
-        }}
-      >
-        <div className="font-semibold mb-1">{originalWord}</div>
-        {displayPinyin && (
-          <div className="text-text-tertiary mb-1 text-[10px]">
-            {displayPinyin}
-          </div>
-        )}
-        {translation && <div className="text-text-inverse">{translation}</div>}
-        <div
-          className="absolute top-full left-1/2 transform -translate-x-1/2"
-          style={{
-            borderLeft: '4px solid transparent',
-            borderRight: '4px solid transparent',
-            borderTop: '4px solid rgb(17, 24, 39)',
-          }}
-        />
-      </div>
-    ) : null;
-
-  return (
+  const tooltipContent = hasContent ? (
     <>
-      <span
-        ref={wordRef}
-        className={`transition-colors duration-150 inline ${
-          isSaved
-            ? 'bg-yellow-200 bg-opacity-60 dark:bg-yellow-800 dark:bg-opacity-40'
-            : 'hover:bg-yellow-200 hover:bg-opacity-50 dark:hover:bg-yellow-800 dark:hover:bg-opacity-30'
-        } ${onClick ? 'cursor-pointer' : 'cursor-help'}`}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
-        onClick={(e) => {
-          if (onClick) {
-            e.preventDefault();
-            e.stopPropagation();
-            onClick();
-          }
-        }}
-      >
-        {children}
-      </span>
-      {tooltipElement &&
-        typeof document !== 'undefined' &&
-        createPortal(tooltipElement, document.body)}
+      <div className="font-semibold mb-1">{originalWord}</div>
+      {displayPinyin && (
+        <div className="text-text-inverse opacity-70 mb-1 text-[10px]">
+          {displayPinyin}
+        </div>
+      )}
+      {translation && <div className="text-text-inverse">{translation}</div>}
     </>
+  ) : null;
+
+  const wrapperClassName = `transition-colors duration-150 inline ${
+    isSaved
+      ? 'bg-yellow-200 bg-opacity-60 dark:bg-yellow-800 dark:bg-opacity-40'
+      : 'hover:bg-yellow-200 hover:bg-opacity-50 dark:hover:bg-yellow-800 dark:hover:bg-opacity-30'
+  } ${onClick ? 'cursor-pointer' : 'cursor-help'}`;
+
+  if (hasContent) {
+    return (
+      <Tooltip
+        content={tooltipContent}
+        position="top"
+        wrapperClassName={wrapperClassName}
+      >
+        <span
+          onClick={(e) => {
+            if (onClick) {
+              e.preventDefault();
+              e.stopPropagation();
+              onClick();
+            }
+          }}
+        >
+          {children}
+        </span>
+      </Tooltip>
+    );
+  }
+
+  // No tooltip, but still show highlighting and click handler for saved words
+  return (
+    <span
+      className={wrapperClassName}
+      onClick={(e) => {
+        if (onClick) {
+          e.preventDefault();
+          e.stopPropagation();
+          onClick();
+        }
+      }}
+    >
+      {children}
+    </span>
   );
 }

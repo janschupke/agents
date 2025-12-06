@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "@tanstack/react-table": "^8.20.5",
     "@openai/i18n": "workspace:*",
     "@openai/utils": "workspace:*"
@@ -47,6 +48,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20.10.0",
     "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
     "@typescript-eslint/eslint-plugin": "^6.13.0",
     "@typescript-eslint/parser": "^6.13.0",
     "@vitest/browser": "^1.1.0",
@@ -67,6 +69,7 @@
   },
   "peerDependencies": {
     "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-router-dom": "^7.0.0",
     "@openai/i18n": "workspace:*",
     "@openai/utils": "workspace:*"

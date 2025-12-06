@@ -6,6 +6,7 @@ import {
   Card,
   CardFlip,
   FormField,
+  Select,
 } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { useSavedWords } from '../../hooks/queries/use-saved-words';
@@ -156,14 +157,11 @@ export default function Flashcards() {
       <PageHeader
         title={t('flashcards.title')}
         actions={
-          <FormField
-            label={t('flashcards.selectLanguage')}
-            hint={t('flashcards.selectLanguageDescription')}
-          >
-            <select
+          <FormField>
+            <Select
               value={selectedLanguage || ''}
               onChange={(e) => setSelectedLanguage(e.target.value || null)}
-              className="w-full px-3 py-2 border border-border-input rounded-md text-text-primary bg-background focus:outline-none focus:border-border-focus disabled:bg-disabled-bg disabled:cursor-not-allowed"
+              size="md"
             >
               <option value="">{t('flashcards.allLanguages')}</option>
               {languageOptions.map((option) => (
@@ -171,7 +169,7 @@ export default function Flashcards() {
                   {option.label}
                 </option>
               ))}
-            </select>
+            </Select>
           </FormField>
         }
       />

@@ -1,5 +1,5 @@
 import { Agent } from '../../../../../types/chat.types';
-import { SidebarItem, Avatar, IconTrash, IconTranslate, Button } from '@openai/ui';
+import { SidebarItem, Avatar, IconTrash, IconTranslate, Button, Tooltip } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { AgentType } from '@openai/shared-types';
 import { Gender } from '../../../../../types/agent.types';
@@ -81,9 +81,15 @@ export default function AgentSidebarItem({
                 {agent.name}
               </span>
               {isLanguageAssistant && (
-                <IconTranslate
-                  className="flex-shrink-0 w-3.5 h-3.5 text-text-secondary opacity-70"
-                />
+                <Tooltip
+                  content={t('config.agentType.languageAssistant')}
+                  position="top"
+                  wrapperClassName="flex-shrink-0"
+                >
+                  <IconTranslate
+                    className="w-3.5 h-3.5 text-text-secondary opacity-70"
+                  />
+                </Tooltip>
               )}
             </div>
             {metadata && (
@@ -96,7 +102,7 @@ export default function AgentSidebarItem({
         {showDeleteButton && (
           <div className="flex items-center gap-0.5 pr-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
-              onClick={(e) => {
+              onClick={(e?: React.MouseEvent<HTMLButtonElement>) => {
                 e?.stopPropagation();
                 onDelete(agent.id);
               }}
