@@ -1,6 +1,7 @@
 import { FormField } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
 import { Gender } from '../../../../../../types/agent.types';
+import { getButtonSizeClasses } from '@openai/ui';
 
 interface GenderFieldProps {
   value: Gender | null;
@@ -13,6 +14,7 @@ interface GenderFieldProps {
  */
 export default function GenderField({ value, onChange }: GenderFieldProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
+  const sizeClasses = getButtonSizeClasses('md');
 
   const handleToggle = (gender: Gender) => {
     // If clicking the same gender, deselect it (set to null)
@@ -29,7 +31,7 @@ export default function GenderField({ value, onChange }: GenderFieldProps) {
         <button
           type="button"
           onClick={() => handleToggle(Gender.MALE)}
-          className={`px-4 py-2 text-sm rounded-md border transition-colors ${
+          className={`${sizeClasses} rounded-md border transition-colors ${
             value === Gender.MALE
               ? 'bg-primary text-text-inverse border-primary hover:bg-primary-hover'
               : 'bg-background-secondary text-text-primary border-border hover:border-border-focus'
@@ -40,7 +42,7 @@ export default function GenderField({ value, onChange }: GenderFieldProps) {
         <button
           type="button"
           onClick={() => handleToggle(Gender.FEMALE)}
-          className={`px-4 py-2 text-sm rounded-md border transition-colors ${
+          className={`${sizeClasses} rounded-md border transition-colors ${
             value === Gender.FEMALE
               ? 'bg-primary text-text-inverse border-primary hover:bg-primary-hover'
               : 'bg-background-secondary text-text-primary border-border hover:border-border-focus'
@@ -51,7 +53,7 @@ export default function GenderField({ value, onChange }: GenderFieldProps) {
         <button
           type="button"
           onClick={() => handleToggle(Gender.NON_BINARY)}
-          className={`px-4 py-2 text-sm rounded-md border transition-colors ${
+          className={`${sizeClasses} rounded-md border transition-colors ${
             value === Gender.NON_BINARY
               ? 'bg-primary text-text-inverse border-primary hover:bg-primary-hover'
               : 'bg-background-secondary text-text-primary border-border hover:border-border-focus'

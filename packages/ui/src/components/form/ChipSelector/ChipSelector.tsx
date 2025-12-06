@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { ComponentSize, getButtonSizeClasses } from '../size-system';
 
 export interface ChipSelectorProps {
   options: readonly string[] | string[];
@@ -14,6 +15,7 @@ export interface ChipSelectorProps {
   chipClassName?: string;
   columns?: number;
   maxSelections?: number;
+  size?: ComponentSize;
   renderOption?: (option: string, isSelected: boolean) => ReactNode;
 }
 
@@ -35,6 +37,7 @@ export default function ChipSelector({
   chipClassName = '',
   columns,
   maxSelections,
+  size = 'md',
   renderOption,
 }: ChipSelectorProps) {
   const toggleOption = (option: string) => {
@@ -111,13 +114,14 @@ export default function ChipSelector({
         {options.map((option) => {
           const isSelected = selected.includes(option);
           const chipDisabled = isChipDisabled(option);
+          const sizeClasses = getButtonSizeClasses(size);
           return (
             <button
               key={option}
               type="button"
               onClick={() => toggleOption(option)}
               disabled={chipDisabled}
-              className={`px-3 py-2 text-sm rounded-md border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`${sizeClasses} rounded-md border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                 columns ? '' : 'min-w-[120px]'
               } ${
                 isSelected

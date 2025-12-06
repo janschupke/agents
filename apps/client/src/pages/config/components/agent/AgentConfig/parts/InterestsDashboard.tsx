@@ -22,6 +22,7 @@ export default function InterestsDashboard({
       label={t('config.interests')}
       hint={t('config.interestsDescription')}
       maxSelections={5}
+      size="md"
     />
   );
 }
