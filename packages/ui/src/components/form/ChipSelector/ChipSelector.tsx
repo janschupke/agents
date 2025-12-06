@@ -13,6 +13,7 @@ export interface ChipSelectorProps {
   className?: string;
   chipClassName?: string;
   columns?: number;
+  maxSelections?: number;
   renderOption?: (option: string, isSelected: boolean) => ReactNode;
 }
 
@@ -33,16 +34,35 @@ export default function ChipSelector({
   className = '',
   chipClassName = '',
   columns,
+  maxSelections,
   renderOption,
 }: ChipSelectorProps) {
   const toggleOption = (option: string) => {
     if (disabled) return;
 
     if (selected.includes(option)) {
+      // Always allow deselecting
       onChange(selected.filter((item) => item !== option));
     } else {
+      // Check if we've reached max selections
+      if (maxSelections !== undefined && selected.length >= maxSelections) {
+        return;
+      }
       onChange([...selected, option]);
     }
+  };
+
+  const isChipDisabled = (option: string) => {
+    if (disabled) return true;
+    // Disable if maxSelections is set, we've reached the limit, and this chip is not selected
+    if (
+      maxSelections !== undefined &&
+      selected.length >= maxSelections &&
+      !selected.includes(option)
+    ) {
+      return true;
+    }
+    return false;
   };
 
   const getLayoutClass = () => {
@@ -90,12 +110,13 @@ export default function ChipSelector({
       <div className={getLayoutClass()} style={getGridStyle()}>
         {options.map((option) => {
           const isSelected = selected.includes(option);
+          const chipDisabled = isChipDisabled(option);
           return (
             <button
               key={option}
               type="button"
               onClick={() => toggleOption(option)}
-              disabled={disabled}
+              disabled={chipDisabled}
               className={`px-3 py-2 text-sm rounded-md border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                 columns ? '' : 'min-w-[120px]'
               } ${

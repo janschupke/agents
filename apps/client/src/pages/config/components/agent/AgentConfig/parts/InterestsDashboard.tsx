@@ -21,6 +21,7 @@ export default function InterestsDashboard({
       onChange={onChange}
       label={t('config.interests')}
       hint={t('config.interestsDescription')}
+      maxSelections={5}
     />
   );
 }
