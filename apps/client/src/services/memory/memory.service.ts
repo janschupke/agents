@@ -54,4 +54,14 @@ export class MemoryService {
       {}
     );
   }
+
+  /**
+   * Manually trigger memory summary generation (for display)
+   */
+  static async generateMemorySummary(agentId: number): Promise<void> {
+    return apiManager.post(
+      API_ENDPOINTS.AGENTS.MEMORIES_GENERATE_SUMMARY(agentId),
+      {}
+    );
+  }
 }

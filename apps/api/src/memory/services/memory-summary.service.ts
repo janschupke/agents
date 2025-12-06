@@ -51,6 +51,18 @@ export class MemorySummaryService {
         return;
       }
 
+      // Fetch agent name and gender for the prompt
+      const agent = await this.agentRepository.findById(agentId);
+      if (!agent) {
+        this.logger.warn(`Agent ${agentId} not found for summary generation`);
+        return;
+      }
+      const agentName = agent.name || 'the agent';
+      
+      // Fetch agent configs to get gender
+      const configs = await this.agentRepository.findConfigsByAgentId(agentId);
+      const gender = configs.gender as string | null | undefined;
+
       // Build memories text
       const memoriesText = memories
         .map((m, i) => `${i + 1}. ${m.keyPoint}`)
@@ -67,11 +79,11 @@ export class MemorySummaryService {
           },
           {
             role: messageRoleToOpenAI(MessageRole.USER),
-            content: OPENAI_PROMPTS.MEMORY.SUMMARY.USER(memoriesText),
+            content: OPENAI_PROMPTS.MEMORY.SUMMARY.USER(agentName, gender || null, memoriesText),
           },
         ],
         temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
-        max_tokens: 300, // Enough for 5 sentences
+        max_tokens: NUMERIC_CONSTANTS.MEMORY_SUMMARY_MAX_TOKENS,
       });
 
       const summary = completion.choices[0]?.message?.content?.trim();
@@ -82,8 +94,8 @@ export class MemorySummaryService {
         return;
       }
 
-      // Limit to reasonable length (5 sentences should be ~500 chars max)
-      const trimmedSummary = summary.substring(0, 1000);
+      // Limit to reasonable length
+      const trimmedSummary = summary.substring(0, NUMERIC_CONSTANTS.MEMORY_SUMMARY_MAX_LENGTH);
 
       // Update agent with summary
       await this.agentRepository.updateMemorySummary(agentId, trimmedSummary);

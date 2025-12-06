@@ -40,6 +40,10 @@ export function useSendMessage() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.agents.memories(variables.agentId),
       });
+      // Invalidate agent query to refetch updated memorySummary after potential memory creation
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.agents.detail(variables.agentId),
+      });
     },
     onError: (error: { message?: string }) => {
       showToast(error.message || t('chat.errors.sendMessageError'), 'error');

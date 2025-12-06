@@ -99,9 +99,11 @@ ${memoriesText}`,
     },
     SUMMARY: {
       SYSTEM:
-        "You are a memory analysis assistant. Analyze the agent's memories and summarize how they affect the agent's feelings and behavioral tendencies towards the user. Focus on emotional patterns and behavioral changes, not factual lists.",
-      USER: (memoriesText: string) =>
-        `Based on these memories, write a short paragraph (max 5 sentences) describing how these memories affect the agent's feelings and behavioral tendencies towards the user. Focus on emotional patterns, relationship dynamics, and behavioral changes. Do not list facts or memories directly. Write in a natural, flowing paragraph format.
+        "You are a memory analysis assistant. Analyze memories and summarize the main emotional impact on the agent. Use simple sentences. Focus on feelings, not facts.",
+      USER: (agentName: string, gender: string | null, memoriesText: string) =>
+        `Agent name: ${agentName}${gender ? `\nAgent gender: ${gender}` : ''}
+
+Based on these memories, write 4-5 short, simple sentences about how ${agentName} feels. Focus on the main emotional impact. Use ${agentName}'s name, not "the agent".${gender ? ` Use appropriate pronouns for ${gender}.` : ''}
 
 Memories:
 ${memoriesText}`,

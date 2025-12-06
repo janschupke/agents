@@ -22,6 +22,8 @@ export const API_ENDPOINTS = {
       `/api/agents/${agentId}/memories/${memoryId}`,
     MEMORIES_SUMMARIZE: (agentId: number) =>
       `/api/agents/${agentId}/memories/summarize`,
+    MEMORIES_GENERATE_SUMMARY: (agentId: number) =>
+      `/api/agents/${agentId}/memories/generate-summary`,
   },
   MESSAGES: {
     TRANSLATE: (messageId: number) => `/api/messages/${messageId}/translate`,

@@ -58,7 +58,9 @@
     "updateSuccess": "Memory updated successfully",
     "updateError": "Failed to update memory",
     "deleteSuccess": "Memory deleted successfully",
-    "deleteError": "Failed to delete memory"
+    "deleteError": "Failed to delete memory",
+    "summaryGenerated": "Memory summary generated successfully",
+    "summaryGenerationError": "Failed to generate memory summary"
   },
   "config": {
     "title": "Agent Configuration",
@@ -255,7 +257,8 @@
     "memorySummary": {
       "title": "Memory Summary",
       "empty": "No memory summary available yet",
-      "loading": "Loading memory summary..."
+      "loading": "Loading memory summary...",
+      "generate": "Generate Summary"
     }
   },
   "common": {

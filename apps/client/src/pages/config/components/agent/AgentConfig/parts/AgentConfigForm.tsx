@@ -268,6 +268,7 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
               <MemorySummary
                 summary={agentData?.memorySummary}
                 loading={loadingAgent}
+                agentId={agent?.id || null}
               />
             </form>
           )}

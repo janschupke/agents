@@ -190,6 +190,10 @@ export function useUpdateMemory() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.agents.memories(variables.agentId),
       });
+      // Invalidate agent query to refetch updated memorySummary
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.agents.detail(variables.agentId),
+      });
       showToast(t('memories.updateSuccess'), 'success');
     },
     onError: (error: { message?: string }) => {
@@ -215,10 +219,38 @@ export function useDeleteMemory() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.agents.memories(variables.agentId),
       });
+      // Invalidate agent query to refetch updated memorySummary
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.agents.detail(variables.agentId),
+      });
       showToast(t('memories.deleteSuccess'), 'success');
     },
     onError: (error: { message?: string }) => {
       showToast(error.message || t('memories.deleteError'), 'error');
+    },
+  });
+}
+
+export function useGenerateMemorySummary() {
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const { t } = useTranslation(I18nNamespace.CLIENT);
+
+  return useMutation({
+    mutationFn: (agentId: number) =>
+      MemoryService.generateMemorySummary(agentId),
+    onSuccess: (_data, agentId) => {
+      // Invalidate agent query to refetch updated memorySummary
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.agents.detail(agentId),
+      });
+      showToast(t('memories.summaryGenerated'), 'success');
+    },
+    onError: (error: { message?: string }) => {
+      showToast(
+        error.message || t('memories.summaryGenerationError'),
+        'error'
+      );
     },
   });
 }

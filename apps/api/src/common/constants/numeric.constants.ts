@@ -19,6 +19,8 @@ export const NUMERIC_CONSTANTS = {
   DEFAULT_MAX_TOKENS: 1000,
   MEMORY_EXTRACTION_MAX_TOKENS: 300,
   MEMORY_SUMMARIZATION_MAX_TOKENS: 150,
+  MEMORY_SUMMARY_MAX_TOKENS: 300, // Max tokens for memory summary generation (4-5 sentences)
+  MEMORY_SUMMARY_MAX_LENGTH: 800, // Max characters for memory summary display
 
   // Memory similarity
   MEMORY_SIMILARITY_THRESHOLD: 0.8,

@@ -35,6 +35,8 @@ export function useAgent(agentId: number | null) {
     queryKey: queryKeys.agents.detail(agentId!),
     queryFn: () => AgentService.getAgent(agentId!),
     enabled: isValidAgentId && isSignedIn && isLoaded && tokenReady,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
 

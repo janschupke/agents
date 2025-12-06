@@ -220,4 +220,22 @@ export class AgentMemoryController {
 
     return { message: 'Memories summarized successfully' };
   }
+
+  @Post('generate-summary')
+  async generateMemorySummary(
+    @Param('agentId', ParseIntPipe) agentId: number,
+    @User() user: AuthenticatedUser
+  ): Promise<{ message: string }> {
+    const apiKey = await this.apiCredentialsService.getApiKey(
+      user.id,
+      MAGIC_STRINGS.OPENAI_PROVIDER
+    );
+    if (!apiKey) {
+      throw new ApiKeyRequiredException();
+    }
+
+    await this.memorySummaryService.generateSummary(agentId, user.id, apiKey);
+
+    return { message: 'Memory summary generated successfully' };
+  }
 }

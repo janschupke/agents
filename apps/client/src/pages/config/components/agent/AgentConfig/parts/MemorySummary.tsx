@@ -1,9 +1,11 @@
-import { SectionHeader, Card } from '@openai/ui';
+import { SectionHeader, Card, Button } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
+import { useGenerateMemorySummary } from '../../../../../../hooks/mutations/use-agent-mutations';
 
 interface MemorySummaryProps {
   summary: string | null | undefined;
   loading?: boolean;
+  agentId?: number | null;
 }
 
 /**
@@ -13,16 +15,39 @@ interface MemorySummaryProps {
 export default function MemorySummary({
   summary,
   loading = false,
+  agentId,
 }: MemorySummaryProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
+  const generateSummaryMutation = useGenerateMemorySummary();
+
+  const handleGenerateSummary = async () => {
+    if (!agentId || agentId < 0) return;
+    await generateSummaryMutation.mutateAsync(agentId);
+  };
+
+  const isGenerating = generateSummaryMutation.isPending;
+  // const canGenerate = agentId && agentId > 0 && !summary && !loading;
+  const canGenerate = true;
 
   return (
     <div>
-      <SectionHeader
-        title={t('agentConfig.memorySummary.title')}
-        className="mb-3"
-      />
-      {loading ? (
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-base font-semibold text-text-secondary">
+          {t('agentConfig.memorySummary.title')}
+        </h3>
+        {canGenerate && (
+          <Button
+            onClick={handleGenerateSummary}
+            disabled={isGenerating}
+            loading={isGenerating}
+            variant="ghost"
+            size="sm"
+          >
+            {t('agentConfig.memorySummary.generate')}
+          </Button>
+        )}
+      </div>
+      {loading || isGenerating ? (
         <Card padding="md" variant="outlined">
           <div className="text-text-tertiary text-sm">
             {t('agentConfig.memorySummary.loading')}
