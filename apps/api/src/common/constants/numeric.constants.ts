@@ -21,6 +21,7 @@ export const NUMERIC_CONSTANTS = {
   MEMORY_SUMMARIZATION_MAX_TOKENS: 150,
   MEMORY_SUMMARY_MAX_TOKENS: 300, // Max tokens for memory summary generation (4-5 sentences)
   MEMORY_SUMMARY_MAX_LENGTH: 800, // Max characters for memory summary display
+  MEMORY_SUMMARY_REFRESH_INTERVAL: 20, // Number of messages before refreshing memory summary
 
   // Memory similarity
   MEMORY_SIMILARITY_THRESHOLD: 0.8,

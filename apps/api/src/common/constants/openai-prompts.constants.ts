@@ -99,7 +99,7 @@ ${memoriesText}`,
     },
     SUMMARY: {
       SYSTEM:
-        "You are a memory analysis assistant. Analyze memories and summarize the main emotional impact on the agent. Use simple sentences. Focus on feelings, not facts.",
+        "You are a memory analysis assistant. Analyze memories and summarize the main emotional impact on the agent, and it's feelings toward the user. Use simple sentences. Focus on feelings, not facts. Agent and assistant are the same person, and they communicate with the user. Phrase the summary as if telling it to the user directly.",
       USER: (agentName: string, gender: string | null, memoriesText: string) =>
         `Agent name: ${agentName}${gender ? `\nAgent gender: ${gender}` : ''}
 

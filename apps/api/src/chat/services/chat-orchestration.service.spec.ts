@@ -6,6 +6,7 @@ import { LanguageAssistantService } from '../../agent/services/language-assistan
 import { SessionRepository } from '../../session/session.repository';
 import { MessageRepository } from '../../message/message.repository';
 import { AgentMemoryService } from '../../memory/agent-memory.service';
+import { MemorySummaryService } from '../../memory/services/memory-summary.service';
 import { ApiCredentialsService } from '../../api-credentials/api-credentials.service';
 import { WordTranslationService } from '../../message-translation/word-translation.service';
 import { SavedWordService } from '../../saved-word/saved-word.service';
@@ -49,6 +50,10 @@ describe('ChatOrchestrationService', () => {
   const mockAgentMemoryService = {
     getMemoriesForContext: jest.fn().mockResolvedValue([]),
     createMemory: jest.fn().mockResolvedValue(0),
+  };
+
+  const mockMemorySummaryService = {
+    generateSummary: jest.fn().mockResolvedValue(undefined),
   };
 
   const mockApiCredentialsService = {
@@ -112,6 +117,10 @@ describe('ChatOrchestrationService', () => {
         {
           provide: AgentMemoryService,
           useValue: mockAgentMemoryService,
+        },
+        {
+          provide: MemorySummaryService,
+          useValue: mockMemorySummaryService,
         },
         {
           provide: ApiCredentialsService,
@@ -305,6 +314,131 @@ describe('ChatOrchestrationService', () => {
           message,
         })
       ).rejects.toThrow(ApiKeyRequiredException);
+    });
+
+    describe('memory summary refresh', () => {
+      beforeEach(() => {
+        mockLanguageAssistantService.isLanguageAssistant.mockReturnValue(false);
+      });
+
+      it('should trigger memory summary refresh at 20 message intervals', async () => {
+        // Create 20 messages (10 user + 10 assistant pairs)
+        const messages = Array.from({ length: 20 }, (_, i) => ({
+          id: i + 1,
+          role: i % 2 === 0 ? MessageRole.USER : MessageRole.ASSISTANT,
+          content: `Message ${i + 1}`,
+        }));
+
+        mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue(
+          messages
+        );
+
+        await service.sendMessage({
+          agentId,
+          userId,
+          message,
+        });
+
+        expect(mockMemorySummaryService.generateSummary).toHaveBeenCalledWith(
+          agentId,
+          userId,
+          apiKey
+        );
+      });
+
+      it('should trigger memory summary refresh at 40 message intervals', async () => {
+        // Create 40 messages (20 user + 20 assistant pairs)
+        const messages = Array.from({ length: 40 }, (_, i) => ({
+          id: i + 1,
+          role: i % 2 === 0 ? MessageRole.USER : MessageRole.ASSISTANT,
+          content: `Message ${i + 1}`,
+        }));
+
+        mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue(
+          messages
+        );
+
+        await service.sendMessage({
+          agentId,
+          userId,
+          message,
+        });
+
+        expect(mockMemorySummaryService.generateSummary).toHaveBeenCalledWith(
+          agentId,
+          userId,
+          apiKey
+        );
+      });
+
+      it('should not trigger memory summary refresh at non-interval message counts', async () => {
+        // Create 19 messages (not a multiple of 20)
+        const messages = Array.from({ length: 19 }, (_, i) => ({
+          id: i + 1,
+          role: i % 2 === 0 ? MessageRole.USER : MessageRole.ASSISTANT,
+          content: `Message ${i + 1}`,
+        }));
+
+        mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue(
+          messages
+        );
+
+        await service.sendMessage({
+          agentId,
+          userId,
+          message,
+        });
+
+        expect(mockMemorySummaryService.generateSummary).not.toHaveBeenCalled();
+      });
+
+      it('should not trigger memory summary refresh at 1 message', async () => {
+        const messages = [
+          {
+            id: 1,
+            role: MessageRole.USER,
+            content: 'First message',
+          },
+        ];
+
+        mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue(
+          messages
+        );
+
+        await service.sendMessage({
+          agentId,
+          userId,
+          message,
+        });
+
+        expect(mockMemorySummaryService.generateSummary).not.toHaveBeenCalled();
+      });
+
+      it('should handle errors during memory summary refresh gracefully', async () => {
+        const messages = Array.from({ length: 20 }, (_, i) => ({
+          id: i + 1,
+          role: i % 2 === 0 ? MessageRole.USER : MessageRole.ASSISTANT,
+          content: `Message ${i + 1}`,
+        }));
+
+        mockMessageRepository.findAllBySessionIdForOpenAI.mockResolvedValue(
+          messages
+        );
+        mockMemorySummaryService.generateSummary.mockRejectedValue(
+          new Error('Summary generation failed')
+        );
+
+        // Should not throw
+        await expect(
+          service.sendMessage({
+            agentId,
+            userId,
+            message,
+          })
+        ).resolves.toBeDefined();
+
+        expect(mockMemorySummaryService.generateSummary).toHaveBeenCalled();
+      });
     });
   });
 });

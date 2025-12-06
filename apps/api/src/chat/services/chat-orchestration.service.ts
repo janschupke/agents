@@ -10,6 +10,7 @@ import { LanguageAssistantService } from '../../agent/services/language-assistan
 import { SessionRepository } from '../../session/session.repository';
 import { MessageRepository } from '../../message/message.repository';
 import { AgentMemoryService } from '../../memory/agent-memory.service';
+import { MemorySummaryService } from '../../memory/services/memory-summary.service';
 import { ApiCredentialsService } from '../../api-credentials/api-credentials.service';
 import { WordTranslationService } from '../../message-translation/word-translation.service';
 import { SavedWordService } from '../../saved-word/saved-word.service';
@@ -21,6 +22,7 @@ import {
   PersonalityType,
 } from '@openai/shared-types';
 import { MEMORY_CONFIG } from '../../common/constants/api.constants.js';
+import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants.js';
 import { MAGIC_STRINGS } from '../../common/constants/error-messages.constants.js';
 import {
   MessagePreparationService,
@@ -74,6 +76,7 @@ export class ChatOrchestrationService {
     private readonly sessionRepository: SessionRepository,
     private readonly messageRepository: MessageRepository,
     private readonly agentMemoryService: AgentMemoryService,
+    private readonly memorySummaryService: MemorySummaryService,
     private readonly apiCredentialsService: ApiCredentialsService,
     private readonly wordTranslationService: WordTranslationService,
     private readonly savedWordService: SavedWordService,
@@ -290,6 +293,14 @@ export class ChatOrchestrationService {
       context.userId,
       session.id,
       session.sessionName,
+      apiKey
+    );
+
+    // Refresh memory summary periodically (separate from memory creation)
+    await this.refreshMemorySummaryIfNeeded(
+      context.agentId,
+      context.userId,
+      session.id,
       apiKey
     );
 
@@ -589,6 +600,55 @@ export class ChatOrchestrationService {
     } else {
       this.logger.debug(
         `Skipping memory save for agent ${agentId}, session ${sessionId} (${allMessages.length} messages, not at interval)`
+      );
+    }
+  }
+
+  /**
+   * Refresh memory summary if needed (every N messages, separate from memory creation)
+   */
+  private async refreshMemorySummaryIfNeeded(
+    agentId: number,
+    userId: string,
+    sessionId: number,
+    apiKey: string
+  ): Promise<void> {
+    const allMessages =
+      await this.messageRepository.findAllBySessionIdForOpenAI(sessionId);
+    const shouldRefreshSummary =
+      allMessages.length > 0 &&
+      allMessages.length % NUMERIC_CONSTANTS.MEMORY_SUMMARY_REFRESH_INTERVAL === 0;
+
+    if (shouldRefreshSummary) {
+      try {
+        this.logger.debug(
+          `Triggering memory summary refresh for agent ${agentId}, session ${sessionId} (${allMessages.length} messages, interval: ${NUMERIC_CONSTANTS.MEMORY_SUMMARY_REFRESH_INTERVAL})`
+        );
+
+        // Generate summary asynchronously (don't block)
+        this.memorySummaryService
+          .generateSummary(agentId, userId, apiKey)
+          .then(() => {
+            this.logger.log(
+              `Memory summary refresh completed for agent ${agentId}, session ${sessionId} (${allMessages.length} messages)`
+            );
+          })
+          .catch((error) => {
+            this.logger.error(
+              `Error refreshing memory summary for agent ${agentId}, session ${sessionId}:`,
+              error
+            );
+          });
+      } catch (error) {
+        this.logger.error(
+          `Error triggering memory summary refresh for agent ${agentId}, session ${sessionId}:`,
+          error
+        );
+        // Continue even if summary refresh fails
+      }
+    } else {
+      this.logger.debug(
+        `Skipping memory summary refresh for agent ${agentId}, session ${sessionId} (${allMessages.length} messages, not at interval)`
       );
     }
   }

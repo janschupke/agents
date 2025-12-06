@@ -5,6 +5,8 @@ import { AgentRepository } from '../../agent/agent.repository';
 import { OPENAI_PROMPTS } from '../../common/constants/openai-prompts.constants.js';
 import { OPENAI_MODELS } from '../../common/constants/api.constants.js';
 import { NUMERIC_CONSTANTS } from '../../common/constants/numeric.constants.js';
+import { AiRequestLogService } from '../../ai-request-log/ai-request-log.service';
+import { LogType } from '@prisma/client';
 import { MessageRole, messageRoleToOpenAI } from '@openai/shared-types';
 
 /**
@@ -18,7 +20,8 @@ export class MemorySummaryService {
   constructor(
     private readonly memoryRepository: AgentMemoryRepository,
     private readonly agentRepository: AgentRepository,
-    private readonly openaiService: OpenAIService
+    private readonly openaiService: OpenAIService,
+    private readonly aiRequestLogService: AiRequestLogService
   ) {}
 
   /**
@@ -70,7 +73,7 @@ export class MemorySummaryService {
 
       // Generate summary using OpenAI
       const openai = this.openaiService.getClient(apiKey);
-      const completion = await openai.chat.completions.create({
+      const request = {
         model: OPENAI_MODELS.MEMORY,
         messages: [
           {
@@ -84,7 +87,20 @@ export class MemorySummaryService {
         ],
         temperature: NUMERIC_CONSTANTS.TRANSLATION_TEMPERATURE,
         max_tokens: NUMERIC_CONSTANTS.MEMORY_SUMMARY_MAX_TOKENS,
-      });
+      };
+
+      const completion = await openai.chat.completions.create(request);
+
+      // Log the request/response
+      await this.aiRequestLogService.logRequest(
+        userId,
+        request,
+        completion,
+        {
+          agentId,
+          logType: LogType.MEMORY,
+        }
+      );
 
       const summary = completion.choices[0]?.message?.content?.trim();
       if (!summary) {
@@ -106,9 +122,12 @@ export class MemorySummaryService {
     } catch (error) {
       this.logger.error(
         `Error generating memory summary for agent ${agentId}, user ${userId}:`,
-        error
+        error instanceof Error ? error.message : String(error),
+        error instanceof Error ? error.stack : undefined
       );
-      // Don't throw - summary generation failure shouldn't break memory operations
+      // Re-throw to ensure the promise rejection is caught upstream
+      // This won't break memory operations since it's called asynchronously with .catch()
+      throw error;
     }
   }
 }

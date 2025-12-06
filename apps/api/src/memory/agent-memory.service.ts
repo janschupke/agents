@@ -118,17 +118,8 @@ export class AgentMemoryService {
       `Memory creation completed for agent ${agentId}, user ${userId}: ${createdCount}/${insights.length} memories created`
     );
 
-    // Trigger summary generation asynchronously (don't block)
-    if (createdCount > 0) {
-      this.memorySummaryService
-        .generateSummary(agentId, userId, apiKey)
-        .catch((error) => {
-          this.logger.error(
-            `Error generating memory summary after creation:`,
-            error
-          );
-        });
-    }
+    // Note: Memory summary generation is now handled separately in chat orchestration
+    // and triggers every N messages (see NUMERIC_CONSTANTS.MEMORY_SUMMARY_REFRESH_INTERVAL)
 
     return createdCount;
   }
