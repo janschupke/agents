@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Agent } from '../../../../types/chat.types';
 import {
   useFormValidation,
-  agentFormValidationSchema,
-  createValidationSchema,
+  ValidationSchema,
+  validationRules,
 } from '@openai/utils';
 import { parseBehaviorRules } from '../../utils/agent.utils';
 import {
@@ -147,33 +147,73 @@ export function useAgentForm({
     };
   }, [agent, agentData]);
 
-  // Form validation - use centralized schema
-  const validationSchema = createValidationSchema(agentFormValidationSchema, {
-    name: agentFormValidationSchema.name,
-  });
+  // Form validation - create schema that matches AgentFormValues types
+  const validationSchema = {
+    name: [validationRules.required('Agent name is required')],
+    description: [
+      {
+        validate: (value: string) => {
+          if (!value) return true; // Optional
+          return value.length <= 5000;
+        },
+        message: 'Description must be no more than 5000 characters',
+      },
+    ],
+    avatarUrl: [
+      {
+        validate: (value: string | null) => {
+          if (!value || value.trim() === '') return true;
+          try {
+            new URL(value);
+            return true;
+          } catch {
+            return false;
+          }
+        },
+        message: 'Avatar URL must be a valid URL',
+      },
+    ],
+  } as ValidationSchema<AgentFormValues>;
 
   const { values, errors, touched, setValue, setTouched, validateAll, reset } =
     useFormValidation<AgentFormValues>(validationSchema, initialValues);
 
-  // Track previous agent/agentData IDs to prevent unnecessary updates
-  const prevAgentIdRef = useRef<number | null>(agent?.id ?? null);
-  const prevAgentDataIdRef = useRef<number | null>(agentData?.id ?? null);
+  // Track previous agent/agentData to detect changes
+  // Use a serialized version to detect deep changes
+  const prevAgentRef = useRef<string>('');
+  const prevAgentDataRef = useRef<string>('');
 
   // Update form when agent or agentData changes
   useEffect(() => {
-    const currentAgentId = agent?.id ?? null;
-    const currentAgentDataId = agentData?.id ?? null;
+    // Serialize current agent and agentData for comparison
+    const currentAgentSerialized = agent
+      ? JSON.stringify({
+          id: agent.id,
+          name: agent.name,
+          avatarUrl: agent.avatarUrl,
+          agentType: agent.agentType,
+          language: agent.language,
+        })
+      : '';
+    const currentAgentDataSerialized = agentData
+      ? JSON.stringify({
+          id: agentData.id,
+          configs: agentData.configs,
+        })
+      : '';
 
-    // Only update if agent or agentData ID actually changed
-    if (
-      prevAgentIdRef.current === currentAgentId &&
-      prevAgentDataIdRef.current === currentAgentDataId
-    ) {
+    // Only update if agent or agentData actually changed
+    const agentChanged = prevAgentRef.current !== currentAgentSerialized;
+    const agentDataChanged =
+      prevAgentDataRef.current !== currentAgentDataSerialized;
+
+    if (!agentChanged && !agentDataChanged) {
       return;
     }
 
-    prevAgentIdRef.current = currentAgentId;
-    prevAgentDataIdRef.current = currentAgentDataId;
+    // Update refs
+    prevAgentRef.current = currentAgentSerialized;
+    prevAgentDataRef.current = currentAgentDataSerialized;
 
     if (agent && agentData) {
       const config = agentData.configs || {};
@@ -254,9 +294,10 @@ export function useAgentForm({
       reset();
     }
     // Note: setValue and reset are intentionally excluded from deps to prevent infinite loops
-    // They are stable enough for this use case (only called when agent/agentData IDs change)
+    // They are stable enough for this use case (only called when agent/agentData actually changes)
+    // We serialize agent and agentData in the effect to detect deep changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agent?.id, agentData?.id]);
+  }, [agent, agentData]);
 
   return {
     values,

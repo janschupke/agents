@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import AgentSidebar from '../AgentSidebar/AgentSidebar';
 import AgentConfigForm, { AgentConfigFormRef } from './parts/AgentConfigForm';
 import AgentConfigErrorState from './parts/AgentConfigErrorState';
@@ -63,8 +63,25 @@ export default function AgentConfig({
       type: 'agents',
       isLoading: loadingAgents,
     });
+
+  // Agent config state (currentAgent and isSaving)
+  const { currentAgent } = useAgentConfigState({
+    isNewAgent,
+    agent,
+  });
+
   const formRef = useRef<AgentConfigFormRef>(null);
   const [canSave, setCanSave] = useState(false);
+  const [formName, setFormName] = useState<string>(
+    currentAgent?.name || ''
+  );
+
+  // Initialize form name when agent changes
+  useEffect(() => {
+    if (currentAgent) {
+      setFormName(currentAgent.name || '');
+    }
+  }, [currentAgent?.id, currentAgent?.name]);
 
   // Agent save logic
   const { handleSave, isSaving } = useAgentSave({
@@ -77,12 +94,6 @@ export default function AgentConfig({
     agents,
   });
 
-  // Agent config state (currentAgent and isSaving)
-  const { currentAgent } = useAgentConfigState({
-    isNewAgent,
-    agent,
-  });
-
   const handleSaveClick = async () => {
     if (formRef.current) {
       await formRef.current.save();
@@ -92,6 +103,11 @@ export default function AgentConfig({
   // Handle form value changes
   const handleFormStateChange = (canSaveValue: boolean) => {
     setCanSave(canSaveValue);
+  };
+
+  // Handle form name changes for header display
+  const handleNameChange = (name: string) => {
+    setFormName(name);
   };
 
   // Loading state - only show full page loading if we don't have cached agents
@@ -136,10 +152,13 @@ export default function AgentConfig({
               leftContent={
                 currentAgent ? (
                   <EditableAgentNameHeader
-                    name={currentAgent.name}
+                    name={
+                      formName || currentAgent.name || t('config.untitledAgent')
+                    }
                     onNameChange={(newName) => {
                       if (formRef.current) {
                         formRef.current.updateName(newName);
+                        setFormName(newName);
                       }
                     }}
                     isSaving={isSaving}
@@ -183,6 +202,7 @@ export default function AgentConfig({
                   saving={isSaving}
                   onSaveClick={handleSave}
                   onFormStateChange={handleFormStateChange}
+                  onNameChange={handleNameChange}
                 />
               )}
             </PageContent>

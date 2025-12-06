@@ -154,7 +154,8 @@
     "confirm": {
       "unsavedChangesTitle": "Unsaved Changes",
       "unsavedChangesMessage": "You have unsaved changes. Are you sure you want to leave?"
-    }
+    },
+    "untitledAgent": "Untitled Agent"
   },
   "profile": {
     "title": "Profile",

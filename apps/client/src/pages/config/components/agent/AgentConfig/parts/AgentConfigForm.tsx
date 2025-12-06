@@ -42,16 +42,18 @@ interface AgentConfigFormProps {
     values: ReturnType<typeof useAgentForm>['values']
   ) => Promise<void>;
   onFormStateChange?: (canSave: boolean) => void;
+  onNameChange?: (name: string) => void;
 }
 
 export interface AgentConfigFormRef {
   save: () => Promise<void>;
   canSave: () => boolean;
   updateName: (name: string) => void;
+  getName: () => string;
 }
 
 const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
-  ({ agent, saving = false, onSaveClick, onFormStateChange }, ref) => {
+  ({ agent, saving = false, onSaveClick, onFormStateChange, onNameChange }, ref) => {
     // React Query hooks
     const { data: agentData, isLoading: loadingAgent } = useAgent(
       agent?.id || null
@@ -165,6 +167,7 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
         setValue('name', name);
         setTouched('name');
       },
+      getName: () => values.name || '',
     }));
 
     // Notify parent when form state changes
@@ -173,6 +176,13 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
         onFormStateChange(!!agent && !!values.name.trim());
       }
     }, [agent, values.name, onFormStateChange]);
+
+    // Notify parent when name changes for header display
+    useEffect(() => {
+      if (onNameChange) {
+        onNameChange(values.name);
+      }
+    }, [values.name, onNameChange]);
 
     const { t } = useTranslation(I18nNamespace.CLIENT);
 

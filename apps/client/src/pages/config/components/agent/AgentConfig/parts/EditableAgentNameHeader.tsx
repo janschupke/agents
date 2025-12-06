@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 interface EditableAgentNameHeaderProps {
   name: string;
@@ -11,6 +12,7 @@ export default function EditableAgentNameHeader({
   onNameChange,
   isSaving = false,
 }: EditableAgentNameHeaderProps) {
+  const { t } = useTranslation(I18nNamespace.CLIENT);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(name);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -71,7 +73,7 @@ export default function EditableAgentNameHeader({
       className="text-2xl font-semibold text-text-primary cursor-pointer hover:text-primary transition-colors"
       title="Click to edit"
     >
-      {name || 'Untitled Agent'}
+      {name || t('config.untitledAgent')}
     </h1>
   );
 }
