@@ -4,6 +4,10 @@ import { HTTP_STATUS } from '@openai/shared-types';
 import { AgentType } from '../../../types/agent.types';
 import { useSystemRules, useUpdateSystemRules } from './use-system-rules';
 import { useToast } from '../../../contexts/ToastContext';
+import {
+  validateAll,
+  systemRulesFormValidationSchema,
+} from '@openai/utils';
 
 export interface AgentTypeFormData {
   rules: string[];
@@ -21,6 +25,14 @@ export function useSystemRulesForm() {
   const [formData, setFormData] = useState<Record<TabType, AgentTypeFormData>>({
     [AgentType.GENERAL]: { rules: [], systemPrompt: '' },
     [AgentType.LANGUAGE_ASSISTANT]: { rules: [], systemPrompt: '' },
+  });
+
+  // Validation state per tab
+  const [validationErrors, setValidationErrors] = useState<
+    Record<TabType, string | null>
+  >({
+    [AgentType.GENERAL]: null,
+    [AgentType.LANGUAGE_ASSISTANT]: null,
   });
 
   // Load data for all tabs
@@ -153,10 +165,33 @@ export function useSystemRulesForm() {
         systemPrompt: value,
       },
     }));
+
+    // Clear validation error when user types
+    if (validationErrors[tab]) {
+      setValidationErrors((prev) => ({ ...prev, [tab]: null }));
+    }
   };
 
   const handleSave = (tab: TabType) => {
     const currentFormData = formData[tab];
+
+    // Validate system prompt using centralized validation
+    const result = validateAll(
+      { systemPrompt: currentFormData.systemPrompt },
+      systemRulesFormValidationSchema
+    );
+
+    if (!result.isValid && result.errors.systemPrompt) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        [tab]: result.errors.systemPrompt,
+      }));
+      showToast(result.errors.systemPrompt, 'error');
+      return;
+    }
+
+    // Clear validation error
+    setValidationErrors((prev) => ({ ...prev, [tab]: null }));
 
     updateMutation.mutate(
       {
@@ -174,6 +209,13 @@ export function useSystemRulesForm() {
         },
       }
     );
+  };
+
+  const getSystemPromptErrors = (tab: TabType) => {
+    return {
+      error: validationErrors[tab],
+      touched: false, // We only show errors on save attempt
+    };
   };
 
   const getError = (tab: TabType) => {
@@ -213,6 +255,7 @@ export function useSystemRulesForm() {
     handleSystemPromptChange,
     handleSave,
     getError,
+    getSystemPromptErrors,
     isLoading,
   };
 }

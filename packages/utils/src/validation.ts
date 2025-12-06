@@ -111,13 +111,19 @@ export const validationRules = {
     message,
   }),
 
-  min: (min: number, message?: string): ValidationRule<number> => ({
-    validate: (value: number) => value >= min,
+  min: (min: number, message?: string): ValidationRule<number | string> => ({
+    validate: (value: number | string) => {
+      const numValue = typeof value === 'string' ? Number(value) : value;
+      return !isNaN(numValue) && numValue >= min;
+    },
     message: message || `Must be at least ${min}`,
   }),
 
-  max: (max: number, message?: string): ValidationRule<number> => ({
-    validate: (value: number) => value <= max,
+  max: (max: number, message?: string): ValidationRule<number | string> => ({
+    validate: (value: number | string) => {
+      const numValue = typeof value === 'string' ? Number(value) : value;
+      return !isNaN(numValue) && numValue <= max;
+    },
     message: message || `Must be no more than ${max}`,
   }),
 

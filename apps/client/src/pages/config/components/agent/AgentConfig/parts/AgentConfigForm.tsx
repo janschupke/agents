@@ -2,6 +2,7 @@ import { Agent } from '../../../../../../types/chat.types';
 import { useAgent } from '../../../../../../hooks/queries/use-agents';
 import { useAgentForm } from '../../../../hooks/agent/use-agent-form';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
+import { Language } from '@openai/shared-types';
 import { FormContainer } from '@openai/ui';
 import { TemperatureField, BehaviorRulesField } from './AgentConfigFormFields';
 import AgentConfigFormSkeleton from './AgentConfigFormSkeleton';
@@ -223,9 +224,9 @@ const AgentConfigForm = forwardRef<AgentConfigFormRef, AgentConfigFormProps>(
                   onChange={(val) => setValue('agentType', val)}
                 />
                 <LanguageField
-                  value={values.language}
+                  value={values.language as Language | null | undefined}
                   agentType={values.agentType}
-                  onChange={(val) => setValue('language', val)}
+                  onChange={(val) => setValue('language', val as string | null)}
                 />
                 <TemperatureField
                   value={values.temperature}

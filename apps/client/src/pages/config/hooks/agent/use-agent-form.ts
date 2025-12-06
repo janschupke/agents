@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Agent } from '../../../../types/chat.types';
-import { useFormValidation, validationRules } from '@openai/utils';
+import {
+  useFormValidation,
+  agentFormValidationSchema,
+  createValidationSchema,
+} from '@openai/utils';
 import { parseBehaviorRules } from '../../utils/agent.utils';
 import {
   AgentType,
@@ -143,10 +147,10 @@ export function useAgentForm({
     };
   }, [agent, agentData]);
 
-  // Form validation
-  const validationSchema = {
-    name: [validationRules.required('Agent name is required')],
-  };
+  // Form validation - use centralized schema
+  const validationSchema = createValidationSchema(agentFormValidationSchema, {
+    name: agentFormValidationSchema.name,
+  });
 
   const { values, errors, touched, setValue, setTouched, validateAll, reset } =
     useFormValidation<AgentFormValues>(validationSchema, initialValues);

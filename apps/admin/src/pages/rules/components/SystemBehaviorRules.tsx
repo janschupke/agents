@@ -22,6 +22,7 @@ export default function SystemBehaviorRules() {
     handleSystemPromptChange,
     handleSave,
     getError,
+    getSystemPromptErrors,
     isLoading,
   } = useSystemRulesForm();
 
@@ -37,6 +38,7 @@ export default function SystemBehaviorRules() {
   const renderForm = (tab: TabType) => {
     const currentFormData = formData[tab];
     const error = getError(tab);
+    const systemPromptValidation = getSystemPromptErrors(tab);
 
     return (
       <div className="space-y-6">
@@ -53,9 +55,24 @@ export default function SystemBehaviorRules() {
           <textarea
             value={currentFormData.systemPrompt}
             onChange={(e) => handleSystemPromptChange(tab, e.target.value)}
-            className="w-full min-h-[120px] px-3 py-2 border border-border-input rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus font-mono resize-y"
+            onBlur={() => {
+              // Trigger validation on blur
+              if (tab === AgentType.GENERAL) {
+                // Validation is handled in the hook
+              }
+            }}
+            className={`w-full min-h-[120px] px-3 py-2 border rounded-md text-sm text-text-primary bg-background focus:outline-none focus:border-border-focus font-mono resize-y ${
+              systemPromptValidation.touched && systemPromptValidation.error
+                ? 'border-red-500'
+                : 'border-border-input'
+            }`}
             placeholder={tAdmin('systemRules.systemPromptPlaceholder')}
           />
+          {systemPromptValidation.touched && systemPromptValidation.error && (
+            <p className="text-xs text-red-600 mt-1">
+              {systemPromptValidation.error}
+            </p>
+          )}
           <p className="text-xs text-text-tertiary mt-2">
             {tAdmin('systemRules.systemPromptDescription')}
           </p>

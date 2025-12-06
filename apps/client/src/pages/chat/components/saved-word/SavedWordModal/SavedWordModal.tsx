@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import {
   Card,
   ModalHeader,
@@ -8,12 +7,7 @@ import {
   FormButton,
 } from '@openai/ui';
 import { useTranslation, I18nNamespace } from '@openai/i18n';
-import {
-  useCreateSavedWord,
-  useUpdateSavedWord,
-} from '../../../../../hooks/mutations/use-saved-word-mutations';
-import { useSavedWord } from '../../../../../hooks/queries/use-saved-words';
-import { SavedWordSentence } from '../../../../../types/saved-word.types';
+import { useSavedWordForm } from './hooks/use-saved-word-form';
 
 interface SavedWordModalProps {
   isOpen: boolean;
@@ -41,79 +35,30 @@ export default function SavedWordModal({
   savedWordId,
 }: SavedWordModalProps) {
   const { t } = useTranslation(I18nNamespace.CLIENT);
-  const createMutation = useCreateSavedWord();
-  const updateMutation = useUpdateSavedWord();
-  const { data: existingWord } = useSavedWord(savedWordId || null);
 
-  const [translation, setTranslation] = useState(initialTranslation);
-  const [existingSentences, setExistingSentences] = useState<
-    SavedWordSentence[]
-  >([]);
-
-  useEffect(() => {
-    if (isOpen) {
-      setTranslation(initialTranslation);
-      if (existingWord) {
-        setExistingSentences(existingWord.sentences || []);
-      } else {
-        setExistingSentences([]);
-      }
-    }
-  }, [isOpen, initialTranslation, existingWord]);
-
-  const isEditing = savedWordId !== undefined;
-  const isLoading = createMutation.isPending || updateMutation.isPending;
-
-  const handleSave = async () => {
-    if (!translation.trim()) {
-      return;
-    }
-
-    try {
-      if (isEditing && savedWordId) {
-        // Check if translation changed
-        if (translation.trim() !== initialTranslation.trim()) {
-          await updateMutation.mutateAsync({
-            id: savedWordId,
-            data: { translation: translation.trim() },
-          });
-        }
-        // If sentence provided and word exists, add it
-        if (sentence && existingWord) {
-          // Check if sentence already exists
-          const sentenceExists = existingWord.sentences.some(
-            (s) => s.sentence === sentence
-          );
-          if (!sentenceExists) {
-            // Note: We'd need useAddSentence hook here, but for now just update translation
-            // Sentence addition can be done from edit modal
-          }
-        }
-      } else {
-        await createMutation.mutateAsync({
-          originalWord,
-          translation: translation.trim(),
-          pinyin: initialPinyin || undefined,
-          agentId: agentId || undefined,
-          sessionId: sessionId || undefined,
-          sentence: sentence || undefined,
-          messageId: messageId || undefined,
-        });
-      }
-      onClose();
-    } catch (error) {
-      // Error is handled by mutation's onError handler (shows toast)
-      // Don't close modal on error so user can retry
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !isLoading) {
-      handleSave();
-    } else if (e.key === 'Escape') {
-      onClose();
-    }
-  };
+  const {
+    values,
+    errors,
+    touched,
+    existingSentences,
+    isLoading,
+    isEditing,
+    setValue,
+    setTouched,
+    handleSave,
+    handleKeyDown,
+  } = useSavedWordForm({
+    isOpen,
+    initialTranslation,
+    initialPinyin,
+    sentence,
+    messageId,
+    agentId,
+    sessionId,
+    savedWordId,
+    originalWord,
+    onClose,
+  });
 
   if (!isOpen) return null;
 
@@ -167,12 +112,16 @@ export default function SavedWordModal({
               label={t('savedWords.translation')}
               labelFor="translation"
               required
+              error={touched.translation ? errors.translation : undefined}
             >
               <Input
                 id="translation"
                 type="text"
-                value={translation}
-                onChange={(e) => setTranslation(e.target.value)}
+                value={values.translation}
+                onChange={(e) => {
+                  setValue('translation', e.target.value);
+                }}
+                onBlur={() => setTouched('translation')}
                 onKeyDown={handleKeyDown}
                 disabled={isLoading}
                 className="w-full"
@@ -225,7 +174,7 @@ export default function SavedWordModal({
               type="button"
               onClick={handleSave}
               loading={isLoading}
-              disabled={isLoading || !translation.trim()}
+              disabled={isLoading || !values.translation.trim()}
               variant="primary"
             >
               {t('common.save')}

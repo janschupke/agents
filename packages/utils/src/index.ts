@@ -1,5 +1,6 @@
 // Validation exports
 export * from './validation';
+export * from './validation-config';
 
 // Datetime exports
 export * from './datetime';

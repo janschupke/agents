@@ -7,7 +7,10 @@ import {
 import { queryKeys } from '../../../hooks/queries/query-keys';
 import { useApiKeyStatus } from '../../../hooks/queries/use-user';
 import { useConfirm } from '../../../hooks/ui/useConfirm';
-import { useFormValidation, validationRules } from '@openai/utils';
+import {
+  useFormValidation,
+  apiKeyFormValidationSchema,
+} from '@openai/utils';
 
 interface ApiKeyFormValues extends Record<string, unknown> {
   apiKey: string;
@@ -51,12 +54,10 @@ export function useApiKey(): UseApiKeyReturn {
     }
   }, [hasApiKey]);
 
-  const validationSchema = {
-    apiKey: [validationRules.required('API key is required')],
-  };
-
   const { values, errors, touched, setValue, setTouched, validateAll, reset } =
-    useFormValidation<ApiKeyFormValues>(validationSchema, { apiKey: '' });
+    useFormValidation<ApiKeyFormValues>(apiKeyFormValidationSchema, {
+      apiKey: '',
+    });
 
   const handleSaveApiKey = async () => {
     const validation = validateAll();

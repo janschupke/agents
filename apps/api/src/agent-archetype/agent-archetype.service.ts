@@ -5,7 +5,7 @@ import {
   UpdateAgentArchetypeDto,
   AgentArchetypeResponse,
 } from '../common/dto/agent-archetype.dto';
-import { AgentType } from '@openai/shared-types';
+import { AgentType, Language } from '@openai/shared-types';
 
 @Injectable()
 export class AgentArchetypeService {
@@ -92,7 +92,9 @@ export class AgentArchetypeService {
       agentType: archetype.agentType
         ? (archetype.agentType as AgentType)
         : undefined,
-      language: archetype.language || undefined,
+      language: archetype.language
+        ? (archetype.language as Language)
+        : undefined,
       createdAt: archetype.createdAt,
       updatedAt: archetype.updatedAt,
       configs: {
