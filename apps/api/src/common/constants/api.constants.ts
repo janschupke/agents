@@ -1,5 +1,13 @@
 import { NUMERIC_CONSTANTS } from './numeric.constants.js';
-import { OPENAI_MODELS, OPENAI_MODEL_PRICING } from '@openai/shared-types';
+import {
+  OPENAI_MODELS,
+  OPENAI_MODEL_PRICING,
+  ResponseLength,
+  Sentiment,
+  Availability,
+  PersonalityType,
+  AgentType,
+} from '@openai/shared-types';
 import { OPENAI_PROMPTS } from './openai-prompts.constants.js';
 
 // Re-export for backward compatibility
@@ -10,7 +18,14 @@ export const DEFAULT_AGENT_CONFIG = {
   temperature: NUMERIC_CONSTANTS.DEFAULT_TEMPERATURE,
   max_tokens: NUMERIC_CONSTANTS.DEFAULT_MAX_TOKENS,
   system_prompt: OPENAI_PROMPTS.DEFAULT_SYSTEM_PROMPT,
+  // Mandatory fields with defaults
+  response_length: ResponseLength.SHORT,
+  personality: 'Empathetic' as PersonalityType,
+  sentiment: Sentiment.NEUTRAL,
+  availability: Availability.AVAILABLE,
 } as const;
+
+export const DEFAULT_AGENT_TYPE = AgentType.GENERAL;
 
 export const MEMORY_CONFIG = {
   SIMILARITY_THRESHOLD: 0.5,

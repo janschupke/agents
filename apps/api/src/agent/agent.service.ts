@@ -10,6 +10,7 @@ import { AgentResponse } from '../common/interfaces/agent.interface';
 import { AgentNotFoundException } from '../common/exceptions';
 import { ERROR_MESSAGES } from '../common/constants/error-messages.constants.js';
 import { AgentType } from '@openai/shared-types';
+import { DEFAULT_AGENT_CONFIG } from '../common/constants/api.constants';
 import { SessionRepository } from '../session/session.repository';
 import { AgentArchetypeService } from '../agent-archetype/agent-archetype.service';
 
@@ -116,13 +117,16 @@ export class AgentService {
       `Created initial session ${session.id} for agent ${agent.id}`
     );
 
-    // Set configs if provided
-    if (configs) {
-      // Store only user-provided behavior rules (don't merge with auto-generated rules)
-      // Auto-generated rules will be added during message preparation, not stored in DB
-      await this.agentRepository.updateConfigs(agent.id, configs);
-      this.logger.debug(`Updated configs for agent ${agent.id}`);
-    }
+    // Merge provided configs with defaults to ensure all mandatory fields are set
+    // This ensures response_length, personality, sentiment, and availability are always set
+    const mergedConfigs = {
+      ...DEFAULT_AGENT_CONFIG,
+      ...(configs || {}),
+    };
+
+    // Always set configs (with defaults) to ensure mandatory fields are present
+    await this.agentRepository.updateConfigs(agent.id, mergedConfigs);
+    this.logger.debug(`Updated configs for agent ${agent.id} with defaults`);
 
     return {
       id: agent.id,

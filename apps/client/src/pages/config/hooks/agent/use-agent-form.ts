@@ -14,6 +14,7 @@ import {
   Availability,
 } from '../../../../types/agent.types';
 import { PersonalityType, PERSONALITY_TYPES } from '@openai/shared-types';
+import { useTranslation, I18nNamespace } from '@openai/i18n';
 
 export interface AgentFormValues extends Record<string, unknown> {
   name: string;
@@ -60,6 +61,8 @@ export function useAgentForm({
   agent,
   agentData,
 }: UseAgentFormOptions): UseAgentFormReturn {
+  const { t } = useTranslation(I18nNamespace.CLIENT);
+
   // Initial form values
   const initialValues = useMemo<AgentFormValues>(() => {
     if (agent && agentData) {
@@ -143,32 +146,51 @@ export function useAgentForm({
   }, [agent, agentData]);
 
   // Form validation - create schema that matches AgentFormValues types
-  const validationSchema = {
-    name: [validationRules.required('Agent name is required')],
-    description: [
-      {
-        validate: (value: string) => {
-          if (!value) return true; // Optional
-          return value.length <= 5000;
-        },
-        message: 'Description must be no more than 5000 characters',
-      },
-    ],
-    avatarUrl: [
-      {
-        validate: (value: string | null) => {
-          if (!value || value.trim() === '') return true;
-          try {
-            new URL(value);
-            return true;
-          } catch {
-            return false;
-          }
-        },
-        message: 'Avatar URL must be a valid URL',
-      },
-    ],
-  } as ValidationSchema<AgentFormValues>;
+  const validationSchema = useMemo(
+    () =>
+      ({
+        name: [validationRules.required(t('config.errors.validation.agentNameRequired'))],
+        description: [
+          {
+            validate: (value: string) => {
+              if (!value) return true; // Optional
+              return value.length <= 5000;
+            },
+            message: t('config.errors.validation.descriptionMaxLength'),
+          },
+        ],
+        avatarUrl: [
+          {
+            validate: (value: string | null) => {
+              if (!value || value.trim() === '') return true;
+              try {
+                new URL(value);
+                return true;
+              } catch {
+                return false;
+              }
+            },
+            message: t('config.errors.validation.avatarUrlInvalid'),
+          },
+        ],
+        agentType: [validationRules.required(t('config.errors.validation.agentTypeRequired'))],
+        responseLength: [validationRules.required(t('config.errors.validation.responseLengthRequired'))],
+        personality: [validationRules.required(t('config.errors.validation.personalityRequired'))],
+        sentiment: [validationRules.required(t('config.errors.validation.sentimentRequired'))],
+        availability: [validationRules.required(t('config.errors.validation.availabilityRequired'))],
+        age: [
+          {
+            validate: (value) => {
+              if (value === null) return true; // Age is optional (can be null)
+              const numValue = Number(value);
+              return !isNaN(numValue) && numValue >= 6 && numValue <= 100;
+            },
+            message: t('config.errors.validation.ageRange'),
+          },
+        ],
+      }) as ValidationSchema<AgentFormValues>,
+    [t]
+  );
 
   const { values, errors, touched, setValue, setTouched, validateAll, reset } =
     useFormValidation<AgentFormValues>(validationSchema, initialValues);

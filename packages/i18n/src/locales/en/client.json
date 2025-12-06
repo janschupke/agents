@@ -150,7 +150,18 @@
     "jsonInvalidError": "Invalid JSON format",
     "errors": {
       "agentNotFound": "Agent not found",
-      "createFailed": "Failed to create agent"
+      "createFailed": "Failed to create agent",
+      "validation": {
+        "agentNameRequired": "Agent name is required",
+        "agentTypeRequired": "Agent type is required",
+        "responseLengthRequired": "Response length is required",
+        "personalityRequired": "Personality is required",
+        "sentimentRequired": "Sentiment is required",
+        "availabilityRequired": "Availability is required",
+        "ageRange": "Age must be between 6 and 100",
+        "descriptionMaxLength": "Description must be no more than 5000 characters",
+        "avatarUrlInvalid": "Avatar URL must be a valid URL"
+      }
     },
     "messages": {
       "agentCreated": "Agent created successfully"

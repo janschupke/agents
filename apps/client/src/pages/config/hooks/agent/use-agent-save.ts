@@ -61,21 +61,21 @@ export function useAgentSave({
           agentType: values.agentType,
           language: values.language || undefined,
           configs: {
-            temperature: values.temperature,
             system_prompt: values.description.trim() || undefined,
             behavior_rules:
               values.behaviorRules.filter((r) => r.trim()).length > 0
                 ? values.behaviorRules.filter((r) => r.trim())
                 : [],
-            // New fields
-            response_length: values.responseLength || undefined,
+            // Mandatory fields - always send (API will use defaults if not provided, but we always provide them)
+            response_length: values.responseLength,
+            personality: values.personality,
+            sentiment: values.sentiment,
+            availability: values.availability,
+            // Optional fields
             age: values.age ?? undefined,
             gender: values.gender || undefined,
-            personality: values.personality || undefined,
-            sentiment: values.sentiment || undefined,
             interests:
               values.interests.length > 0 ? values.interests : undefined,
-            availability: values.availability || undefined,
           },
         };
         const savedAgent = await createAgentMutation.mutateAsync(agentData);
@@ -91,21 +91,21 @@ export function useAgentSave({
             agentType: values.agentType,
             language: values.language || undefined,
             configs: {
-              temperature: values.temperature,
               system_prompt: values.description.trim() || undefined,
               behavior_rules:
                 values.behaviorRules.filter((r) => r.trim()).length > 0
                   ? values.behaviorRules.filter((r) => r.trim())
                   : [],
-              // New fields
-              response_length: values.responseLength || undefined,
+              // Mandatory fields - always send
+              response_length: values.responseLength,
+              personality: values.personality,
+              sentiment: values.sentiment,
+              availability: values.availability,
+              // Optional fields
               age: values.age ?? undefined,
               gender: values.gender || undefined,
-              personality: values.personality || undefined,
-              sentiment: values.sentiment || undefined,
               interests:
                 values.interests.length > 0 ? values.interests : undefined,
-              availability: values.availability || undefined,
             },
           },
         });
